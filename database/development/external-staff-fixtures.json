@@ -1,0 +1,171 @@
+{
+  "developmentOnly": true,
+  "staff": [
+    {
+      "staffId": "ADM001",
+      "displayName": "Admin 1",
+      "loginId": "admin1@example.com",
+      "roleCode": "INDIA_ADMIN",
+      "scopeType": "INDIA",
+      "locationCode": null,
+      "projectCode": null,
+      "capabilities": [
+        "VISITS_READ",
+        "GUARDS_MANAGE",
+        "REPORTS_READ",
+        "REPORTS_EXPORT",
+        "AUDIT_READ",
+        "GUARD_CREDENTIALS_MANAGE",
+        "STAFF_CREDENTIALS_MANAGE",
+        "ROLE_GRANTS_MANAGE"
+      ]
+    },
+    {
+      "staffId": "ADM002",
+      "displayName": "Admin 2",
+      "loginId": "admin2@example.com",
+      "roleCode": "LOCATION_ADMIN",
+      "scopeType": "LOCATION",
+      "locationCode": "NOIDA",
+      "projectCode": null,
+      "capabilities": [
+        "VISITS_READ",
+        "GUARDS_MANAGE",
+        "REPORTS_READ",
+        "REPORTS_EXPORT",
+        "AUDIT_READ",
+        "GUARD_CREDENTIALS_MANAGE",
+        "STAFF_CREDENTIALS_MANAGE",
+        "ROLE_GRANTS_MANAGE"
+      ]
+    },
+    {
+      "staffId": "ADM003",
+      "displayName": "Admin 3",
+      "loginId": "admin3@example.com",
+      "roleCode": "LOCATION_ADMIN",
+      "scopeType": "LOCATION",
+      "locationCode": "BENGALURU",
+      "projectCode": null,
+      "capabilities": [
+        "VISITS_READ",
+        "GUARDS_MANAGE",
+        "REPORTS_READ",
+        "REPORTS_EXPORT",
+        "AUDIT_READ",
+        "GUARD_CREDENTIALS_MANAGE",
+        "STAFF_CREDENTIALS_MANAGE",
+        "ROLE_GRANTS_MANAGE"
+      ]
+    },
+    {
+      "staffId": "ADM004",
+      "displayName": "Admin 4",
+      "loginId": "admin4@example.com",
+      "roleCode": "LOCATION_ADMIN",
+      "scopeType": "LOCATION",
+      "locationCode": "CHENNAI",
+      "projectCode": null,
+      "capabilities": [
+        "VISITS_READ",
+        "GUARDS_MANAGE",
+        "REPORTS_READ",
+        "REPORTS_EXPORT",
+        "AUDIT_READ",
+        "GUARD_CREDENTIALS_MANAGE",
+        "STAFF_CREDENTIALS_MANAGE",
+        "ROLE_GRANTS_MANAGE"
+      ]
+    },
+    {
+      "staffId": "ADM005",
+      "displayName": "Admin 5",
+      "loginId": "admin5@example.com",
+      "roleCode": "LOCATION_ADMIN",
+      "scopeType": "LOCATION",
+      "locationCode": "PUNE",
+      "projectCode": null,
+      "capabilities": [
+        "VISITS_READ",
+        "GUARDS_MANAGE",
+        "REPORTS_READ",
+        "REPORTS_EXPORT",
+        "AUDIT_READ",
+        "GUARD_CREDENTIALS_MANAGE",
+        "STAFF_CREDENTIALS_MANAGE",
+        "ROLE_GRANTS_MANAGE"
+      ]
+    },
+    {
+      "staffId": "REC001",
+      "displayName": "Reception 1",
+      "loginId": "reception1@example.com",
+      "roleCode": "RECEPTION",
+      "scopeType": "LOCATION",
+      "locationCode": "NOIDA",
+      "projectCode": null,
+      "capabilities": [
+        "VISITS_READ",
+        "PASS_PRINT"
+      ]
+    },
+    {
+      "staffId": "REC002",
+      "displayName": "Reception 2",
+      "loginId": "reception2@example.com",
+      "roleCode": "RECEPTION",
+      "scopeType": "LOCATION",
+      "locationCode": "BENGALURU",
+      "projectCode": null,
+      "capabilities": [
+        "VISITS_READ",
+        "PASS_PRINT"
+      ]
+    },
+    {
+      "staffId": "REC003",
+      "displayName": "Reception 3",
+      "loginId": "reception3@example.com",
+      "roleCode": "RECEPTION",
+      "scopeType": "LOCATION",
+      "locationCode": "CHENNAI",
+      "projectCode": null,
+      "capabilities": [
+        "VISITS_READ",
+        "PASS_PRINT"
+      ]
+    },
+    {
+      "staffId": "REC004",
+      "displayName": "Reception 4",
+      "loginId": "reception4@example.com",
+      "roleCode": "RECEPTION",
+      "scopeType": "LOCATION",
+      "locationCode": "PUNE",
+      "projectCode": null,
+      "capabilities": [
+        "VISITS_READ",
+        "PASS_PRINT"
+      ]
+    },
+    {
+      "staffId": "PLT001",
+      "displayName": "Platform Admin 1",
+      "loginId": "platformadmin1@example.com",
+      "roleCode": "PLATFORM_ADMIN",
+      "scopeType": "PLATFORM",
+      "locationCode": null,
+      "projectCode": null,
+      "capabilities": [
+        "VISITS_READ",
+        "GUARDS_MANAGE",
+        "REPORTS_READ",
+        "REPORTS_EXPORT",
+        "AUDIT_READ",
+        "GUARD_CREDENTIALS_MANAGE",
+        "STAFF_CREDENTIALS_MANAGE",
+        "ROLE_GRANTS_MANAGE"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "developmentOnly": true,
+  "guards": [
+    {
+      "guardId": "GRD001",
+      "displayName": "Guard 1",
+      "locationCode": "NOIDA",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT",
+        "TEMP_ID_MOVEMENT",
+        "RECONCILE_EXIT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-002"
+      ],
+      "loginId": "gaurd1@example.com"
+    },
+    {
+      "guardId": "GRD002",
+      "displayName": "Guard 2",
+      "locationCode": "BENGALURU",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-002"
+      ],
+      "loginId": "gaurd2@example.com"
+    },
+    {
+      "guardId": "GRD003",
+      "displayName": "Guard 3",
+      "locationCode": "CHENNAI",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-001"
+      ],
+      "loginId": "gaurd3@example.com"
+    },
+    {
+      "guardId": "GRD004",
+      "displayName": "Guard 4",
+      "locationCode": "PUNE",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-002"
+      ],
+      "loginId": "gaurd4@example.com"
+    },
+    {
+      "guardId": "GRD005",
+      "displayName": "Guard 5",
+      "locationCode": "NOIDA",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-003"
+      ],
+      "loginId": "gaurd5@example.com"
+    },
+    {
+      "guardId": "GRD006",
+      "displayName": "Guard 6",
+      "locationCode": "NOIDA",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-006"
+      ],
+      "loginId": "gaurd6@example.com"
+    },
+    {
+      "guardId": "GRD007",
+      "displayName": "Guard 7",
+      "locationCode": "BENGALURU",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT",
+        "TEMP_ID_MOVEMENT",
+        "RECONCILE_EXIT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-004"
+      ],
+      "loginId": "gaurd7@example.com"
+    },
+    {
+      "guardId": "GRD008",
+      "displayName": "Guard 8",
+      "locationCode": "BENGALURU",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-002",
+        "DEMO-PRJ-004"
+      ],
+      "loginId": "gaurd8@example.com"
+    },
+    {
+      "guardId": "GRD009",
+      "displayName": "Guard 9",
+      "locationCode": "CHENNAI",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT",
+        "TEMP_ID_MOVEMENT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-003"
+      ],
+      "loginId": "gaurd9@example.com"
+    },
+    {
+      "guardId": "GRD010",
+      "displayName": "Guard 10",
+      "locationCode": "CHENNAI",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT",
+        "RECONCILE_EXIT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-005"
+      ],
+      "loginId": "gaurd10@example.com"
+    },
+    {
+      "guardId": "GRD011",
+      "displayName": "Guard 11",
+      "locationCode": "PUNE",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-002",
+        "DEMO-PRJ-005"
+      ],
+      "loginId": "gaurd11@example.com"
+    },
+    {
+      "guardId": "GRD012",
+      "displayName": "Guard 12",
+      "locationCode": "PUNE",
+      "capabilities": [
+        "VISITS_READ",
+        "PROJECT_MOVEMENT",
+        "TEMP_ID_MOVEMENT",
+        "RECONCILE_EXIT"
+      ],
+      "projectCodes": [
+        "DEMO-PRJ-005",
+        "DEMO-PRJ-006"
+      ],
+      "loginId": "gaurd12@example.com"
+    }
+  ]
+}

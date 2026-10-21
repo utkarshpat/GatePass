@@ -1,0 +1,217 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1180" viewBox="0 0 1800 1180">
+<rect width="1800" height="100%" fill="#ffffff"/>
+<rect width="1800" height="8" fill="#FF7800"/>
+<text x="48" y="58" text-anchor="start" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#182230" text-decoration="none">02B | CHEN ER - REGISTRATION &amp; INDIVIDUAL VISITS</text>
+<text x="48" y="100" text-anchor="start" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#667085" text-decoration="none">READ LEFT TO RIGHT | Rectangle = Entity | Diamond = Relationship | Oval = Attribute | Underlined PK | 1/N = cardinality</text>
+<line x1="225" y1="239" x2="225.0" y2="210" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="225.0" cy="183" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="225.0" y="187" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="underline">IntakeId</text>
+<text x="372.0" y="159" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="225" y1="301" x2="147.5" y2="330" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="147.5" cy="357" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="147.5" y="361" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">Status</text>
+<line x1="225" y1="301" x2="302.5" y2="330" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="302.5" cy="357" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="302.5" y="361" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">ExpiresAtUtc</text>
+<rect x="67" y="239" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="79" y="253" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E01</text>
+<text x="225" y="268" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">RegistrationIntakes</text>
+<line x1="383" y1="270" x2="435" y2="270" stroke="#7D8C9E" stroke-width="2"/>
+<line x1="599" y1="270" x2="651" y2="270" stroke="#7D8C9E" stroke-width="2"/>
+<polygon points="435,270 517,227 599,270 517,313" fill="#FFF1E8" stroke="#FF7800" stroke-width="2"/>
+<text x="517" y="267" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#182230" text-decoration="none">SUBMITS</text>
+<text x="405" y="256" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">1</text>
+<text x="629" y="256" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">N</text>
+<line x1="809" y1="239" x2="809.0" y2="210" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="809.0" cy="183" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="809.0" y="187" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="underline">VisitRequestId</text>
+<text x="956.0" y="159" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="809" y1="301" x2="731.5" y2="330" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="731.5" cy="357" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="731.5" y="361" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">RequestType</text>
+<line x1="809" y1="301" x2="886.5" y2="330" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="886.5" cy="357" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="886.5" y="361" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">Status</text>
+<rect x="651" y="239" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="663" y="253" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E02</text>
+<text x="809" y="268" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">VisitRequests</text>
+<line x1="967" y1="270" x2="1019" y2="270" stroke="#7D8C9E" stroke-width="2"/>
+<line x1="1183" y1="270" x2="1235" y2="270" stroke="#7D8C9E" stroke-width="2"/>
+<polygon points="1019,270 1101,227 1183,270 1101,313" fill="#FFF1E8" stroke="#FF7800" stroke-width="2"/>
+<text x="1101" y="267" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#182230" text-decoration="none">TARGETS</text>
+<text x="989" y="256" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">N</text>
+<text x="1213" y="256" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">0..1</text>
+<line x1="1393" y1="239" x2="1393.0" y2="210" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1393.0" cy="183" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1393.0" y="187" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="underline">ProjectLocationId</text>
+<text x="1540.0" y="159" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="1393" y1="301" x2="1315.5" y2="330" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1315.5" cy="357" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1315.5" y="361" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">ProjectId</text>
+<line x1="1393" y1="301" x2="1470.5" y2="330" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1470.5" cy="357" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1470.5" y="361" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">LocationId</text>
+<rect x="1235" y="239" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="1247" y="253" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E03</text>
+<text x="1393" y="268" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">ProjectLocations</text>
+<line x1="225" y1="469" x2="225.0" y2="440" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="225.0" cy="413" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="225.0" y="417" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="underline">IntakeId</text>
+<text x="372.0" y="389" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="225" y1="531" x2="147.5" y2="560" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="147.5" cy="587" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="147.5" y="591" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">Status</text>
+<line x1="225" y1="531" x2="302.5" y2="560" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="302.5" cy="587" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="302.5" y="591" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">ExpiresAtUtc</text>
+<rect x="67" y="469" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="79" y="483" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E04</text>
+<text x="225" y="498" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">RegistrationIntakes</text>
+<line x1="383" y1="500" x2="435" y2="500" stroke="#7D8C9E" stroke-width="2"/>
+<line x1="599" y1="500" x2="651" y2="500" stroke="#7D8C9E" stroke-width="2"/>
+<polygon points="435,500 517,457 599,500 517,543" fill="#FFF1E8" stroke="#FF7800" stroke-width="2"/>
+<text x="517" y="497" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#182230" text-decoration="none">OWNS</text>
+<text x="405" y="486" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">1</text>
+<text x="629" y="486" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">N</text>
+<line x1="809" y1="469" x2="809.0" y2="440" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="809.0" cy="413" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="809.0" y="417" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="underline">PhotoAssetId</text>
+<text x="956.0" y="389" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="809" y1="531" x2="731.5" y2="560" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="731.5" cy="587" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="731.5" y="591" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">StorageKey</text>
+<line x1="809" y1="531" x2="886.5" y2="560" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="886.5" cy="587" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="886.5" y="591" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">MimeType</text>
+<rect x="651" y="469" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="663" y="483" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E05</text>
+<text x="809" y="498" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">PhotoAssets</text>
+<line x1="967" y1="500" x2="1019" y2="500" stroke="#7D8C9E" stroke-width="2"/>
+<line x1="1183" y1="500" x2="1235" y2="500" stroke="#7D8C9E" stroke-width="2"/>
+<polygon points="1019,500 1101,457 1183,500 1101,543" fill="#FFF1E8" stroke="#FF7800" stroke-width="2"/>
+<text x="1101" y="497" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#182230" text-decoration="none">USED BY</text>
+<text x="989" y="486" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">1</text>
+<text x="1213" y="486" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">0..1</text>
+<line x1="1393" y1="469" x2="1393.0" y2="440" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1393.0" cy="413" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1393.0" y="417" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="underline">VisitRequestId</text>
+<text x="1540.0" y="389" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="1393" y1="531" x2="1315.5" y2="560" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1315.5" cy="587" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1315.5" y="591" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">RequestType</text>
+<line x1="1393" y1="531" x2="1470.5" y2="560" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1470.5" cy="587" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1470.5" y="591" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">Status</text>
+<rect x="1235" y="469" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="1247" y="483" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E06</text>
+<text x="1393" y="498" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">VisitRequests</text>
+<line x1="225" y1="699" x2="225.0" y2="670" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="225.0" cy="643" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="225.0" y="647" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="underline">VisitRequestId</text>
+<text x="372.0" y="619" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="225" y1="761" x2="147.5" y2="790" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="147.5" cy="817" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="147.5" y="821" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">RequestType</text>
+<line x1="225" y1="761" x2="302.5" y2="790" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="302.5" cy="817" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="302.5" y="821" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">Status</text>
+<rect x="67" y="699" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="79" y="713" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E07</text>
+<text x="225" y="728" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">VisitRequests</text>
+<line x1="383" y1="730" x2="435" y2="730" stroke="#7D8C9E" stroke-width="2"/>
+<line x1="599" y1="730" x2="651" y2="730" stroke="#7D8C9E" stroke-width="2"/>
+<polygon points="435,730 517,687 599,730 517,773" fill="#FFF1E8" stroke="#FF7800" stroke-width="2"/>
+<text x="517" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#182230" text-decoration="none">HAS DECISION</text>
+<text x="405" y="716" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">1</text>
+<text x="629" y="716" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">0..1</text>
+<line x1="809" y1="699" x2="809.0" y2="670" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="809.0" cy="643" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="809.0" y="647" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="underline">VisitRequestId</text>
+<text x="956.0" y="619" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="809" y1="761" x2="731.5" y2="790" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="731.5" cy="817" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="731.5" y="821" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">Decision</text>
+<line x1="809" y1="761" x2="886.5" y2="790" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="886.5" cy="817" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="886.5" y="821" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">DecisionSource</text>
+<rect x="651" y="699" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="663" y="713" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E08</text>
+<text x="809" y="728" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">ApprovalDecisions</text>
+<line x1="967" y1="730" x2="1019" y2="730" stroke="#7D8C9E" stroke-width="2"/>
+<line x1="1183" y1="730" x2="1235" y2="730" stroke="#7D8C9E" stroke-width="2"/>
+<polygon points="1019,730 1101,687 1183,730 1101,773" fill="#FFF1E8" stroke="#FF7800" stroke-width="2"/>
+<text x="1101" y="727" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#182230" text-decoration="none">MADE BY</text>
+<text x="989" y="716" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">N</text>
+<text x="1213" y="716" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">1</text>
+<line x1="1393" y1="699" x2="1393.0" y2="670" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1393.0" cy="643" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1393.0" y="647" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="underline">EmployeeId</text>
+<text x="1540.0" y="619" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="1393" y1="761" x2="1315.5" y2="790" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1315.5" cy="817" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1315.5" y="821" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">OfficialEmail</text>
+<line x1="1393" y1="761" x2="1470.5" y2="790" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1470.5" cy="817" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1470.5" y="821" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">IsActive</text>
+<rect x="1235" y="699" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="1247" y="713" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E09</text>
+<text x="1393" y="728" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">Employees</text>
+<line x1="225" y1="929" x2="225.0" y2="900" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="225.0" cy="873" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="225.0" y="877" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="underline">EmployeeId</text>
+<text x="372.0" y="849" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="225" y1="991" x2="147.5" y2="1020" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="147.5" cy="1047" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="147.5" y="1051" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">OfficialEmail</text>
+<line x1="225" y1="991" x2="302.5" y2="1020" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="302.5" cy="1047" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="302.5" y="1051" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">IsActive</text>
+<rect x="67" y="929" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="79" y="943" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E10</text>
+<text x="225" y="958" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">Employees</text>
+<line x1="383" y1="960" x2="435" y2="960" stroke="#7D8C9E" stroke-width="2"/>
+<line x1="599" y1="960" x2="651" y2="960" stroke="#7D8C9E" stroke-width="2"/>
+<polygon points="435,960 517,917 599,960 517,1003" fill="#FFF1E8" stroke="#FF7800" stroke-width="2"/>
+<text x="517" y="957" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#182230" text-decoration="none">USES SLOT</text>
+<text x="405" y="946" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">1</text>
+<text x="629" y="946" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">N</text>
+<line x1="809" y1="929" x2="705.6666666666666" y2="900" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="705.6666666666666" cy="873" rx="49.333333333333336" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="705.6666666666666" y="877" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="400" fill="#182230" text-decoration="underline">EmployeeId</text>
+<text x="754.0" y="849" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="809" y1="929" x2="809.0" y2="900" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="809.0" cy="873" rx="49.333333333333336" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="809.0" y="877" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="400" fill="#182230" text-decoration="underline">LocationId</text>
+<text x="857.3333333333334" y="849" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="809" y1="929" x2="912.3333333333334" y2="900" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="912.3333333333334" cy="873" rx="49.333333333333336" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="912.3333333333334" y="877" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="400" fill="#182230" text-decoration="underline">LocalVisitDate</text>
+<text x="960.6666666666667" y="849" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="809" y1="991" x2="809.0" y2="1020" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="809.0" cy="1047" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="809.0" y="1051" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="none">VisitRequestId</text>
+<rect x="651" y="929" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="663" y="943" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E11</text>
+<text x="809" y="958" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">TemporaryIdSlots</text>
+<line x1="967" y1="960" x2="1019" y2="960" stroke="#7D8C9E" stroke-width="2"/>
+<line x1="1183" y1="960" x2="1235" y2="960" stroke="#7D8C9E" stroke-width="2"/>
+<polygon points="1019,960 1101,917 1183,960 1101,1003" fill="#FFF1E8" stroke="#FF7800" stroke-width="2"/>
+<text x="1101" y="957" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#182230" text-decoration="none">POINTS TO</text>
+<text x="989" y="946" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">0..1</text>
+<text x="1213" y="946" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#315F90" text-decoration="none">1</text>
+<line x1="1393" y1="929" x2="1393.0" y2="900" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1393.0" cy="873" rx="148.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1393.0" y="877" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="400" fill="#182230" text-decoration="underline">VisitRequestId</text>
+<text x="1540.0" y="849" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#C9002B" text-decoration="none">PK</text>
+<line x1="1393" y1="991" x2="1315.5" y2="1020" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1315.5" cy="1047" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1315.5" y="1051" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">RequestType</text>
+<line x1="1393" y1="991" x2="1470.5" y2="1020" stroke="#98A2B3" stroke-width="2"/>
+<ellipse cx="1470.5" cy="1047" rx="74.0" ry="27" fill="#F0F5FA" stroke="#98B4CF" stroke-width="1.5"/>
+<text x="1470.5" y="1051" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="400" fill="#182230" text-decoration="none">Status</text>
+<rect x="1235" y="929" width="316" height="62" fill="#FFF8F5" stroke="#C9002B" stroke-width="2"/>
+<text x="1247" y="943" text-anchor="start" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#C9002B" text-decoration="none">E12</text>
+<text x="1393" y="958" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#182230" text-decoration="none">VisitRequests</text>
+<rect x="36" y="1121" width="1728" height="43" rx="5" fill="#F7F8FA"/>
+<text x="52" y="1139" font-family="Arial, sans-serif" font-size="13" fill="#667085">Grouping stops at submission. Every final visit has its own approval/status, card, staff-list row and movements. No operational group counts.</text>
+</svg>

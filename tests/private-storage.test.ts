@@ -1,0 +1,46 @@
+import {test,after} from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,realpath,readdir,lstat,unlink,rmdir,mkdir,symlink,link,readFile,writeFile} from 'node:fs/promises';
+import {join,parse} from 'node:path';
+import {tmpdir} from 'node:os';
+import {randomBytes,createCipheriv,createDecipheriv} from 'node:crypto';
+import {PrivateDirectory,inside} from '../src/storage/PrivateDirectory.ts';
+import {FilePhotoStore} from '../src/storage/FilePhotoStore.ts';
+import {FileQrKeySource} from '../src/storage/FileQrKeySource.ts';
+import {WindowsCurrentUserKeyProtector,windowsProtection} from '../src/storage/PlatformProtection.ts';
+import {prepareQrEnvelopes,recoverQrCredential} from '../src/registration/QrCredentialEnvelope.ts';
+const roots:string[]=[];
+async function fixture(){const base=await realpath(await mkdtemp(join(tmpdir(),'gatepass-store-test-')));roots.push(base);const directory=await PrivateDirectory.create(join(base,'private'),[]);return{base,directory,store:new FilePhotoStore(directory)};}
+async function cleanup(path:string,base:string){if(!inside(base,path))throw new Error('UNSAFE_TEST_CLEANUP');const stat=await lstat(path);if(stat.isSymbolicLink()||!stat.isDirectory()){await unlink(path);return;}for(const name of await readdir(path))await cleanup(join(path,name),base);await rmdir(path);}
+after(async()=>{for(const base of roots)await cleanup(base,base);});
+const photo=Buffer.from([255,216,255,224,1,2,3,4,255,217]);
+const key=(id='1')=>`intakes/${'a'.repeat(32)}/${id.repeat(32)}.jpg`;
+class TestProtector {
+ readonly scheme='test-only-aes-gcm';#key=randomBytes(32);
+ async protect(id:string,key:Buffer){const nonce=randomBytes(12);const cipher=createCipheriv('aes-256-gcm',this.#key,nonce);cipher.setAAD(Buffer.from(id));return Buffer.concat([nonce,cipher.update(key),cipher.final(),cipher.getAuthTag()]);}
+ async unprotect(id:string,bytes:Buffer){const cipher=createDecipheriv('aes-256-gcm',this.#key,bytes.subarray(0,12));cipher.setAAD(Buffer.from(id));cipher.setAuthTag(bytes.subarray(-16));return Buffer.concat([cipher.update(bytes.subarray(12,-16)),cipher.final()]);}
+}
+test('private roots reject relative, filesystem-root and forbidden workspace paths',async()=>{await assert.rejects(PrivateDirectory.create('relative',[]));const {base}=await fixture();await assert.rejects(PrivateDirectory.create(parse(base).root,[]));await assert.rejects(PrivateDirectory.create(join(base,'workspace','private'),[join(base,'workspace')]));});
+test('reopening an established private root verifies its permissions',async()=>{const f=await fixture();const reopened=await PrivateDirectory.create(f.directory.root,[]);assert.equal(reopened.root,f.directory.root);if(process.platform==='win32')assert.equal((await windowsProtection({action:'verify',path:reopened.root})).ok,true);});
+test('path traversal, ADS, drive paths and Windows aliases are rejected',async()=>{const {directory}=await fixture();for(const path of ['../outside','/outside','a\\b','a/../b','file:stream','con','a/file.','a//b','%2e%2e/b'])assert.throws(()=>directory.path(path));});
+test('photo writes are immutable and return exactly the stored bytes',async()=>{const {store}=await fixture();await store.putIfAbsent(key(),photo);await assert.rejects(store.putIfAbsent(key(),Buffer.from([255,216,255,1])));assert.deepEqual(await store.read(key(),photo.length),photo);});
+test('reads are bounded and malformed photo keys cannot read arbitrary private files',async()=>{const {store,directory}=await fixture();await store.putIfAbsent(key(),photo);await assert.rejects(store.read(key(),photo.length-1));await assert.rejects(store.read('../keys/active.json',4096));await directory.write('internal.json',Buffer.from('{}'));await assert.rejects(store.read('internal.json',4096));});
+test('total byte quota rejects another upload without removing the original',async()=>{const {directory}=await fixture();const store=new FilePhotoStore(directory,{maximumBytes:photo.length*2-1,maximumFiles:10});await store.putIfAbsent(key(),photo);await assert.rejects(store.putIfAbsent(key('2'),photo),/QUOTA/u);assert.equal((await store.usage()).files,1);});
+test('file-count quota is independently enforced',async()=>{const {directory}=await fixture();const store=new FilePhotoStore(directory,{maximumBytes:1000,maximumFiles:1});await store.putIfAbsent(key(),photo);await assert.rejects(store.putIfAbsent(key('2'),photo),/QUOTA/u);});
+test('concurrent writes serialize without overwriting or exceeding quota',async()=>{const {directory}=await fixture();const store=new FilePhotoStore(directory,{maximumBytes:100,maximumFiles:1});const result=await Promise.allSettled([store.putIfAbsent(key(),photo),store.putIfAbsent(key('2'),photo)]);assert.equal(result.filter(x=>x.status==='fulfilled').length,1);assert.equal((await store.usage()).files,1);});
+test('junction/symlink directories are rejected without writing into their target',async()=>{const {base,directory,store}=await fixture();const outside=join(base,'outside');await mkdir(outside);await symlink(outside,join(directory.root,'intakes'),process.platform==='win32'?'junction':'dir');await assert.rejects(store.putIfAbsent(key(),photo));assert.deepEqual(await readdir(outside),[]);});
+test('unexpected hard links are rejected on read',async()=>{const {base,directory,store}=await fixture();await store.putIfAbsent(key(),photo);const alias=join(base,'alias.jpg');await link(directory.path(key()),alias);await assert.rejects(store.read(key(),100));await unlink(alias);assert.deepEqual(await store.read(key(),100),photo);});
+test('stale write locks fail closed and are not silently stolen',async()=>{const {directory,store}=await fixture();await directory.write('.photos-write.lock',Buffer.from('owned-test-lock'));await assert.rejects(store.putIfAbsent(key(),photo),/BUSY/u);assert.equal((await directory.read('.photos-write.lock',100)).toString(),'owned-test-lock');});
+test('key initialization is idempotent and stable across source instances',async()=>{const {directory}=await fixture();const protector=new TestProtector();const source=new FileQrKeySource(directory,protector);const first=await source.initialize();assert.equal((await new FileQrKeySource(directory,protector).initialize()).id,first.id);assert.equal((await source.active()).key.length,32);});
+test('rotation keeps old QR credentials recoverable and new credentials use the new version',async()=>{const {directory}=await fixture();const source=new FileQrKeySource(directory,new TestProtector());await source.initialize();const envelope=(await prepareQrEnvelopes(['00000000-0000-4000-8000-000000000001'],source))[0];const before=await recoverQrCredential(envelope,source);const next=await source.rotate();assert.notEqual(envelope.keyVersion,'qr.v1.'+next.id);assert.deepEqual(await recoverQrCredential(envelope,source),before);assert.equal((await source.versions()).length,2);before.fill(0);});
+test('unknown versions and modified protected key blobs fail closed',async()=>{const {directory}=await fixture();const source=new FileQrKeySource(directory,new TestProtector());const active=await source.initialize();await assert.rejects(source.resolve('k_'+'0'.repeat(32)));const path=directory.path('versions/'+active.id+'.json');const record=JSON.parse(await readFile(path,'utf8'));const bytes=Buffer.from(record.protectedKey,'base64');bytes[15]^=1;record.protectedKey=bytes.toString('base64');await writeFile(path,JSON.stringify(record));await assert.rejects(source.resolve(active.id));});
+test('a missing manifest with existing keys never regenerates a new active key',async()=>{const {directory}=await fixture();const source=new FileQrKeySource(directory,new TestProtector());await source.initialize();await unlink(directory.path('active.json'));await assert.rejects(source.initialize(),/MANIFEST_MISSING/u);assert.equal((await directory.inventory()).filter(x=>x.key.startsWith('versions/')).length,1);});
+test('Windows DPAPI round-trip is authenticated and bound to its key version',async t=>{if(process.platform!=='win32'){t.skip('Requires Windows DPAPI; Linux key provider is a deployment gate.');return;}const protector=new WindowsCurrentUserKeyProtector();const id='k_'+'1'.repeat(32);const key=randomBytes(32);const encrypted=await protector.protect(id,key);assert.ok(!encrypted.equals(key));assert.deepEqual(await protector.unprotect(id,encrypted),key);await assert.rejects(protector.unprotect('k_'+'2'.repeat(32),encrypted));key.fill(0);});
+test('actual Windows file vault survives reopen and rotation without losing an existing QR',async t=>{
+ if(process.platform!=='win32'){t.skip('Requires Windows DPAPI.');return;}
+ const {directory}=await fixture();const source=new FileQrKeySource(directory,new WindowsCurrentUserKeyProtector());const first=await source.initialize();
+ const envelope=(await prepareQrEnvelopes(['00000000-0000-4000-8000-000000000001'],source))[0];
+ const reopened=new FileQrKeySource(await PrivateDirectory.create(directory.root,[]),new WindowsCurrentUserKeyProtector());assert.equal((await reopened.initialize()).id,first.id);
+ await reopened.rotate();const recovered=await recoverQrCredential(envelope,reopened);assert.equal(recovered.length,32);recovered.fill(0);
+ assert.equal((await reopened.versions()).filter(x=>x.active).length,1);assert.equal((await reopened.versions()).length,2);
+});

@@ -1,0 +1,29 @@
+{
+  "developmentOnly": true,
+  "projectLeads": [
+    {
+      "employeeId": "EMP019",
+      "projectCode": "DEMO-PRJ-001"
+    },
+    {
+      "employeeId": "EMP024",
+      "projectCode": "DEMO-PRJ-002"
+    },
+    {
+      "employeeId": "EMP020",
+      "projectCode": "DEMO-PRJ-003"
+    },
+    {
+      "employeeId": "EMP021",
+      "projectCode": "DEMO-PRJ-004"
+    },
+    {
+      "employeeId": "EMP022",
+      "projectCode": "DEMO-PRJ-005"
+    },
+    {
+      "employeeId": "EMP023",
+      "projectCode": "DEMO-PRJ-006"
+    }
+  ]
+}

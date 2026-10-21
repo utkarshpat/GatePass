@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="gp-office" content="__OFFICE_CODE__">
+  <title>GatePass · Sopra Steria</title>
+  <style nonce="__NONCE__">__APP_STYLES__</style>
+</head>
+<body data-view="landing">
+  <a class="skip" href="#main-content">Skip to content</a>
+  <header class="masthead">
+    <div class="header-brand">
+      <img class="company" width="192" src="data:image/png;base64,__COMPANY_LOGO__" alt="Sopra Steria">
+    </div>
+    <div class="header-actions">
+      <span class="office-label"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>__OFFICE_NAME__</span>
+    </div>
+  </header>
+  <main id="main-content" class="portal-shell" tabindex="-1">
+    <aside class="office-visual" aria-label="Office campus">
+      <img class="office-photo" src="/assets/office-background.png" alt="Sopra Steria Noida campus" width="723" height="960">
+    </aside>
+    <div class="portal-content">
+
+      <section id="landing" class="landing" aria-labelledby="welcome-title">
+        <div class="landing-card">
+          <div class="landing-badge"><span class="badge-dot"></span><span>Sopra Steria Identity & Access</span></div>
+          <h1 id="welcome-title">GatePass Portal</h1>
+          <div class="entry-choices">
+            <button id="employee-choice" class="entry-choice" type="button">
+              <span class="choice-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2.5"/><path d="M15 8h2m-2 4h2M6 16c0-2 3-3 6-3s6 1 6 3"/></svg>
+              </span>
+              <span class="choice-text">
+                <strong>SSI Employee</strong>
+                <small>Digital ID & Project Access</small>
+              </span>
+              <span class="choice-arrow" aria-hidden="true">→</span>
+            </button>
+            <button id="visitor-choice" class="entry-choice" type="button">
+              <span class="choice-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+              </span>
+              <span class="choice-text">
+                <strong>Visitor Check-in</strong>
+                <small>Guest Pass & Host Approval</small>
+              </span>
+              <span class="choice-arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="sign-in-screen" hidden aria-labelledby="sign-in-title">
+        <button class="quiet back-link" id="sign-in-back" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back</button>
+        <div class="auth-card">
+          <h1 id="sign-in-title">Employee Sign In</h1>
+          <form id="login" class="sign-in-form">
+            <div class="field">
+              <label for="employee-email">Sopra Steria Email</label>
+              <input id="employee-email" type="email" autocomplete="username" maxlength="320" placeholder="name@soprasteria.com" required>
+            </div>
+            <div class="field">
+              <label for="employee-password">Password</label>
+              <div class="password-control">
+                <input id="employee-password" type="password" autocomplete="current-password" maxlength="128" placeholder="••••••••" required>
+                <button class="quiet" id="toggle-password" type="button" aria-label="Show password" aria-controls="employee-password" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="password-eye-slash" d="m3 3 18 18"/></svg></button>
+              </div>
+            </div>
+            <button class="primary" id="sign-in" disabled>Sign in</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="flow" hidden aria-labelledby="flow-title">
+        <div class="flow-heading"><h1 id="flow-title" tabindex="-1">Digital ID</h1><button class="quiet close-btn" id="close-flow" type="button" aria-label="Back to home">✕</button></div>
+        <ol class="stepper" id="stepper" aria-label="Registration progress"></ol>
+        <form id="registration" novalidate>
+          <section id="details-step" class="step-content" aria-label="Details">
+            <div id="employee-summary" class="employee-summary" hidden>
+              <div class="employee-identity"><span class="avatar" id="employee-avatar"></span><div><strong id="employee-name"></strong><div id="employee-id" class="meta"></div></div></div>
+              <div id="employee-projects" class="chips"></div>
+            </div>
+            <div id="employee-fields" hidden>
+              <div class="field"><label for="reason">Reason <span class="required">*</span></label><select id="reason" required><option value="">Select reason</option><option value="FORGOT">Forgot my card</option><option value="LOST">Lost my card</option><option value="OTHER">Other</option></select></div>
+              <div class="field"><label for="reason-details">Details <span class="optional" id="reason-optional">(optional)</span></label><textarea id="reason-details" rows="2" maxlength="1000"></textarea></div>
+              <button class="quiet add-access" id="toggle-access" type="button" aria-haspopup="dialog" aria-controls="project-access-dialog" aria-expanded="false">+ Request access to more projects</button>
+              <div id="extra-projects" class="selected-access"></div>
+            </div>
+            <div id="visitor-fields" hidden><div id="visitors"></div><button class="secondary add-person" id="add-visitor" type="button">+ Add visitor</button></div>
+          </section>
+
+          <section id="visit-step" class="step-content" aria-label="Visit details" hidden>
+            <div class="fields-row">
+              <div class="field"><label for="project">Project <span class="required">*</span></label><select id="project" required><option value="">Select project</option></select></div>
+              <div class="field" id="visitor-date-field"><label for="visit-date">Visit date <span class="required">*</span></label><input id="visit-date" type="date" required></div>
+            </div>
+            <div class="field host-picker"><label for="host-search">Host <span class="required">*</span></label><input id="host-search" type="search" maxlength="100" required placeholder="Search name or email" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="host-results" aria-expanded="false" disabled><div id="host-results" class="host-results" role="listbox" aria-label="Hosts" hidden></div><p id="host-feedback" class="hint" role="status"></p></div>
+            <div class="field"><label for="purpose">Purpose <span class="required">*</span></label><select id="purpose" required><option value="">Select purpose</option><option>Business meeting</option><option>Project discussion</option><option>Interview</option><option>Delivery</option><option>Other</option></select></div>
+            <div class="field"><label for="purpose-details">Details <span class="optional" id="purpose-optional">(optional)</span></label><textarea id="purpose-details" rows="2" maxlength="1000"></textarea></div>
+          </section>
+
+          <dialog id="project-access-dialog" class="app-dialog" aria-labelledby="project-access-title">
+            <div class="dialog-heading"><h2 id="project-access-title">Add project access</h2><button class="quiet" id="close-project-dialog" type="button" aria-label="Close project access">✕</button></div>
+            <div id="project-dialog-fields" class="dialog-body"></div>
+            <div class="dialog-actions"><button class="secondary" id="cancel-project-dialog" type="button">Cancel</button><button class="primary" id="add-project-access" type="button" hidden>Add project</button></div>
+          </dialog>
+
+          <section id="photo-step" class="step-content" aria-label="Photo" hidden>
+            <div class="photo-heading"><h2 id="photo-title">Photo Verification</h2><span class="meta" id="photo-position"></span></div>
+            <div class="capture-layout">
+              <div class="capture-stage" id="capture-stage"><svg id="photo-placeholder" width="64" height="64" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="24" cy="16" r="8"/><path d="M9 42v-4a15 15 0 0 1 30 0v4"/></svg><video id="camera-video" autoplay muted playsinline hidden></video><img id="photo-preview" alt="Selected face photo" draggable="false" hidden><span class="capture-corners" aria-hidden="true"></span><div class="photo-zoom-controls" id="photo-zoom-controls" hidden><button type="button" class="zoom-btn" id="zoom-out" aria-label="Zoom out" title="Zoom out">−</button><input type="range" id="zoom-slider" min="1" max="3" step="0.05" value="1" aria-label="Photo zoom"><button type="button" class="zoom-btn" id="zoom-in" aria-label="Zoom in" title="Zoom in">+</button><button type="button" class="zoom-btn" id="zoom-flip" aria-label="Flip photo" title="Flip photo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7 3 12l5 5"/><path d="m16 7 5 5-5 5"/><path d="M3 12h18"/></svg></button><button type="button" class="zoom-btn zoom-reset" id="zoom-reset" aria-label="Reset position" title="Reset">↺</button></div></div>
+            </div>
+            <div class="capture-actions"><label class="photo-picker" id="upload-photo-label" for="photo-file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span id="upload-label-text">Upload photo</span><input id="photo-file" type="file" accept="image/jpeg,image/png,image/webp" capture="user"></label><button class="secondary" id="open-camera" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Open camera</button><button class="primary" id="capture-photo" type="button" hidden>Capture photo</button><button class="secondary" id="retake-photo" type="button" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Retake</button></div>
+            <div class="photo-foot"><p class="hint">JPG, PNG or WebP · Max 5 MB</p><div id="photo-people" class="photo-people"></div></div>
+          </section>
+
+          <section id="review-step" class="step-content" aria-label="Review" hidden>
+            <div class="review-heading"><h2>Review Details</h2><button class="quiet" id="edit-details" type="button">Edit</button></div><div id="review-people" class="review-people"></div><dl id="review-details" class="review-details"></dl>
+            <div id="review-access" class="review-access" hidden></div>
+          </section>
+          <div class="flow-actions"><button class="secondary" id="previous-step" type="button">Back</button><button class="primary" id="next-step" type="button">Continue</button><button class="primary" id="submit" type="submit" hidden>Submit Pass</button></div>
+        </form>
+      </section>
+
+      <section id="success" hidden aria-labelledby="success-title">
+        <div class="success-heading"><div class="success-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div><h1 id="success-title" tabindex="-1">Submitted Successfully</h1></div>
+        <div id="submission-results" class="submission-results"></div>
+        <div class="success-actions"><button class="primary success-home-btn" id="success-home" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Done</button><button class="secondary" id="retry-pending" type="button" hidden>Retry remaining request</button></div>
+      </section>
+    </div>
+  </main>
+  <template id="visitor-template"><article class="visitor-card"><div class="visitor-heading"><h2></h2><div class="visitor-card-actions"><button class="quiet edit-visitor" type="button" aria-expanded="true">Edit</button><button class="quiet remove-visitor" type="button">Remove</button></div></div><p class="visitor-summary" hidden></p><div class="visitor-details"><div class="fields-row"><label>Name <span class="required">*</span><input name="name" type="text" maxlength="200" autocomplete="name" required></label><div class="phone-field"><label class="mobile-label">Mobile <span class="required">*</span></label><div class="phone-control"><button class="phone-country" type="button" aria-haspopup="dialog"></button><input name="phone" type="tel" inputmode="tel" maxlength="30" autocomplete="tel-national" required></div><p class="phone-feedback" aria-live="polite"></p></div></div><label>Email <span class="optional">(optional)</span><input name="email" type="email" maxlength="320" autocomplete="email"></label></div></article></template>
+  <script nonce="__NONCE__">__APP_SCRIPT__</script>
+</body>
+</html>

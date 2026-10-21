@@ -1,0 +1,3704 @@
+{
+  "version": "1.11",
+  "source": {
+    "kind": "sql-ddl-draft",
+    "path": "database/migrations/001_individual_visit_baseline.sql",
+    "sha256": "976155dd7b5eb1ef15bb13297dfb78dafabda7e6930746f9e3f409b827c6a80d",
+    "live_database_verified": true,
+    "schema_sources": [
+      {
+        "path": "database/migrations/001_individual_visit_baseline.sql",
+        "sha256": "976155dd7b5eb1ef15bb13297dfb78dafabda7e6930746f9e3f409b827c6a80d"
+      },
+      {
+        "path": "database/migrations/006_guard_password_authentication.sql",
+        "sha256": "8fb1e6cacfa92e502d8095d0bb37419f96ea9080171544a6b07298c04f103d45"
+      },
+      {
+        "path": "database/migrations/008_registration_and_digital_id.sql",
+        "sha256": "190ac7020bd0e8f17a809e1dea36c19923941ab0ff9f62f5592c7f1c94d4bd26"
+      },
+      {
+        "path": "database/migrations/011_reissue_and_print_lifecycle.sql",
+        "sha256": "cf65de1fa30ce449bb03d732349c02a9cf08bb3b0b248b8ef01155e75a91e50f"
+      },
+      {
+        "path": "database/migrations/014_trusted_card_details.sql",
+        "sha256": "66c3a72ad1c2b901984d521e1bf5d19bf82b3f96f96ed82ba9185b0cb5430d16"
+      }
+    ],
+    "verification_report": "database/validation/live-comparison-report.json",
+    "verification_scope": "Table/ordered column sets, type/size, nullability, identity presence, simple defaults, PK/unique keys, FK mappings, CHECK counts, enabled/trusted constraints, explicit index names.",
+    "verification_limits": "No CHECK expression equivalence, collations, index sort/include/filter equivalence, identity seeds, role/grant, workflow or concurrency proof.",
+    "live_catalog_sha256": "7eb42052583581d5ef1e605a19bbd08f1d0dd446ead425501f3ba254769231f9"
+  },
+  "tables": [
+    {
+      "name": "SchemaMigrations",
+      "purpose": "Applied migration history; no runtime mutation permissions.",
+      "columns": [
+        {
+          "name": "Version",
+          "type": "varchar(16)",
+          "meaning": "Unique version recorded by the migration transaction.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Description",
+          "type": "nvarchar(200)",
+          "meaning": "Human-readable migration description.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "AppliedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "UTC migration completion time.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "Version"
+      ],
+      "unique": [],
+      "checks": [],
+      "fks": [],
+      "indexes": []
+    },
+    {
+      "name": "Locations",
+      "purpose": "Trusted office locations; no physical floor/checkpoint inventory.",
+      "columns": [
+        {
+          "name": "LocationId",
+          "type": "int IDENTITY(1,1)",
+          "meaning": "Internal location primary key.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocationCode",
+          "type": "varchar(16)",
+          "meaning": "Stable office code, e.g. NOIDA.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocationName",
+          "type": "nvarchar(100)",
+          "meaning": "Display name.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "IsActive",
+          "type": "bit",
+          "meaning": "Whether new visits may use this location.",
+          "nullable": false,
+          "default": "(1)",
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "LocationId"
+      ],
+      "unique": [
+        [
+          "LocationCode"
+        ]
+      ],
+      "checks": [],
+      "fks": [],
+      "indexes": []
+    },
+    {
+      "name": "Projects",
+      "purpose": "Trusted project directory cache, not an approval grant.",
+      "columns": [
+        {
+          "name": "ProjectId",
+          "type": "bigint IDENTITY(1,1)",
+          "meaning": "Internal project primary key.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ExternalProjectCode",
+          "type": "nvarchar(80)",
+          "meaning": "Stable project code from trusted internal API.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ProjectName",
+          "type": "nvarchar(200)",
+          "meaning": "Restricted display name; not exposed as a public directory.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "IsActive",
+          "type": "bit",
+          "meaning": "Whether the project accepts new visits.",
+          "nullable": false,
+          "default": "(1)",
+          "sensitive": false
+        },
+        {
+          "name": "LastSyncedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Last successful trusted refresh.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "ProjectId"
+      ],
+      "unique": [
+        [
+          "ExternalProjectCode"
+        ]
+      ],
+      "checks": [],
+      "fks": [],
+      "indexes": []
+    },
+    {
+      "name": "ProjectLocations",
+      "purpose": "Project availability in a specific office; guard scope anchor.",
+      "columns": [
+        {
+          "name": "ProjectLocationId",
+          "type": "bigint IDENTITY(1,1)",
+          "meaning": "Internal project-office pair identifier.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ProjectId",
+          "type": "bigint",
+          "meaning": "Trusted project.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocationId",
+          "type": "int",
+          "meaning": "Office location.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "IsActive",
+          "type": "bit",
+          "meaning": "Whether new visits may target this pair.",
+          "nullable": false,
+          "default": "(1)",
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "ProjectLocationId"
+      ],
+      "unique": [
+        [
+          "ProjectId",
+          "LocationId"
+        ],
+        [
+          "ProjectLocationId",
+          "LocationId"
+        ]
+      ],
+      "checks": [],
+      "fks": [
+        {
+          "columns": [
+            "ProjectId"
+          ],
+          "target": "Projects",
+          "target_columns": [
+            "ProjectId"
+          ]
+        },
+        {
+          "columns": [
+            "LocationId"
+          ],
+          "target": "Locations",
+          "target_columns": [
+            "LocationId"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "Users",
+      "purpose": "Immutable issuer/subject mapping for authenticated staff and employees.",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "uniqueidentifier",
+          "meaning": "Internal authenticated principal ID.",
+          "nullable": false,
+          "default": "(NEWSEQUENTIALID())",
+          "sensitive": false
+        },
+        {
+          "name": "IdentityIssuer",
+          "type": "nvarchar(200)",
+          "meaning": "Configured trusted issuer; exact binary comparison.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "IdentitySubject",
+          "type": "nvarchar(200)",
+          "meaning": "Immutable provider subject/object mapping; exact comparison.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "DisplayName",
+          "type": "nvarchar(200)",
+          "meaning": "Display-only name.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "IsActive",
+          "type": "bit",
+          "meaning": "Application account enabled flag.",
+          "nullable": false,
+          "default": "(1)",
+          "sensitive": false
+        },
+        {
+          "name": "AuthorizationVersion",
+          "type": "bigint",
+          "meaning": "Increment on role, capability, assignment or account changes.",
+          "nullable": false,
+          "default": "(1)",
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "LastLoginAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Most recent successful sign-in.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "UserId"
+      ],
+      "unique": [
+        [
+          "IdentityIssuer",
+          "IdentitySubject"
+        ]
+      ],
+      "checks": [
+        "AuthorizationVersion > 0"
+      ],
+      "fks": [],
+      "indexes": []
+    },
+    {
+      "name": "Employees",
+      "purpose": "Trusted employee cache; corporate email and manager come only from directory.",
+      "columns": [
+        {
+          "name": "EmployeeId",
+          "type": "nvarchar(64)",
+          "meaning": "Immutable trusted organization employee code.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "UserId",
+          "type": "uniqueidentifier",
+          "meaning": "Linked issuer/subject principal after trusted resolution.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "FullName",
+          "type": "nvarchar(200)",
+          "meaning": "Trusted employee full name.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "OfficialEmail",
+          "type": "nvarchar(320)",
+          "meaning": "Authoritative corporate delivery address.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "ManagerEmployeeId",
+          "type": "nvarchar(64)",
+          "meaning": "Directory manager code; may precede local manager synchronization.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "IsActive",
+          "type": "bit",
+          "meaning": "Trusted employee employment/access enabled flag.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LastSyncedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Last successful directory verification, not last attempted refresh.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "EmployeeId"
+      ],
+      "unique": [],
+      "checks": [],
+      "fks": [
+        {
+          "columns": [
+            "UserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX UX_Employees_User ON gp.Employees(UserId) WHERE UserId IS NOT NULL;"
+      ]
+    },
+    {
+      "name": "EmployeeProjectMemberships",
+      "purpose": "Authoritative host eligibility cache at project level.",
+      "columns": [
+        {
+          "name": "EmployeeId",
+          "type": "nvarchar(64)",
+          "meaning": "Employee belonging to project.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ProjectId",
+          "type": "bigint",
+          "meaning": "Project from internal API.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "IsActive",
+          "type": "bit",
+          "meaning": "Trusted membership enabled flag.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "VerifiedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Last successful membership verification; freshness policy applies.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "SourceUpdatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Upstream update timestamp when supplied.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "EmployeeId",
+        "ProjectId"
+      ],
+      "unique": [],
+      "checks": [],
+      "fks": [
+        {
+          "columns": [
+            "EmployeeId"
+          ],
+          "target": "Employees",
+          "target_columns": [
+            "EmployeeId"
+          ]
+        },
+        {
+          "columns": [
+            "ProjectId"
+          ],
+          "target": "Projects",
+          "target_columns": [
+            "ProjectId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_Membership_Project ON gp.EmployeeProjectMemberships(ProjectId, IsActive, EmployeeId);"
+      ]
+    },
+    {
+      "name": "Capabilities",
+      "purpose": "Application-controlled capability catalogue; no implicit admin superuser.",
+      "columns": [
+        {
+          "name": "CapabilityCode",
+          "type": "varchar(40)",
+          "meaning": "Explicit permission identifier.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Description",
+          "type": "nvarchar(250)",
+          "meaning": "Operational meaning; scope restrictions are documented in permission matrix.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "CapabilityCode"
+      ],
+      "unique": [],
+      "checks": [],
+      "fks": [],
+      "indexes": []
+    },
+    {
+      "name": "StaffRoleGrants",
+      "purpose": "Time-bounded role at one India/location/project/project-location scope.",
+      "columns": [
+        {
+          "name": "RoleGrantId",
+          "type": "bigint IDENTITY(1,1)",
+          "meaning": "Historical role grant identifier.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "UserId",
+          "type": "uniqueidentifier",
+          "meaning": "Authenticated user holding the grant.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RoleCode",
+          "type": "varchar(24)",
+          "meaning": "INDIA_ADMIN, LOCATION_ADMIN, PROJECT_ADMIN, RECEPTION or GUARD.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ScopeType",
+          "type": "varchar(24)",
+          "meaning": "INDIA, LOCATION, PROJECT or PROJECT_LOCATION.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocationId",
+          "type": "int",
+          "meaning": "Only for LOCATION scope.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ProjectId",
+          "type": "bigint",
+          "meaning": "Only for PROJECT scope.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ProjectLocationId",
+          "type": "bigint",
+          "meaning": "Only for PROJECT_LOCATION scope.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "GrantedByUserId",
+          "type": "uniqueidentifier",
+          "meaning": "Authorized grant issuer; bootstrap handled separately.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ValidFromUtc",
+          "type": "datetime2(3)",
+          "meaning": "Inclusive grant start.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "ValidUntilUtc",
+          "type": "datetime2(3)",
+          "meaning": "Exclusive grant end; null means no configured end.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RevokedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Explicit revocation time.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RevokedByUserId",
+          "type": "uniqueidentifier",
+          "meaning": "Revoking administrator.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "RoleGrantId"
+      ],
+      "unique": [],
+      "checks": [
+        "(RoleCode='INDIA_ADMIN' AND ScopeType='INDIA') OR (RoleCode='LOCATION_ADMIN' AND ScopeType='LOCATION') OR (RoleCode='PROJECT_ADMIN' AND ScopeType IN ('PROJECT','PROJECT_LOCATION')) OR (RoleCode IN ('GUARD','RECEPTION') AND ScopeType='LOCATION')",
+        "(ScopeType='INDIA' AND LocationId IS NULL AND ProjectId IS NULL AND ProjectLocationId IS NULL) OR (ScopeType='LOCATION' AND LocationId IS NOT NULL AND ProjectId IS NULL AND ProjectLocationId IS NULL) OR (ScopeType='PROJECT' AND LocationId IS NULL AND ProjectId IS NOT NULL AND ProjectLocationId IS NULL) OR (ScopeType='PROJECT_LOCATION' AND LocationId IS NULL AND ProjectId IS NULL AND ProjectLocationId IS NOT NULL)",
+        "ValidUntilUtc IS NULL OR ValidUntilUtc > ValidFromUtc",
+        "(RevokedAtUtc IS NULL AND RevokedByUserId IS NULL) OR (RevokedAtUtc IS NOT NULL AND RevokedByUserId IS NOT NULL AND RevokedAtUtc >= CreatedAtUtc)"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "UserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        },
+        {
+          "columns": [
+            "GrantedByUserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        },
+        {
+          "columns": [
+            "RevokedByUserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        },
+        {
+          "columns": [
+            "LocationId"
+          ],
+          "target": "Locations",
+          "target_columns": [
+            "LocationId"
+          ]
+        },
+        {
+          "columns": [
+            "ProjectId"
+          ],
+          "target": "Projects",
+          "target_columns": [
+            "ProjectId"
+          ]
+        },
+        {
+          "columns": [
+            "ProjectLocationId"
+          ],
+          "target": "ProjectLocations",
+          "target_columns": [
+            "ProjectLocationId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_Grants_User ON gp.StaffRoleGrants(UserId, RoleCode, RevokedAtUtc, ValidUntilUtc);"
+      ]
+    },
+    {
+      "name": "GrantCapabilities",
+      "purpose": "Explicit permission on a scoped role grant; role label alone grants nothing.",
+      "columns": [
+        {
+          "name": "RoleGrantId",
+          "type": "bigint",
+          "meaning": "Grant carrying this permission.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CapabilityCode",
+          "type": "varchar(40)",
+          "meaning": "Permission allowed by the role/capability matrix.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "RoleGrantId",
+        "CapabilityCode"
+      ],
+      "unique": [],
+      "checks": [],
+      "fks": [
+        {
+          "columns": [
+            "RoleGrantId"
+          ],
+          "target": "StaffRoleGrants",
+          "target_columns": [
+            "RoleGrantId"
+          ]
+        },
+        {
+          "columns": [
+            "CapabilityCode"
+          ],
+          "target": "Capabilities",
+          "target_columns": [
+            "CapabilityCode"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "GuardAssignments",
+      "purpose": "Many-to-many guard to project-office allocations with retained history.",
+      "columns": [
+        {
+          "name": "GuardAssignmentId",
+          "type": "bigint IDENTITY(1,1)",
+          "meaning": "Historical allocation identifier.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "GuardUserId",
+          "type": "uniqueidentifier",
+          "meaning": "Guard must separately hold effective GUARD capability in this office.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ProjectLocationId",
+          "type": "bigint",
+          "meaning": "Exact project-office allocation.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "AssignedByUserId",
+          "type": "uniqueidentifier",
+          "meaning": "Authorized allocating administrator.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ValidFromUtc",
+          "type": "datetime2(3)",
+          "meaning": "Inclusive allocation start.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "ValidUntilUtc",
+          "type": "datetime2(3)",
+          "meaning": "Exclusive allocation end; null for open ended.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "DeallocatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Explicit allocation withdrawal.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "DeallocatedByUserId",
+          "type": "uniqueidentifier",
+          "meaning": "Administrator withdrawing allocation.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Reason",
+          "type": "nvarchar(300)",
+          "meaning": "Allocation/change justification.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "GuardAssignmentId"
+      ],
+      "unique": [],
+      "checks": [
+        "ValidUntilUtc IS NULL OR ValidUntilUtc > ValidFromUtc",
+        "(DeallocatedAtUtc IS NULL AND DeallocatedByUserId IS NULL) OR (DeallocatedAtUtc IS NOT NULL AND DeallocatedByUserId IS NOT NULL AND DeallocatedAtUtc >= CreatedAtUtc)"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "GuardUserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        },
+        {
+          "columns": [
+            "AssignedByUserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        },
+        {
+          "columns": [
+            "DeallocatedByUserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        },
+        {
+          "columns": [
+            "ProjectLocationId"
+          ],
+          "target": "ProjectLocations",
+          "target_columns": [
+            "ProjectLocationId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_Assignment_Actor ON gp.GuardAssignments(GuardUserId, ProjectLocationId, ValidFromUtc, ValidUntilUtc) INCLUDE (DeallocatedAtUtc);"
+      ]
+    },
+    {
+      "name": "RegistrationIntakes",
+      "purpose": "Short-lived registration ownership and submission correlation, not an operational group.",
+      "columns": [
+        {
+          "name": "IntakeId",
+          "type": "uniqueidentifier",
+          "meaning": "Private intake/session correlation identifier; never sufficient authorization.",
+          "nullable": false,
+          "default": "(NEWSEQUENTIALID())",
+          "sensitive": false
+        },
+        {
+          "name": "TokenHash",
+          "type": "varbinary(32)",
+          "meaning": "SHA-256 digest of random intake bearer credential.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "IntakeType",
+          "type": "varchar(12)",
+          "meaning": "EMPLOYEE or PUBLIC.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "OwnerUserId",
+          "type": "uniqueidentifier",
+          "meaning": "Required for employee intake; null for anonymous visitor intake.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Status",
+          "type": "varchar(12)",
+          "meaning": "DRAFT, SUBMITTED or ABANDONED.",
+          "nullable": false,
+          "default": "('DRAFT')",
+          "sensitive": false
+        },
+        {
+          "name": "ExpiresAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Intake credential expiry, independent from visit validity.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "SubmittedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "One successful batch submission time.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "IntakeId"
+      ],
+      "unique": [
+        [
+          "TokenHash"
+        ]
+      ],
+      "checks": [
+        "(IntakeType='EMPLOYEE' AND OwnerUserId IS NOT NULL) OR (IntakeType='PUBLIC' AND OwnerUserId IS NULL)",
+        "(Status='SUBMITTED' AND SubmittedAtUtc IS NOT NULL) OR (Status IN ('DRAFT','ABANDONED') AND SubmittedAtUtc IS NULL)",
+        "ExpiresAtUtc > CreatedAtUtc",
+        "TokenHash IS NULL OR DATALENGTH(TokenHash) = 32"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "OwnerUserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "PhotoAssets",
+      "purpose": "Normalized private photo metadata; content is outside public web directories.",
+      "columns": [
+        {
+          "name": "PhotoAssetId",
+          "type": "uniqueidentifier",
+          "meaning": "Photo identifier, not an access credential.",
+          "nullable": false,
+          "default": "(NEWSEQUENTIALID())",
+          "sensitive": false
+        },
+        {
+          "name": "IntakeId",
+          "type": "uniqueidentifier",
+          "meaning": "Owner intake; request must use a photo from the same intake.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "StorageKey",
+          "type": "nvarchar(400)",
+          "meaning": "Opaque private storage locator; cleared after purge.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "ContentHash",
+          "type": "varbinary(32)",
+          "meaning": "SHA-256 digest of normalized content.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "MimeType",
+          "type": "varchar(32)",
+          "meaning": "Normalized supported image format.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ByteLength",
+          "type": "int",
+          "meaning": "Processed image size in bytes.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "PixelWidth",
+          "type": "int",
+          "meaning": "Normalized pixel width.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "PixelHeight",
+          "type": "int",
+          "meaning": "Normalized pixel height.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CapturedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Trusted server intake/capture timestamp.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "PurgedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Actual private content purge timestamp.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "PhotoAssetId"
+      ],
+      "unique": [
+        [
+          "PhotoAssetId",
+          "IntakeId"
+        ]
+      ],
+      "checks": [
+        "MimeType IN ('image/jpeg','image/png','image/webp')",
+        "ByteLength BETWEEN 1 AND 5242880",
+        "PixelWidth BETWEEN 1 AND 4096 AND PixelHeight BETWEEN 1 AND 4096 AND CONVERT(bigint,PixelWidth)*PixelHeight <= 16000000",
+        "(PurgedAtUtc IS NULL AND StorageKey IS NOT NULL) OR (PurgedAtUtc IS NOT NULL AND StorageKey IS NULL)",
+        "ContentHash IS NULL OR DATALENGTH(ContentHash) = 32"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "IntakeId"
+          ],
+          "target": "RegistrationIntakes",
+          "target_columns": [
+            "IntakeId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX UX_Photo_Key ON gp.PhotoAssets(StorageKey) WHERE StorageKey IS NOT NULL;"
+      ]
+    },
+    {
+      "name": "VisitRequests",
+      "purpose": "One submitted person per visit; frozen person/scope snapshot drives independent approval.",
+      "columns": [
+        {
+          "name": "VisitRequestId",
+          "type": "uniqueidentifier",
+          "meaning": "Individual visit identifier.",
+          "nullable": false,
+          "default": "(NEWSEQUENTIALID())",
+          "sensitive": false
+        },
+        {
+          "name": "PublicReference",
+          "type": "varchar(40)",
+          "meaning": "Opaque human-friendly reference, not authorization.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "IntakeId",
+          "type": "uniqueidentifier",
+          "meaning": "Registration-only correlation; not exposed as a group in operations.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ClientPersonKey",
+          "type": "uniqueidentifier",
+          "meaning": "Stable per-person input key within an idempotent intake submission.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RequestType",
+          "type": "varchar(24)",
+          "meaning": "TEMP_ID, EMPLOYEE_PROJECT or EXTERNAL.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "EmployeeId",
+          "type": "nvarchar(64)",
+          "meaning": "The requester/person for internal visits; absent for external people.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "PersonName",
+          "type": "nvarchar(200)",
+          "meaning": "Submitted display snapshot; directory-sourced for employees.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "PersonEmail",
+          "type": "nvarchar(320)",
+          "meaning": "Corporate-only for employees; optional for external visitors.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "PersonPhone",
+          "type": "nvarchar(30)",
+          "meaning": "Optional external contact; do not require identity-document data.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "PhotoAssetId",
+          "type": "uniqueidentifier",
+          "meaning": "Captured photo from this intake, never another intake.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocationId",
+          "type": "int",
+          "meaning": "Authorized office.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ProjectLocationId",
+          "type": "bigint",
+          "meaning": "Required for project/external visits; absent for TEMP_ID.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "HostEmployeeId",
+          "type": "nvarchar(64)",
+          "meaning": "Assigned individual approver, absent for TEMP_ID.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Reason",
+          "type": "nvarchar(1000)",
+          "meaning": "Submitted purpose snapshot.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "TemporaryIdReason",
+          "type": "varchar(16)",
+          "meaning": "FORGOT, LOST or OTHER for TEMP_ID.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Status",
+          "type": "varchar(12)",
+          "meaning": "PENDING, APPROVED, DENIED or CANCELLED; no final-record draft.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocalVisitDate",
+          "type": "date",
+          "meaning": "India local visit day; UTC bounds must lie within that day.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ValidFromUtc",
+          "type": "datetime2(3)",
+          "meaning": "Inclusive visit start.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ValidUntilUtc",
+          "type": "datetime2(3)",
+          "meaning": "Exclusive visit end.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ApprovalDeadlineUtc",
+          "type": "datetime2(3)",
+          "meaning": "Last allowed host decision time, exclusive; absent for TEMP_ID.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "SnapshotVersion",
+          "type": "int",
+          "meaning": "Immutable submitted content revision; one in v1.",
+          "nullable": false,
+          "default": "(1)",
+          "sensitive": false
+        },
+        {
+          "name": "SnapshotHash",
+          "type": "varbinary(32)",
+          "meaning": "Digest of canonical approval-relevant content, not raw secrets.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "DecisionAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Automatic TEMP_ID approval or final host decision time.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CancelledAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Cancellation time; does not silently remove recorded presence.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "SubmittedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server submission time.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "PersonalDataPurgedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Policy-driven deidentification; permitted only after active use.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "VisitRequestId"
+      ],
+      "unique": [
+        [
+          "PublicReference"
+        ],
+        [
+          "IntakeId",
+          "ClientPersonKey"
+        ],
+        [
+          "PhotoAssetId"
+        ],
+        [
+          "VisitRequestId",
+          "LocationId"
+        ],
+        [
+          "VisitRequestId",
+          "SnapshotVersion",
+          "SnapshotHash"
+        ],
+        [
+          "VisitRequestId",
+          "EmployeeId",
+          "LocationId",
+          "RequestType",
+          "LocalVisitDate"
+        ]
+      ],
+      "checks": [
+        "Status IN ('PENDING','APPROVED','DENIED','CANCELLED')",
+        "ValidUntilUtc > ValidFromUtc",
+        "SnapshotVersion = 1",
+        "LEN(LTRIM(RTRIM(PersonName))) > 0 AND LEN(LTRIM(RTRIM(Reason))) > 0",
+        "(RequestType='TEMP_ID' AND EmployeeId IS NOT NULL AND PersonEmail IS NOT NULL AND ProjectLocationId IS NULL AND HostEmployeeId IS NULL AND TemporaryIdReason IN ('FORGOT','LOST','OTHER') AND TemporaryIdReason IS NOT NULL AND ApprovalDeadlineUtc IS NULL AND Status IN ('APPROVED','CANCELLED')) OR (RequestType='EMPLOYEE_PROJECT' AND EmployeeId IS NOT NULL AND PersonEmail IS NOT NULL AND ProjectLocationId IS NOT NULL AND HostEmployeeId IS NOT NULL AND TemporaryIdReason IS NULL AND ApprovalDeadlineUtc IS NOT NULL) OR (RequestType='EXTERNAL' AND EmployeeId IS NULL AND ProjectLocationId IS NOT NULL AND HostEmployeeId IS NOT NULL AND TemporaryIdReason IS NULL AND ApprovalDeadlineUtc IS NOT NULL)",
+        "ApprovalDeadlineUtc IS NULL OR (ApprovalDeadlineUtc > SubmittedAtUtc AND ApprovalDeadlineUtc <= ValidUntilUtc)",
+        "((Status IN ('APPROVED','DENIED')) AND DecisionAtUtc IS NOT NULL) OR (Status='PENDING' AND DecisionAtUtc IS NULL) OR Status='CANCELLED'",
+        "(Status='CANCELLED' AND CancelledAtUtc IS NOT NULL) OR (Status<>'CANCELLED' AND CancelledAtUtc IS NULL)",
+        "CONVERT(date,DATEADD(minute,330,ValidFromUtc)) = LocalVisitDate AND ValidUntilUtc <= DATEADD(minute,-330,DATEADD(day,1,CONVERT(datetime2(3),LocalVisitDate)))",
+        "SnapshotHash IS NULL OR DATALENGTH(SnapshotHash) = 32"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "IntakeId"
+          ],
+          "target": "RegistrationIntakes",
+          "target_columns": [
+            "IntakeId"
+          ]
+        },
+        {
+          "columns": [
+            "PhotoAssetId",
+            "IntakeId"
+          ],
+          "target": "PhotoAssets",
+          "target_columns": [
+            "PhotoAssetId",
+            "IntakeId"
+          ]
+        },
+        {
+          "columns": [
+            "EmployeeId"
+          ],
+          "target": "Employees",
+          "target_columns": [
+            "EmployeeId"
+          ]
+        },
+        {
+          "columns": [
+            "HostEmployeeId"
+          ],
+          "target": "Employees",
+          "target_columns": [
+            "EmployeeId"
+          ]
+        },
+        {
+          "columns": [
+            "LocationId"
+          ],
+          "target": "Locations",
+          "target_columns": [
+            "LocationId"
+          ]
+        },
+        {
+          "columns": [
+            "ProjectLocationId",
+            "LocationId"
+          ],
+          "target": "ProjectLocations",
+          "target_columns": [
+            "ProjectLocationId",
+            "LocationId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_Visit_Project_Status ON gp.VisitRequests(ProjectLocationId, Status, LocalVisitDate) INCLUDE (LocationId, ValidFromUtc, ValidUntilUtc);",
+        "CREATE INDEX IX_Visit_Host ON gp.VisitRequests(HostEmployeeId, Status, SubmittedAtUtc DESC);",
+        "CREATE INDEX IX_Visit_Location ON gp.VisitRequests(LocationId, LocalVisitDate, Status);",
+        "CREATE INDEX IX_Visit_Employee ON gp.VisitRequests(EmployeeId, LocationId, LocalVisitDate) INCLUDE (RequestType, ProjectLocationId, Status, ValidFromUtc, ValidUntilUtc);"
+      ]
+    },
+    {
+      "name": "TemporaryIdSlots",
+      "purpose": "One reusable TEMP_ID slot per employee/office/local day; retain visit history separately.",
+      "columns": [
+        {
+          "name": "EmployeeId",
+          "type": "nvarchar(64)",
+          "meaning": "Employee using this daily temporary-ID slot.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocationId",
+          "type": "int",
+          "meaning": "Office of the temporary pass.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocalVisitDate",
+          "type": "date",
+          "meaning": "Local day of entitlement.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RequestType",
+          "type": "varchar(24)",
+          "meaning": "Constant discriminator to enforce TEMP_ID target.",
+          "nullable": false,
+          "default": "('TEMP_ID')",
+          "sensitive": false
+        },
+        {
+          "name": "VisitRequestId",
+          "type": "uniqueidentifier",
+          "meaning": "Current request; replacement only under duplicate/reissue contract.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "EmployeeId",
+        "LocationId",
+        "LocalVisitDate"
+      ],
+      "unique": [
+        [
+          "VisitRequestId"
+        ]
+      ],
+      "checks": [
+        "RequestType='TEMP_ID'"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "VisitRequestId",
+            "EmployeeId",
+            "LocationId",
+            "RequestType",
+            "LocalVisitDate"
+          ],
+          "target": "VisitRequests",
+          "target_columns": [
+            "VisitRequestId",
+            "EmployeeId",
+            "LocationId",
+            "RequestType",
+            "LocalVisitDate"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "IdempotencyRequests",
+      "purpose": "Durable actor/operation/payload-bound retries; no bearer secrets in results.",
+      "columns": [
+        {
+          "name": "OperationId",
+          "type": "uniqueidentifier",
+          "meaning": "Server idempotent operation identifier.",
+          "nullable": false,
+          "default": "(NEWSEQUENTIALID())",
+          "sensitive": false
+        },
+        {
+          "name": "ActorBindingHash",
+          "type": "varbinary(32)",
+          "meaning": "Digest of trusted principal/intake identity and binding type.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "OperationCode",
+          "type": "varchar(40)",
+          "meaning": "SUBMIT_INTAKE, DECIDE_VISIT, RECORD_MOVEMENT, REISSUE_PASS or PRINT_CARD.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ClientKey",
+          "type": "uniqueidentifier",
+          "meaning": "Client-generated stable retry key for this operation.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "PayloadHash",
+          "type": "varbinary(32)",
+          "meaning": "Canonical resource/payload digest; mismatch is a conflict.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Status",
+          "type": "varchar(12)",
+          "meaning": "PROCESSING exists only inside a transaction; COMPLETED is durable.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ResultJson",
+          "type": "nvarchar(max)",
+          "meaning": "Authorized resource references and outcome only; never QR/link/session secrets.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CompletedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Committed outcome time.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ExpiresAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Minimum retry retention deadline; business uniqueness survives cleanup.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "OperationId"
+      ],
+      "unique": [
+        [
+          "ActorBindingHash",
+          "OperationCode",
+          "ClientKey"
+        ]
+      ],
+      "checks": [
+        "(Status='PROCESSING' AND CompletedAtUtc IS NULL AND ResultJson IS NULL) OR (Status='COMPLETED' AND CompletedAtUtc IS NOT NULL AND ResultJson IS NOT NULL)",
+        "ResultJson IS NULL OR ISJSON(ResultJson)=1",
+        "ExpiresAtUtc > CreatedAtUtc",
+        "ActorBindingHash IS NULL OR DATALENGTH(ActorBindingHash) = 32",
+        "PayloadHash IS NULL OR DATALENGTH(PayloadHash) = 32"
+      ],
+      "fks": [],
+      "indexes": []
+    },
+    {
+      "name": "ApprovalDecisions",
+      "purpose": "One immutable host decision for one exact individual submitted snapshot.",
+      "columns": [
+        {
+          "name": "VisitRequestId",
+          "type": "uniqueidentifier",
+          "meaning": "Individual request; unique decision per request.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ApproverEmployeeId",
+          "type": "nvarchar(64)",
+          "meaning": "Verified assigned host; membership checked transactionally.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "SnapshotVersion",
+          "type": "int",
+          "meaning": "Exact submitted content revision approved/denied.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "SnapshotHash",
+          "type": "varbinary(32)",
+          "meaning": "Exact submitted content digest.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Decision",
+          "type": "varchar(12)",
+          "meaning": "APPROVED or DENIED.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "DecisionSource",
+          "type": "varchar(12)",
+          "meaning": "OUTLOOK or WEB; both identify the real host.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "OperationId",
+          "type": "uniqueidentifier",
+          "meaning": "Actor/operation-bound retry record.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Comment",
+          "type": "nvarchar(500)",
+          "meaning": "Optional host explanation.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "DecidedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "UTC decision time.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "VisitRequestId"
+      ],
+      "unique": [
+        [
+          "OperationId"
+        ]
+      ],
+      "checks": [
+        "Decision IN ('APPROVED','DENIED')",
+        "DecisionSource IN ('OUTLOOK','WEB')",
+        "SnapshotHash IS NULL OR DATALENGTH(SnapshotHash) = 32"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "VisitRequestId",
+            "SnapshotVersion",
+            "SnapshotHash"
+          ],
+          "target": "VisitRequests",
+          "target_columns": [
+            "VisitRequestId",
+            "SnapshotVersion",
+            "SnapshotHash"
+          ]
+        },
+        {
+          "columns": [
+            "ApproverEmployeeId"
+          ],
+          "target": "Employees",
+          "target_columns": [
+            "EmployeeId"
+          ]
+        },
+        {
+          "columns": [
+            "OperationId"
+          ],
+          "target": "IdempotencyRequests",
+          "target_columns": [
+            "OperationId"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "AccessPasses",
+      "purpose": "Versioned credential for one visit; validity/scope inherited from immutable visit.",
+      "columns": [
+        {
+          "name": "AccessPassId",
+          "type": "uniqueidentifier",
+          "meaning": "Internal credential record identifier.",
+          "nullable": false,
+          "default": "(NEWSEQUENTIALID())",
+          "sensitive": false
+        },
+        {
+          "name": "VisitRequestId",
+          "type": "uniqueidentifier",
+          "meaning": "Individual visit whose approval/scope is checked online.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "PassVersion",
+          "type": "int",
+          "meaning": "Monotonic credential version within the visit.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "PublicPassNumber",
+          "type": "varchar(50)",
+          "meaning": "Display reference, never the QR secret.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CredentialHash",
+          "type": "varbinary(32)",
+          "meaning": "Unique SHA-256 digest of 256-bit random QR credential.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "Status",
+          "type": "varchar(12)",
+          "meaning": "PENDING, ACTIVE, DENIED or REVOKED.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "IsCurrent",
+          "type": "bit",
+          "meaning": "At most one current credential per visit.",
+          "nullable": false,
+          "default": "(1)",
+          "sensitive": false
+        },
+        {
+          "name": "RevokedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Revocation time.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RevocationReason",
+          "type": "nvarchar(300)",
+          "meaning": "Audited revocation/reissue reason.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "AccessPassId"
+      ],
+      "unique": [
+        [
+          "VisitRequestId",
+          "PassVersion"
+        ],
+        [
+          "PublicPassNumber"
+        ],
+        [
+          "CredentialHash"
+        ],
+        [
+          "AccessPassId",
+          "VisitRequestId"
+        ]
+      ],
+      "checks": [
+        "PassVersion > 0",
+        "Status IN ('PENDING','ACTIVE','DENIED','REVOKED')",
+        "(Status='REVOKED' AND RevokedAtUtc IS NOT NULL AND RevocationReason IS NOT NULL) OR (Status<>'REVOKED' AND RevokedAtUtc IS NULL AND RevocationReason IS NULL)",
+        "IsCurrent=1 OR Status='REVOKED'",
+        "CredentialHash IS NULL OR DATALENGTH(CredentialHash) = 32"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "VisitRequestId"
+          ],
+          "target": "VisitRequests",
+          "target_columns": [
+            "VisitRequestId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX UX_Pass_Current ON gp.AccessPasses(VisitRequestId) WHERE IsCurrent=1;"
+      ]
+    },
+    {
+      "name": "PassSecrets",
+      "purpose": "Separately permissioned encrypted QR credential for authorized reprint/render only.",
+      "columns": [
+        {
+          "name": "AccessPassId",
+          "type": "uniqueidentifier",
+          "meaning": "Credential whose random secret is encrypted.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Ciphertext",
+          "type": "varbinary(max)",
+          "meaning": "Authenticated encrypted credential; no plaintext fallback.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "Nonce",
+          "type": "binary(12)",
+          "meaning": "Unique AES-GCM nonce for this key/encryption.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "AuthenticationTag",
+          "type": "binary(16)",
+          "meaning": "AES-GCM authentication tag.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "KeyVersion",
+          "type": "varchar(100)",
+          "meaning": "External key-store version identifier, never the key.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "AccessPassId"
+      ],
+      "unique": [
+        [
+          "KeyVersion",
+          "Nonce"
+        ]
+      ],
+      "checks": [
+        "DATALENGTH(Ciphertext) BETWEEN 1 AND 4096"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "AccessPassId"
+          ],
+          "target": "AccessPasses",
+          "target_columns": [
+            "AccessPassId"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "VisitPresence",
+      "purpose": "Current INSIDE/OUTSIDE state of one individual visit, preserved across pass versions.",
+      "columns": [
+        {
+          "name": "VisitRequestId",
+          "type": "uniqueidentifier",
+          "meaning": "Individual visit; state is not globally unique person identity.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "IsInside",
+          "type": "bit",
+          "meaning": "Current recorded occupancy state.",
+          "nullable": false,
+          "default": "(0)",
+          "sensitive": false
+        },
+        {
+          "name": "LastAccessEventId",
+          "type": "bigint",
+          "meaning": "Last event for this same visit; composite FK prevents cross-visitor linkage.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LastMovementAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Effective time of last movement.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "VisitRequestId"
+      ],
+      "unique": [],
+      "checks": [
+        "(LastAccessEventId IS NULL AND LastMovementAtUtc IS NULL AND IsInside=0) OR (LastAccessEventId IS NOT NULL AND LastMovementAtUtc IS NOT NULL)"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "VisitRequestId"
+          ],
+          "target": "VisitRequests",
+          "target_columns": [
+            "VisitRequestId"
+          ]
+        },
+        {
+          "columns": [
+            "LastAccessEventId",
+            "VisitRequestId"
+          ],
+          "target": "AccessEvents",
+          "target_columns": [
+            "AccessEventId",
+            "VisitRequestId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_Presence_Inside ON gp.VisitPresence(VisitRequestId) INCLUDE (LastMovementAtUtc) WHERE IsInside=1;"
+      ]
+    },
+    {
+      "name": "AccessEvents",
+      "purpose": "Immutable committed individual ENTRY/EXIT; scan verification is recorded separately.",
+      "columns": [
+        {
+          "name": "AccessEventId",
+          "type": "bigint IDENTITY(1,1)",
+          "meaning": "Append-only movement sequence.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "VisitRequestId",
+          "type": "uniqueidentifier",
+          "meaning": "Individual visit whose presence changes.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "AccessPassId",
+          "type": "uniqueidentifier",
+          "meaning": "Credential associated with this same visit; may be historical on reconciled EXIT.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ActorUserId",
+          "type": "uniqueidentifier",
+          "meaning": "Authorized staff recording movement; never an arbitrary client-provided identity.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocationId",
+          "type": "int",
+          "meaning": "Must equal the visit location; project scope derived from visit.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "EventType",
+          "type": "varchar(8)",
+          "meaning": "ENTRY or EXIT.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "EntryMethod",
+          "type": "varchar(12)",
+          "meaning": "SCAN, MANUAL or RECONCILE.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "OperationId",
+          "type": "uniqueidentifier",
+          "meaning": "Unique durable idempotent movement operation.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "OccurredAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Effective departure/entry time; normally server now.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RecordedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server recording time; never silently backdated.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "ReconciliationReason",
+          "type": "nvarchar(500)",
+          "meaning": "Required for supervised reconciliation only.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CorrelationId",
+          "type": "uniqueidentifier",
+          "meaning": "Trace correlation, not authorization.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "AccessEventId"
+      ],
+      "unique": [
+        [
+          "AccessEventId",
+          "VisitRequestId"
+        ],
+        [
+          "OperationId"
+        ]
+      ],
+      "checks": [
+        "EventType IN ('ENTRY','EXIT')",
+        "OccurredAtUtc <= RecordedAtUtc",
+        "(EntryMethod IN ('SCAN','MANUAL') AND ReconciliationReason IS NULL) OR (EntryMethod='RECONCILE' AND ReconciliationReason IS NOT NULL AND EventType='EXIT')"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "AccessPassId",
+            "VisitRequestId"
+          ],
+          "target": "AccessPasses",
+          "target_columns": [
+            "AccessPassId",
+            "VisitRequestId"
+          ]
+        },
+        {
+          "columns": [
+            "VisitRequestId",
+            "LocationId"
+          ],
+          "target": "VisitRequests",
+          "target_columns": [
+            "VisitRequestId",
+            "LocationId"
+          ]
+        },
+        {
+          "columns": [
+            "ActorUserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        },
+        {
+          "columns": [
+            "OperationId"
+          ],
+          "target": "IdempotencyRequests",
+          "target_columns": [
+            "OperationId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_Movement_Visit ON gp.AccessEvents(VisitRequestId, AccessEventId DESC);",
+        "CREATE INDEX IX_Movement_Location ON gp.AccessEvents(LocationId, RecordedAtUtc DESC);"
+      ]
+    },
+    {
+      "name": "PassScanAttempts",
+      "purpose": "Verification outcomes; no implicit physical entry and no raw unknown credentials.",
+      "columns": [
+        {
+          "name": "ScanAttemptId",
+          "type": "bigint IDENTITY(1,1)",
+          "meaning": "Verification attempt sequence.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "AccessPassId",
+          "type": "uniqueidentifier",
+          "meaning": "Known credential, or null for an unknown QR.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "VisitRequestId",
+          "type": "uniqueidentifier",
+          "meaning": "Known credential owner; must pair with AccessPassId.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ActorUserId",
+          "type": "uniqueidentifier",
+          "meaning": "Authenticated authorized scanner.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocationId",
+          "type": "int",
+          "meaning": "Scanner operating location, which may differ from the scanned pass location.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "OutcomeCode",
+          "type": "varchar(32)",
+          "meaning": "Allowlisted verification result; does not authorize a later movement.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "OccurredAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server verification timestamp.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "CorrelationId",
+          "type": "uniqueidentifier",
+          "meaning": "Trace identifier.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "ScanAttemptId"
+      ],
+      "unique": [],
+      "checks": [
+        "(AccessPassId IS NULL AND VisitRequestId IS NULL) OR (AccessPassId IS NOT NULL AND VisitRequestId IS NOT NULL)",
+        "OutcomeCode IN ('VALID','PENDING','DENIED','EXPIRED','REVOKED','NOT_FOUND','WRONG_PROJECT','WRONG_LOCATION','NOT_YET_VALID','NOT_AUTHORIZED','CANCELLED','ERROR')"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "AccessPassId",
+            "VisitRequestId"
+          ],
+          "target": "AccessPasses",
+          "target_columns": [
+            "AccessPassId",
+            "VisitRequestId"
+          ]
+        },
+        {
+          "columns": [
+            "ActorUserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        },
+        {
+          "columns": [
+            "LocationId"
+          ],
+          "target": "Locations",
+          "target_columns": [
+            "LocationId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_Scan_Actor ON gp.PassScanAttempts(ActorUserId, OccurredAtUtc DESC);"
+      ]
+    },
+    {
+      "name": "PassDeliveryLinks",
+      "purpose": "Separate revocable bearer token for holder-specific viewing; encrypted recovery for dispatch.",
+      "columns": [
+        {
+          "name": "DeliveryLinkId",
+          "type": "uniqueidentifier",
+          "meaning": "Private delivery-link record ID.",
+          "nullable": false,
+          "default": "(NEWSEQUENTIALID())",
+          "sensitive": false
+        },
+        {
+          "name": "AccessPassId",
+          "type": "uniqueidentifier",
+          "meaning": "One specific pass version; reissue revokes its old links.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "VisitRequestId",
+          "type": "uniqueidentifier",
+          "meaning": "Same individual visit as the linked pass; prevents cross-visitor mail linkage.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "TokenHash",
+          "type": "varbinary(32)",
+          "meaning": "Digest of random delivery bearer token; distinct from QR.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "TokenCiphertext",
+          "type": "varbinary(max)",
+          "meaning": "Encrypted random delivery token for retryable mail dispatch.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "Nonce",
+          "type": "binary(12)",
+          "meaning": "Unique nonce under the delivery-token key.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "AuthenticationTag",
+          "type": "binary(16)",
+          "meaning": "Authenticated encryption tag.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "KeyVersion",
+          "type": "varchar(100)",
+          "meaning": "External delivery-token key version; separate purpose from QR encryption.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RecipientEmail",
+          "type": "nvarchar(320)",
+          "meaning": "Approved individual recipient; corporate address for employees.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "ExpiresAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Exclusive link expiry; service limits to pass/visit policy.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RevokedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Explicit invalidation time.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LastUsedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Last authorized holder-view use.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "DeliveryLinkId"
+      ],
+      "unique": [
+        [
+          "TokenHash"
+        ],
+        [
+          "KeyVersion",
+          "Nonce"
+        ],
+        [
+          "DeliveryLinkId",
+          "VisitRequestId"
+        ]
+      ],
+      "checks": [
+        "ExpiresAtUtc > CreatedAtUtc",
+        "DATALENGTH(TokenCiphertext) BETWEEN 1 AND 4096",
+        "TokenHash IS NULL OR DATALENGTH(TokenHash) = 32"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "AccessPassId",
+            "VisitRequestId"
+          ],
+          "target": "AccessPasses",
+          "target_columns": [
+            "AccessPassId",
+            "VisitRequestId"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "PassPrintJobs",
+      "purpose": "Individual card rendering/dispatch audit; not proof that paper physically printed.",
+      "columns": [
+        {
+          "name": "PrintJobId",
+          "type": "uniqueidentifier",
+          "meaning": "Unique card-render/print request.",
+          "nullable": false,
+          "default": "(NEWSEQUENTIALID())",
+          "sensitive": false
+        },
+        {
+          "name": "AccessPassId",
+          "type": "uniqueidentifier",
+          "meaning": "Credential printed; reprint preserves QR.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "VisitRequestId",
+          "type": "uniqueidentifier",
+          "meaning": "Credential visit for relational consistency.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocationId",
+          "type": "int",
+          "meaning": "Must equal visit location; reception scope checked server-side.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RequestedByUserId",
+          "type": "uniqueidentifier",
+          "meaning": "Authorized reception principal.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "OperationId",
+          "type": "uniqueidentifier",
+          "meaning": "Durable retry key; retries return same job, not an automatic extra dispatch.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "PrintReason",
+          "type": "varchar(12)",
+          "meaning": "FIRST, REPRINT or REISSUE.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Status",
+          "type": "varchar(12)",
+          "meaning": "REQUESTED, RENDERED, DISPATCHED or FAILED.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "PrinterLabel",
+          "type": "nvarchar(100)",
+          "meaning": "Configured reception printer label.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "UpdatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Latest job-state change.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "PrintJobId"
+      ],
+      "unique": [
+        [
+          "OperationId"
+        ]
+      ],
+      "checks": [
+        "PrintReason IN ('FIRST','REPRINT','REISSUE')",
+        "Status IN ('REQUESTED','RENDERED','DISPATCHED','FAILED')",
+        "UpdatedAtUtc >= CreatedAtUtc"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "AccessPassId",
+            "VisitRequestId"
+          ],
+          "target": "AccessPasses",
+          "target_columns": [
+            "AccessPassId",
+            "VisitRequestId"
+          ]
+        },
+        {
+          "columns": [
+            "VisitRequestId",
+            "LocationId"
+          ],
+          "target": "VisitRequests",
+          "target_columns": [
+            "VisitRequestId",
+            "LocationId"
+          ]
+        },
+        {
+          "columns": [
+            "RequestedByUserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        },
+        {
+          "columns": [
+            "OperationId"
+          ],
+          "target": "IdempotencyRequests",
+          "target_columns": [
+            "OperationId"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "NotificationOutbox",
+      "purpose": "Transactional, leased and retryable dispatch with encrypted secrets referenced by ID.",
+      "columns": [
+        {
+          "name": "NotificationId",
+          "type": "bigint IDENTITY(1,1)",
+          "meaning": "Worker job identifier.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "VisitRequestId",
+          "type": "uniqueidentifier",
+          "meaning": "Individual visit; optional for system-only notifications.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "DeliveryLinkId",
+          "type": "uniqueidentifier",
+          "meaning": "Optional protected link reference; no plaintext token in JSON.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RecipientKind",
+          "type": "varchar(12)",
+          "meaning": "EMAIL, EMPLOYEE or MANAGER; manager resolution must not block temporary pass issuance.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RecipientEmployeeId",
+          "type": "nvarchar(64)",
+          "meaning": "Employee recipient, or subject employee whose manager must be resolved.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RecipientEmail",
+          "type": "nvarchar(320)",
+          "meaning": "Direct/resolved trusted recipient; nullable while directory contact resolution is pending.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "TemplateCode",
+          "type": "varchar(40)",
+          "meaning": "Allowlisted template identifier.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "PayloadJson",
+          "type": "nvarchar(max)",
+          "meaning": "Minimal template data/references; no raw bearer/session secrets.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "DedupeHash",
+          "type": "varbinary(32)",
+          "meaning": "Unique business-event/template/recipient digest.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "Status",
+          "type": "varchar(12)",
+          "meaning": "PENDING, PROCESSING, SENT, DEAD or CANCELLED.",
+          "nullable": false,
+          "default": "('PENDING')",
+          "sensitive": false
+        },
+        {
+          "name": "AttemptCount",
+          "type": "int",
+          "meaning": "Dispatch attempts so far.",
+          "nullable": false,
+          "default": "(0)",
+          "sensitive": false
+        },
+        {
+          "name": "MaxAttempts",
+          "type": "int",
+          "meaning": "Configured finite retry ceiling.",
+          "nullable": false,
+          "default": "(8)",
+          "sensitive": false
+        },
+        {
+          "name": "NextAttemptAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Earliest retry time.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "LockedBy",
+          "type": "uniqueidentifier",
+          "meaning": "Worker lease owner while PROCESSING.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LockedUntilUtc",
+          "type": "datetime2(3)",
+          "meaning": "Lease expiry; abandoned work is reclaimable.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LastErrorCode",
+          "type": "varchar(100)",
+          "meaning": "Redacted diagnostic code, not a provider response with secrets.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "SentAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Provider accepted dispatch time; not guaranteed inbox delivery.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ProviderMessageId",
+          "type": "nvarchar(200)",
+          "meaning": "Provider receipt identifier if available.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "NotificationId"
+      ],
+      "unique": [
+        [
+          "DedupeHash"
+        ]
+      ],
+      "checks": [
+        "Status IN ('PENDING','PROCESSING','SENT','DEAD','CANCELLED')",
+        "AttemptCount >= 0 AND MaxAttempts BETWEEN 1 AND 100",
+        "(Status='PROCESSING' AND LockedBy IS NOT NULL AND LockedUntilUtc IS NOT NULL) OR (Status<>'PROCESSING' AND LockedBy IS NULL AND LockedUntilUtc IS NULL)",
+        "(Status='SENT' AND SentAtUtc IS NOT NULL) OR (Status<>'SENT' AND SentAtUtc IS NULL)",
+        "ISJSON(PayloadJson)=1",
+        "DeliveryLinkId IS NULL OR VisitRequestId IS NOT NULL",
+        "(RecipientKind='EMAIL' AND RecipientEmail IS NOT NULL AND RecipientEmployeeId IS NULL) OR (RecipientKind IN ('EMPLOYEE','MANAGER') AND RecipientEmployeeId IS NOT NULL)",
+        "DedupeHash IS NULL OR DATALENGTH(DedupeHash) = 32"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "VisitRequestId"
+          ],
+          "target": "VisitRequests",
+          "target_columns": [
+            "VisitRequestId"
+          ]
+        },
+        {
+          "columns": [
+            "DeliveryLinkId",
+            "VisitRequestId"
+          ],
+          "target": "PassDeliveryLinks",
+          "target_columns": [
+            "DeliveryLinkId",
+            "VisitRequestId"
+          ]
+        },
+        {
+          "columns": [
+            "RecipientEmployeeId"
+          ],
+          "target": "Employees",
+          "target_columns": [
+            "EmployeeId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_Outbox_Due ON gp.NotificationOutbox(Status, NextAttemptAtUtc) INCLUDE (AttemptCount, MaxAttempts, LockedUntilUtc);"
+      ]
+    },
+    {
+      "name": "SecurityAuditEvents",
+      "purpose": "Append-only application audit; independent protected export required for tamper resistance.",
+      "columns": [
+        {
+          "name": "AuditEventId",
+          "type": "bigint IDENTITY(1,1)",
+          "meaning": "Immutable audit sequence.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ActorUserId",
+          "type": "uniqueidentifier",
+          "meaning": "Authenticated actor, null for system/public actor.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ActionCode",
+          "type": "varchar(80)",
+          "meaning": "Allowlisted security/business action.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "TargetType",
+          "type": "varchar(50)",
+          "meaning": "Target entity kind.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "TargetReference",
+          "type": "varchar(100)",
+          "meaning": "Non-secret internal target reference.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LocationId",
+          "type": "int",
+          "meaning": "Location scope when known.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ProjectLocationId",
+          "type": "bigint",
+          "meaning": "Project-office scope; requires matching LocationId.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ResultCode",
+          "type": "varchar(12)",
+          "meaning": "SUCCESS, DENIED or ERROR.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "MetadataJson",
+          "type": "nvarchar(max)",
+          "meaning": "Allowlisted minimal audit metadata; no raw tokens/photo content.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "CorrelationId",
+          "type": "uniqueidentifier",
+          "meaning": "Operation trace identifier.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "OccurredAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server recording time.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "AuditEventId"
+      ],
+      "unique": [],
+      "checks": [
+        "ResultCode IN ('SUCCESS','DENIED','ERROR')",
+        "MetadataJson IS NULL OR ISJSON(MetadataJson)=1",
+        "ProjectLocationId IS NULL OR LocationId IS NOT NULL"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "ActorUserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        },
+        {
+          "columns": [
+            "LocationId"
+          ],
+          "target": "Locations",
+          "target_columns": [
+            "LocationId"
+          ]
+        },
+        {
+          "columns": [
+            "ProjectLocationId",
+            "LocationId"
+          ],
+          "target": "ProjectLocations",
+          "target_columns": [
+            "ProjectLocationId",
+            "LocationId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_Audit_Time ON gp.SecurityAuditEvents(OccurredAtUtc DESC);",
+        "CREATE INDEX IX_Audit_Scope ON gp.SecurityAuditEvents(LocationId, ProjectLocationId, OccurredAtUtc DESC);"
+      ]
+    },
+    {
+      "name": "Sessions",
+      "purpose": "Revocable server-side staff sessions; browser holds only opaque secure-cookie ID.",
+      "columns": [
+        {
+          "name": "SessionHash",
+          "type": "varbinary(32)",
+          "meaning": "SHA-256 digest of random session credential.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "UserId",
+          "type": "uniqueidentifier",
+          "meaning": "Authenticated owner.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CsrfHash",
+          "type": "varbinary(32)",
+          "meaning": "Digest used to validate session-bound mutation protection.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "AuthorizationVersionAtIssue",
+          "type": "bigint",
+          "meaning": "Reference version; current authorization is always re-evaluated.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LastSeenAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Most recent accepted activity.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "IdleExpiresAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server-enforced idle deadline.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "AbsoluteExpiresAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Non-extendable session deadline.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RevokedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Explicit logout/account/session invalidation.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Server creation timestamp in UTC.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "SessionHash"
+      ],
+      "unique": [],
+      "checks": [
+        "AuthorizationVersionAtIssue > 0",
+        "LastSeenAtUtc >= CreatedAtUtc AND IdleExpiresAtUtc > LastSeenAtUtc AND AbsoluteExpiresAtUtc >= IdleExpiresAtUtc",
+        "SessionHash IS NULL OR DATALENGTH(SessionHash) = 32",
+        "CsrfHash IS NULL OR DATALENGTH(CsrfHash) = 32"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "UserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_Session_User ON gp.Sessions(UserId, RevokedAtUtc, AbsoluteExpiresAtUtc);"
+      ]
+    },
+    {
+      "name": "GuardCredentials",
+      "purpose": "Individual local guard login identity and adaptive password hash, separate from employee SSO/directory.",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "uniqueidentifier",
+          "meaning": "One guard application user; credential provisioning grants no roles.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LoginId",
+          "type": "varchar(64)",
+          "meaning": "Unique lowercase ASCII login ID; password normalization is never inferred from this.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "EncodedPasswordHash",
+          "type": "varchar(128)",
+          "meaning": "Salted Argon2id PHC string; NULL while awaiting controlled setup/reset. Auth service only.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "CredentialVersion",
+          "type": "bigint",
+          "meaning": "Generation fencing for verification/reset; increment on credential mutation.",
+          "nullable": false,
+          "default": "(1)",
+          "sensitive": false
+        },
+        {
+          "name": "IsEnabled",
+          "type": "bit",
+          "meaning": "Credential enabled independently of global user state; both must permit authentication.",
+          "nullable": false,
+          "default": "(1)",
+          "sensitive": false
+        },
+        {
+          "name": "MustChangePassword",
+          "type": "bit",
+          "meaning": "Setup/reset required; no ordinary login until password setup completes.",
+          "nullable": false,
+          "default": "(1)",
+          "sensitive": false
+        },
+        {
+          "name": "FailedCount",
+          "type": "int",
+          "meaning": "Completed failed checks in the current window; five triggers temporary lockout.",
+          "nullable": false,
+          "default": "(0)",
+          "sensitive": false
+        },
+        {
+          "name": "FailureWindowStartUtc",
+          "type": "datetime2(3)",
+          "meaning": "Start of the provisional 15-minute failure window.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LockedUntilUtc",
+          "type": "datetime2(3)",
+          "meaning": "Temporary lockout; checked again at login completion.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "PasswordChangedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Last password setup/change time; NULL when the password is cleared for setup.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Credential record creation timestamp.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "RowVer",
+          "type": "rowversion",
+          "meaning": "Database concurrency version.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "UserId"
+      ],
+      "unique": [
+        [
+          "LoginId"
+        ]
+      ],
+      "checks": [
+        "DATALENGTH(LoginId) BETWEEN 3 AND 64 AND DATALENGTH(LoginId)=LEN(LoginId) AND LoginId NOT LIKE '%[^a-z0-9._-]%' AND LoginId NOT LIKE '[^a-z0-9]%'",
+        "CredentialVersion>0",
+        "FailedCount BETWEEN 0 AND 5",
+        "(EncodedPasswordHash IS NULL AND MustChangePassword=1 AND PasswordChangedAtUtc IS NULL) OR (EncodedPasswordHash IS NOT NULL AND MustChangePassword=0 AND PasswordChangedAtUtc IS NOT NULL)"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "UserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "GuardSetupTickets",
+      "purpose": "Single-use expiring setup/reset handles; raw handles remain outside SQL/logs.",
+      "columns": [
+        {
+          "name": "TokenHash",
+          "type": "varbinary(32)",
+          "meaning": "SHA-256 of the random 32-byte setup handle; not a password hash.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "UserId",
+          "type": "uniqueidentifier",
+          "meaning": "Target guard credential.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CredentialVersion",
+          "type": "bigint",
+          "meaning": "Credential generation to which this setup handle is bound.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedByUserId",
+          "type": "uniqueidentifier",
+          "meaning": "Scoped administrator that issued setup/reset.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Handle issue timestamp.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ExpiresAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Exclusive 15-minute expiry.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "UsedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Consumed or invalidated timestamp.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "TokenHash"
+      ],
+      "unique": [],
+      "checks": [
+        "DATALENGTH(TokenHash) = 32",
+        "CredentialVersion>0",
+        "ExpiresAtUtc>CreatedAtUtc AND (UsedAtUtc IS NULL OR UsedAtUtc>=CreatedAtUtc)"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "UserId"
+          ],
+          "target": "GuardCredentials",
+          "target_columns": [
+            "UserId"
+          ]
+        },
+        {
+          "columns": [
+            "CreatedByUserId"
+          ],
+          "target": "Users",
+          "target_columns": [
+            "UserId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_GuardSetup_User ON gp.GuardSetupTickets(UserId,ExpiresAtUtc);"
+      ]
+    },
+    {
+      "name": "GuardLoginAttempts",
+      "purpose": "Short-lived server-only password verification reservations, fenced to account and authorization generations.",
+      "columns": [
+        {
+          "name": "AttemptHash",
+          "type": "varbinary(32)",
+          "meaning": "SHA-256 of a random server-only verification handle.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "UserId",
+          "type": "uniqueidentifier",
+          "meaning": "Target guard identity.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "SourceHash",
+          "type": "varbinary(32)",
+          "meaning": "Trusted server-derived keyed source bucket; never a browser-provided identity.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "CredentialVersion",
+          "type": "bigint",
+          "meaning": "Password generation captured before expensive verification.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "AuthorizationVersion",
+          "type": "bigint",
+          "meaning": "Authorization generation captured before expensive verification.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Verification reservation timestamp.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ExpiresAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Exclusive 60-second completion deadline.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "UsedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Single-use completion timestamp, including denied completion.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "AttemptHash"
+      ],
+      "unique": [],
+      "checks": [
+        "DATALENGTH(AttemptHash) = 32 AND DATALENGTH(SourceHash) = 32",
+        "CredentialVersion>0 AND AuthorizationVersion>0",
+        "ExpiresAtUtc>CreatedAtUtc AND (UsedAtUtc IS NULL OR UsedAtUtc>=CreatedAtUtc)"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "UserId"
+          ],
+          "target": "GuardCredentials",
+          "target_columns": [
+            "UserId"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX IX_GuardLogin_User ON gp.GuardLoginAttempts(UserId,ExpiresAtUtc) INCLUDE (UsedAtUtc);",
+        "CREATE INDEX IX_GuardLogin_Expiry ON gp.GuardLoginAttempts(ExpiresAtUtc);"
+      ]
+    },
+    {
+      "name": "GuardAuthSources",
+      "purpose": "Short-lived source throttling buckets, including unknown account attempts; no raw network address or login identifier.",
+      "columns": [
+        {
+          "name": "SourceHash",
+          "type": "varbinary(32)",
+          "meaning": "Trusted server-derived keyed source bucket digest.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "WindowStartUtc",
+          "type": "datetime2(3)",
+          "meaning": "Current 60-second admission window.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "RequestCount",
+          "type": "int",
+          "meaning": "Admitted attempts, bounded to twenty per window.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "LastSeenAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "Last admitted request; transient cleanup anchor.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "SourceHash"
+      ],
+      "unique": [],
+      "checks": [
+        "DATALENGTH(SourceHash) = 32",
+        "RequestCount BETWEEN 1 AND 20",
+        "LastSeenAtUtc>=WindowStartUtc"
+      ],
+      "fks": [],
+      "indexes": [
+        "CREATE INDEX IX_GuardAuthSources_Seen ON gp.GuardAuthSources(LastSeenAtUtc);"
+      ]
+    },
+    {
+      "name": "RegistrationIntakeAccess",
+      "purpose": "Owned intake CSRF binding and immutable submission receipt; registration correlation only, no operational group state.",
+      "columns": [
+        {
+          "name": "IntakeId",
+          "type": "uniqueidentifier",
+          "meaning": "One intake capability/receipt record linked to RegistrationIntakes.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CsrfHash",
+          "type": "varbinary(32)",
+          "meaning": "SHA-256 of a separate random intake CSRF value; both it and the intake token are required.",
+          "nullable": false,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "SubmittedPayloadHash",
+          "type": "varbinary(32)",
+          "meaning": "Versioned canonical business payload digest; immutable once the intake submits, independent of encryption retries.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "SubmissionResultJson",
+          "type": "nvarchar(max)",
+          "meaning": "Resource references and initial outcomes only; no QR/password/key/contact material. Supports retries after idempotency retention.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "UTC creation time of this intake binding.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        }
+      ],
+      "pk": [
+        "IntakeId"
+      ],
+      "unique": [],
+      "checks": [
+        "DATALENGTH(CsrfHash) = 32 AND (SubmittedPayloadHash IS NULL OR DATALENGTH(SubmittedPayloadHash) = 32)",
+        "(SubmittedPayloadHash IS NULL AND SubmissionResultJson IS NULL) OR (SubmittedPayloadHash IS NOT NULL AND SubmissionResultJson IS NOT NULL AND ISJSON(SubmissionResultJson)=1)"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "IntakeId"
+          ],
+          "target": "RegistrationIntakes",
+          "target_columns": [
+            "IntakeId"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "PassPrintRenderState",
+      "purpose": "Restricted render fencing, source binding and artifact digest for one reception print job; no rendered card or plaintext credential storage.",
+      "columns": [
+        {
+          "name": "PrintJobId",
+          "type": "uniqueidentifier",
+          "meaning": "One-to-one link to the existing individual print job.",
+          "nullable": false,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "ClaimToken",
+          "type": "uniqueidentifier",
+          "meaning": "Fresh internal renderer fencing token; never returned by the general API.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "LeaseUntilUtc",
+          "type": "datetime2(3)",
+          "meaning": "UTC exclusive upper bound on the current claim and handoff; 60 seconds per attempt.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "AttemptCount",
+          "type": "int",
+          "meaning": "Bounded render claims, at most three; retries of one live claim do not increment.",
+          "nullable": false,
+          "default": "(0)",
+          "sensitive": false
+        },
+        {
+          "name": "SourceVisitStatus",
+          "type": "varchar(12)",
+          "meaning": "Pending/approved status bound to the claim so decisions during rendering invalidate stale content.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "SourceSnapshotHash",
+          "type": "varbinary(32)",
+          "meaning": "Exact immutable visit snapshot digest bound to the render claim.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "SourcePhotoHash",
+          "type": "varbinary(32)",
+          "meaning": "Exact photo content digest bound to the render claim.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "ArtifactDigest",
+          "type": "varbinary(32)",
+          "meaning": "SHA-256 of renderer-produced SVG bytes; does not prove paper output.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        },
+        {
+          "name": "FailureCode",
+          "type": "varchar(40)",
+          "meaning": "Controlled redacted failure category; no provider text, credentials or private paths.",
+          "nullable": true,
+          "default": null,
+          "sensitive": false
+        },
+        {
+          "name": "CreatedAtUtc",
+          "type": "datetime2(3)",
+          "meaning": "UTC creation time of this print-render state.",
+          "nullable": false,
+          "default": "(SYSUTCDATETIME())",
+          "sensitive": false
+        },
+        {
+          "name": "SourceCardDataHash",
+          "type": "varbinary(32)",
+          "meaning": "SHA-256 binding of trusted printable employee/host identity, purpose and current assigned-project summary. Rechecked at render completion and dispatch; not an authorization token.",
+          "nullable": true,
+          "default": null,
+          "sensitive": true
+        }
+      ],
+      "pk": [
+        "PrintJobId"
+      ],
+      "unique": [],
+      "checks": [
+        "(ClaimToken IS NULL AND LeaseUntilUtc IS NULL) OR (ClaimToken IS NOT NULL AND LeaseUntilUtc IS NOT NULL)",
+        "AttemptCount BETWEEN 0 AND 3",
+        "(SourceVisitStatus IS NULL AND SourceSnapshotHash IS NULL AND SourcePhotoHash IS NULL) OR\n        (SourceVisitStatus IS NOT NULL AND SourceVisitStatus IN('PENDING','APPROVED') AND SourceSnapshotHash IS NOT NULL AND DATALENGTH(SourceSnapshotHash)=32 AND SourcePhotoHash IS NOT NULL AND DATALENGTH(SourcePhotoHash)=32)",
+        "ArtifactDigest IS NULL OR DATALENGTH(ArtifactDigest)=32",
+        "FailureCode IS NULL OR FailureCode IN('RENDER_FAILED','STORAGE_UNAVAILABLE','KEY_UNAVAILABLE','STALE_CREDENTIAL','ATTEMPTS_EXHAUSTED')",
+        "SourceCardDataHash IS NULL OR DATALENGTH(SourceCardDataHash)=32"
+      ],
+      "fks": [
+        {
+          "columns": [
+            "PrintJobId"
+          ],
+          "target": "PassPrintJobs",
+          "target_columns": [
+            "PrintJobId"
+          ]
+        }
+      ],
+      "indexes": []
+    }
+  ]
+}

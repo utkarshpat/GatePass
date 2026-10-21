@@ -1,0 +1,24 @@
+.tools/
+tmp/
+node_modules/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+*.mdf
+*.ndf
+*.ldf
+*.bak
+*.trn
+*.log
+
+
+# Generated packages, local validation evidence and private runtime material
+output/
+database/validation/
+*.pfx
+*.p12
+*.pem
+*.key
+*.sqlplan

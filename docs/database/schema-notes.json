@@ -1,0 +1,1355 @@
+{
+  "SchemaMigrations": {
+    "purpose": "Applied migration history; no runtime mutation permissions.",
+    "columns": {
+      "Version": {
+        "meaning": "Unique version recorded by the migration transaction.",
+        "sensitive": false
+      },
+      "Description": {
+        "meaning": "Human-readable migration description.",
+        "sensitive": false
+      },
+      "AppliedAtUtc": {
+        "meaning": "UTC migration completion time.",
+        "sensitive": false
+      }
+    }
+  },
+  "Locations": {
+    "purpose": "Trusted office locations; no physical floor/checkpoint inventory.",
+    "columns": {
+      "LocationId": {
+        "meaning": "Internal location primary key.",
+        "sensitive": false
+      },
+      "LocationCode": {
+        "meaning": "Stable office code, e.g. NOIDA.",
+        "sensitive": false
+      },
+      "LocationName": {
+        "meaning": "Display name.",
+        "sensitive": false
+      },
+      "IsActive": {
+        "meaning": "Whether new visits may use this location.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "Projects": {
+    "purpose": "Trusted project directory cache, not an approval grant.",
+    "columns": {
+      "ProjectId": {
+        "meaning": "Internal project primary key.",
+        "sensitive": false
+      },
+      "ExternalProjectCode": {
+        "meaning": "Stable project code from trusted internal API.",
+        "sensitive": false
+      },
+      "ProjectName": {
+        "meaning": "Restricted display name; not exposed as a public directory.",
+        "sensitive": false
+      },
+      "IsActive": {
+        "meaning": "Whether the project accepts new visits.",
+        "sensitive": false
+      },
+      "LastSyncedAtUtc": {
+        "meaning": "Last successful trusted refresh.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "ProjectLocations": {
+    "purpose": "Project availability in a specific office; guard scope anchor.",
+    "columns": {
+      "ProjectLocationId": {
+        "meaning": "Internal project-office pair identifier.",
+        "sensitive": false
+      },
+      "ProjectId": {
+        "meaning": "Trusted project.",
+        "sensitive": false
+      },
+      "LocationId": {
+        "meaning": "Office location.",
+        "sensitive": false
+      },
+      "IsActive": {
+        "meaning": "Whether new visits may target this pair.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "Users": {
+    "purpose": "Immutable issuer/subject mapping for authenticated staff and employees.",
+    "columns": {
+      "UserId": {
+        "meaning": "Internal authenticated principal ID.",
+        "sensitive": false
+      },
+      "IdentityIssuer": {
+        "meaning": "Configured trusted issuer; exact binary comparison.",
+        "sensitive": false
+      },
+      "IdentitySubject": {
+        "meaning": "Immutable provider subject/object mapping; exact comparison.",
+        "sensitive": false
+      },
+      "DisplayName": {
+        "meaning": "Display-only name.",
+        "sensitive": true
+      },
+      "IsActive": {
+        "meaning": "Application account enabled flag.",
+        "sensitive": false
+      },
+      "AuthorizationVersion": {
+        "meaning": "Increment on role, capability, assignment or account changes.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      },
+      "LastLoginAtUtc": {
+        "meaning": "Most recent successful sign-in.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "Employees": {
+    "purpose": "Trusted employee cache; corporate email and manager come only from directory.",
+    "columns": {
+      "EmployeeId": {
+        "meaning": "Immutable trusted organization employee code.",
+        "sensitive": false
+      },
+      "UserId": {
+        "meaning": "Linked issuer/subject principal after trusted resolution.",
+        "sensitive": false
+      },
+      "FullName": {
+        "meaning": "Trusted employee full name.",
+        "sensitive": true
+      },
+      "OfficialEmail": {
+        "meaning": "Authoritative corporate delivery address.",
+        "sensitive": true
+      },
+      "ManagerEmployeeId": {
+        "meaning": "Directory manager code; may precede local manager synchronization.",
+        "sensitive": false
+      },
+      "IsActive": {
+        "meaning": "Trusted employee employment/access enabled flag.",
+        "sensitive": false
+      },
+      "LastSyncedAtUtc": {
+        "meaning": "Last successful directory verification, not last attempted refresh.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "EmployeeProjectMemberships": {
+    "purpose": "Authoritative host eligibility cache at project level.",
+    "columns": {
+      "EmployeeId": {
+        "meaning": "Employee belonging to project.",
+        "sensitive": false
+      },
+      "ProjectId": {
+        "meaning": "Project from internal API.",
+        "sensitive": false
+      },
+      "IsActive": {
+        "meaning": "Trusted membership enabled flag.",
+        "sensitive": false
+      },
+      "VerifiedAtUtc": {
+        "meaning": "Last successful membership verification; freshness policy applies.",
+        "sensitive": false
+      },
+      "SourceUpdatedAtUtc": {
+        "meaning": "Upstream update timestamp when supplied.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "Capabilities": {
+    "purpose": "Application-controlled capability catalogue; no implicit admin superuser.",
+    "columns": {
+      "CapabilityCode": {
+        "meaning": "Explicit permission identifier.",
+        "sensitive": false
+      },
+      "Description": {
+        "meaning": "Operational meaning; scope restrictions are documented in permission matrix.",
+        "sensitive": false
+      }
+    }
+  },
+  "StaffRoleGrants": {
+    "purpose": "Time-bounded role at one India/location/project/project-location scope.",
+    "columns": {
+      "RoleGrantId": {
+        "meaning": "Historical role grant identifier.",
+        "sensitive": false
+      },
+      "UserId": {
+        "meaning": "Authenticated user holding the grant.",
+        "sensitive": false
+      },
+      "RoleCode": {
+        "meaning": "INDIA_ADMIN, LOCATION_ADMIN, PROJECT_ADMIN, RECEPTION or GUARD.",
+        "sensitive": false
+      },
+      "ScopeType": {
+        "meaning": "INDIA, LOCATION, PROJECT or PROJECT_LOCATION.",
+        "sensitive": false
+      },
+      "LocationId": {
+        "meaning": "Only for LOCATION scope.",
+        "sensitive": false
+      },
+      "ProjectId": {
+        "meaning": "Only for PROJECT scope.",
+        "sensitive": false
+      },
+      "ProjectLocationId": {
+        "meaning": "Only for PROJECT_LOCATION scope.",
+        "sensitive": false
+      },
+      "GrantedByUserId": {
+        "meaning": "Authorized grant issuer; bootstrap handled separately.",
+        "sensitive": false
+      },
+      "ValidFromUtc": {
+        "meaning": "Inclusive grant start.",
+        "sensitive": false
+      },
+      "ValidUntilUtc": {
+        "meaning": "Exclusive grant end; null means no configured end.",
+        "sensitive": false
+      },
+      "RevokedAtUtc": {
+        "meaning": "Explicit revocation time.",
+        "sensitive": false
+      },
+      "RevokedByUserId": {
+        "meaning": "Revoking administrator.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "GrantCapabilities": {
+    "purpose": "Explicit permission on a scoped role grant; role label alone grants nothing.",
+    "columns": {
+      "RoleGrantId": {
+        "meaning": "Grant carrying this permission.",
+        "sensitive": false
+      },
+      "CapabilityCode": {
+        "meaning": "Permission allowed by the role/capability matrix.",
+        "sensitive": false
+      }
+    }
+  },
+  "GuardAssignments": {
+    "purpose": "Many-to-many guard to project-office allocations with retained history.",
+    "columns": {
+      "GuardAssignmentId": {
+        "meaning": "Historical allocation identifier.",
+        "sensitive": false
+      },
+      "GuardUserId": {
+        "meaning": "Guard must separately hold effective GUARD capability in this office.",
+        "sensitive": false
+      },
+      "ProjectLocationId": {
+        "meaning": "Exact project-office allocation.",
+        "sensitive": false
+      },
+      "AssignedByUserId": {
+        "meaning": "Authorized allocating administrator.",
+        "sensitive": false
+      },
+      "ValidFromUtc": {
+        "meaning": "Inclusive allocation start.",
+        "sensitive": false
+      },
+      "ValidUntilUtc": {
+        "meaning": "Exclusive allocation end; null for open ended.",
+        "sensitive": false
+      },
+      "DeallocatedAtUtc": {
+        "meaning": "Explicit allocation withdrawal.",
+        "sensitive": false
+      },
+      "DeallocatedByUserId": {
+        "meaning": "Administrator withdrawing allocation.",
+        "sensitive": false
+      },
+      "Reason": {
+        "meaning": "Allocation/change justification.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "RegistrationIntakes": {
+    "purpose": "Short-lived registration ownership and submission correlation, not an operational group.",
+    "columns": {
+      "IntakeId": {
+        "meaning": "Private intake/session correlation identifier; never sufficient authorization.",
+        "sensitive": false
+      },
+      "TokenHash": {
+        "meaning": "SHA-256 digest of random intake bearer credential.",
+        "sensitive": true
+      },
+      "IntakeType": {
+        "meaning": "EMPLOYEE or PUBLIC.",
+        "sensitive": false
+      },
+      "OwnerUserId": {
+        "meaning": "Required for employee intake; null for anonymous visitor intake.",
+        "sensitive": false
+      },
+      "Status": {
+        "meaning": "DRAFT, SUBMITTED or ABANDONED.",
+        "sensitive": false
+      },
+      "ExpiresAtUtc": {
+        "meaning": "Intake credential expiry, independent from visit validity.",
+        "sensitive": false
+      },
+      "SubmittedAtUtc": {
+        "meaning": "One successful batch submission time.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "PhotoAssets": {
+    "purpose": "Normalized private photo metadata; content is outside public web directories.",
+    "columns": {
+      "PhotoAssetId": {
+        "meaning": "Photo identifier, not an access credential.",
+        "sensitive": false
+      },
+      "IntakeId": {
+        "meaning": "Owner intake; request must use a photo from the same intake.",
+        "sensitive": false
+      },
+      "StorageKey": {
+        "meaning": "Opaque private storage locator; cleared after purge.",
+        "sensitive": true
+      },
+      "ContentHash": {
+        "meaning": "SHA-256 digest of normalized content.",
+        "sensitive": true
+      },
+      "MimeType": {
+        "meaning": "Normalized supported image format.",
+        "sensitive": false
+      },
+      "ByteLength": {
+        "meaning": "Processed image size in bytes.",
+        "sensitive": false
+      },
+      "PixelWidth": {
+        "meaning": "Normalized pixel width.",
+        "sensitive": false
+      },
+      "PixelHeight": {
+        "meaning": "Normalized pixel height.",
+        "sensitive": false
+      },
+      "CapturedAtUtc": {
+        "meaning": "Trusted server intake/capture timestamp.",
+        "sensitive": false
+      },
+      "PurgedAtUtc": {
+        "meaning": "Actual private content purge timestamp.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      }
+    }
+  },
+  "VisitRequests": {
+    "purpose": "One submitted person per visit; frozen person/scope snapshot drives independent approval.",
+    "columns": {
+      "VisitRequestId": {
+        "meaning": "Individual visit identifier.",
+        "sensitive": false
+      },
+      "PublicReference": {
+        "meaning": "Opaque human-friendly reference, not authorization.",
+        "sensitive": false
+      },
+      "IntakeId": {
+        "meaning": "Registration-only correlation; not exposed as a group in operations.",
+        "sensitive": false
+      },
+      "ClientPersonKey": {
+        "meaning": "Stable per-person input key within an idempotent intake submission.",
+        "sensitive": false
+      },
+      "RequestType": {
+        "meaning": "TEMP_ID, EMPLOYEE_PROJECT or EXTERNAL.",
+        "sensitive": false
+      },
+      "EmployeeId": {
+        "meaning": "The requester/person for internal visits; absent for external people.",
+        "sensitive": false
+      },
+      "PersonName": {
+        "meaning": "Submitted display snapshot; directory-sourced for employees.",
+        "sensitive": true
+      },
+      "PersonEmail": {
+        "meaning": "Corporate-only for employees; optional for external visitors.",
+        "sensitive": true
+      },
+      "PersonPhone": {
+        "meaning": "Optional external contact; do not require identity-document data.",
+        "sensitive": true
+      },
+      "PhotoAssetId": {
+        "meaning": "Captured photo from this intake, never another intake.",
+        "sensitive": false
+      },
+      "LocationId": {
+        "meaning": "Authorized office.",
+        "sensitive": false
+      },
+      "ProjectLocationId": {
+        "meaning": "Required for project/external visits; absent for TEMP_ID.",
+        "sensitive": false
+      },
+      "HostEmployeeId": {
+        "meaning": "Assigned individual approver, absent for TEMP_ID.",
+        "sensitive": false
+      },
+      "Reason": {
+        "meaning": "Submitted purpose snapshot.",
+        "sensitive": true
+      },
+      "TemporaryIdReason": {
+        "meaning": "FORGOT, LOST or OTHER for TEMP_ID.",
+        "sensitive": false
+      },
+      "Status": {
+        "meaning": "PENDING, APPROVED, DENIED or CANCELLED; no final-record draft.",
+        "sensitive": false
+      },
+      "LocalVisitDate": {
+        "meaning": "India local visit day; UTC bounds must lie within that day.",
+        "sensitive": false
+      },
+      "ValidFromUtc": {
+        "meaning": "Inclusive visit start.",
+        "sensitive": false
+      },
+      "ValidUntilUtc": {
+        "meaning": "Exclusive visit end.",
+        "sensitive": false
+      },
+      "ApprovalDeadlineUtc": {
+        "meaning": "Last allowed host decision time, exclusive; absent for TEMP_ID.",
+        "sensitive": false
+      },
+      "SnapshotVersion": {
+        "meaning": "Immutable submitted content revision; one in v1.",
+        "sensitive": false
+      },
+      "SnapshotHash": {
+        "meaning": "Digest of canonical approval-relevant content, not raw secrets.",
+        "sensitive": false
+      },
+      "DecisionAtUtc": {
+        "meaning": "Automatic TEMP_ID approval or final host decision time.",
+        "sensitive": false
+      },
+      "CancelledAtUtc": {
+        "meaning": "Cancellation time; does not silently remove recorded presence.",
+        "sensitive": false
+      },
+      "SubmittedAtUtc": {
+        "meaning": "Server submission time.",
+        "sensitive": false
+      },
+      "PersonalDataPurgedAtUtc": {
+        "meaning": "Policy-driven deidentification; permitted only after active use.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "TemporaryIdSlots": {
+    "purpose": "One reusable TEMP_ID slot per employee/office/local day; retain visit history separately.",
+    "columns": {
+      "EmployeeId": {
+        "meaning": "Employee using this daily temporary-ID slot.",
+        "sensitive": false
+      },
+      "LocationId": {
+        "meaning": "Office of the temporary pass.",
+        "sensitive": false
+      },
+      "LocalVisitDate": {
+        "meaning": "Local day of entitlement.",
+        "sensitive": false
+      },
+      "RequestType": {
+        "meaning": "Constant discriminator to enforce TEMP_ID target.",
+        "sensitive": false
+      },
+      "VisitRequestId": {
+        "meaning": "Current request; replacement only under duplicate/reissue contract.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "IdempotencyRequests": {
+    "purpose": "Durable actor/operation/payload-bound retries; no bearer secrets in results.",
+    "columns": {
+      "OperationId": {
+        "meaning": "Server idempotent operation identifier.",
+        "sensitive": false
+      },
+      "ActorBindingHash": {
+        "meaning": "Digest of trusted principal/intake identity and binding type.",
+        "sensitive": false
+      },
+      "OperationCode": {
+        "meaning": "SUBMIT_INTAKE, DECIDE_VISIT, RECORD_MOVEMENT, REISSUE_PASS or PRINT_CARD.",
+        "sensitive": false
+      },
+      "ClientKey": {
+        "meaning": "Client-generated stable retry key for this operation.",
+        "sensitive": false
+      },
+      "PayloadHash": {
+        "meaning": "Canonical resource/payload digest; mismatch is a conflict.",
+        "sensitive": false
+      },
+      "Status": {
+        "meaning": "PROCESSING exists only inside a transaction; COMPLETED is durable.",
+        "sensitive": false
+      },
+      "ResultJson": {
+        "meaning": "Authorized resource references and outcome only; never QR/link/session secrets.",
+        "sensitive": false
+      },
+      "CompletedAtUtc": {
+        "meaning": "Committed outcome time.",
+        "sensitive": false
+      },
+      "ExpiresAtUtc": {
+        "meaning": "Minimum retry retention deadline; business uniqueness survives cleanup.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      }
+    }
+  },
+  "ApprovalDecisions": {
+    "purpose": "One immutable host decision for one exact individual submitted snapshot.",
+    "columns": {
+      "VisitRequestId": {
+        "meaning": "Individual request; unique decision per request.",
+        "sensitive": false
+      },
+      "ApproverEmployeeId": {
+        "meaning": "Verified assigned host; membership checked transactionally.",
+        "sensitive": false
+      },
+      "SnapshotVersion": {
+        "meaning": "Exact submitted content revision approved/denied.",
+        "sensitive": false
+      },
+      "SnapshotHash": {
+        "meaning": "Exact submitted content digest.",
+        "sensitive": false
+      },
+      "Decision": {
+        "meaning": "APPROVED or DENIED.",
+        "sensitive": false
+      },
+      "DecisionSource": {
+        "meaning": "OUTLOOK or WEB; both identify the real host.",
+        "sensitive": false
+      },
+      "OperationId": {
+        "meaning": "Actor/operation-bound retry record.",
+        "sensitive": false
+      },
+      "Comment": {
+        "meaning": "Optional host explanation.",
+        "sensitive": true
+      },
+      "DecidedAtUtc": {
+        "meaning": "UTC decision time.",
+        "sensitive": false
+      }
+    }
+  },
+  "AccessPasses": {
+    "purpose": "Versioned credential for one visit; validity/scope inherited from immutable visit.",
+    "columns": {
+      "AccessPassId": {
+        "meaning": "Internal credential record identifier.",
+        "sensitive": false
+      },
+      "VisitRequestId": {
+        "meaning": "Individual visit whose approval/scope is checked online.",
+        "sensitive": false
+      },
+      "PassVersion": {
+        "meaning": "Monotonic credential version within the visit.",
+        "sensitive": false
+      },
+      "PublicPassNumber": {
+        "meaning": "Display reference, never the QR secret.",
+        "sensitive": false
+      },
+      "CredentialHash": {
+        "meaning": "Unique SHA-256 digest of 256-bit random QR credential.",
+        "sensitive": true
+      },
+      "Status": {
+        "meaning": "PENDING, ACTIVE, DENIED or REVOKED.",
+        "sensitive": false
+      },
+      "IsCurrent": {
+        "meaning": "At most one current credential per visit.",
+        "sensitive": false
+      },
+      "RevokedAtUtc": {
+        "meaning": "Revocation time.",
+        "sensitive": false
+      },
+      "RevocationReason": {
+        "meaning": "Audited revocation/reissue reason.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "PassSecrets": {
+    "purpose": "Separately permissioned encrypted QR credential for authorized reprint/render only.",
+    "columns": {
+      "AccessPassId": {
+        "meaning": "Credential whose random secret is encrypted.",
+        "sensitive": false
+      },
+      "Ciphertext": {
+        "meaning": "Authenticated encrypted credential; no plaintext fallback.",
+        "sensitive": true
+      },
+      "Nonce": {
+        "meaning": "Unique AES-GCM nonce for this key/encryption.",
+        "sensitive": false
+      },
+      "AuthenticationTag": {
+        "meaning": "AES-GCM authentication tag.",
+        "sensitive": false
+      },
+      "KeyVersion": {
+        "meaning": "External key-store version identifier, never the key.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      }
+    }
+  },
+  "VisitPresence": {
+    "purpose": "Current INSIDE/OUTSIDE state of one individual visit, preserved across pass versions.",
+    "columns": {
+      "VisitRequestId": {
+        "meaning": "Individual visit; state is not globally unique person identity.",
+        "sensitive": false
+      },
+      "IsInside": {
+        "meaning": "Current recorded occupancy state.",
+        "sensitive": false
+      },
+      "LastAccessEventId": {
+        "meaning": "Last event for this same visit; composite FK prevents cross-visitor linkage.",
+        "sensitive": false
+      },
+      "LastMovementAtUtc": {
+        "meaning": "Effective time of last movement.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "AccessEvents": {
+    "purpose": "Immutable committed individual ENTRY/EXIT; scan verification is recorded separately.",
+    "columns": {
+      "AccessEventId": {
+        "meaning": "Append-only movement sequence.",
+        "sensitive": false
+      },
+      "VisitRequestId": {
+        "meaning": "Individual visit whose presence changes.",
+        "sensitive": false
+      },
+      "AccessPassId": {
+        "meaning": "Credential associated with this same visit; may be historical on reconciled EXIT.",
+        "sensitive": false
+      },
+      "ActorUserId": {
+        "meaning": "Authorized staff recording movement; never an arbitrary client-provided identity.",
+        "sensitive": false
+      },
+      "LocationId": {
+        "meaning": "Must equal the visit location; project scope derived from visit.",
+        "sensitive": false
+      },
+      "EventType": {
+        "meaning": "ENTRY or EXIT.",
+        "sensitive": false
+      },
+      "EntryMethod": {
+        "meaning": "SCAN, MANUAL or RECONCILE.",
+        "sensitive": false
+      },
+      "OperationId": {
+        "meaning": "Unique durable idempotent movement operation.",
+        "sensitive": false
+      },
+      "OccurredAtUtc": {
+        "meaning": "Effective departure/entry time; normally server now.",
+        "sensitive": false
+      },
+      "RecordedAtUtc": {
+        "meaning": "Server recording time; never silently backdated.",
+        "sensitive": false
+      },
+      "ReconciliationReason": {
+        "meaning": "Required for supervised reconciliation only.",
+        "sensitive": false
+      },
+      "CorrelationId": {
+        "meaning": "Trace correlation, not authorization.",
+        "sensitive": false
+      }
+    }
+  },
+  "PassScanAttempts": {
+    "purpose": "Verification outcomes; no implicit physical entry and no raw unknown credentials.",
+    "columns": {
+      "ScanAttemptId": {
+        "meaning": "Verification attempt sequence.",
+        "sensitive": false
+      },
+      "AccessPassId": {
+        "meaning": "Known credential, or null for an unknown QR.",
+        "sensitive": false
+      },
+      "VisitRequestId": {
+        "meaning": "Known credential owner; must pair with AccessPassId.",
+        "sensitive": false
+      },
+      "ActorUserId": {
+        "meaning": "Authenticated authorized scanner.",
+        "sensitive": false
+      },
+      "LocationId": {
+        "meaning": "Scanner operating location, which may differ from the scanned pass location.",
+        "sensitive": false
+      },
+      "OutcomeCode": {
+        "meaning": "Allowlisted verification result; does not authorize a later movement.",
+        "sensitive": false
+      },
+      "OccurredAtUtc": {
+        "meaning": "Server verification timestamp.",
+        "sensitive": false
+      },
+      "CorrelationId": {
+        "meaning": "Trace identifier.",
+        "sensitive": false
+      }
+    }
+  },
+  "PassDeliveryLinks": {
+    "purpose": "Separate revocable bearer token for holder-specific viewing; encrypted recovery for dispatch.",
+    "columns": {
+      "DeliveryLinkId": {
+        "meaning": "Private delivery-link record ID.",
+        "sensitive": false
+      },
+      "AccessPassId": {
+        "meaning": "One specific pass version; reissue revokes its old links.",
+        "sensitive": false
+      },
+      "VisitRequestId": {
+        "meaning": "Same individual visit as the linked pass; prevents cross-visitor mail linkage.",
+        "sensitive": false
+      },
+      "TokenHash": {
+        "meaning": "Digest of random delivery bearer token; distinct from QR.",
+        "sensitive": true
+      },
+      "TokenCiphertext": {
+        "meaning": "Encrypted random delivery token for retryable mail dispatch.",
+        "sensitive": true
+      },
+      "Nonce": {
+        "meaning": "Unique nonce under the delivery-token key.",
+        "sensitive": false
+      },
+      "AuthenticationTag": {
+        "meaning": "Authenticated encryption tag.",
+        "sensitive": false
+      },
+      "KeyVersion": {
+        "meaning": "External delivery-token key version; separate purpose from QR encryption.",
+        "sensitive": false
+      },
+      "RecipientEmail": {
+        "meaning": "Approved individual recipient; corporate address for employees.",
+        "sensitive": true
+      },
+      "ExpiresAtUtc": {
+        "meaning": "Exclusive link expiry; service limits to pass/visit policy.",
+        "sensitive": false
+      },
+      "RevokedAtUtc": {
+        "meaning": "Explicit invalidation time.",
+        "sensitive": false
+      },
+      "LastUsedAtUtc": {
+        "meaning": "Last authorized holder-view use.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      }
+    }
+  },
+  "PassPrintJobs": {
+    "purpose": "Individual card rendering/dispatch audit; not proof that paper physically printed.",
+    "columns": {
+      "PrintJobId": {
+        "meaning": "Unique card-render/print request.",
+        "sensitive": false
+      },
+      "AccessPassId": {
+        "meaning": "Credential printed; reprint preserves QR.",
+        "sensitive": false
+      },
+      "VisitRequestId": {
+        "meaning": "Credential visit for relational consistency.",
+        "sensitive": false
+      },
+      "LocationId": {
+        "meaning": "Must equal visit location; reception scope checked server-side.",
+        "sensitive": false
+      },
+      "RequestedByUserId": {
+        "meaning": "Authorized reception principal.",
+        "sensitive": false
+      },
+      "OperationId": {
+        "meaning": "Durable retry key; retries return same job, not an automatic extra dispatch.",
+        "sensitive": false
+      },
+      "PrintReason": {
+        "meaning": "FIRST, REPRINT or REISSUE.",
+        "sensitive": false
+      },
+      "Status": {
+        "meaning": "REQUESTED, RENDERED, DISPATCHED or FAILED.",
+        "sensitive": false
+      },
+      "PrinterLabel": {
+        "meaning": "Configured reception printer label.",
+        "sensitive": false
+      },
+      "UpdatedAtUtc": {
+        "meaning": "Latest job-state change.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      }
+    }
+  },
+  "NotificationOutbox": {
+    "purpose": "Transactional, leased and retryable dispatch with encrypted secrets referenced by ID.",
+    "columns": {
+      "NotificationId": {
+        "meaning": "Worker job identifier.",
+        "sensitive": false
+      },
+      "VisitRequestId": {
+        "meaning": "Individual visit; optional for system-only notifications.",
+        "sensitive": false
+      },
+      "DeliveryLinkId": {
+        "meaning": "Optional protected link reference; no plaintext token in JSON.",
+        "sensitive": false
+      },
+      "RecipientKind": {
+        "meaning": "EMAIL, EMPLOYEE or MANAGER; manager resolution must not block temporary pass issuance.",
+        "sensitive": false
+      },
+      "RecipientEmployeeId": {
+        "meaning": "Employee recipient, or subject employee whose manager must be resolved.",
+        "sensitive": false
+      },
+      "RecipientEmail": {
+        "meaning": "Direct/resolved trusted recipient; nullable while directory contact resolution is pending.",
+        "sensitive": true
+      },
+      "TemplateCode": {
+        "meaning": "Allowlisted template identifier.",
+        "sensitive": false
+      },
+      "PayloadJson": {
+        "meaning": "Minimal template data/references; no raw bearer/session secrets.",
+        "sensitive": true
+      },
+      "DedupeHash": {
+        "meaning": "Unique business-event/template/recipient digest.",
+        "sensitive": false
+      },
+      "Status": {
+        "meaning": "PENDING, PROCESSING, SENT, DEAD or CANCELLED.",
+        "sensitive": false
+      },
+      "AttemptCount": {
+        "meaning": "Dispatch attempts so far.",
+        "sensitive": false
+      },
+      "MaxAttempts": {
+        "meaning": "Configured finite retry ceiling.",
+        "sensitive": false
+      },
+      "NextAttemptAtUtc": {
+        "meaning": "Earliest retry time.",
+        "sensitive": false
+      },
+      "LockedBy": {
+        "meaning": "Worker lease owner while PROCESSING.",
+        "sensitive": false
+      },
+      "LockedUntilUtc": {
+        "meaning": "Lease expiry; abandoned work is reclaimable.",
+        "sensitive": false
+      },
+      "LastErrorCode": {
+        "meaning": "Redacted diagnostic code, not a provider response with secrets.",
+        "sensitive": false
+      },
+      "SentAtUtc": {
+        "meaning": "Provider accepted dispatch time; not guaranteed inbox delivery.",
+        "sensitive": false
+      },
+      "ProviderMessageId": {
+        "meaning": "Provider receipt identifier if available.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency token, never a timestamp or authorization proof.",
+        "sensitive": false
+      }
+    }
+  },
+  "SecurityAuditEvents": {
+    "purpose": "Append-only application audit; independent protected export required for tamper resistance.",
+    "columns": {
+      "AuditEventId": {
+        "meaning": "Immutable audit sequence.",
+        "sensitive": false
+      },
+      "ActorUserId": {
+        "meaning": "Authenticated actor, null for system/public actor.",
+        "sensitive": false
+      },
+      "ActionCode": {
+        "meaning": "Allowlisted security/business action.",
+        "sensitive": false
+      },
+      "TargetType": {
+        "meaning": "Target entity kind.",
+        "sensitive": false
+      },
+      "TargetReference": {
+        "meaning": "Non-secret internal target reference.",
+        "sensitive": false
+      },
+      "LocationId": {
+        "meaning": "Location scope when known.",
+        "sensitive": false
+      },
+      "ProjectLocationId": {
+        "meaning": "Project-office scope; requires matching LocationId.",
+        "sensitive": false
+      },
+      "ResultCode": {
+        "meaning": "SUCCESS, DENIED or ERROR.",
+        "sensitive": false
+      },
+      "MetadataJson": {
+        "meaning": "Allowlisted minimal audit metadata; no raw tokens/photo content.",
+        "sensitive": true
+      },
+      "CorrelationId": {
+        "meaning": "Operation trace identifier.",
+        "sensitive": false
+      },
+      "OccurredAtUtc": {
+        "meaning": "Server recording time.",
+        "sensitive": false
+      }
+    }
+  },
+  "Sessions": {
+    "purpose": "Revocable server-side staff sessions; browser holds only opaque secure-cookie ID.",
+    "columns": {
+      "SessionHash": {
+        "meaning": "SHA-256 digest of random session credential.",
+        "sensitive": true
+      },
+      "UserId": {
+        "meaning": "Authenticated owner.",
+        "sensitive": false
+      },
+      "CsrfHash": {
+        "meaning": "Digest used to validate session-bound mutation protection.",
+        "sensitive": true
+      },
+      "AuthorizationVersionAtIssue": {
+        "meaning": "Reference version; current authorization is always re-evaluated.",
+        "sensitive": false
+      },
+      "LastSeenAtUtc": {
+        "meaning": "Most recent accepted activity.",
+        "sensitive": false
+      },
+      "IdleExpiresAtUtc": {
+        "meaning": "Server-enforced idle deadline.",
+        "sensitive": false
+      },
+      "AbsoluteExpiresAtUtc": {
+        "meaning": "Non-extendable session deadline.",
+        "sensitive": false
+      },
+      "RevokedAtUtc": {
+        "meaning": "Explicit logout/account/session invalidation.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Server creation timestamp in UTC.",
+        "sensitive": false
+      }
+    }
+  },
+  "GuardCredentials": {
+    "purpose": "Individual local guard login identity and adaptive password hash, separate from employee SSO/directory.",
+    "columns": {
+      "UserId": {
+        "meaning": "One guard application user; credential provisioning grants no roles.",
+        "sensitive": false
+      },
+      "LoginId": {
+        "meaning": "Unique lowercase ASCII login ID; password normalization is never inferred from this.",
+        "sensitive": true
+      },
+      "EncodedPasswordHash": {
+        "meaning": "Salted Argon2id PHC string; NULL while awaiting controlled setup/reset. Auth service only.",
+        "sensitive": true
+      },
+      "CredentialVersion": {
+        "meaning": "Generation fencing for verification/reset; increment on credential mutation.",
+        "sensitive": false
+      },
+      "IsEnabled": {
+        "meaning": "Credential enabled independently of global user state; both must permit authentication.",
+        "sensitive": false
+      },
+      "MustChangePassword": {
+        "meaning": "Setup/reset required; no ordinary login until password setup completes.",
+        "sensitive": false
+      },
+      "FailedCount": {
+        "meaning": "Completed failed checks in the current window; five triggers temporary lockout.",
+        "sensitive": false
+      },
+      "FailureWindowStartUtc": {
+        "meaning": "Start of the provisional 15-minute failure window.",
+        "sensitive": false
+      },
+      "LockedUntilUtc": {
+        "meaning": "Temporary lockout; checked again at login completion.",
+        "sensitive": false
+      },
+      "PasswordChangedAtUtc": {
+        "meaning": "Last password setup/change time; NULL when the password is cleared for setup.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Credential record creation timestamp.",
+        "sensitive": false
+      },
+      "RowVer": {
+        "meaning": "Database concurrency version.",
+        "sensitive": false
+      }
+    }
+  },
+  "GuardSetupTickets": {
+    "purpose": "Single-use expiring setup/reset handles; raw handles remain outside SQL/logs.",
+    "columns": {
+      "TokenHash": {
+        "meaning": "SHA-256 of the random 32-byte setup handle; not a password hash.",
+        "sensitive": true
+      },
+      "UserId": {
+        "meaning": "Target guard credential.",
+        "sensitive": false
+      },
+      "CredentialVersion": {
+        "meaning": "Credential generation to which this setup handle is bound.",
+        "sensitive": false
+      },
+      "CreatedByUserId": {
+        "meaning": "Scoped administrator that issued setup/reset.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Handle issue timestamp.",
+        "sensitive": false
+      },
+      "ExpiresAtUtc": {
+        "meaning": "Exclusive 15-minute expiry.",
+        "sensitive": false
+      },
+      "UsedAtUtc": {
+        "meaning": "Consumed or invalidated timestamp.",
+        "sensitive": false
+      }
+    }
+  },
+  "GuardLoginAttempts": {
+    "purpose": "Short-lived server-only password verification reservations, fenced to account and authorization generations.",
+    "columns": {
+      "AttemptHash": {
+        "meaning": "SHA-256 of a random server-only verification handle.",
+        "sensitive": true
+      },
+      "UserId": {
+        "meaning": "Target guard identity.",
+        "sensitive": false
+      },
+      "SourceHash": {
+        "meaning": "Trusted server-derived keyed source bucket; never a browser-provided identity.",
+        "sensitive": true
+      },
+      "CredentialVersion": {
+        "meaning": "Password generation captured before expensive verification.",
+        "sensitive": false
+      },
+      "AuthorizationVersion": {
+        "meaning": "Authorization generation captured before expensive verification.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "Verification reservation timestamp.",
+        "sensitive": false
+      },
+      "ExpiresAtUtc": {
+        "meaning": "Exclusive 60-second completion deadline.",
+        "sensitive": false
+      },
+      "UsedAtUtc": {
+        "meaning": "Single-use completion timestamp, including denied completion.",
+        "sensitive": false
+      }
+    }
+  },
+  "GuardAuthSources": {
+    "purpose": "Short-lived source throttling buckets, including unknown account attempts; no raw network address or login identifier.",
+    "columns": {
+      "SourceHash": {
+        "meaning": "Trusted server-derived keyed source bucket digest.",
+        "sensitive": true
+      },
+      "WindowStartUtc": {
+        "meaning": "Current 60-second admission window.",
+        "sensitive": false
+      },
+      "RequestCount": {
+        "meaning": "Admitted attempts, bounded to twenty per window.",
+        "sensitive": false
+      },
+      "LastSeenAtUtc": {
+        "meaning": "Last admitted request; transient cleanup anchor.",
+        "sensitive": false
+      }
+    }
+  },
+  "RegistrationIntakeAccess": {
+    "purpose": "Owned intake CSRF binding and immutable submission receipt; registration correlation only, no operational group state.",
+    "columns": {
+      "IntakeId": {
+        "meaning": "One intake capability/receipt record linked to RegistrationIntakes.",
+        "sensitive": false
+      },
+      "CsrfHash": {
+        "meaning": "SHA-256 of a separate random intake CSRF value; both it and the intake token are required.",
+        "sensitive": true
+      },
+      "SubmittedPayloadHash": {
+        "meaning": "Versioned canonical business payload digest; immutable once the intake submits, independent of encryption retries.",
+        "sensitive": true
+      },
+      "SubmissionResultJson": {
+        "meaning": "Resource references and initial outcomes only; no QR/password/key/contact material. Supports retries after idempotency retention.",
+        "sensitive": true
+      },
+      "CreatedAtUtc": {
+        "meaning": "UTC creation time of this intake binding.",
+        "sensitive": false
+      }
+    }
+  },
+  "PassPrintRenderState": {
+    "purpose": "Restricted render fencing, source binding and artifact digest for one reception print job; no rendered card or plaintext credential storage.",
+    "columns": {
+      "PrintJobId": {
+        "meaning": "One-to-one link to the existing individual print job.",
+        "sensitive": false
+      },
+      "ClaimToken": {
+        "meaning": "Fresh internal renderer fencing token; never returned by the general API.",
+        "sensitive": true
+      },
+      "LeaseUntilUtc": {
+        "meaning": "UTC exclusive upper bound on the current claim and handoff; 60 seconds per attempt.",
+        "sensitive": false
+      },
+      "AttemptCount": {
+        "meaning": "Bounded render claims, at most three; retries of one live claim do not increment.",
+        "sensitive": false
+      },
+      "SourceVisitStatus": {
+        "meaning": "Pending/approved status bound to the claim so decisions during rendering invalidate stale content.",
+        "sensitive": false
+      },
+      "SourceSnapshotHash": {
+        "meaning": "Exact immutable visit snapshot digest bound to the render claim.",
+        "sensitive": true
+      },
+      "SourcePhotoHash": {
+        "meaning": "Exact photo content digest bound to the render claim.",
+        "sensitive": true
+      },
+      "ArtifactDigest": {
+        "meaning": "SHA-256 of renderer-produced SVG bytes; does not prove paper output.",
+        "sensitive": true
+      },
+      "FailureCode": {
+        "meaning": "Controlled redacted failure category; no provider text, credentials or private paths.",
+        "sensitive": false
+      },
+      "CreatedAtUtc": {
+        "meaning": "UTC creation time of this print-render state.",
+        "sensitive": false
+      },
+      "SourceCardDataHash": {
+        "meaning": "SHA-256 binding of trusted printable employee/host identity, purpose and current assigned-project summary. Rechecked at render completion and dispatch; not an authorization token.",
+        "sensitive": true
+      }
+    }
+  }
+}

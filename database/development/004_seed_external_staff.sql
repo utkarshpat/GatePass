@@ -1,0 +1,36 @@
+/* Explicit synthetic staff enrollment. No employee record, mailbox or SSO identity is created. */
+SET NOCOUNT ON;SET XACT_ABORT ON;
+IF DB_NAME()<>N'GatePass_DesignTest' OR @@TRANCOUNT<>0 OR NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'GatePass.DevelopmentDirectoryMarker' AND CONVERT(nvarchar(100),value)=N'SYNTHETIC-DIRECTORY-V1') THROW 53600,'Dedicated synthetic database required.',1;
+DECLARE @rows table(StaffId varchar(6) COLLATE Latin1_General_100_BIN2 NOT NULL PRIMARY KEY,DisplayName nvarchar(200) NOT NULL,LoginId varchar(64) COLLATE Latin1_General_100_BIN2 NOT NULL UNIQUE,RoleCode varchar(24) COLLATE Latin1_General_100_BIN2 NOT NULL,ScopeType varchar(24) COLLATE Latin1_General_100_BIN2 NOT NULL,LocationCode varchar(16),ProjectCode varchar(64),Capabilities nvarchar(max),EncodedHash varchar(128) COLLATE Latin1_General_100_BIN2 NOT NULL);
+INSERT @rows SELECT * FROM OPENJSON(@Fixtures) WITH(StaffId varchar(6) '$.staffId',DisplayName nvarchar(200) '$.displayName',LoginId varchar(64) '$.loginId',RoleCode varchar(24) '$.roleCode',ScopeType varchar(24) '$.scopeType',LocationCode varchar(16) '$.locationCode',ProjectCode varchar(64) '$.projectCode',Capabilities nvarchar(max) '$.capabilities' AS JSON,EncodedHash varchar(128) '$.encodedHash');
+IF (SELECT COUNT(*) FROM @rows)<>10 OR EXISTS(SELECT 1 FROM @rows WHERE gp._GuardPasswordHashValid(EncodedHash)=0 OR Capabilities IS NULL OR NOT((StaffId='PLT001' AND LoginId='platformadmin1@example.com') OR(StaffId LIKE 'ADM[0-9][0-9][0-9]' AND TRY_CONVERT(int,RIGHT(StaffId,3)) BETWEEN 1 AND 5 AND LoginId=CONCAT('admin',CONVERT(varchar(2),CONVERT(int,RIGHT(StaffId,3))),'@example.com')) OR(StaffId LIKE 'REC[0-9][0-9][0-9]' AND TRY_CONVERT(int,RIGHT(StaffId,3)) BETWEEN 1 AND 4 AND LoginId=CONCAT('reception',CONVERT(varchar(2),CONVERT(int,RIGHT(StaffId,3))),'@example.com')))) THROW 53600,'Invalid staff fixture.',1;
+IF EXISTS(SELECT 1 FROM @rows r CROSS APPLY OPENJSON(r.Capabilities) c WHERE gp._RoleCapabilityAllowed(r.RoleCode,CONVERT(varchar(40),c.value))=0) THROW 53600,'Invalid staff capabilities.',1;
+BEGIN TRY
+ BEGIN TRANSACTION;EXEC gp._TakeLock N'gp:authorization','Exclusive';
+ DECLARE @issuer nvarchar(200)=N'urn:gatepass:development-staff',@actor uniqueidentifier=(SELECT UserId FROM gp.Users WHERE IdentityIssuer=N'urn:gatepass:development-directory' AND IdentitySubject=N'local-seed'),@now datetime2(3)=SYSUTCDATETIME();
+ IF @actor IS NULL OR NOT EXISTS(SELECT 1 FROM gp.SchemaMigrations WHERE Version='029') THROW 53600,'Staff auth migration and directory seed required.',1;
+ INSERT gp.Users(IdentityIssuer,IdentitySubject,DisplayName) SELECT @issuer,N'staff:'+r.StaffId,r.DisplayName FROM @rows r WHERE NOT EXISTS(SELECT 1 FROM gp.Users u WHERE u.IdentityIssuer=@issuer AND u.IdentitySubject=(N'staff:'+r.StaffId) COLLATE Latin1_General_100_BIN2);
+ INSERT gp.StaffProfiles(UserId,StaffCode) SELECT u.UserId,r.StaffId FROM @rows r JOIN gp.Users u ON u.IdentityIssuer=@issuer AND u.IdentitySubject=(N'staff:'+r.StaffId) COLLATE Latin1_General_100_BIN2 WHERE NOT EXISTS(SELECT 1 FROM gp.StaffProfiles s WHERE s.UserId=u.UserId);
+ IF EXISTS(SELECT 1 FROM @rows r JOIN gp.Users u ON u.IdentityIssuer=@issuer AND u.IdentitySubject=(N'staff:'+r.StaffId) COLLATE Latin1_General_100_BIN2 JOIN gp.Employees e ON e.UserId=u.UserId) THROW 53600,'Local staff cannot be an employee identity.',1;
+ IF EXISTS(SELECT 1 FROM @rows r LEFT JOIN gp.Locations l ON l.LocationCode=r.LocationCode LEFT JOIN gp.Projects p ON p.ExternalProjectCode=r.ProjectCode WHERE NOT((r.RoleCode IN('INDIA_ADMIN','PLATFORM_ADMIN') AND r.ScopeType=CASE WHEN r.RoleCode='PLATFORM_ADMIN' THEN 'PLATFORM' ELSE 'INDIA' END AND r.LocationCode IS NULL AND r.ProjectCode IS NULL) OR(r.RoleCode IN('LOCATION_ADMIN','RECEPTION') AND r.ScopeType='LOCATION' AND l.IsActive=1 AND r.ProjectCode IS NULL) OR(r.RoleCode='PROJECT_ADMIN' AND r.ScopeType='PROJECT' AND p.IsActive=1 AND r.LocationCode IS NULL))) THROW 53600,'Invalid staff scope.',1;
+ DECLARE @new table(RoleGrantId bigint,UserId uniqueidentifier);
+ INSERT gp.StaffRoleGrants(UserId,RoleCode,ScopeType,LocationId,ProjectId,GrantedByUserId,ValidFromUtc)
+ OUTPUT inserted.RoleGrantId,inserted.UserId INTO @new
+ SELECT u.UserId,r.RoleCode,r.ScopeType,l.LocationId,p.ProjectId,@actor,@now FROM @rows r JOIN gp.Users u ON u.IdentityIssuer=@issuer AND u.IdentitySubject=(N'staff:'+r.StaffId) COLLATE Latin1_General_100_BIN2 LEFT JOIN gp.Locations l ON l.LocationCode=r.LocationCode LEFT JOIN gp.Projects p ON p.ExternalProjectCode=r.ProjectCode
+ WHERE NOT EXISTS(SELECT 1 FROM gp.StaffRoleGrants g WHERE g.UserId=u.UserId AND g.RoleCode=r.RoleCode COLLATE SQL_Latin1_General_CP1_CI_AS AND g.ScopeType=r.ScopeType COLLATE SQL_Latin1_General_CP1_CI_AS AND ISNULL(g.LocationId,-1)=ISNULL(l.LocationId,-1) AND ISNULL(g.ProjectId,-1)=ISNULL(p.ProjectId,-1));
+ INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT n.RoleGrantId,c.value FROM @new n JOIN gp.Users u ON u.UserId=n.UserId JOIN @rows r ON u.IdentitySubject=(N'staff:'+r.StaffId) COLLATE Latin1_General_100_BIN2 CROSS APPLY OPENJSON(r.Capabilities)c;
+ IF EXISTS(SELECT 1 FROM @rows r JOIN gp.Users u ON u.IdentityIssuer=@issuer AND u.IdentitySubject=(N'staff:'+r.StaffId) COLLATE Latin1_General_100_BIN2 JOIN gp.StaffLocalCredentials c ON c.UserId=u.UserId WHERE c.LoginId<>r.LoginId OR c.EncodedPasswordHash<>r.EncodedHash) THROW 53600,'Existing credentials differ; explicit reset required.',1;
+ DECLARE @created table(UserId uniqueidentifier);
+ INSERT gp.StaffLocalCredentials(UserId,LoginId,EncodedPasswordHash,MustChangePassword,PasswordChangedAtUtc)
+ OUTPUT inserted.UserId INTO @created
+ SELECT u.UserId,r.LoginId,r.EncodedHash,0,@now FROM @rows r JOIN gp.Users u ON u.IdentityIssuer=@issuer AND u.IdentitySubject=(N'staff:'+r.StaffId) COLLATE Latin1_General_100_BIN2 WHERE NOT EXISTS(SELECT 1 FROM gp.StaffLocalCredentials c WHERE c.UserId=u.UserId);
+ INSERT gp.SecurityAuditEvents(ActorUserId,ActionCode,TargetType,TargetReference,ResultCode) SELECT @actor,'DEV_STAFF_ENROLLED','USER',CONVERT(nvarchar(36),UserId),'SUCCESS' FROM @created;
+ -- Retire only the original, explicitly seeded employee/reception workaround.
+ DECLARE @retired table(UserId uniqueidentifier);
+ UPDATE g SET RevokedAtUtc=@now,RevokedByUserId=@actor OUTPUT inserted.UserId INTO @retired FROM gp.StaffRoleGrants g JOIN gp.Employees e ON e.UserId=g.UserId JOIN gp.Users u ON u.UserId=e.UserId WHERE u.IdentityIssuer=N'urn:gatepass:development-directory' AND e.EmployeeId IN('EMP021','EMP022','EMP023','EMP024') AND g.RoleCode='RECEPTION' AND g.GrantedByUserId=@actor AND g.RevokedAtUtc IS NULL;
+ UPDATE u SET AuthorizationVersion=AuthorizationVersion+1 FROM gp.Users u WHERE EXISTS(SELECT 1 FROM @retired r WHERE r.UserId=u.UserId);
+ UPDATE s SET RevokedAtUtc=@now FROM gp.Sessions s WHERE s.RevokedAtUtc IS NULL AND EXISTS(SELECT 1 FROM @retired r WHERE r.UserId=s.UserId);
+ INSERT gp.SecurityAuditEvents(ActorUserId,ActionCode,TargetType,TargetReference,ResultCode) SELECT DISTINCT @actor,'DEV_RECEPTION_REPLACED','USER',CONVERT(nvarchar(36),UserId),'SUCCESS' FROM @retired;
+ DECLARE @count int=(SELECT COUNT(*) FROM @created);
+ COMMIT;SELECT(SELECT @count created,10 total FOR JSON PATH,WITHOUT_ARRAY_WRAPPER);
+END TRY BEGIN CATCH IF @@TRANCOUNT>0 ROLLBACK;THROW;END CATCH;

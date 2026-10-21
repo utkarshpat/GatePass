@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "projects": [
+    {
+      "projectCode": "DEMO-PRJ-001",
+      "projectName": "Project 1",
+      "isActive": true,
+      "locationCodes": [
+        "NOIDA",
+        "BENGALURU",
+        "CHENNAI",
+        "PUNE"
+      ]
+    },
+    {
+      "projectCode": "DEMO-PRJ-002",
+      "projectName": "Project 2",
+      "isActive": true,
+      "locationCodes": [
+        "NOIDA",
+        "BENGALURU",
+        "PUNE"
+      ]
+    },
+    {
+      "projectCode": "DEMO-PRJ-003",
+      "projectName": "Project 3",
+      "isActive": true,
+      "locationCodes": [
+        "NOIDA",
+        "CHENNAI"
+      ]
+    },
+    {
+      "projectCode": "DEMO-PRJ-004",
+      "projectName": "Project 4",
+      "isActive": true,
+      "locationCodes": [
+        "BENGALURU"
+      ]
+    },
+    {
+      "projectCode": "DEMO-PRJ-005",
+      "projectName": "Project 5",
+      "isActive": true,
+      "locationCodes": [
+        "CHENNAI",
+        "PUNE"
+      ]
+    },
+    {
+      "projectCode": "DEMO-PRJ-006",
+      "projectName": "Project 6",
+      "isActive": true,
+      "locationCodes": [
+        "NOIDA",
+        "PUNE"
+      ]
+    }
+  ],
+  "employees": [
+    {
+      "employeeId": "EMP001",
+      "displayName": "Employee 1",
+      "officialEmail": "employee1@example.com",
+      "managerEmployeeId": "EMP019",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-001"
+      ]
+    },
+    {
+      "employeeId": "EMP002",
+      "displayName": "Employee 2",
+      "officialEmail": "employee2@example.com",
+      "managerEmployeeId": "EMP019",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-002"
+      ]
+    },
+    {
+      "employeeId": "EMP003",
+      "displayName": "Employee 3",
+      "officialEmail": "employee3@example.com",
+      "managerEmployeeId": "EMP019",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-002"
+      ]
+    },
+    {
+      "employeeId": "EMP004",
+      "displayName": "Employee 4",
+      "officialEmail": "employee4@example.com",
+      "managerEmployeeId": "EMP020",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-003"
+      ]
+    },
+    {
+      "employeeId": "EMP005",
+      "displayName": "Employee 5",
+      "officialEmail": "employee5@example.com",
+      "managerEmployeeId": "EMP020",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-002",
+        "DEMO-PRJ-004"
+      ]
+    },
+    {
+      "employeeId": "EMP006",
+      "displayName": "Employee 6",
+      "officialEmail": "employee6@example.com",
+      "managerEmployeeId": "EMP020",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-002",
+        "DEMO-PRJ-003"
+      ]
+    },
+    {
+      "employeeId": "EMP007",
+      "displayName": "Employee 7",
+      "officialEmail": "employee7@example.com",
+      "managerEmployeeId": "EMP021",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-003"
+      ]
+    },
+    {
+      "employeeId": "EMP008",
+      "displayName": "Employee 8",
+      "officialEmail": "employee8@example.com",
+      "managerEmployeeId": "EMP021",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-004"
+      ]
+    },
+    {
+      "employeeId": "EMP009",
+      "displayName": "Employee 9",
+      "officialEmail": "employee9@example.com",
+      "managerEmployeeId": "EMP021",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-004"
+      ]
+    },
+    {
+      "employeeId": "EMP010",
+      "displayName": "Employee 10",
+      "officialEmail": "employee10@example.com",
+      "managerEmployeeId": "EMP022",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-005"
+      ]
+    },
+    {
+      "employeeId": "EMP011",
+      "displayName": "Employee 11",
+      "officialEmail": "employee11@example.com",
+      "managerEmployeeId": "EMP022",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-005"
+      ]
+    },
+    {
+      "employeeId": "EMP012",
+      "displayName": "Employee 12",
+      "officialEmail": "employee12@example.com",
+      "managerEmployeeId": "EMP022",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-002",
+        "DEMO-PRJ-005"
+      ]
+    },
+    {
+      "employeeId": "EMP013",
+      "displayName": "Employee 13",
+      "officialEmail": "employee13@example.com",
+      "managerEmployeeId": "EMP023",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-006"
+      ]
+    },
+    {
+      "employeeId": "EMP014",
+      "displayName": "Employee 14",
+      "officialEmail": "employee14@example.com",
+      "managerEmployeeId": "EMP023",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-006"
+      ]
+    },
+    {
+      "employeeId": "EMP015",
+      "displayName": "Employee 15",
+      "officialEmail": "employee15@example.com",
+      "managerEmployeeId": "EMP023",
+      "isActive": false,
+      "projectCodes": [
+        "DEMO-PRJ-002",
+        "DEMO-PRJ-006"
+      ]
+    },
+    {
+      "employeeId": "EMP016",
+      "displayName": "Employee 16",
+      "officialEmail": "employee16@example.com",
+      "managerEmployeeId": "EMP024",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-003",
+        "DEMO-PRJ-005"
+      ]
+    },
+    {
+      "employeeId": "EMP017",
+      "displayName": "Employee 17",
+      "officialEmail": "employee17@example.com",
+      "managerEmployeeId": "EMP024",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-004",
+        "DEMO-PRJ-006"
+      ]
+    },
+    {
+      "employeeId": "EMP018",
+      "displayName": "Employee 18",
+      "officialEmail": "employee18@example.com",
+      "managerEmployeeId": "EMP024",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-002",
+        "DEMO-PRJ-003",
+        "DEMO-PRJ-004",
+        "DEMO-PRJ-005",
+        "DEMO-PRJ-006"
+      ]
+    },
+    {
+      "employeeId": "EMP019",
+      "displayName": "Employee 19",
+      "officialEmail": "employee19@example.com",
+      "managerEmployeeId": "EMP023",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-002"
+      ]
+    },
+    {
+      "employeeId": "EMP020",
+      "displayName": "Employee 20",
+      "officialEmail": "employee20@example.com",
+      "managerEmployeeId": "EMP023",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-003"
+      ]
+    },
+    {
+      "employeeId": "EMP021",
+      "displayName": "Employee 21",
+      "officialEmail": "employee21@example.com",
+      "managerEmployeeId": "EMP024",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-004"
+      ]
+    },
+    {
+      "employeeId": "EMP022",
+      "displayName": "Employee 22",
+      "officialEmail": "employee22@example.com",
+      "managerEmployeeId": "EMP024",
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-005"
+      ]
+    },
+    {
+      "employeeId": "EMP023",
+      "displayName": "Employee 23",
+      "officialEmail": "employee23@example.com",
+      "managerEmployeeId": null,
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-001",
+        "DEMO-PRJ-006"
+      ]
+    },
+    {
+      "employeeId": "EMP024",
+      "displayName": "Employee 24",
+      "officialEmail": "employee24@example.com",
+      "managerEmployeeId": null,
+      "isActive": true,
+      "projectCodes": [
+        "DEMO-PRJ-002",
+        "DEMO-PRJ-005",
+        "DEMO-PRJ-006"
+      ]
+    }
+  ]
+}

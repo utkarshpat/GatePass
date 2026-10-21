@@ -1,0 +1,37 @@
+{
+  "name": "gatepass",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node tools/launch-dummy-sso.mjs",
+    "test:directory": "node --test tests/directory.test.ts",
+    "directory:preview": "node tools/preview-directory.ts",
+    "test:guard-auth": "node --test tests/guard-auth.test.ts",
+    "test:registration": "node --test tests/registration.test.ts",
+    "test:visit-reads": "node --test tests/visit-reads.test.ts",
+    "test:printing": "node --test tests/pass-printing.test.ts",
+    "printing:preview": "node tools/preview-print-cards.ts",
+    "test:guard-movement": "node --test tests/guard-movement.test.ts",
+    "test:transport": "node --test tests/http-api.test.ts tests/sql-procedure-client.test.ts tests/api-composition.test.ts tests/registration-http.test.ts",
+    "test": "node --test tests/*.test.ts",
+    "start:api": "node tools/start-api.ts",
+    "dev:sso": "node tools/launch-dummy-sso.mjs",
+    "test:dummy-sso": "node --test tests/dummy-sso.test.ts",
+    "storage:init": "node tools/initialize-private-storage.ts",
+    "test:storage": "node --test tests/private-storage.test.ts"
+  },
+  "engines": {
+    "node": ">=26.8.0 <27"
+  },
+  "dependencies": {
+    "@zxing/library": "0.23.0",
+    "flag-icons": "7.6.0",
+    "libphonenumber-js": "1.13.15",
+    "mssql": "12.7.10",
+    "qrcode": "1.5.4"
+  },
+  "devDependencies": {
+    "sharp": "0.35.5"
+  }
+}
