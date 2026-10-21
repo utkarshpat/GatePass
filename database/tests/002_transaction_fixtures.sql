@@ -38,6 +38,10 @@ DECLARE @pair bigint=(SELECT ProjectLocationId FROM gp.ProjectLocations WHERE Pr
     @punePair bigint=(SELECT ProjectLocationId FROM gp.ProjectLocations WHERE ProjectId=@projectA AND LocationId=@pune);
 INSERT gp.EmployeeProjectMemberships(EmployeeId,ProjectId,IsActive,VerifiedAtUtc)
 SELECT @prefix+'-'+Label,@projectA,1,@now FROM @actors WHERE Label IN ('HOST','OTHERHOST');
+INSERT gp.EmployeeOfficeMemberships(EmployeeId,LocationId,IsActive,VerifiedAtUtc)
+SELECT @prefix+'-'+Label,@loc,1,@now FROM @actors WHERE Label IN ('HOST','OTHERHOST');
+INSERT gp.EmployeeProjectLocationMemberships(EmployeeId,ProjectLocationId,IsActive,VerifiedAtUtc)
+SELECT @prefix+'-'+Label,@pair,1,@now FROM @actors WHERE Label IN ('HOST','OTHERHOST');
 INSERT gp.StaffRoleGrants(UserId,RoleCode,ScopeType,LocationId,GrantedByUserId,ValidFromUtc)
 SELECT UserId,CASE WHEN Label='ADMIN' THEN 'LOCATION_ADMIN' WHEN Label='RECEPTION' THEN 'RECEPTION' ELSE 'GUARD' END,
     'LOCATION',CASE WHEN Label='WRONGLOCATION' THEN @pune ELSE @loc END,@host,DATEADD(hour,-1,@now)
@@ -48,6 +52,10 @@ SELECT GrantId,'PROJECT_MOVEMENT' FROM @actors WHERE Label IN ('GUARD','GUARD2',
 INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT GrantId,'TEMP_ID_MOVEMENT' FROM @actors WHERE Label IN ('GUARD','GUARD2');
 INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT GrantId,'RECONCILE_EXIT' FROM @actors WHERE Label='RECON';
 INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT GrantId,'GUARDS_MANAGE' FROM @actors WHERE Label='ADMIN';
+INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT GrantId,'VISITS_READ' FROM @actors WHERE Label IN('GUARD','GUARD2','WRONGPROJECT','WRONGLOCATION','NOCAP','RECON');
+INSERT gp.CommonAreas(LocationId,AreaName) VALUES(@loc,@prefix+' Common A'),(@loc,@prefix+' Common B');
+INSERT gp.GuardCommonAreaAssignments(GuardUserId,CommonAreaId,AssignedByUserId,ValidFromUtc,Reason)
+SELECT a.UserId,c.CommonAreaId,@host,@now,N'Owned duty fixture' FROM @actors a JOIN gp.CommonAreas c ON c.AreaName=@prefix+CASE WHEN a.Label='GUARD' THEN ' Common A' ELSE ' Common B' END WHERE a.Label IN('GUARD','NOCAP');
 -- Deliberately invalid capability-on-role and split-scope records exercise defense in depth.
 DECLARE @split uniqueidentifier=(SELECT UserId FROM @actors WHERE Label='SPLIT');
 INSERT gp.StaffRoleGrants(UserId,RoleCode,ScopeType,LocationId,GrantedByUserId,ValidFromUtc)

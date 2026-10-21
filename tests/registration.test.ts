@@ -167,3 +167,17 @@ test('external numbers require valid international format before reaching SQL', 
   await service.submit(ctx,{clientKey:randomUUID(),requestType:'EXTERNAL',locationId:1,projectLocationId:'1',hostEmployeeId:'EMP001',reason:'Business meeting',validFromUtc:'2026-10-20T00:00:00.000Z',validUntilUtc:'2026-10-20T12:00:00.000Z',people:[{clientPersonKey:randomUUID(),photoAssetId:randomUUID(),name:'Visitor',phone:'+919876543210'}]});
   assert.equal(JSON.parse(String(fake.calls[0].parameters.PeopleJson.value))[0].personPhone,'+919876543210');
 });
+
+
+test('registration options preserve SQL office eligibility and exact assigned pair flags, failing closed on old contracts', async () => {
+  const packet:any={locationId:1,locationCode:'NOIDA',locationName:'Noida',currentDate:'2026-10-21',maxVisitDate:'2026-11-01',digitalIdEligible:true,projects:[{projectLocationId:'1',projectCode:'DEMO-PRJ-001',projectName:'Project 1',assigned:true},{projectLocationId:'2',projectCode:'DEMO-PRJ-002',projectName:'Project 2',assigned:false}],hosts:[]};
+  const repo:RegistrationRepository={async execute(name){assert.equal(name,'gp.GetRegistrationOptions');return structuredClone(packet);}};
+  const service=new RegistrationService(repo,keys,normalizer,store);
+  const ctx=context('DIGITAL_ID');
+  let result=await service.options(ctx,'NOIDA');assert.equal(result.digitalIdEligible,true);assert.deepEqual(result.projects.map(p=>p.assigned),[true,false]);
+  packet.digitalIdEligible=false;packet.projects[0].assigned=false;
+  result=await service.options(ctx,'NOIDA');assert.equal(result.digitalIdEligible,false);assert(result.projects.every(p=>!p.assigned));
+  delete packet.digitalIdEligible;await assert.rejects(service.options(ctx,'NOIDA'),{code:'UNAVAILABLE'});
+  packet.digitalIdEligible=true;delete packet.projects[0].assigned;await assert.rejects(service.options(ctx,'NOIDA'),{code:'UNAVAILABLE'});
+  packet.projects[0].assigned='true';await assert.rejects(service.options(ctx,'NOIDA'),{code:'UNAVAILABLE'});
+});

@@ -97,10 +97,26 @@ function reset() {
   state.options=null;state.step=0;state.accessEditor=false;state.host=null;state.hosts=[];state.extras=[];state.people=[person()];state.photoIndex=0;state.jobs=null;
   $('registration').reset();$('reason-details').required=false;$('purpose-details').required=false;
   $('reason-optional').textContent=$('purpose-optional').textContent='(optional)';
-  $('extra-projects').replaceChildren();$('submission-results').replaceChildren();$('host-results').replaceChildren();$('host-results').hidden=true;
+  $('extra-projects').replaceChildren();$('submission-results').replaceChildren();$('host-results').replaceChildren();$('host-results').hidden=true;$('employee-office').hidden=true;$('employee-office').replaceChildren();
   $('host-search').setAttribute('aria-expanded','false');$('host-feedback').textContent='';
   $('toggle-access').setAttribute('aria-expanded','false');$('retry-pending').hidden=true;
   busy(false);
+}
+
+function setEmployeeOffice(officeName) {
+  if(!officeName) {$('employee-office').hidden=true;$('employee-office').replaceChildren();return;}
+  $('employee-office').hidden=false;$('employee-office').replaceChildren();
+  const pin=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  pin.setAttribute('width','13');pin.setAttribute('height','13');pin.setAttribute('viewBox','0 0 24 24');
+  pin.setAttribute('fill','none');pin.setAttribute('stroke','currentColor');pin.setAttribute('stroke-width','2');
+  pin.setAttribute('aria-hidden','true');
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d','M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z');
+  const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  circle.setAttribute('cx','12');circle.setAttribute('cy','10');circle.setAttribute('r','3');
+  pin.append(path,circle);
+  const text=document.createElement('span');text.textContent='Primary Office: '+officeName;
+  $('employee-office').append(pin,text);
 }
 
 function setEmployee(employee) {
@@ -109,6 +125,7 @@ function setEmployee(employee) {
   $('employee-avatar').textContent=initials;
   $('employee-name').textContent=employee.displayName;
   $('employee-id').textContent=employee.employeeId+' · '+employee.officialEmail;
+  setEmployeeOffice(employee.primaryOffice);
   $('employee-projects').replaceChildren();
   for(const project of employee.projects) {const chip=document.createElement('span');chip.className='chip';chip.textContent=project.projectName;$('employee-projects').append(chip);}
   if(!employee.projects.length) $('employee-projects').textContent='No assigned projects';
@@ -154,10 +171,10 @@ function renderPeople() {
 }
 
 function renderProjects() {
-  const own=new Set((state.employee?.projects??[]).map(row=>row.projectCode));
+  const own=new Set(state.options.projects.filter(row=>row.assigned).map(row=>row.projectLocationId));
   $('project').replaceChildren(new Option('Select project',''));
   for(const project of state.options.projects) {
-    if(state.mode==='employee'&&(own.has(project.projectCode)||state.extras.some(row=>row.projectLocationId===project.projectLocationId)))continue;
+    if(state.mode==='employee'&&(own.has(project.projectLocationId)||state.extras.some(row=>row.projectLocationId===project.projectLocationId)))continue;
     $('project').append(new Option(project.projectName,project.projectLocationId));
   }
   $('toggle-access').hidden=state.mode==='employee'&&$('project').options.length<=1;
@@ -176,6 +193,12 @@ async function beginFlow(mode) {
     if(state.options.locationCode!==document.querySelector('meta[name="gp-office"]').content)throw new Error('Office changed. Reload this page.');
     $('visit-date').value=$('visit-date').min=state.options.currentDate;$('visit-date').max=state.options.maxVisitDate;
     renderProjects();
+    if(mode==='employee') {
+      $('employee-projects').replaceChildren();
+      for(const project of state.options.projects.filter(row=>row.assigned)){const chip=document.createElement('span');chip.className='chip';chip.textContent=project.projectName+' · '+state.options.locationName;$('employee-projects').append(chip);}
+      $('toggle-access').textContent=state.options.digitalIdEligible?'+ Request access to another project':'+ Request project access';
+      if(!state.options.digitalIdEligible){$('employee-projects').textContent='Access to this office requires host approval.';notify('Select a project and local host to request access.');}
+    }
   } catch(error) {screen('landing');notify(error.message,'error');}
   finally {busy(false);}
 }
@@ -214,6 +237,7 @@ function validateDetails() {
     if(state.people.some(entry=>!entry.name||!entry.phone)){notify('Enter a name and mobile number for each visitor.','error');return false;}
     return true;
   }
+  if(!state.options.digitalIdEligible&&!state.extras.length){notify('Add a project and local host for approval.','error');$('toggle-access').focus();return false;}
   if(!$('reason').value){$('reason').focus();notify('Select a reason.','error');return false;}
   if($('reason').value==='OTHER'&&!$('reason-details').value.trim()){$('reason-details').focus();notify('Add the reason.','error');return false;}
   return $('reason-details').reportValidity();
@@ -396,7 +420,7 @@ function prepareJobs() {
   const first={requestType:state.mode==='employee'?'DIGITAL_ID':'EXTERNAL',clientKey:crypto.randomUUID(),reason:state.mode==='employee'?$('reason-details').value.trim()||$('reason').selectedOptions[0].textContent:purpose()};
   if(state.mode==='employee')first.digitalIdReason=$('reason').value;
   else {first.visitDate=$('visit-date').value;first.projectLocationId=$('project').value;first.hostEmployeeId=state.host.employeeId;}
-  const jobs=[{body:first,people:state.people.map(entry=>({...entry})),started:true,photos:[],result:null,label:state.mode==='employee'?'Digital ID':projectSelection().projectName}];
+  const jobs=state.mode==='employee'&&!state.options.digitalIdEligible?[]:[{body:first,people:state.people.map(entry=>({...entry})),started:true,photos:[],result:null,label:state.mode==='employee'?'Digital ID':projectSelection().projectName}];
   for(const extra of state.extras)jobs.push({body:{requestType:'EMPLOYEE_PROJECT',clientKey:crypto.randomUUID(),projectLocationId:extra.projectLocationId,hostEmployeeId:extra.host.employeeId,reason:extra.reason},people:[{...state.people[0],key:crypto.randomUUID()}],started:false,photos:[],result:null,label:extra.projectName});
   return jobs;
 }
@@ -423,7 +447,7 @@ async function renderDigitalCard(job,container){
 
 function showResults() {
   screen('success');$('submission-results').replaceChildren();
-  const done=state.jobs.filter(job=>job.result);$('success-title').textContent=state.mode==='employee'?'Digital ID created':'Visit submitted';
+  const done=state.jobs.filter(job=>job.result);$('success-title').textContent=state.mode==='employee'&&state.jobs.some(job=>job.body.requestType==='DIGITAL_ID')?'Digital ID created':'Visit submitted';
   for(const job of done)job.result.visits.forEach((visit,index)=>{
     const card=document.createElement('div'),heading=document.createElement('div'),name=document.createElement('strong'),badge=document.createElement('span'),reference=document.createElement('div');
     const liveStatus=job.detail?(job.detail.status==='CANCELLED'?'CANCELLED':Date.parse(job.detail.validUntilUtc)<=Date.parse(job.detail.checkedAtUtc)?'EXPIRED':job.detail.passStatus):visit.status;

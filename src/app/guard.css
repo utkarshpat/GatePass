@@ -111,23 +111,41 @@
 
   /* Segmented pill switch for Expected vs Inside */
   .guard-queue-tabs {
-    display: inline-flex;
+    flex: 1;
+    display: flex;
     align-items: center;
     gap: 0.25rem;
     padding: 0.25rem;
     background: var(--gp-surface-subtle);
     border: var(--gp-border-width) solid var(--gp-border);
     border-radius: var(--gp-radius-control);
+    min-width: 0;
   }
   .guard-queue-tabs button {
+    flex: 1;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.35rem;
+    text-align: center;
+    min-height: 2.5rem;
     background: transparent;
     color: var(--gp-text-muted);
     border: 0;
     border-radius: var(--gp-radius-sm);
-    padding: 0.35rem 1rem;
+    padding: 0.45rem 1.25rem;
     font-size: var(--gp-text-xs);
     font-weight: var(--gp-weight-medium);
+    white-space: nowrap;
     transition: all var(--gp-motion-fast) var(--gp-motion-easing);
+  }
+  .guard-queue-tabs button small {
+    display: inline;
+    font-size: 0.85em;
+    opacity: 0.8;
+    margin-top: 0;
+    font-weight: normal;
   }
   .guard-queue-tabs [aria-selected="true"] {
     background: var(--gp-surface);
@@ -137,15 +155,38 @@
   }
 
   .guard-refresh {
-    padding: var(--gp-space-2);
-    display: grid;
-    place-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gp-space-2);
+    min-height: 2.5rem;
+    padding: 0.45rem 1.1rem;
+    border: var(--gp-border-width) solid var(--gp-border);
     border-radius: var(--gp-radius-control);
-    color: var(--gp-text-muted);
+    background: var(--gp-surface);
+    color: var(--gp-text);
+    font-size: var(--gp-text-xs);
+    font-weight: var(--gp-weight-medium);
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all var(--gp-motion-fast) var(--gp-motion-easing);
   }
-  .guard-refresh:hover { background: var(--gp-surface-subtle); color: var(--gp-text); }
+  .guard-refresh:hover {
+    background: var(--gp-surface-subtle);
+    border-color: var(--gp-control-border);
+    color: var(--gp-text);
+  }
+  .guard-refresh .refresh-label {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+  }
+  .guard-refresh .refresh-label small {
+    display: inline;
+    font-size: 0.85em;
+    opacity: 0.8;
+    margin-top: 0;
+  }
   .guard-refresh:disabled svg { animation: guard-refresh-spin 1s linear infinite; }
   @keyframes guard-refresh-spin { to { transform: rotate(360deg); } }
 
@@ -263,7 +304,7 @@
   }
   .guard-card-avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
   .guard-card-person > div:last-child { min-width: 0; flex: 1; }
-  .guard-card-person strong { display: block; font-size: 1.125rem; font-weight: var(--gp-weight-bold); color: var(--gp-text); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .guard-card-person strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 1.125rem; font-weight: var(--gp-weight-bold); color: var(--gp-text); line-height: 1.3; overflow: hidden; overflow-wrap: anywhere; white-space: normal; }
   .guard-card-person p { margin: 0.25rem 0 0; font-size: 0.8125rem; color: var(--gp-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.35; }
   .guard-card-person p:last-child { font-family: var(--gp-font-mono); font-size: 0.75rem; opacity: 0.85; margin-top: 0.2rem; }
   
@@ -280,11 +321,26 @@
     color: var(--gp-text-muted);
     line-height: 1.35;
   }
+  .guard-card-footer > span:first-child {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 
   .guard-id-card small { display: block; font-size: 0.8em; opacity: 0.85; font-weight: 400; margin-top: 1px; }
 
   /* Status Colors for Guard Cards */
-  .guard-card-state { color: var(--guard-state, var(--gp-text)); font-weight: var(--gp-weight-bold); font-size: 0.8125rem; text-align: right; white-space: nowrap; }
+  .guard-card-state {
+    color: var(--guard-state, var(--gp-text));
+    font-weight: var(--gp-weight-bold);
+    font-size: 0.8125rem;
+    text-align: right;
+    white-space: pre-line;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    flex-shrink: 0;
+    max-width: 55%;
+  }
   .guard-id-card[data-status="PENDING"] { --guard-state: #d97706; background: #fffcf0; }
   .guard-id-card[data-status="APPROVED"] { --guard-state: #059669; background: #f0fdf4; }
   .guard-id-card[data-status="INSIDE"] { --guard-state: #2563eb; background: #eff6ff; }
@@ -327,8 +383,9 @@
   .guard-language-options [aria-checked="true"] { color: var(--gp-brand); background: var(--gp-brand-soft); font-weight: var(--gp-weight-semibold); }
 
   /* Scanner Dialog */
-  .guard-scanner-dialog { width: min(28rem, calc(100vw - 1.5rem)); height: min(38rem, calc(100dvh - 1.5rem)); }
-  .guard-scanner-dialog .dialog-body { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: var(--gp-space-3); padding-top: 0; }
+  .guard-scanner-dialog { width: min(28rem, calc(100vw - 1.5rem)); height: min(34rem, calc(100dvh - 2rem)); }
+  .guard-scanner-dialog[open] { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+  .guard-scanner-dialog .dialog-body { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: var(--gp-space-3); padding-top: 0; padding-bottom: var(--gp-space-4); }
   .guard-camera {
     position: relative;
     display: grid;
@@ -547,6 +604,32 @@
     }
     .guard-id-card { max-width: 100%; justify-self: stretch; }
     #recent-scans { gap: var(--gp-space-3); }
+    .guard-section-toolbar { gap: var(--gp-space-2); }
+    .guard-queue-tabs { flex: 1; display: flex; min-width: 0; }
+    .guard-queue-tabs button {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 2.75rem;
+      padding: 0.35rem 0.5rem;
+      white-space: normal;
+    }
+    .guard-queue-tabs button small {
+      display: block;
+      font-size: 0.78em;
+      line-height: 1.2;
+      margin-top: 1px;
+    }
+    .guard-refresh {
+      flex-shrink: 0;
+      width: 2.75rem;
+      height: 2.75rem;
+      min-height: auto;
+      padding: 0;
+    }
+    .guard-refresh .refresh-label { display: none; }
     .guard-app .toast-region { bottom: 6rem; }
   }
 }

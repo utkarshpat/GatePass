@@ -16,7 +16,7 @@ India -> Location -> Project -> Assigned Guards. Chennai, Bengaluru, Noida and P
 
 The directory API owns employee code/name/corporate email/active state/manager and project membership, subject to its actual contract. Corporate SSO owns authenticated issuer/subject identity. The application owns requests, independent host decisions, passes, scoped role grants, guard allocations and movement history. Never infer corporate identity or membership from editable form/email-domain values.
 
-EmployeeProjectMemberships is project-level because the agreed API's project assignments determine host eligibility. A guard's permissions are explicitly project-location-specific. These are separate relationships.
+EmployeeProjectMemberships records project affiliation only. It never grants access across the project's offices. Migrations 048–052 add explicit EmployeeOfficeMemberships and EmployeeProjectLocationMemberships. Digital ID issuance/entry requires a fresh active office entitlement; host search, submission and approval require a fresh exact project-location entitlement plus current affiliation. Missing mappings fail closed. A hosted cross-office employee request needs local host approval. Guard allocation remains independently scoped to the exact project-location.
 
 ## 02. Registration grouping ends at submission
 

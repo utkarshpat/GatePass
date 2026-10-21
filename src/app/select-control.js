@@ -35,7 +35,7 @@ function enhanceSelect(select) {
     document.dispatchEvent(new CustomEvent('gp-select-open',{detail:select.id}));
     list.replaceChildren();rows=[];
     for(const [index,option] of [...select.options].entries()) {
-      const item=document.createElement('div');item.className='select-option';item.id=select.id+'-option-'+index;item.setAttribute('role','option');item.setAttribute('aria-selected',String(option.selected&&option.value!==''));item.textContent=option.textContent;
+      const item=document.createElement('div');item.className='select-option';item.id=select.id+'-option-'+index;item.setAttribute('role','option');item.setAttribute('aria-label',option.textContent);item.setAttribute('aria-selected',String(option.selected&&option.value!==''));item.textContent=option.textContent;
       const disabled=option.disabled||option.value==='';item.setAttribute('aria-disabled',String(disabled));
       item.addEventListener('pointerdown',event=>event.preventDefault());item.addEventListener('click',()=>choose(index));
       list.append(item);rows.push({element:item,option,index});

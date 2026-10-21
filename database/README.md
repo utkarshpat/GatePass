@@ -1,5 +1,8 @@
 # GatePass database - v1.11, DB-first through Phase 02K
 
+> Current baseline: source migrations 001-062. This guide retains historical staged setup examples; the baseline helper alone does not install the complete current application. Start with [the consolidated handbook](../docs/system/README.md) and inspect the actual runner/source ledger before applying missing migrations.
+
+
 Start with [the numbered design guide](../docs/database/00_READ_ME_FIRST.md).
 
 ## 01. What is ready

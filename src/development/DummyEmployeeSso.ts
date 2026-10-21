@@ -9,7 +9,7 @@ import { resolvePowerShell } from './PowerShellRuntime.mjs';
 export function requireDummySso() {
   if (!['development', 'test'].includes(process.env.NODE_ENV ?? '') || process.env.GATEPASS_SSO_MODE !== 'dummy' || process.env.GATEPASS_DIRECTORY_MODE !== 'mock') throw new Error('DUMMY_SSO_DISABLED');
 }
-export type DummyEmployee = { employeeId: string; displayName: string; officialEmail: string; managerEmployeeId: string | null;
+export type DummyEmployee = { employeeId: string; displayName: string; officialEmail: string; primaryOffice?: string | null; managerEmployeeId: string | null;
   manager: { employeeId: string; displayName: string; officialEmail: string; active: boolean } | null;
   projects: { projectCode: string; projectName: string }[] };
 export interface DevelopmentSsoRepository {
@@ -23,9 +23,10 @@ function profile(v: unknown): DummyEmployee {
   if (!v || typeof v !== 'object') throw new Error('INVALID_DEVELOPMENT_PROFILE');
   const p = v as DummyEmployee;
   if (!employeeId(p.employeeId) || !text(p.displayName, 200) || !email(p.officialEmail) || p.managerEmployeeId !== null && !employeeId(p.managerEmployeeId)
+    || (p.primaryOffice !== undefined && p.primaryOffice !== null && !text(p.primaryOffice, 100))
     || p.manager !== null && (!p.manager || p.manager.employeeId !== p.managerEmployeeId || !text(p.manager.displayName, 200) || !email(p.manager.officialEmail) || typeof p.manager.active !== 'boolean')
     || !Array.isArray(p.projects) || p.projects.length > 50 || p.projects.some(x => !x || !/^DEMO-PRJ-[0-9]{3}$/u.test(x.projectCode) || !text(x.projectName, 200))) throw new Error('INVALID_DEVELOPMENT_PROFILE');
-  return { employeeId: p.employeeId, displayName: p.displayName, officialEmail: p.officialEmail, managerEmployeeId: p.managerEmployeeId,
+  return { employeeId: p.employeeId, displayName: p.displayName, officialEmail: p.officialEmail, primaryOffice: p.primaryOffice ?? null, managerEmployeeId: p.managerEmployeeId,
     manager: p.manager ? { employeeId: p.manager.employeeId, displayName: p.manager.displayName, officialEmail: p.manager.officialEmail, active: p.manager.active } : null,
     projects: p.projects.map(x => ({ projectCode: x.projectCode, projectName: x.projectName })) };
 }

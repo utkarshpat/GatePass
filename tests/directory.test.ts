@@ -123,3 +123,48 @@ test('mock directory is forbidden in production and without explicit opt-in', as
     assert.throws(() => new MockDirectorySource(), DirectoryContractError);
   } finally { process.env.NODE_ENV = 'test'; process.env.GATEPASS_DIRECTORY_MODE = 'mock'; }
 });
+
+
+test('same project in another office does not make an employee an eligible host', async () => {
+  assert(!(await gateway.getHostCandidates('DEMO-PRJ-001','BENGALURU')).some(e => e.employeeId==='EMP001'));
+  assert((await gateway.getHostCandidates('DEMO-PRJ-001','NOIDA')).some(e => e.employeeId==='EMP001'));
+});
+test('missing, duplicated and unbound employee office assignments fail closed', () => {
+  let data=altered();delete data.employees[0].locationCodes;
+  assert.throws(()=>normalizeDirectorySnapshot(data),DirectoryContractError);
+  data=altered();delete data.employees[0].projectLocations;
+  assert.throws(()=>normalizeDirectorySnapshot(data),DirectoryContractError);
+  data=altered();data.employees[0].projectLocations.push({projectCode:'DEMO-PRJ-001',locationCode:'BENGALURU'});
+  assert.throws(()=>normalizeDirectorySnapshot(data),DirectoryContractError);
+  data=altered();data.employees[0].projectLocations.push(data.employees[0].projectLocations[0]);
+  assert.throws(()=>normalizeDirectorySnapshot(data),DirectoryContractError);
+});
+test('project office and employee office lists never imply a Cartesian entitlement', async () => {
+  const data=altered();data.employees[0].locationCodes.push('BENGALURU');
+  const local=new DirectoryGateway(apiFromSnapshot(data));
+  assert(!(await local.getHostCandidates('DEMO-PRJ-001','BENGALURU')).some(e=>e.employeeId==='EMP001'));
+  data.employees[0].projectLocations.push({projectCode:'DEMO-PRJ-001',locationCode:'BENGALURU'});
+  assert((await local.getHostCandidates('DEMO-PRJ-001','BENGALURU')).some(e=>e.employeeId==='EMP001'));
+});
+test('an employee assignment cannot name an office outside the project', () => {
+  const data=altered();data.employees[0].locationCodes.push('CHENNAI');data.employees[0].projectCodes.push('DEMO-PRJ-002');
+  data.employees[0].projectLocations.push({projectCode:'DEMO-PRJ-002',locationCode:'CHENNAI'});
+  assert.throws(()=>normalizeDirectorySnapshot(data),DirectoryContractError);
+});
+
+
+test('each advertised synthetic project office has an explicitly assigned local host', async () => {
+  const data=await gateway.getSnapshot();
+  for(const project of data.projects)for(const location of project.locationCodes) {
+    const candidates=await gateway.getHostCandidates(project.projectCode,location);
+    assert(candidates.length>0,project.projectCode+' '+location+' has no explicit local host');
+    assert(candidates.every(e=>e.locationCodes.includes(location)&&e.projectLocations.some(p=>p.projectCode===project.projectCode&&p.locationCode===location)));
+  }
+});
+
+
+test('primary office is an explicit API field inside the trusted office assignments',async()=>{
+  assert.equal((await gateway.getEmployee('EMP020'))?.primaryOfficeLocationCode,'BENGALURU');
+  const data=altered();delete data.employees[0].primaryOfficeLocationCode;assert.throws(()=>normalizeDirectorySnapshot(data),DirectoryContractError);
+  data.employees[0].primaryOfficeLocationCode='BENGALURU';assert.throws(()=>normalizeDirectorySnapshot(data),DirectoryContractError);
+});

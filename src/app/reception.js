@@ -1,6 +1,6 @@
 'use strict';
 const $=id=>document.getElementById(id),toasts=new ToastNotifications();
-const state={context:null,location:null,rows:[],cursor:null,status:'ALL',listVersion:0,detailVersion:0,selected:null,detail:null,listBusy:false,listComplete:false,listFailed:false,printBusy:false,photoUrl:null,cardUrl:null,pendingPrint:new Map()};
+const state={context:null,location:null,rows:[],cursor:null,status:'ALL',listVersion:0,detailVersion:0,selected:null,detail:null,listBusy:false,listComplete:false,listFailed:false,printBusy:false,photoUrl:null,cardUrl:null,pendingPrint:null};
 let searchTimer;
 const cookie=name=>document.cookie.split('; ').find(value=>value.startsWith(name+'='))?.split('=')[1];
 async function api(action,body={}){
@@ -8,6 +8,7 @@ async function api(action,body={}){
  let response;try{response=await fetch('/api/reception/'+action,{method:'POST',credentials:'same-origin',headers,body:JSON.stringify(body)});}catch{throw new Error('Connection lost. Please retry.');}
  if(!response.ok){const messages={400:'Check the details.',401:'Sign in again to continue.',403:'Access unavailable for this office or pass.',409:'Pass or print state changed. Refresh and try again.',429:'Too many requests. Please wait.'};const error=Object.assign(new Error(messages[response.status]??'Unable to complete the request. Please retry.'),{status:response.status});if(response.status===401)showLogin();throw error;}return response.json();
 }
+state.pendingPrint=new ReceptionPrintCoordinator(api);
 function badge(status){const item=document.createElement('span');item.className='status-pill';item.dataset.status=status;item.textContent=status.charAt(0)+status.slice(1).toLowerCase();return item;}
 function effective(row){return row.status==='CANCELLED'?'CANCELLED':row.passStatus==='REVOKED'?'REVOKED':Date.parse(row.validUntilUtc)<=Date.now()?'EXPIRED':row.status;}
 const kind=row=>row.requestType==='DIGITAL_ID'?'Digital ID':row.requestType==='EMPLOYEE_PROJECT'?'Project access':'Visitor';
@@ -44,11 +45,10 @@ function renderRows(){
   status.append(badge(effective(row)));if(row.isInside){const inside=document.createElement('span');inside.className='visit-secondary';inside.textContent='Inside';status.append(inside);}
   valid.className='time-cell';valid.textContent=time(row.validUntilUtc)+' IST';const button=document.createElement('button');button.className='secondary';button.type='button';button.textContent='View pass';button.addEventListener('click',()=>openVisit(row));actions.append(button);tr.append(person,project,status,valid,actions);$('visit-rows').append(tr);
  }
- const elTotal=$('stat-total');if(elTotal)elTotal.textContent=!state.listComplete?(state.listFailed?'—':'…'):String(state.rows.length);
- const elPending=$('stat-pending');if(elPending)elPending.textContent=state.listBusy?'…':String(pendingCount);
- const elInside=$('stat-inside');if(elInside)elInside.textContent=state.listBusy?'…':String(insideCount);
- const elPrinted=$('stat-printed');if(elPrinted)elPrinted.textContent=state.listBusy?'…':String(printedCount);
- $('empty-visits').hidden=state.rows.length>0;$('load-more').hidden=!state.cursor;$('list-status').textContent=state.rows.length+' visits'+(state.cursor?' · More available':'');
+ const complete=state.listComplete&&!state.listFailed;
+ for(const [id,count] of [['stat-total',state.rows.length],['stat-pending',pendingCount],['stat-inside',insideCount],['stat-printed',printedCount]])if($(id))$(id).textContent=complete?String(count):state.listFailed?'\u2014':'\u2026';
+ $('empty-visits').hidden=!complete||state.rows.length>0;$('load-more').hidden=!state.cursor;$('list-status').textContent=state.rows.length+' matching visits'+(state.cursor?' \u00b7 Loading more\u2026':'');
+
 }
 async function loadVisits(more=false){
  if(!state.context)return;const version=++state.listVersion;state.listBusy=true;state.listComplete=false;state.listFailed=false;$('refresh').disabled=$('load-more').disabled=true;$('load-more').hidden=true;$('empty-visits').hidden=true;
@@ -67,12 +67,12 @@ async function loadVisits(more=false){
 
 function fitDialog(){const dialog=$('visit-dialog');if(!dialog.open)return;const v=window.visualViewport,w=v?.width??innerWidth,h=v?.height??innerHeight,mobile=w<=760,width=Math.max(0,Math.min(mobile?w:672,w-(mobile?0:32))),height=Math.max(0,Math.min(736,h-(mobile?16:32)));dialog.style.inset='auto';dialog.style.margin='0';dialog.style.width=width+'px';dialog.style.height=height+'px';dialog.style.left=((v?.offsetLeft??0)+(w-width)/2)+'px';dialog.style.top=((v?.offsetTop??0)+(mobile?h-height:(h-height)/2))+'px';}
 function closeVisit(){state.detailVersion++;state.selected=null;state.detail=null;releaseImages();toasts.clear();document.body.append(toasts.region);if($('visit-dialog').open)$('visit-dialog').close();}
-function field(label,value){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;$('detail-fields').append(dt,dd);}
+function field(label,value){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;$('detail-fields').append(dt,dd);return dd;}
 async function openVisit(row){
  closeVisit();state.selected=row;const version=++state.detailVersion;const dialog=$('visit-dialog');dialog.append(toasts.region);$('detail-name').textContent=row.personName;$('detail-kind').textContent=kind(row);$('detail-badge').replaceChildren(badge(effective(row)));$('detail-fields').replaceChildren();$('detail-photo').hidden=$('reception-card').hidden=true;$('reception-card').replaceChildren();$('detail-status').textContent='Loading details…';$('card-status').textContent='';$('retry-detail').hidden=true;$('detail-print').disabled=true;$('detail-print').textContent=row.printCount?'Reprint pass':'Print pass';dialog.showModal();fitDialog();
  try {
   const detail=await api('detail',{visitRequestId:row.visitRequestId});if(version!==state.detailVersion)return;state.detail=detail;$('detail-status').textContent='';$('detail-name').textContent=detail.personName;$('detail-badge').replaceChildren(badge(effective(detail)));
-  field('Pass ID',detail.publicPassNumber);field('Office',detail.locationName);if(detail.projectName)field('Project',detail.projectName);field('Purpose',detail.reason);field('Valid from',dateTime(detail.validFromUtc));field('Valid until',dateTime(detail.validUntilUtc));field('Print requests',String(row.printCount));
+  field('Pass ID',detail.publicPassNumber);field('Office',detail.locationName);if(detail.projectName)field('Project',detail.projectName);field('Purpose',detail.reason);field('Valid from',dateTime(detail.validFromUtc));field('Valid until',dateTime(detail.validUntilUtc));field('Print handoffs',String(row.printCount)).id='detail-print-count';
   if(detail.photoAvailable)api('photo',{visitRequestId:row.visitRequestId}).then(photo=>{if(version!==state.detailVersion)return;state.photoUrl=imageUrl(photo);$('detail-photo').src=state.photoUrl;$('detail-photo').hidden=false;}).catch(()=>{});
   const allowed=['PENDING','APPROVED'].includes(detail.status)&&['PENDING','ACTIVE'].includes(detail.passStatus)&&Date.parse(detail.validUntilUtc)>Date.now();
   if(!allowed){$('card-status').textContent='This pass is unavailable for printing.';return;}
@@ -87,18 +87,23 @@ async function browserPrint(){
  if(!popup){toasts.show('Allow pop-ups to open the print window.','error');return;}
  state.printBusy=true;$('detail-print').disabled=true;$('detail-print').textContent='Preparing print…';
  const ready=new Promise((resolve,reject)=>{const timer=setTimeout(()=>{window.removeEventListener('message',receive);reject(new Error('Print window did not open. Please retry.'));},15000);function receive(event){if(event.origin===location.origin&&event.source===popup&&event.data?.type==='gatepass-print-ready'){clearTimeout(timer);window.removeEventListener('message',receive);resolve();}}window.addEventListener('message',receive);});
- const key=row.visitRequestId+':'+detail.accessPassId;
+ const detailVersion=state.detailVersion;
  try{
   await ready;if(popup.closed)throw new Error('Print window was closed.');
-  let operation=state.pendingPrint.get(key);if(!operation){operation={clientKey:crypto.randomUUID(),visitRequestId:row.visitRequestId,expectedPassId:detail.accessPassId,printerLabel:'Reception browser'};state.pendingPrint.set(key,operation);}
-  const job=await api('print/request',operation);
-  if(job.status==='DISPATCHED'){state.pendingPrint.delete(key);row.printCount=Math.max(row.printCount,1);throw new Error('Previous print request was already handed off. Use Reprint if needed.');}
-  if(job.status==='FAILED'){state.pendingPrint.delete(key);throw new Error('Previous print failed. Try a new print request.');}
-  const image=await api('print/render',{printJobId:job.printJobId});state.pendingPrint.delete(key);row.printCount++;renderRows();
+  const image=await state.pendingPrint.handoff(row.visitRequestId,detail.accessPassId,()=>crypto.randomUUID());row.printCount++;renderRows();
   if(popup.closed)throw new Error('Print window was closed after handoff. Use Reprint if needed.');
-  popup.postMessage({type:'gatepass-print-image',mimeType:image.mimeType,imageBase64:image.imageBase64},location.origin);toasts.show('Pass sent to the browser print window.','success');
- }catch(error){if(!popup.closed)popup.postMessage({type:'gatepass-print-error',message:error.message},location.origin);toasts.show(error.message,'error');}
- finally{state.printBusy=false;if(state.selected===row){$('detail-print').disabled=!state.cardUrl||!state.location?.canPrint;$('detail-print').textContent=row.printCount?'Reprint pass':'Print pass';}}
+  await new Promise((resolve,reject)=>{
+   const timer=setTimeout(()=>{window.removeEventListener('message',receive);reject(new Error('The job was handed off, but the print window did not confirm its preview. Use Reprint only if needed.'));},15000);
+   function receive(event){if(event.origin!==location.origin||event.source!==popup||event.data?.printJobId!==image.printJobId)return;
+    if(!['gatepass-print-loaded','gatepass-print-display-error'].includes(event.data.type))return;clearTimeout(timer);window.removeEventListener('message',receive);
+    if(event.data.type==='gatepass-print-loaded')resolve();else reject(new Error('Print window could not display this job. Use Reprint if needed.'));
+   }
+   window.addEventListener('message',receive);popup.postMessage({type:'gatepass-print-image',printJobId:image.printJobId,mimeType:image.mimeType,imageBase64:image.imageBase64},location.origin);
+  });
+  toasts.show('Print preview ready. Choose Print in the new window.','success');
+
+ }catch(error){if(error.dispatched){await loadVisits();row.printCount=state.rows.find(item=>item.visitRequestId===row.visitRequestId)?.printCount??Math.max(row.printCount,1);}if(!popup.closed)popup.postMessage({type:'gatepass-print-error',message:error.message},location.origin);toasts.show(error.message,'error');}
+ finally{state.printBusy=false;if(state.selected===row&&state.detailVersion===detailVersion){if($('detail-print-count'))$('detail-print-count').textContent=String(row.printCount);$('detail-print').disabled=!state.cardUrl||!state.location?.canPrint;$('detail-print').textContent=row.printCount?'Reprint pass':'Print pass';}}
 }
 $('staff-logout').addEventListener('click',async()=>{if(state.printBusy)return;try{if(cookie('gp-staff-csrf')){const response=await fetch('/api/staff/logout',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':cookie('gp-staff-csrf')},body:'{}'});if(!response.ok)throw new Error('Unable to sign out. Please retry.');}else await api('logout');showLogin();}catch(error){toasts.show(error.message,'error');}});
 $('refresh').addEventListener('click',()=>loadVisits());$('load-more').addEventListener('click',()=>loadVisits(true));

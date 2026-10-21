@@ -1,6 +1,9 @@
+import {EmailWorkflowRoutes} from '../src/development/EmailWorkflowRoutes.ts';
+import {EmailWorkflowService} from '../src/email/EmailWorkflowService.ts';
+import {localEmailLinks} from '../src/email/LocalEmailLinks.ts';
 import {GuardRoutes} from '../src/development/GuardRoutes.ts';
 import {GuardWorkspaceService} from '../src/visits/GuardWorkspaceService.ts';
-import {GuardMovementService,SqlGuardMovementRepository} from '../src/visits/GuardMovementService.ts';
+import {GuardDutyService} from '../src/visits/GuardDutyService.ts';
 import {AdminRoutes} from '../src/development/AdminRoutes.ts';
 import {AdminWorkspaceService} from '../src/administration/AdminWorkspaceService.ts';
 import {StaffAdministrationService,SqlStaffAdministrationRepository} from '../src/administration/StaffAdministrationService.ts';
@@ -67,8 +70,11 @@ try {
   const staffStyles=await readFile(new URL('../src/app/staff-entry.css',import.meta.url),'utf8');
   const staffBrand=(await readFile(new URL('../assets/brand/gatepass-logo.png',import.meta.url))).toString('base64');
   const staffHtml=staffMarkup.replace('__STYLES__',()=>globalStyles+'\n'+receptionStyles+'\n'+staffStyles).replace('__GATEPASS_LOGO__',staffBrand).replace('__SCRIPT__',()=>toastScript+'\n'+staffScript);
-  const receptionHtml=receptionMarkup.replace('__STYLES__',()=>globalStyles+'\n'+receptionStyles).replace('__SCRIPT__',()=>toastScript+'\n'+selectScript+'\n'+receptionScript);
+  const receptionPrintState=await readFile(new URL('../src/app/reception-print-state.js',import.meta.url),'utf8');
+  const receptionHtml=receptionMarkup.replace('__STYLES__',()=>globalStyles+'\n'+receptionStyles).replace('__SCRIPT__',()=>toastScript+'\n'+selectScript+'\n'+receptionPrintState+'\n'+receptionScript);
   const companyLogo = (await readFile(new URL('../assets/brand/sopra-steria-logo.png', import.meta.url))).toString('base64');
+  const [emailMarkup,emailScript]=await Promise.all(['email-request.html','email-request.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')));
+  const emailHtml=emailMarkup.replace('__GLOBAL_STYLES__',()=>globalStyles).replace('__EMAIL_SCRIPT__',()=>emailScript);
   const officeImage=await readFile(new URL('../assets/locations/office-background.png',import.meta.url));
   const countryFlags=new Map(await Promise.all(getCountries().map(async code=>[code.toLowerCase(),await readFile(new URL('../node_modules/flag-icons/flags/4x3/'+(code==='AC'?'sh-ac':code==='TA'?'sh-ta':code.toLowerCase())+'.svg',import.meta.url))] as const)));
   const officeContext=new OfficeEntryContext(randomBytes(32));
@@ -86,7 +92,10 @@ try {
   const guardAuth=await StaffAuthService.create(new SqlStaffAuthRepository(client));
   const staffEntry=new StaffEntryRoutes(sso,guardAuth,client);
   const reception=new ReceptionRoutes(sso,new ReceptionService(client),receptionReads,receptionPhotos,receptionCards,new PassPrintService(new SqlPassPrintRepository(client,'api'),storage.keys),new PassRenderService(new SqlPassPrintRepository(client,'render'),storage.keys,storage.photos,cardRenderer),staffEntry);
-  const routes = [staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,new GuardMovementService(new SqlGuardMovementRepository(client))),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client))),reception,new DummySsoRoutes(sso,{localHttp:true}),
+  const emailService=new EmailWorkflowService(client,await localEmailLinks(storage.root));
+  const employeeRequestCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,async svg=>sharp(svg,{density:300}).resize(1712,1080).png().toBuffer(),'REQUEST');
+  const externalRequestCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,async svg=>sharp(svg,{density:300}).resize(1712,1080).png().toBuffer(),'EMAIL');
+  const routes = [new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,new GuardDutyService(client)),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),new GuardDutyService(client)),reception,new DummySsoRoutes(sso,{localHttp:true}),
     new RegistrationHttpRoutes(registration,randomBytes(32),sso,{localHttp:true,allowedTypes:['DIGITAL_ID','EXTERNAL','EMPLOYEE_PROJECT'],office:req=>officeContext.read(req)}),
     new EmployeeDigitalIdRoutes(sso,new VisitReadService(new SqlVisitReadRepository(client,'api')),ownCards)];
   const api = createLoopbackHttpHandler(origin,{handles:path=>routes.some(route=>route.handles(path)),handle:(req,res)=>{
@@ -109,6 +118,9 @@ try {
       res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Permissions-Policy',['/guard','/guard/'].includes(req.url??'')?'camera=(self), microphone=(), geolocation=()':'camera=(), microphone=(), geolocation=()');
       const page=req.url==='/'?staffHtml:['/guard','/guard/'].includes(req.url??'')?guardHtml:['/admin','/admin/'].includes(req.url??'')?adminHtml:req.url==='/reception/print'?printMarkup:receptionHtml;
       res.end((req.url==='/reception/print'?page:withPwa(page)).replaceAll('__NONCE__',nonce).replaceAll('__COMPANY_LOGO__',companyLogo));return;
+    }
+    if(req.method==='GET'&&/^\/(approval|request)\/[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/iu.test(req.url??'')&&publicPeer){
+      const nonce=randomBytes(24).toString('base64');res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Content-Security-Policy',`default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`);res.end(emailHtml.replaceAll('__NONCE__',nonce).replaceAll('__COMPANY_LOGO__',companyLogo));return;
     }
     const entry=/^\/office\/(noida|bengaluru|chennai|pune)\/?$/u.exec(req.url??'');
     if (req.method === 'GET' && entry && publicPeer) {

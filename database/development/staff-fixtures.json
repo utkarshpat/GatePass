@@ -15,7 +15,11 @@
         "DEMO-PRJ-001",
         "DEMO-PRJ-002"
       ],
-      "loginId": "gaurd1@example.com"
+      "loginId": "gaurd1@example.com",
+      "commonAreas": [
+        "Lobby",
+        "Cafeteria"
+      ]
     },
     {
       "guardId": "GRD002",
@@ -28,7 +32,10 @@
       "projectCodes": [
         "DEMO-PRJ-002"
       ],
-      "loginId": "gaurd2@example.com"
+      "loginId": "gaurd2@example.com",
+      "commonAreas": [
+        "Lobby"
+      ]
     },
     {
       "guardId": "GRD003",
@@ -41,7 +48,10 @@
       "projectCodes": [
         "DEMO-PRJ-001"
       ],
-      "loginId": "gaurd3@example.com"
+      "loginId": "gaurd3@example.com",
+      "commonAreas": [
+        "Cafeteria"
+      ]
     },
     {
       "guardId": "GRD004",
@@ -55,7 +65,11 @@
         "DEMO-PRJ-001",
         "DEMO-PRJ-002"
       ],
-      "loginId": "gaurd4@example.com"
+      "loginId": "gaurd4@example.com",
+      "commonAreas": [
+        "Lobby",
+        "Cafeteria"
+      ]
     },
     {
       "guardId": "GRD005",
@@ -69,7 +83,8 @@
         "DEMO-PRJ-001",
         "DEMO-PRJ-003"
       ],
-      "loginId": "gaurd5@example.com"
+      "loginId": "gaurd5@example.com",
+      "commonAreas": []
     },
     {
       "guardId": "GRD006",
@@ -82,7 +97,8 @@
       "projectCodes": [
         "DEMO-PRJ-006"
       ],
-      "loginId": "gaurd6@example.com"
+      "loginId": "gaurd6@example.com",
+      "commonAreas": []
     },
     {
       "guardId": "GRD007",
@@ -98,7 +114,8 @@
         "DEMO-PRJ-001",
         "DEMO-PRJ-004"
       ],
-      "loginId": "gaurd7@example.com"
+      "loginId": "gaurd7@example.com",
+      "commonAreas": []
     },
     {
       "guardId": "GRD008",
@@ -112,7 +129,8 @@
         "DEMO-PRJ-002",
         "DEMO-PRJ-004"
       ],
-      "loginId": "gaurd8@example.com"
+      "loginId": "gaurd8@example.com",
+      "commonAreas": []
     },
     {
       "guardId": "GRD009",
@@ -127,7 +145,8 @@
         "DEMO-PRJ-001",
         "DEMO-PRJ-003"
       ],
-      "loginId": "gaurd9@example.com"
+      "loginId": "gaurd9@example.com",
+      "commonAreas": []
     },
     {
       "guardId": "GRD010",
@@ -141,7 +160,8 @@
       "projectCodes": [
         "DEMO-PRJ-005"
       ],
-      "loginId": "gaurd10@example.com"
+      "loginId": "gaurd10@example.com",
+      "commonAreas": []
     },
     {
       "guardId": "GRD011",
@@ -155,7 +175,8 @@
         "DEMO-PRJ-002",
         "DEMO-PRJ-005"
       ],
-      "loginId": "gaurd11@example.com"
+      "loginId": "gaurd11@example.com",
+      "commonAreas": []
     },
     {
       "guardId": "GRD012",
@@ -171,7 +192,8 @@
         "DEMO-PRJ-005",
         "DEMO-PRJ-006"
       ],
-      "loginId": "gaurd12@example.com"
+      "loginId": "gaurd12@example.com",
+      "commonAreas": []
     }
   ]
 }

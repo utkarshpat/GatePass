@@ -75,7 +75,7 @@ test('guard dashboard, project filter, language and profile work without a sideb
   await noHorizontalOverflow(page);
   await accessible(page);
   await page.locator('#project-filter-trigger').click();
-  await expect(page.getByRole('option', { name: 'Project 1', exact: true })).toBeVisible();
+  await expect(page.getByRole('option', { name: 'Project 1 · Project', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await page.locator('#account-toggle').click();
   await page.locator('#language-menu').click();
@@ -103,3 +103,60 @@ test('admin sign-in resolves scoped management', async ({ page }) => {
   await noHorizontalOverflow(page);
   await accessible(page);
 });
+
+
+test('employee in another office gets an approval flow and exact local project choices', async ({page}) => {
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/office/bengaluru');
+  await page.getByRole('button',{name:/SSI Employee/u}).click();
+  await page.getByRole('textbox',{name:'Sopra Steria Email',exact:true}).fill('employee1@example.com');
+  await page.getByRole('textbox',{name:'Password',exact:true}).fill('Sopra@123');
+  await page.getByRole('button',{name:'Sign in',exact:true}).click();
+  await expect(page.locator('#employee-projects')).toHaveText('Access to this office requires host approval.');
+  await page.getByRole('combobox',{name:/^Reason/u}).click();
+  await page.getByRole('option',{name:'Forgot my card',exact:true}).click();
+  await page.getByRole('button',{name:'Continue',exact:true}).click();
+  await expect(page.locator('#details-step')).toBeVisible();
+  await expect(page.locator('#photo-step')).toBeHidden();
+  await page.getByRole('button',{name:'+ Request project access',exact:true}).click();
+  await page.locator('#project-trigger').click();
+  await expect(page.getByRole('option',{name:'Project 1',exact:true})).toBeVisible();
+  await page.getByRole('option',{name:'Project 1',exact:true}).click();
+  await page.locator('#host-search').fill('employee1@example.com');
+  await expect(page.locator('#host-feedback')).toContainText('No');
+  await expect(page.locator('#host-results')).not.toContainText('employee1@example.com');
+  await noHorizontalOverflow(page);
+});
+
+
+test('common duty hides movement queues and scoped admin can open guard assignment controls',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await staffLogin(page,'gaurd1@example.com');
+ await expect(page.locator('#scan-fab')).toBeEnabled();
+ await page.locator('#project-filter-trigger').click();
+ await page.getByRole('option',{name:'Cafeteria · Common area',exact:true}).click();
+ await expect(page.locator('.guard-queue-tabs')).toBeHidden();
+ await noHorizontalOverflow(page);await accessible(page);
+ await page.locator('#account-toggle').click();await page.locator('#staff-logout').click();await expect(page).toHaveURL(/\/$/u);
+ await staffLogin(page,'admin1@example.com');
+ await page.locator('#admin-office-trigger').click();await page.getByRole('option',{name:'Noida',exact:true}).click();await expect(page.locator('#office-name')).toHaveText('Noida');
+ await expect(page.locator('#common-duties-open')).toBeVisible();
+ await page.locator('#common-duties-open').click();
+ await expect(page.locator('#common-dialog')).toBeVisible();
+ await expect(page.locator('#common-area option').filter({hasText:/^Lobby$/u})).toHaveCount(1);
+ await expect(page.locator('#common-area option').filter({hasText:/^Cafeteria$/u})).toHaveCount(1);
+ await page.locator('#common-guard-search').fill('Guard 1');
+ await expect(page.locator('#common-guard-results')).toContainText('Guard 1');
+ await page.locator('#common-guard-results').getByRole('button',{name:'Guard 1',exact:true}).click();
+ await expect(page.locator('#common-assign-button')).toBeEnabled();
+ await noHorizontalOverflow(page);await accessible(page);
+ await page.locator('#common-close').click();
+});
+for(const size of [{width:390,height:844},{width:1366,height:768}]){
+ test(`email approval link is an accessible isolated sign-in at ${size.width}px without automatic decisions`,async({page})=>{
+  await page.setViewportSize(size);const writes:string[]=[];page.on('request',r=>{if(r.url().includes('/api/email/host/decide'))writes.push(r.url());});
+  await page.goto('/approval/00000000-0000-0000-0000-000000000001#decision=APPROVED');
+  await expect(page.locator('#login')).toBeVisible();await expect(page.locator('#actions')).toBeHidden();await expect(page).toHaveURL(/\/approval\/00000000-0000-0000-0000-000000000001$/u);
+  await expect(page.getByRole('textbox',{name:'Sopra Steria email'})).toBeVisible();expect(writes).toEqual([]);await noHorizontalOverflow(page);await accessible(page);
+ });
+}

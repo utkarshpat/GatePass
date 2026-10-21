@@ -13,7 +13,7 @@ Employee/host identity comes from trusted SSO and directory resolution, not call
 | PROJECT | Resource's trusted ProjectLocation.ProjectId must equal grant ProjectId; covers that project's offices |
 | PROJECT_LOCATION | Exact ProjectLocationId |
 
-GUARD and RECEPTION grants are always location-scoped. Project admin may use PROJECT or PROJECT_LOCATION scope. Host eligibility is current EmployeeProjectMemberships at the target project plus being the assigned host; it does not require an invented host-access matrix.
+GUARD and RECEPTION grants are always location-scoped. Project admin may use PROJECT or PROJECT_LOCATION scope. Host eligibility requires the assigned host's current EmployeeOfficeMemberships and exact EmployeeProjectLocationMemberships at the destination, alongside current employee/project affiliation. Project-only membership never authorizes a different office. See migrations 048–052.
 
 ## 02. Role/capability allowlist
 

@@ -4,9 +4,13 @@ import { readFile } from 'node:fs/promises';
 export type SqlParameter = { type: 'binary' | 'text' | 'bit' | 'guid' | 'int' | 'bigint' | 'datetime' | 'date'; value: Buffer | string | boolean | number | null };
 export type DatabaseIdentity = { server: string; port: number; database: string; user: string; password: string };
 export const procedureRoles = {
+  outlook: ['DecideOutlookVisit'],
   auth: ['BeginGuardLogin', 'CompleteGuardLogin', 'InspectGuardSetup', 'CompleteGuardSetup', 'TouchGuardSession', 'RevokeGuardSession'],
   staffAuth: ['ResolveStaffLoginIdentity','BeginStaffLogin','CompleteStaffLogin','InspectStaffSetup','CompleteStaffSetup','TouchStaffSession','RevokeStaffSession'],
-  api: ['FindGuardPass','GetGuardWorkspaceContext','ListGuardVisitors','ListGuardRecentScans','GetAdminWorkspaceContext','ListLeadProjects','SearchProjectLeadCandidates','ListProjectHeads','ManageStaffCredential','DecideVisit', 'RecordMovement', 'DeallocateGuard', 'ManageGuardCredential', 'CreateRegistrationIntake', 'RecordRegistrationPhoto', 'SubmitRegistration', 'ListRegistrationLocations', 'GetRegistrationOptions',
+  worker: ['ClaimNotifications','GetNotificationDispatch','GetNotificationEmail','RenewNotificationLease','CompleteNotification'],
+  render: ['GetOwnDigitalIdCard','GetEmployeeRequestCard','GetEmailRequestCard','GetReceptionCardSource','BeginPassRender','FinishPassRender','DispatchPassPrint','FailPassPrint'],
+  media: ['ResolveVisitPhoto'],
+  api: ['ReadEmailRequest','ListGuardDuties','ReadGuardDutyPass','ListGuardDutyVisitors','RecordGuardDutyMovement','GetCommonDutyAdministration','ManageCommonDuty','FindGuardPass','GetGuardWorkspaceContext','ListGuardVisitors','ListGuardRecentScans','GetAdminWorkspaceContext','ListLeadProjects','SearchProjectLeadCandidates','ListProjectHeads','ManageStaffCredential','DecideVisit', 'RecordMovement', 'DeallocateGuard', 'ManageGuardCredential', 'CreateRegistrationIntake', 'RecordRegistrationPhoto', 'SubmitRegistration', 'ListRegistrationLocations', 'GetRegistrationOptions',
     'GetStaffAccessContext', 'GetReceptionContext', 'ListReceptionVisits', 'ListVisits', 'GetVisitDetail', 'VerifyGuardPass', 'ReissuePass', 'RequestPassPrint', 'GetPassPrintJob', 'ListGuardWorkContexts', 'CancelVisit',
     'AllocateGuard', 'GrantStaffRole', 'RevokeStaffRole', 'ListAdminProjectLocations', 'ListAdminGuards', 'SearchStaffSubjects', 'ListStaffRoles', 'GetOperationalSummary', 'ListScopedAuditEvents'],
 } as const;
@@ -55,7 +59,7 @@ export async function connectSql(identity: DatabaseIdentity, role: keyof typeof 
     await pool.connect();
     // Fixed startup introspection only: fail closed on elevated or combined identities.
     // Runtime callers never receive a query API or control this SQL text.
-    const expected = role === 'api' ? 'gp_api_runtime' : role==='staffAuth'?'gp_staff_auth_runtime':'gp_guard_auth_runtime';
+    const expected = {outlook:'gp_outlook_runtime',api:'gp_api_runtime',auth:'gp_guard_auth_runtime',staffAuth:'gp_staff_auth_runtime',worker:'gp_worker_runtime',render:'gp_render_runtime',media:'gp_media_runtime'}[role];
     const admissionSql = await readFile(new URL('./runtime-identity.sql', import.meta.url), 'utf8');
     const check = await pool.request().input('ExpectedRole', sql.NVarChar(128), expected).query(admissionSql);
     if (check.recordset?.[0]?.allowed !== 1) throw new Error('UNSAFE_DATABASE_IDENTITY');

@@ -123,16 +123,16 @@ export class RegistrationService {
     const result=await this.#call('gp.GetRegistrationOptions',{...this.#identity(context),LocationCode:t(locationCode),ProjectLocationId:{type:'bigint',value:projectLocationId as string|null},Search:t(search as string|null)});
     if(!Number.isInteger(result.locationId)||Number(result.locationId)<1||result.locationCode!==locationCode||typeof result.locationName!=='string'||result.locationName.length>100
       ||typeof result.currentDate!=='string'||!/^\d{4}-\d{2}-\d{2}$/u.test(result.currentDate)||typeof result.maxVisitDate!=='string'||!/^\d{4}-\d{2}-\d{2}$/u.test(result.maxVisitDate)
-      ||!Array.isArray(result.projects)||result.projects.length>100||!Array.isArray(result.hosts)||result.hosts.length>10)throw new RegistrationError('UNAVAILABLE');
+      ||typeof result.digitalIdEligible!=='boolean'||!Array.isArray(result.projects)||result.projects.length>100||!Array.isArray(result.hosts)||result.hosts.length>10)throw new RegistrationError('UNAVAILABLE');
     const projects=(result.projects as Record<string,unknown>[]).map(row=>{
-      if(!row||typeof row.projectLocationId!=='string'||!/^[1-9][0-9]{0,18}$/u.test(row.projectLocationId)||typeof row.projectCode!=='string'||row.projectCode.length>80||typeof row.projectName!=='string'||row.projectName.length>200)throw new RegistrationError('UNAVAILABLE');
-      return {projectLocationId:row.projectLocationId,projectCode:row.projectCode,projectName:row.projectName};
+      if(!row||typeof row.assigned!=='boolean'||typeof row.projectLocationId!=='string'||!/^[1-9][0-9]{0,18}$/u.test(row.projectLocationId)||typeof row.projectCode!=='string'||row.projectCode.length>80||typeof row.projectName!=='string'||row.projectName.length>200)throw new RegistrationError('UNAVAILABLE');
+      return {projectLocationId:row.projectLocationId,projectCode:row.projectCode,projectName:row.projectName,assigned:row.assigned===true};
     });
     const hosts=(result.hosts as Record<string,unknown>[]).map(row=>{
       if(!row||typeof row.employeeId!=='string'||row.employeeId.length>64||typeof row.displayName!=='string'||row.displayName.length>200||typeof row.officialEmail!=='string'||!/^\S+@\S+\.\S+$/u.test(row.officialEmail))throw new RegistrationError('UNAVAILABLE');
       return {employeeId:row.employeeId,displayName:row.displayName,officialEmail:row.officialEmail};
     });
-    return {locationId:Number(result.locationId),locationCode,locationName:result.locationName,currentDate:result.currentDate,maxVisitDate:result.maxVisitDate,projects,hosts};
+    return {locationId:Number(result.locationId),locationCode,locationName:result.locationName,currentDate:result.currentDate,maxVisitDate:result.maxVisitDate,digitalIdEligible:result.digitalIdEligible===true,projects,hosts};
   }
   async submit(context: RegistrationContext, input: unknown): Promise<RegistrationResult> {
     const data = object(input, ['clientKey', 'requestType', 'locationId', 'reason', 'people', 'projectLocationId', 'hostEmployeeId', 'digitalIdReason', 'validFromUtc', 'validUntilUtc']);

@@ -2,7 +2,8 @@ import { readFile } from 'node:fs/promises';
 
 export type Employee = {
   employeeId: string; displayName: string; officialEmail: string;
-  managerEmployeeId: string | null; isActive: boolean; projectCodes: string[];
+  managerEmployeeId: string | null; isActive: boolean; projectCodes: string[]; locationCodes: string[]; primaryOfficeLocationCode: string;
+  projectLocations: { projectCode: string; locationCode: string }[];
 };
 export type Project = {
   projectCode: string; projectName: string; isActive: boolean; locationCodes: string[];
@@ -49,9 +50,21 @@ function normalizeEmployee(input: unknown): Employee {
   const row = record(input);
   const officialEmail = text(row.officialEmail, 320, 'officialEmail');
   requireCondition(/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(officialEmail), 'Invalid official email.');
+  const locationCodes = identifiers(row.locationCodes, 16, 'locationCode');
+  requireCondition(locationCodes.every(code => locations.has(code)), 'Unknown employee location.');
+  const primaryOfficeLocationCode = text(row.primaryOfficeLocationCode,16,'primaryOfficeLocationCode');
+  requireCondition(locationCodes.includes(primaryOfficeLocationCode),'Primary office must be a trusted assigned office.');
+  const projectCodes = identifiers(row.projectCodes, 80, 'projectCode');
+  const projectLocations = list(row.projectLocations).map(input => {
+    const pair = record(input);
+    const projectCode = text(pair.projectCode, 80, 'projectCode'), locationCode = text(pair.locationCode, 16, 'locationCode');
+    requireCondition(projectCodes.includes(projectCode) && locationCodes.includes(locationCode), 'Assignment outside employee scope.');
+    return { projectCode, locationCode };
+  });
+  requireCondition(new Set(projectLocations.map(pair => pair.projectCode + ':' + pair.locationCode)).size === projectLocations.length, 'Duplicate employee project location.');
   return { employeeId: text(row.employeeId, 64, 'employeeId'), displayName: text(row.displayName, 200, 'displayName'), officialEmail,
     managerEmployeeId: row.managerEmployeeId === null ? null : text(row.managerEmployeeId, 64, 'managerEmployeeId'),
-    isActive: boolean(row.isActive), projectCodes: identifiers(row.projectCodes, 80, 'projectCode') };
+    isActive: boolean(row.isActive), projectCodes, locationCodes, primaryOfficeLocationCode, projectLocations };
 }
 function normalizeProject(input: unknown): Project {
   const row = record(input);
@@ -71,6 +84,7 @@ export function normalizeDirectorySnapshot(input: unknown): DirectorySnapshot {
   requireCondition(projectMap.size === projects.length, 'Duplicate directory project.');
   const employees: Employee[] = list(data.employees).map(normalizeEmployee);
   requireCondition(employees.every(employee => employee.projectCodes.every(code => projectMap.has(code))), 'Unknown employee project.');
+  requireCondition(employees.every(employee => employee.projectLocations.every(pair => projectMap.get(pair.projectCode)?.locationCodes.includes(pair.locationCode))), 'Employee assignment outside project offices.');
   const employeeMap = new Map(employees.map(employee => [employee.employeeId, employee]));
   requireCondition(employeeMap.size === employees.length, 'Duplicate directory employee.');
   const visited = new Set<string>();
@@ -105,8 +119,8 @@ export class MockDirectorySource implements DirectorySource {
   async getProject(projectCode: string): Promise<unknown | null> {
     return normalizeDirectorySnapshot(await this.readSnapshot()).projects.find(project => project.projectCode === projectCode) ?? null;
   }
-  async getHostCandidates(projectCode: string, _locationCode: string): Promise<unknown[]> {
-    return normalizeDirectorySnapshot(await this.readSnapshot()).employees.filter(employee => employee.projectCodes.includes(projectCode));
+  async getHostCandidates(projectCode: string, locationCode: string): Promise<unknown[]> {
+    return normalizeDirectorySnapshot(await this.readSnapshot()).employees.filter(employee => employee.projectLocations.some(pair => pair.projectCode === projectCode && pair.locationCode === locationCode));
   }
 }
 
@@ -163,6 +177,6 @@ export class DirectoryGateway {
     if (!project.isActive || !project.locationCodes.includes(locationCode)) return [];
     const employees = list(await this.#source.getHostCandidates(projectCode, locationCode)).map(normalizeEmployee);
     requireCondition(new Set(employees.map(employee => employee.employeeId)).size === employees.length, 'Duplicate directory host.');
-    return employees.filter(employee => employee.isActive && employee.projectCodes.includes(projectCode));
+    return employees.filter(employee => employee.isActive && employee.projectLocations.some(pair => pair.projectCode === projectCode && pair.locationCode === locationCode));
   }
 }

@@ -236,9 +236,9 @@ try {
         $taskP.ClientKey=[guid]::NewGuid(); $taskP.OccurredAtUtc=[datetime]::UtcNow.AddDays(-3)
         Expect-SqlError { Invoke-GatePassScalar $taskApi $taskMovementSql $taskP } 52002
     }
-    Test-Case 'TEMP_ID requires its separate designated capability' {
+    Test-Case 'Legacy Digital ID office entry is blocked even with the old capability' {
         Expect-SqlError { Invoke-GatePassScalar $taskApi $taskMovementSql (Get-MovementParameters 'TEMP' 'ENTRY' 'WRONGPROJECT') } 52001
-        $null=Invoke-GatePassScalar $taskApi $taskMovementSql (Get-MovementParameters 'TEMP')
+        Expect-SqlError { Invoke-GatePassScalar $taskApi $taskMovementSql (Get-MovementParameters 'TEMP') } 52001
     }
     Test-Case 'Stale host membership fails closed' {
         Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeProjectMemberships SET VerifiedAtUtc=DATEADD(hour,-1,SYSUTCDATETIME()) WHERE EmployeeId=@host;' @{host=$taskFixture.hostEmployeeId}

@@ -29,9 +29,11 @@ export class ReceptionService{
   const visits=row.visits.map((v:any)=>{
    requireOutput(isUuid(v.visitRequestId)&&isUuid(v.accessPassId)&&text(v.personName,200)&&text(v.publicReference,40)&&text(v.publicPassNumber,50)&&['DIGITAL_ID','EMPLOYEE_PROJECT','EXTERNAL'].includes(v.requestType)&&['PENDING','APPROVED','DENIED','CANCELLED'].includes(v.status)&&['PENDING','ACTIVE','DENIED','REVOKED'].includes(v.passStatus)&&typeof v.isInside==='boolean'&&isUtc(v.validFromUtc)&&isUtc(v.validUntilUtc)&&isUtc(v.submittedAtUtc)&&Number.isInteger(v.printCount)&&v.printCount>=0);
    requireOutput(v.employeeId===undefined||text(v.employeeId,64));requireOutput(v.projectName===undefined||text(v.projectName,200));
-   return {visitRequestId:v.visitRequestId,accessPassId:v.accessPassId,personName:v.personName,employeeId:v.employeeId??null,requestType:v.requestType,publicReference:v.publicReference,publicPassNumber:v.publicPassNumber,status:v.status,passStatus:v.passStatus,projectName:v.projectName??null,isInside:v.isInside,validFromUtc:v.validFromUtc,validUntilUtc:v.validUntilUtc,submittedAtUtc:v.submittedAtUtc,printCount:v.printCount};
+   requireOutput(Date.parse(v.validUntilUtc)>Date.parse(v.validFromUtc));
+   return {visitRequestId:v.visitRequestId.toLowerCase(),accessPassId:v.accessPassId.toLowerCase(),personName:v.personName,employeeId:v.employeeId??null,requestType:v.requestType,publicReference:v.publicReference,publicPassNumber:v.publicPassNumber,status:v.status,passStatus:v.passStatus,projectName:v.projectName??null,isInside:v.isInside,validFromUtc:v.validFromUtc,validUntilUtc:v.validUntilUtc,submittedAtUtc:v.submittedAtUtc,printCount:v.printCount};
   });
-  requireOutput(new Set(visits.map((v:any)=>v.visitRequestId)).size===visits.length);if(row.hasMore)requireOutput(isUuid(row.afterVisitRequestId)&&isUtc(row.afterSubmittedAtUtc));
-  return {visits,visitDate:row.visitDate,cursor:row.hasMore?{submittedAtUtc:row.afterSubmittedAtUtc,visitRequestId:row.afterVisitRequestId}:null};
+  requireOutput(new Set(visits.map((v:any)=>v.visitRequestId)).size===visits.length);if(row.hasMore){const last=visits.at(-1);requireOutput(visits.length===50&&isUuid(row.afterVisitRequestId)&&isUtc(row.afterSubmittedAtUtc)&&last?.visitRequestId===row.afterVisitRequestId.toLowerCase()&&last?.submittedAtUtc===row.afterSubmittedAtUtc);}
+  if(input.visitDate!==undefined)requireOutput(row.visitDate===input.visitDate);
+  return {visits,visitDate:row.visitDate,cursor:row.hasMore?{submittedAtUtc:row.afterSubmittedAtUtc,visitRequestId:row.afterVisitRequestId.toLowerCase()}:null};
  }
 }

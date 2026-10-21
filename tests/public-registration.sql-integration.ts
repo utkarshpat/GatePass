@@ -1,3 +1,6 @@
+import {chromium} from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import {localEmailLinks} from '../src/email/LocalEmailLinks.ts';
 import {BinaryBitmap,HybridBinarizer,RGBLuminanceSource,QRCodeReader,DecodeHintType} from '@zxing/library';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
@@ -122,30 +125,33 @@ try {
     assert.equal((await call('/api/guard/projects',{locationId:ctx.body.locations[0].locationId===1?2:1})).status,403);
     assert.equal((await call('/api/admin/context')).status,403);
   });
-  await check('issued Digital ID QR verifies, returns authorised photo, and records idempotent entry/exit',async()=>{
+  await check('Digital ID uses explicit project duty, independent movement, and read-only common verification',async()=>{
     const ctx=await call('/api/guard/context'),locationId=ctx.body.locations[0].locationId;
-    const queueInput={locationId,queue:'EXPECTED',search:'',offset:0};
-    const expected=await call('/api/guard/visitors',queueInput);assert.equal(expected.status,200,JSON.stringify(expected.body));assert.ok(expected.body.visitors.some((x:any)=>x.visitRequestId===digitalId),'unscanned Digital ID must be in expected queue');assert.ok(!expected.body.visitors.some((x:any)=>visits.slice(0,2).includes(x.visitRequestId)),'future visitors must not appear today');
-    const digitalOnly=await call('/api/guard/visitors',{...queueInput,projectFilter:'DIGITAL_ID'});assert.equal(digitalOnly.status,200,JSON.stringify(digitalOnly.body));assert.ok(digitalOnly.body.visitors.some((x:any)=>x.visitRequestId===digitalId));assert.ok(digitalOnly.body.visitors.every((x:any)=>x.requestType==='DIGITAL_ID'));
-    const projectDetail=await call('/api/guard/detail',{visitRequestId:visits[3]});assert.equal(projectDetail.status,200);const projectOnly=await call('/api/guard/visitors',{...queueInput,projectFilter:projectDetail.body.projectLocationId});assert.equal(projectOnly.status,200,JSON.stringify(projectOnly.body));assert.ok(projectOnly.body.visitors.some((x:any)=>x.visitRequestId===visits[3]));assert.ok(projectOnly.body.visitors.every((x:any)=>x.projectName===projectDetail.body.projectName));assert.ok(!projectOnly.body.visitors.some((x:any)=>x.visitRequestId===digitalId));
-    assert.equal((await call('/api/guard/visitors',{...queueInput,projectFilter:'01'})).status,400);assert.deepEqual((await call('/api/guard/visitors',{...queueInput,projectFilter:'9223372036854775807'})).body,{visitors:[],hasMore:false});
-    const searched=await call('/api/guard/visitors',{...queueInput,search:expected.body.visitors.find((x:any)=>x.visitRequestId===digitalId).publicPassNumber});assert.equal(searched.body.visitors.length,1);assert.equal(searched.body.visitors[0].visitRequestId,digitalId);
-    assert.equal((await call('/api/guard/visitors',{...queueInput,locationId:locationId===1?2:1})).status,403);
-    assert.equal((await call('/api/guard/visitors',{...queueInput,actorId:randomUUID()})).status,400);
-    assert.equal((await call('/api/guard/visitors',{...queueInput,queue:'ALL'})).status,400);
-    assert.equal((await call('/api/guard/visitors',{...queueInput,search:'%_'})).body.visitors.length,0);
-    const verified=await call('/api/guard/verify',{locationId,credential:digitalCredential,correlationId:randomUUID()});assert.equal(verified.status,200,JSON.stringify(verified.body));assert.equal(verified.body.outcome,'VALID');assert.equal(verified.body.visit.visitRequestId,digitalId);assert.equal(verified.body.visit.canEnter,true);
-    const v=verified.body.visit;const photoResult=await call('/api/guard/photo',{visitRequestId:digitalId});assert.equal(photoResult.status,200,'guard photo: '+JSON.stringify(photoResult.body));
-    const manual=await call('/api/guard/lookup',{locationId,publicReference:v.publicReference});assert.equal(manual.status,200,'guard manual lookup: '+JSON.stringify(manual.body));assert.ok(manual.body.visits.some((x:any)=>x.visitRequestId===digitalId));assert.equal((await call('/api/guard/lookup',{locationId,publicReference:v.publicPassNumber})).body.visits[0].visitRequestId,digitalId);assert.deepEqual((await call('/api/guard/lookup',{locationId,publicReference:'UNKNOWN-'+randomUUID().slice(0,12)})).body,{visits:[]});
-    const entry={clientKey:randomUUID(),visitRequestId:digitalId,accessPassId:v.accessPassId,locationId,selectedProjectLocationId:null,eventType:'ENTRY',entryMethod:'SCAN',credential:digitalCredential};
-    assert.equal((await call('/api/guard/movement',{...entry,selectedProjectLocationId:'999999999'})).status,403);
+    const roster=await call('/api/guard/duties',{locationId});assert.equal(roster.status,200,JSON.stringify(roster.body));
+    const projectDuty=roster.body.duties.find((d:any)=>d.kind==='PROJECT'&&d.name==='Project 1'),commonDuty=roster.body.duties.find((d:any)=>d.kind==='COMMON');assert.ok(projectDuty&&commonDuty);
+    const scope={locationId,dutyKind:'PROJECT',dutyId:projectDuty.dutyId},commonScope={locationId,dutyKind:'COMMON',dutyId:commonDuty.dutyId};
+    const queueInput={...scope,queue:'EXPECTED',search:'',offset:0};
+    const expected=await call('/api/guard/visitors',queueInput);assert.equal(expected.status,200,JSON.stringify(expected.body));assert.ok(expected.body.visitors.some((v:any)=>v.visitRequestId===digitalId));assert.ok(!expected.body.visitors.some((v:any)=>visits.slice(0,2).includes(v.visitRequestId)));
+    const ownProjects=expected.body.visitors.find((v:any)=>v.visitRequestId===digitalId).employeeProjects;assert.equal(ownProjects.available,true);assert.equal(ownProjects.total,employee.projects.length);
+    const extraDuty=roster.body.duties.find((d:any)=>d.kind==='PROJECT'&&d.name==='Project 2');assert.ok(extraDuty);
+    const extraScope={locationId,dutyKind:'PROJECT',dutyId:extraDuty.dutyId};
+    const projectDetail=await call('/api/guard/detail',{...extraScope,visitRequestId:visits[3]});assert.equal(projectDetail.status,200,JSON.stringify(projectDetail.body));assert.match(projectDetail.body.hostName,/^Employee /u);assert.equal(projectDetail.body.canEnter,false);
+    const commonPending=await call('/api/guard/detail',{...commonScope,visitRequestId:visits[3]});assert.equal(commonPending.status,200,JSON.stringify(commonPending.body));assert.equal(commonPending.body.commonAccessAllowed,true);assert.equal(commonPending.body.canEnter,false);assert.equal(commonPending.body.verificationOnly,true);
+    assert.equal((await call('/api/guard/visitors',{...queueInput,dutyId:'01'})).status,400);assert.equal((await call('/api/guard/visitors',{...queueInput,dutyId:'9223372036854775807'})).status,403);
+    assert.equal((await call('/api/guard/visitors',{locationId,queue:'EXPECTED',search:'',offset:0})).status,400);
+    const verified=await call('/api/guard/verify',{...scope,credential:digitalCredential,correlationId:randomUUID()});assert.equal(verified.status,200,JSON.stringify(verified.body));assert.equal(verified.body.outcome,'VALID');assert.equal(verified.body.visit.canEnter,true);
+    const v=verified.body.visit;const photoResult=await call('/api/guard/photo',{...scope,visitRequestId:digitalId});assert.equal(photoResult.status,200,JSON.stringify(photoResult.body));
+    const entry={...scope,clientKey:randomUUID(),visitRequestId:digitalId,accessPassId:v.accessPassId,eventType:'ENTRY',entryMethod:'SCAN',credential:digitalCredential};
+    assert.equal((await call('/api/guard/movement',{...entry,dutyKind:'COMMON',dutyId:commonDuty.dutyId})).status,400);
+    assert.equal((await call('/api/guard/movement',{...entry,dutyId:'999999999'})).status,403);
     const marked=await call('/api/guard/movement',entry);assert.equal(marked.status,200,JSON.stringify(marked.body));assert.equal(marked.body.isInside,true);assert.deepEqual((await call('/api/guard/movement',entry)).body,marked.body);
-    const insideQueue=await call('/api/guard/visitors',{...queueInput,queue:'INSIDE'});assert.equal(insideQueue.status,200,JSON.stringify(insideQueue.body));assert.ok(insideQueue.body.visitors.some((x:any)=>x.visitRequestId===digitalId&&x.isInside));assert.ok(!(await call('/api/guard/visitors',queueInput)).body.visitors.some((x:any)=>x.visitRequestId===digitalId));
-    const otherGuard=JSON.parse(await readFile(join(homedir(),'.gatepass','development-logins','guards.json'),'utf8')).find((r:any)=>r.guardId==='GRD005');assert.equal((await call('/api/staff/login',{login:otherGuard.loginId,password:otherGuard.password})).status,200);const otherQueue=await call('/api/guard/visitors',{...queueInput,queue:'INSIDE'});assert.equal(otherQueue.status,200,JSON.stringify(otherQueue.body));assert.ok(!otherQueue.body.visitors.some((x:any)=>x.visitRequestId===digitalId),'another guard must not inherit this entry queue');const originalGuard=JSON.parse(await readFile(join(homedir(),'.gatepass','development-logins','guards.json'),'utf8')).find((r:any)=>r.guardId==='GRD001');assert.equal((await call('/api/staff/login',{login:originalGuard.loginId,password:originalGuard.password})).status,200);
-    const inside=await call('/api/guard/detail',{visitRequestId:digitalId});assert.equal(inside.body.canEnter,false);assert.equal(inside.body.canExit,true);assert.ok(inside.body.movements.some((m:any)=>m.eventType==='ENTRY'&&typeof m.accessEventId==='string'&&m.guardName==='Guard 1'));assert.equal(inside.body.movementsHasMore,false);
-    const exit=await call('/api/guard/movement',{...entry,clientKey:randomUUID(),eventType:'EXIT'});assert.equal(exit.status,200,JSON.stringify(exit.body));assert.equal(exit.body.isInside,false);
-    assert.ok(!(await call('/api/guard/visitors',{...queueInput,queue:'INSIDE'})).body.visitors.some((x:any)=>x.visitRequestId===digitalId));assert.ok((await call('/api/guard/visitors',queueInput)).body.visitors.some((x:any)=>x.visitRequestId===digitalId));
-    const recent=await call('/api/guard/recent',{locationId});assert.equal(recent.status,200,JSON.stringify(recent.body));assert.ok(recent.body.scans.some((x:any)=>x.publicReference===v.publicReference&&x.visitRequestId===digitalId&&x.publicPassNumber===v.publicPassNumber));assert.ok(!JSON.stringify(recent.body).includes(digitalCredential!));
+    const insideQueue=await call('/api/guard/visitors',{...queueInput,queue:'INSIDE'});assert.equal(insideQueue.status,200,JSON.stringify(insideQueue.body));assert.ok(insideQueue.body.visitors.some((v:any)=>v.visitRequestId===digitalId&&v.isInside));
+    const commonRead=await call('/api/guard/detail',{...commonScope,visitRequestId:digitalId});assert.equal(commonRead.status,200);assert.equal(commonRead.body.commonAccessAllowed,true);assert.equal(commonRead.body.isInside,false);assert.equal(commonRead.body.canEnter,false);assert.equal(commonRead.body.canExit,false);
+    const otherGuard=JSON.parse(await readFile(join(homedir(),'.gatepass','development-logins','guards.json'),'utf8')).find((r:any)=>r.guardId==='GRD005');assert.equal((await call('/api/staff/login',{login:otherGuard.loginId,password:otherGuard.password})).status,200);const otherQueue=await call('/api/guard/visitors',{...queueInput,queue:'INSIDE'});assert.equal(otherQueue.status,200);assert.ok(!otherQueue.body.visitors.some((v:any)=>v.visitRequestId===digitalId));
+    const originalGuard=JSON.parse(await readFile(join(homedir(),'.gatepass','development-logins','guards.json'),'utf8')).find((r:any)=>r.guardId==='GRD001');assert.equal((await call('/api/staff/login',{login:originalGuard.loginId,password:originalGuard.password})).status,200);
+    const inside=await call('/api/guard/detail',{...scope,visitRequestId:digitalId});assert.equal(inside.body.canExit,true);assert.ok(inside.body.movements.some((m:any)=>m.eventType==='ENTRY'&&m.guardName==='Guard 1'));
+    const exited=await call('/api/guard/movement',{...entry,clientKey:randomUUID(),eventType:'EXIT'});assert.equal(exited.status,200,JSON.stringify(exited.body));assert.equal(exited.body.isInside,false);
+    assert.ok(!(await call('/api/guard/visitors',{...queueInput,queue:'INSIDE'})).body.visitors.some((v:any)=>v.visitRequestId===digitalId));
     assert.equal((await call('/api/staff/logout')).status,200);assert.equal((await call('/api/guard/context')).status,401);
   });
   let receptionContext:any,receptionVisit:any;
@@ -181,6 +187,44 @@ try {
     const result=await call('/api/reception/list',{locationId:receptionContext.locations[0].locationId,visitDate:tomorrow,search:receptionVisit.publicReference});assert.equal(result.body.visits[0].printCount,2);
     assert.equal((await call('/api/staff/logout')).status,200);assert.equal((await call('/api/reception/me')).status,401);
   });
+   let approval:any,denial:any,externalLink:string;
+   await check('email approval link GET is inert and forwarded links do not grant host authority',async()=>{
+     const page=await call('/approval/'+visits[0],{},'GET');assert.equal(page.status,200);new Script(/<script nonce="[^"]+">([\s\S]*?)<\/script>/u.exec(page.body)![1]);assert.match(page.headers['cache-control'],/no-store/u);assert.match(page.body,/Visit approval|email-request|Request details/u);assert(!page.body.includes('My Requests'));
+     const directory=JSON.parse(await readFile(new URL('../database/development/directory-fixtures.json',import.meta.url),'utf8'));
+     const wrong=directory.employees.find((p:any)=>p.isActive&&p.employeeId!==host.employeeId);assert.equal((await call('/api/dev/sso/login',{email:wrong.officialEmail,password:'Sopra@123'})).status,200);
+     assert.equal((await call('/api/email/host/detail',{visitRequestId:visits[0]})).status,403);
+     assert.equal((await call('/api/dev/sso/login',{email:host.officialEmail,password:'Sopra@123'})).status,200);
+     const r=await call('/api/email/host/detail',{visitRequestId:visits[0]});assert.equal(r.status,200,JSON.stringify(r.body));approval=r.body;assert.equal(approval.status,'PENDING');assert.equal(approval.canDecide,true);
+     assert.equal((await call('/api/email/host/photo',{visitRequestId:visits[0]})).status,200);
+   });
+   await check('host email approval uses exact snapshot and idempotency while other participant stays pending',async()=>{
+     const data={visitRequestId:visits[0],clientKey:randomUUID(),snapshotVersion:approval.snapshotVersion,snapshotHash:approval.snapshotHash,decision:'APPROVED'};
+     assert.equal((await call('/api/email/host/decide',{...data,snapshotHash:'0'.repeat(64)})).status,409);
+     const first=await call('/api/email/host/decide',data);assert.equal(first.status,200,JSON.stringify(first.body));assert.deepEqual((await call('/api/email/host/decide',data)).body,first.body);
+     assert.equal((await call('/api/email/host/decide',{...data,decision:'DENIED'})).status,409);
+     const other=await call('/api/email/host/detail',{visitRequestId:visits[1]});assert.equal(other.status,200);denial=other.body;assert.equal(denial.status,'PENDING');
+   });
+   await check('host email rejection is independent and approved credential status remains current',async()=>{
+     const r=await call('/api/email/host/decide',{visitRequestId:visits[1],clientKey:randomUUID(),snapshotVersion:denial.snapshotVersion,snapshotHash:denial.snapshotHash,decision:'DENIED'});assert.equal(r.status,200,JSON.stringify(r.body));
+     assert.equal((await call('/api/email/host/detail',{visitRequestId:visits[0]})).body.status,'APPROVED');assert.equal((await call('/api/email/host/detail',{visitRequestId:visits[1]})).body.passStatus,'DENIED');
+   });
+   await check('signed external email status and PNG retrieval reject tampering without requiring an employee session',async()=>{
+     assert.equal((await call('/api/dev/sso/logout')).status,200);const codec=await localEmailLinks(input.storageRoot);
+     const link=await codec.issue({v:1,visit:visits[0],emailHash:createHash('sha256').update(people.find(p=>p.name===approval.personName)!.email.toLowerCase(),'utf16le').digest('hex'),snapshot:approval.snapshotHash.toLowerCase(),expires:Date.parse(approval.validUntilUtc)+86400000});
+     externalLink=link;const detail=await call('/api/email/external/detail',{link});assert.equal(detail.status,200,JSON.stringify(detail.body));assert.equal(detail.body.status,'APPROVED');assert.equal('snapshotHash' in detail.body,false);
+     assert.equal((await call('/api/email/external/detail',{link:link+'x'})).status,403);assert.equal((await call('/api/email/external/detail',{visitRequestId:visits[0]})).status,400);
+     const png=await call('/api/email/external/image',{link});assert.equal(png.status,200,JSON.stringify(png.body));assert.equal(png.body.mimeType,'image/png');assert.equal((await sharp(Buffer.from(png.body.imageBase64,'base64')).metadata()).width,1712);
+     assert.equal((await call('/api/email/request/detail',{visitRequestId:digitalId})).status,401);
+   });
+   await check('email-linked browser shows the current card, downloads PNG and reauthenticates the host without a dashboard',async()=>{
+    let stage='launch';const browser=await chromium.launch({headless:true});try{
+     const context=await browser.newContext({viewport:{width:390,height:844},acceptDownloads:true});const page=await context.newPage();
+     stage='open-holder';await page.goto('http://localhost:18446/request/'+visits[0]+'#link='+externalLink);stage='holder-card';await page.locator('#card').waitFor({state:'visible',timeout:60000});assert.equal(await page.locator('#message').innerText(),'Approved');assert.equal(await page.locator('#login').isVisible(),false);assert(!page.url().includes('#'));assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+     stage='holder-accessibility';const accessibility=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();assert.deepEqual(accessibility.violations.map(v=>v.id),[],'Email accessibility: '+accessibility.violations.map(v=>v.id).join(','));
+     stage='holder-download';const download=page.waitForEvent('download',{timeout:60000});await page.locator('#download').click();assert.equal((await download).suggestedFilename(),'GatePass-'+visits[0]+'.png');
+     stage='host-login';let decisions=0;page.on('request',r=>{if(r.url().includes('/api/email/host/decide'))decisions++;});await page.goto('http://localhost:18446/approval/'+visits[0]+'#decision=APPROVED');await page.locator('#login').waitFor({state:'visible'});await page.locator('#email').fill(host.officialEmail);await page.locator('#password').fill('Sopra@123');await page.locator('#sign-in').click();stage='host-detail';await page.locator('#request').waitFor({state:'visible',timeout:60000});assert.equal(await page.locator('#message').innerText(),'Approved');assert.equal(await page.locator('#actions').isVisible(),false);assert.equal(decisions,0);
+    }catch(e){throw new Error('Email browser verification failed at '+stage+' ('+(e as Error).name+').');}finally{await browser.close();}
+   });
   if(input.uiReviewReady){
     await writeFile(input.uiReviewReady,JSON.stringify({intakes:[...intakes.values()],visits,port:18446,synthetic:true}));
     const deadline=Date.now()+1200000;while(true){try{await access(input.uiReviewReady+'.done');break;}catch{if(Date.now()>deadline)throw new Error('UI_REVIEW_TIMEOUT');await new Promise(resolve=>setTimeout(resolve,250));}}

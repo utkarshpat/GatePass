@@ -117,7 +117,7 @@ Trusted employee cache; corporate email and manager come only from directory.
 
 ## 07. gp.EmployeeProjectMemberships
 
-Authoritative host eligibility cache at project level.
+Project affiliation cache. Exact office and project-location entitlement is additionally required for host eligibility after migration 048; this table alone does not authorize access.
 
 | Column | SQL type | Nullable | Default | Meaning |
 |---|---|---|---|---|

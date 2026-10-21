@@ -14,7 +14,7 @@ function Call($Connection,[string]$Procedure,[hashtable]$Parameters) {$taskArgs=
 function Cleanup {
     if ($taskReady) {
         foreach ($taskF in @('005_print_fixture_cleanup.sql','003_transaction_cleanup.sql')) {Invoke-GatePassNonQuery $taskAdmin ([IO.File]::ReadAllText((Join-Path $PSScriptRoot $taskF))) @{RunId=$taskRun}}
-        Invoke-GatePassNonQuery $taskAdmin 'DELETE FROM gp.Projects WHERE ExternalProjectCode IN(@prefix+''-C'',@prefix+''-D'') AND ProjectName IN(N''Synthetic Gamma'',N''Synthetic Delta'');' @{prefix=$taskFixture.prefix}
+        Invoke-GatePassNonQuery $taskAdmin 'DELETE pl FROM gp.ProjectLocations pl JOIN gp.Projects p ON p.ProjectId=pl.ProjectId WHERE p.ExternalProjectCode IN(@prefix+''-C'',@prefix+''-D'') AND p.ProjectName IN(N''Synthetic Gamma'',N''Synthetic Delta'');DELETE FROM gp.Projects WHERE ExternalProjectCode IN(@prefix+''-C'',@prefix+''-D'') AND ProjectName IN(N''Synthetic Gamma'',N''Synthetic Delta'');' @{prefix=$taskFixture.prefix}
     };$script:taskReady=$false
 }
 function Reset {
@@ -28,7 +28,7 @@ UPDATE gp.StaffRoleGrants SET RoleCode='RECEPTION' WHERE UserId IN(@wrong,@nocap
 INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT g.RoleGrantId,c.Code FROM gp.StaffRoleGrants g CROSS JOIN (VALUES('PASS_PRINT'),('PASS_REISSUE')) c(Code)
 WHERE g.UserId IN(@reception,@admin,@guard,@wrong);
 INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT RoleGrantId,CASE WHEN LocationId=@location THEN 'PASS_PRINT' ELSE 'PASS_REISSUE' END FROM gp.StaffRoleGrants WHERE UserId=@split;
-INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT RoleGrantId,'VISITS_READ' FROM gp.StaffRoleGrants WHERE UserId=@guard;
+INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT g.RoleGrantId,'VISITS_READ' FROM gp.StaffRoleGrants g WHERE UserId=@guard AND NOT EXISTS(SELECT 1 FROM gp.GrantCapabilities c WHERE c.RoleGrantId=g.RoleGrantId AND c.CapabilityCode='VISITS_READ');
 INSERT gp.StaffRoleGrants(UserId,RoleCode,ScopeType,LocationId,GrantedByUserId,ValidFromUtc) VALUES(@other,'RECEPTION','LOCATION',@location,@other,DATEADD(hour,-1,SYSUTCDATETIME()));
 INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) VALUES(SCOPE_IDENTITY(),'PASS_PRINT');
 '@ @{prefix=$taskFixture.prefix;wrong=[guid]$taskActors.WRONGLOCATION.UserId;nocap=[guid]$taskActors.NOCAP.UserId;split=[guid]$taskActors.SPLIT.UserId;
@@ -41,6 +41,16 @@ function Reissue-Parameters([string]$Label='MOVEMENT',[string]$Actor='RECEPTION'
     $taskP.Ciphertext=[Security.Cryptography.RandomNumberGenerator]::GetBytes(32);$taskP.Nonce=[Security.Cryptography.RandomNumberGenerator]::GetBytes(12);$taskP.AuthenticationTag=[Security.Cryptography.RandomNumberGenerator]::GetBytes(16);$taskP.KeyVersion='qr.v1.k_fixture-key';return $taskP
 }
 function Request([string]$Label='MOVEMENT') {return Call $taskApi 'gp.RequestPassPrint' (Print-Parameters $Label)}
+function Claim-OwnedReplacementNotification([guid]$Visit) {
+    $taskClaim=[guid]::NewGuid()
+    $taskId=Invoke-GatePassScalar $taskAdmin @'
+DECLARE @id bigint=(SELECT NotificationId FROM gp.NotificationOutbox WHERE VisitRequestId=@visit AND TemplateCode='PASS_REISSUED' AND Status='PENDING');
+IF @id IS NULL OR NOT EXISTS(SELECT 1 FROM gp.VisitRequests WHERE VisitRequestId=@visit AND PublicReference LIKE @prefix+'-%') THROW 52900,'Owned replacement notification required.',1;
+UPDATE gp.NotificationOutbox SET Status='PROCESSING',AttemptCount=AttemptCount+1,LockedBy=@claim,LockedUntilUtc=DATEADD(minute,1,SYSUTCDATETIME()) WHERE NotificationId=@id;
+SELECT @id;
+'@ @{visit=$Visit;prefix=$taskFixture.prefix;claim=$taskClaim}
+    return @{notificationId=[long]$taskId;claimToken=$taskClaim}
+}
 function Start-Render($Job,[guid]$Token=[guid]::NewGuid(),[string]$Actor='RECEPTION') {$taskP=Auth $Actor;$taskP.PrintJobId=[guid]$Job.printJobId;$taskP.ClaimToken=$Token;return @{Parameters=$taskP;Result=(Call $taskRender 'gp.BeginPassRender' $taskP)}}
 function Finish($Claim) {$taskP=$Claim.Parameters.Clone();$taskP.ArtifactDigest=[Security.Cryptography.RandomNumberGenerator]::GetBytes(32);$null=Call $taskRender 'gp.FinishPassRender' $taskP;return $taskP}
 function Live($Job,[string]$Actor='RECEPTION') {$taskP=Auth $Actor;$taskP.PrintJobId=[guid]$Job.printJobId;return Call $taskApi 'gp.GetPassPrintJob' $taskP}
@@ -106,13 +116,13 @@ try {
     }
     Case 'Replacement security notice contains only references and supported recipient mapping' {$taskP=Reissue-Parameters;$null=Call $taskApi 'gp.ReissuePass' $taskP;$taskR=(Invoke-GatePassScalar $taskAdmin "SELECT (SELECT TemplateCode,RecipientKind,PayloadJson FROM gp.NotificationOutbox WHERE VisitRequestId=@id FOR JSON PATH,WITHOUT_ARRAY_WRAPPER);" @{id=$taskP.VisitRequestId}) | ConvertFrom-Json;Assert ($taskR.TemplateCode -eq 'PASS_REISSUED' -and $taskR.RecipientKind -eq 'EMAIL' -and $taskR.PayloadJson -notmatch 'ciphertext|credentialHash|nonce|AuthenticationTag|storageKey')}
     Case 'Worker preflight supports historical replacement notices without granting entry' {
-        $taskP=Reissue-Parameters;$null=Call $taskApi 'gp.ReissuePass' $taskP;$taskClaims=Call $taskWorker 'gp.ClaimNotifications' @{BatchSize=1;LeaseSeconds=60}
-        $taskR=Call $taskWorker 'gp.GetNotificationDispatch' @{NotificationId=[long]$taskClaims[0].notificationId;ClaimToken=[guid]$taskClaims[0].claimToken}
+        $taskP=Reissue-Parameters;$null=Call $taskApi 'gp.ReissuePass' $taskP;$taskClaim=Claim-OwnedReplacementNotification $taskP.VisitRequestId
+        $taskR=Call $taskWorker 'gp.GetNotificationDispatch' @{NotificationId=$taskClaim.notificationId;ClaimToken=$taskClaim.claimToken}
         Assert ($taskR.status -eq 'READY' -and $taskR.templateCode -eq 'PASS_REISSUED')
     }
     Case 'Replacement notice to a substituted recipient is cancelled before dispatch' {
         $taskP=Reissue-Parameters;$null=Call $taskApi 'gp.ReissuePass' $taskP;Invoke-GatePassNonQuery $taskAdmin "UPDATE gp.NotificationOutbox SET RecipientEmail=N'wrong@example.invalid' WHERE VisitRequestId=@id;" @{id=$taskP.VisitRequestId}
-        $taskClaims=Call $taskWorker 'gp.ClaimNotifications' @{BatchSize=1;LeaseSeconds=60};$taskR=Call $taskWorker 'gp.GetNotificationDispatch' @{NotificationId=[long]$taskClaims[0].notificationId;ClaimToken=[guid]$taskClaims[0].claimToken}
+        $taskClaim=Claim-OwnedReplacementNotification $taskP.VisitRequestId;$taskR=Call $taskWorker 'gp.GetNotificationDispatch' @{NotificationId=$taskClaim.notificationId;ClaimToken=$taskClaim.claimToken}
         Assert ($taskR.status -eq 'CANCELLED' -and $taskR.reasonCode -eq 'RECIPIENT_MISMATCH')
     }
     Case 'Concurrent different-key replacements of one expected pass commit exactly once' {$taskP=Reissue-Parameters;$taskQ=Reissue-Parameters;$taskR=Race (Command $taskApi 'gp.ReissuePass' $taskP) (Command $taskRaceApi 'gp.ReissuePass' $taskQ);Assert (@($taskR | Where-Object Success).Count -eq 1 -and @($taskR | Where-Object {-not $_.Success -and $_.Error -eq 53103}).Count -eq 1 -and (Counts) -eq 26)}
@@ -136,18 +146,20 @@ try {
         $taskC=Start-Render (Request);$taskD=$taskC.Result.cardDetails;Assert ($taskD.employeeId -eq $null -and $taskD.hostEmployeeId -eq $taskFixture.hostEmployeeId -and $taskD.hostName -and $taskD.purpose -eq 'Transaction test only' -and $taskD.assignedProjectCount -eq 0)
     }
     Case 'Employee card reads its own multiple assignments and canonical digital ID reason' {
-        Invoke-GatePassNonQuery $taskAdmin 'INSERT gp.EmployeeProjectMemberships(EmployeeId,ProjectId,IsActive,VerifiedAtUtc) SELECT @employee,ProjectId,1,SYSUTCDATETIME() FROM gp.Projects WHERE ExternalProjectCode=@code;' @{employee=$taskFixture.hostEmployeeId;code=$taskFixture.prefix+'-B'}
+        Invoke-GatePassNonQuery $taskAdmin 'INSERT gp.EmployeeProjectMemberships(EmployeeId,ProjectId,IsActive,VerifiedAtUtc) SELECT @employee,ProjectId,1,SYSUTCDATETIME() FROM gp.Projects WHERE ExternalProjectCode=@code;INSERT gp.EmployeeProjectLocationMemberships(EmployeeId,ProjectLocationId,IsActive,VerifiedAtUtc) SELECT @employee,pl.ProjectLocationId,1,SYSUTCDATETIME() FROM gp.ProjectLocations pl JOIN gp.Projects p ON p.ProjectId=pl.ProjectId WHERE p.ExternalProjectCode=@code AND pl.LocationId=(SELECT LocationId FROM gp.VisitRequests WHERE VisitRequestId=@visit);' @{employee=$taskFixture.hostEmployeeId;code=$taskFixture.prefix+'-B';visit=[guid]$taskVisits.TEMP.VisitId}
         $taskD=(Start-Render (Request 'TEMP')).Result.cardDetails;Assert ($taskD.employeeId -eq $taskFixture.hostEmployeeId -and $taskD.hostEmployeeId -eq $null -and $taskD.purpose -eq 'Forgot physical ID' -and $taskD.assignedProjectCount -eq 2 -and @($taskD.assignedProjects).Count -eq 2)
     }
     Case 'No active employee memberships produces an honest empty assignment list' {
-        Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeProjectMemberships SET IsActive=0 WHERE EmployeeId=@employee;' @{employee=$taskFixture.hostEmployeeId}
+        Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeProjectLocationMemberships SET IsActive=0 WHERE EmployeeId=@employee;UPDATE gp.EmployeeProjectMemberships SET IsActive=0 WHERE EmployeeId=@employee;' @{employee=$taskFixture.hostEmployeeId}
         $taskD=(Start-Render (Request 'TEMP')).Result.cardDetails;Assert ($taskD.assignedProjectCount -eq 0 -and @($taskD.assignedProjects).Count -eq 0)
     }
     Case 'Four assignments return a deterministic top three plus the complete count' {
         Invoke-GatePassNonQuery $taskAdmin @'
 INSERT gp.Projects(ExternalProjectCode,ProjectName,LastSyncedAtUtc) VALUES(@prefix+'-C',N'Synthetic Gamma',SYSUTCDATETIME()),(@prefix+'-D',N'Synthetic Delta',SYSUTCDATETIME());
 INSERT gp.EmployeeProjectMemberships(EmployeeId,ProjectId,IsActive,VerifiedAtUtc) SELECT @employee,ProjectId,1,SYSUTCDATETIME() FROM gp.Projects WHERE ExternalProjectCode IN(@prefix+'-B',@prefix+'-C',@prefix+'-D');
-'@ @{prefix=$taskFixture.prefix;employee=$taskFixture.hostEmployeeId}
+INSERT gp.ProjectLocations(ProjectId,LocationId) SELECT p.ProjectId,v.LocationId FROM gp.Projects p CROSS JOIN gp.VisitRequests v WHERE p.ExternalProjectCode IN(@prefix+'-C',@prefix+'-D') AND v.VisitRequestId=@visit;
+INSERT gp.EmployeeProjectLocationMemberships(EmployeeId,ProjectLocationId,IsActive,VerifiedAtUtc) SELECT @employee,pl.ProjectLocationId,1,SYSUTCDATETIME() FROM gp.ProjectLocations pl JOIN gp.Projects p ON p.ProjectId=pl.ProjectId WHERE p.ExternalProjectCode IN(@prefix+'-B',@prefix+'-C',@prefix+'-D') AND pl.LocationId=(SELECT LocationId FROM gp.VisitRequests WHERE VisitRequestId=@visit);
+'@ @{prefix=$taskFixture.prefix;employee=$taskFixture.hostEmployeeId;visit=[guid]$taskVisits.TEMP.VisitId}
         $taskD=(Start-Render (Request 'TEMP')).Result.cardDetails;Assert ($taskD.assignedProjectCount -eq 4 -and @($taskD.assignedProjects).Count -eq 3 -and $taskD.assignedProjects[0].code -eq $taskFixture.prefix+'-A' -and $taskD.assignedProjects[2].code -eq $taskFixture.prefix+'-C')
     }
     Case 'Stale active memberships block printing rather than hide assignments' {
@@ -160,7 +172,7 @@ INSERT gp.EmployeeProjectMemberships(EmployeeId,ProjectId,IsActive,VerifiedAtUtc
         $taskC=Start-Render (Request);Invoke-GatePassNonQuery $taskAdmin "UPDATE gp.Employees SET FullName=N'Changed host' WHERE EmployeeId=@employee;" @{employee=$taskFixture.hostEmployeeId};Expect {Finish $taskC} 53103
     }
     Case 'Changed employee assignment fences rendered artifact dispatch' {
-        $taskC=Start-Render (Request 'TEMP');$taskP=Finish $taskC;Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeProjectMemberships SET IsActive=0 WHERE EmployeeId=@employee;' @{employee=$taskFixture.hostEmployeeId};Expect {Call $taskRender 'gp.DispatchPassPrint' $taskP} 53103
+        $taskC=Start-Render (Request 'TEMP');$taskP=Finish $taskC;Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeProjectLocationMemberships SET IsActive=0 WHERE EmployeeId=@employee;UPDATE gp.EmployeeProjectMemberships SET IsActive=0 WHERE EmployeeId=@employee;' @{employee=$taskFixture.hostEmployeeId};Expect {Call $taskRender 'gp.DispatchPassPrint' $taskP} 53103
     }
     Case 'Same claim cannot retry after printed directory details change' {
         $taskJ=Request;$taskToken=[guid]::NewGuid();$taskC=Start-Render $taskJ $taskToken;Invoke-GatePassNonQuery $taskAdmin "UPDATE gp.Employees SET FullName=N'Changed host' WHERE EmployeeId=@employee;" @{employee=$taskFixture.hostEmployeeId};Expect {Start-Render $taskJ $taskToken} 53103

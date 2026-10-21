@@ -19,6 +19,8 @@ BEGIN TRY
   UPDATE e SET LastSyncedAtUtc=@now FROM gp.Employees e JOIN gp.Users u ON u.UserId=e.UserId
    WHERE u.IdentityIssuer=N'urn:gatepass:development-directory' AND u.IdentitySubject=(N'employee:'+e.EmployeeId) COLLATE Latin1_General_100_BIN2 AND e.OfficialEmail LIKE N'%@example.com';
   UPDATE gp.Projects SET LastSyncedAtUtc=@now WHERE ExternalProjectCode COLLATE Latin1_General_100_BIN2 LIKE N'DEMO-PRJ-[0-9][0-9][0-9]';
+  UPDATE x SET VerifiedAtUtc=@now FROM gp.EmployeeOfficeMemberships x JOIN gp.Employees e ON e.EmployeeId=x.EmployeeId JOIN gp.Users u ON u.UserId=e.UserId WHERE u.IdentityIssuer=N'urn:gatepass:development-directory';
+  UPDATE x SET VerifiedAtUtc=@now FROM gp.EmployeeProjectLocationMemberships x JOIN gp.Employees e ON e.EmployeeId=x.EmployeeId JOIN gp.Users u ON u.UserId=e.UserId WHERE u.IdentityIssuer=N'urn:gatepass:development-directory';
   UPDATE ep SET VerifiedAtUtc=@now FROM gp.EmployeeProjectMemberships ep JOIN gp.Employees e ON e.EmployeeId=ep.EmployeeId JOIN gp.Users u ON u.UserId=e.UserId
    WHERE u.IdentityIssuer=N'urn:gatepass:development-directory' AND u.IdentitySubject=(N'employee:'+e.EmployeeId) COLLATE Latin1_General_100_BIN2;
   COMMIT; SELECT N'{"ok":true}'; RETURN;
@@ -55,6 +57,7 @@ BEGIN TRY
  IF @Action='touch'
   UPDATE gp.Sessions SET LastSeenAtUtc=@now,IdleExpiresAtUtc=CASE WHEN DATEADD(minute,15,@now)<AbsoluteExpiresAtUtc THEN DATEADD(minute,15,@now) ELSE AbsoluteExpiresAtUtc END WHERE SessionHash=@SessionHash;
  DECLARE @employees nvarchar(max)=(SELECT e.EmployeeId employeeId,e.FullName displayName,e.OfficialEmail officialEmail,e.ManagerEmployeeId managerEmployeeId,
+   (SELECT l.LocationName FROM gp.EmployeeOfficeMemberships om JOIN gp.Locations l ON l.LocationId=om.LocationId WHERE om.EmployeeId=e.EmployeeId AND om.IsActive=1 AND om.IsPrimary=1 AND l.IsActive=1 AND om.VerifiedAtUtc BETWEEN @cutoff AND @now) primaryOffice,
    JSON_QUERY(CASE WHEN m.EmployeeId IS NOT NULL THEN (SELECT m.EmployeeId employeeId,m.FullName displayName,m.OfficialEmail officialEmail,m.IsActive active FOR JSON PATH,WITHOUT_ARRAY_WRAPPER) END) manager,
    JSON_QUERY(COALESCE((SELECT p.ExternalProjectCode projectCode,p.ProjectName projectName FROM gp.EmployeeProjectMemberships ep JOIN gp.Projects p ON p.ProjectId=ep.ProjectId
      WHERE ep.EmployeeId=e.EmployeeId AND ep.IsActive=1 AND ep.VerifiedAtUtc BETWEEN @cutoff AND @now AND p.IsActive=1 AND p.LastSyncedAtUtc BETWEEN @cutoff AND @now ORDER BY p.ExternalProjectCode FOR JSON PATH),N'[]')) projects

@@ -43,5 +43,22 @@
   "042_guard_movement_timeline.sql": "e2d5ed62944202ca17cdf42297ece9d4f63e0a9df798ff9517e8915a63f01571",
   "043_movement_timeline_boundaries.sql": "49a244e8afe979de93b242e68d1e1384ac5e4254bf33bbdc994dba3cb2a5e2d9",
   "044_registration_property_memory.sql": "994c57fd3fb9e8503c31b63a0e9c3af3b3ed1f5a61d1844a430a6b0f81e218f4",
-  "045_preserve_qr_key_alphabet.sql": "bcbdc2d825c1f7b1018210b513ed9f2db70ad15814152e10f241b2c73874e92f"
+  "045_preserve_qr_key_alphabet.sql": "bcbdc2d825c1f7b1018210b513ed9f2db70ad15814152e10f241b2c73874e92f",
+  "046_guard_host_name.sql": "85160f6bb2a04bc3ef7d57599a7215eb9d0bc14fd39ed4fd51bcb73db5155cd5",
+  "047_guard_employee_projects.sql": "63b9037344a70fdb66c3fdcf794e4d3703d2e011c3cbdb9f36f6d1a735815295",
+  "048_employee_office_authorization.sql": "1fa0211aba1d3f499fe413dcc4c2f0c1803f7fb9ddf85426f8893b05398b8d49",
+  "049_employee_office_card_lifecycle.sql": "a47581b0bd80f7643c2de32c2f8c6f54a9366ba6d79096153094f20b21639c81",
+  "050_employee_authorization_query_plans.sql": "bb86c62d7576bba1ecdf5b2e464b97c46cfcf1ab600b1a8c0b60f5ff3036bfff",
+  "051_employee_office_replay_authorization.sql": "5559e29612cd9760b762b34771ded282a4b0ccfe31b28c9ca8dd598dc9fd9cf1",
+  "052_scoped_office_card_revalidation.sql": "a98f5d0b5a05b51d999b321086580d5a7e0102240f042789edadda791375dbec",
+  "053_guard_duty_contexts.sql": "8ee85c107dd8aec7d70ddc0f77a4e1060f84af39649d36ce961a760d9ccd9d81",
+  "054_guard_duty_workflows.sql": "e3fcc9d2c68963bffb520dcbb2f7cb5badee0bd2c1cf87fe1c281b23e925d97d",
+  "055_guard_duty_legacy_boundaries.sql": "f4d72c24200275fccf3ffab4a5c44155e9fb23a4b46f2a2256f9ff1039013baf",
+  "056_common_duty_administration.sql": "2fcae03e3f1ab0d3c75a486606cb4a0a9cdabc79bbb28ca87eec1e30dc68aa06",
+  "057_guard_duty_inside_owner.sql": "7ce04c147ac44f5cbd094f5e7f94d63b10fab395626f56af1d24647a9fc38582",
+  "058_guard_duty_input_and_replay.sql": "7b55e51567f55e162a48c88eedd9c1b46cf3b17ed8fb15331037f916030a615b",
+  "059_employee_project_presence_identity.sql": "3f4daa1cbe71683c9cfd075b12203fcecfeec6da9835cad872f24d2ae08a6c67",
+  "060_project_presence_conflict_checks.sql": "3738401382916c65a659ed93502b7e86fb8da9481def2cc0adc5260c43ec8cae",
+  "061_email_request_workflow.sql": "c571c70d31d82266b0575aff1b819f7f207b421ecb5523ee5070bb75fde3d7df",
+  "062_outlook_action_decisions.sql": "a1bd4af8463b8cd2d655b8cc891c97ad5c4bd5979806d75541a42b16f5a68056"
 }

@@ -27,14 +27,25 @@
     "check:migrations": "node tools/ci/migrations.mjs",
     "scan:secrets": "node tools/ci/scan-secrets.mjs",
     "release:prepare": "node tools/ci/release.mjs",
-    "smoke:staging": "node tools/ci/staging-smoke.mjs"
+    "smoke:staging": "node tools/ci/staging-smoke.mjs",
+    "start:email": "node tools/start-email-worker.ts",
+    "mail:preview": "node tools/preview-email.ts",
+    "mail:connect": "node tools/connect-personal-outlook.ts connect",
+    "mail:status": "node tools/connect-personal-outlook.ts status",
+    "mail:test": "node tools/connect-personal-outlook.ts test",
+    "mail:disconnect": "node tools/connect-personal-outlook.ts disconnect",
+    "mail:dev": "node tools/start-development-email.ts",
+    "mail:scenario": "node tools/create-email-test.ts",
+    "mail:outlook-preview": "node tools/preview-outlook-approval.ts"
   },
   "engines": {
     "node": ">=26.8.0 <27"
   },
   "dependencies": {
+    "@azure/msal-node": "7.1.0",
     "@zxing/library": "0.23.0",
     "flag-icons": "7.6.0",
+    "jose": "6.2.13",
     "libphonenumber-js": "1.13.15",
     "mssql": "12.7.10",
     "qrcode": "1.5.4"

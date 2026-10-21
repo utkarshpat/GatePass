@@ -39,6 +39,12 @@ Use `.primary`, `.secondary`, `.quiet`, `.panel`, `.notice`, `.status-pill`, `.a
 - Motion is limited to short colour/border transitions and is omitted when reduced motion is requested. Forced-colour mode retains control boundaries.
 - `[hidden]` is the sole intentional `!important` rule, so hidden application states cannot leak through a page layout display rule.
 
+### Right Corner & Overflow Protection Rules
+- **Right-Aligned Trailing Content**: Badges, status indicators, timestamps, and right-corner card elements must stay right-aligned (`text-align: right;`).
+- **Zero Overflow on Localization**: Never use unconditional `white-space: nowrap;` on status elements or localized bilingual labels where longer script translations (e.g. Tamil, Kannada, German) could spill past card boundaries.
+- **Controlled Multi-line Wrapping**: When overflow is possible, enforce graceful wrapping via `white-space: pre-line;` or `white-space: normal; line-height: 1.25; overflow-wrap: anywhere;`.
+- **Bounded Flex/Grid Proportions**: Trailing elements in flex rows must define a maximum width constraint (e.g., `max-width: 55%; flex-shrink: 0;`), with leading content having `flex: 1; min-width: 0;` so both sides share available card space without clipping or overlapping.
+
 ## Verification
 
 `database/validation/global-css-report.json` records resolved token references, no hardcoded page colours, balanced source delimiters and calculated text/control contrast. Checked text combinations exceed 4.5:1; control border contrast against white is 3.12:1 and focus contrast is 6.81:1. This is source/calculated verification, not browser visual acceptance or a claim that every future component is implemented.

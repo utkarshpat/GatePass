@@ -56,20 +56,25 @@ function New-Submission([string]$Type='TEMP_ID',[int]$Count=1,[byte[]]$PhotoCont
     if ($Type -ne 'TEMP_ID') {
         $taskParams.ProjectLocationId=[long]$taskFixture.projectLocationId; $taskParams.HostEmployeeId=$taskOtherHost
         $taskParams.TemporaryIdReason=$null
-        $taskParams.ValidFromUtc=[datetime]::UtcNow.AddMinutes(330).Date.AddDays(1).AddHours(10).AddMinutes(-330)
-        $taskParams.ValidUntilUtc=$taskParams.ValidFromUtc.AddHours(2)
+        $taskParams.ValidFromUtc=if ($Type -eq 'EMPLOYEE_PROJECT') {[datetime]::UtcNow.AddMinutes(330).Date.AddMinutes(-330)} else {[datetime]::UtcNow.AddMinutes(330).Date.AddDays(1).AddHours(10).AddMinutes(-330)}
+        $taskParams.ValidUntilUtc=if ($Type -eq 'EMPLOYEE_PROJECT') {[datetime]::UtcNow.AddMinutes(330).Date.AddDays(1).AddMinutes(-330)} else {$taskParams.ValidFromUtc.AddHours(2)}
     }
     $taskParams.CredentialsJson=New-Credentials $taskPeople
     return $taskParams
 }
 function Submit($Parameters) { return Call $taskApi 'gp.SubmitRegistration' $Parameters }
 function New-VisitCount { return Invoke-GatePassScalar $taskAdmin "SELECT COUNT(*) FROM gp.VisitRequests WHERE IntakeId IN(SELECT intakeId FROM OPENJSON(@ids) WITH(intakeId uniqueidentifier));" @{ids=(ConvertTo-Json -InputObject @($taskOwned) -Depth 4 -Compress)} }
-function Move-Visit($Visit,[string]$Event='ENTRY') {
-    $taskParams=Auth 'GUARD'; $taskParams.ClientKey=[guid]::NewGuid();$taskParams.VisitRequestId=[guid]$Visit.visitRequestId;$taskParams.AccessPassId=[guid]$Visit.accessPassId
+function Move-Visit($Visit,[string]$Event='ENTRY',[guid]$ClientKey=[guid]::NewGuid()) {
+    $taskParams=Auth 'GUARD'; $taskParams.ClientKey=$ClientKey;$taskParams.VisitRequestId=[guid]$Visit.visitRequestId;$taskParams.AccessPassId=[guid]$Visit.accessPassId
     $taskParams.LocationId=[int]$taskFixture.locationId;$taskParams.EventType=$Event;$taskParams.EntryMethod='MANUAL';$taskParams.CredentialHash=$null;$taskParams.OccurredAtUtc=$null;$taskParams.ReconciliationReason=$null
     # The fixture selects its known destination; production actions name the visible project explicitly.
     $taskPair=Invoke-GatePassScalar $taskAdmin 'SELECT ProjectLocationId FROM gp.VisitRequests WHERE VisitRequestId=@id;' @{id=[guid]$Visit.visitRequestId}
     $taskParams.SelectedProjectLocationId=if ($taskPair -is [DBNull] -or $null -eq $taskPair) {$null} else {[long]$taskPair}
+    $taskType=Invoke-GatePassScalar $taskAdmin 'SELECT RequestType FROM gp.VisitRequests WHERE VisitRequestId=@v;' @{v=$taskParams.VisitRequestId}
+    if($taskType -eq 'TEMP_ID'){
+      $taskParams.Remove('SelectedProjectLocationId');$taskParams.Remove('OccurredAtUtc');$taskParams.Remove('ReconciliationReason');$taskParams.DutyKind='PROJECT';$taskParams.DutyId=[long]$taskFixture.projectLocationId;$taskParams.Reason=$null
+      return Call $taskApi 'gp.RecordGuardDutyMovement' $taskParams
+    }
     return Call $taskApi 'gp.RecordMovement' $taskParams
 }
 function Test-Case([string]$Name,[scriptblock]$Action) {
@@ -106,6 +111,8 @@ try {
     $taskFixture=(Invoke-GatePassScalar $taskAdmin ([IO.File]::ReadAllText((Join-Path $PSScriptRoot '002_transaction_fixtures.sql'))) @{RunId=$taskRun}) | ConvertFrom-Json
     $taskFixtureReady=$true; foreach ($taskActor in $taskFixture.actors) { $taskActors[$taskActor.Label]=$taskActor }
     $taskOtherHost=$taskFixture.prefix+'-OTHERHOST'
+    # This suite creates its own requests; baseline movement cases must not occupy its employee windows.
+    Invoke-GatePassNonQuery $taskAdmin "UPDATE gp.VisitRequests SET EmployeeId=@other WHERE EmployeeId=@e AND RequestType='EMPLOYEE_PROJECT';" @{e=$taskFixture.hostEmployeeId;other=$taskOtherHost}
     foreach ($taskPair in @(@('gp_registration_api_fixture','gp_api_runtime'),@('gp_registration_worker_fixture','gp_worker_runtime'),@('gp_registration_auth_fixture','gp_guard_auth_runtime'))) {
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM sys.database_principals WHERE name=@name;' @{name=$taskPair[0]}) -eq 0) 'Refusing existing fixture principal.'
         Invoke-GatePassNonQuery $taskAdmin ('CREATE USER '+$taskPair[0]+' WITHOUT LOGIN; ALTER ROLE '+$taskPair[1]+' ADD MEMBER '+$taskPair[0]+';'); $taskPrincipals.Add($taskPair[0])
@@ -122,6 +129,84 @@ try {
         $taskIntake=New-Intake; $taskParams=$taskIntake.Clone();$taskParams.IntakeType='PUBLIC'
         $taskOne=Call $taskApi 'gp.CreateRegistrationIntake' $taskParams; $taskTwo=Call $taskApi 'gp.CreateRegistrationIntake' $taskParams
         Assert-Condition ($taskOne.expiresAtUtc -eq $taskTwo.expiresAtUtc) 'Retry extended intake lifetime.'
+    }
+    Test-Case 'Office QR cannot auto-issue Digital ID outside employee office, even for the same project' {
+        $taskP=New-Submission;$taskP.LocationId=[int](Invoke-GatePassScalar $taskAdmin "SELECT LocationId FROM gp.Locations WHERE LocationCode='PUNE';")
+        Expect-Error { Submit $taskP } 52701
+        Assert-Condition ((New-VisitCount) -eq 0) 'Cross-office ID persisted.'
+    }
+    Test-Case 'Missing revoked stale and future employee office records block Digital ID issuance' {
+        $taskEmployee=$taskFixture.hostEmployeeId;$taskLocation=[int]$taskFixture.locationId
+        foreach($taskMode in @('missing','revoked','stale','future')) {
+            $taskP=New-Submission
+            try {
+                $taskSql=switch($taskMode){
+                  'missing' {'DELETE gp.EmployeeOfficeMemberships WHERE EmployeeId=@e AND LocationId=@l;'}
+                  'revoked' {'UPDATE gp.EmployeeOfficeMemberships SET IsActive=0 WHERE EmployeeId=@e AND LocationId=@l;'}
+                  'stale' {'UPDATE gp.EmployeeOfficeMemberships SET VerifiedAtUtc=DATEADD(day,-2,SYSUTCDATETIME()) WHERE EmployeeId=@e AND LocationId=@l;'}
+                  'future' {'UPDATE gp.EmployeeOfficeMemberships SET VerifiedAtUtc=DATEADD(day,1,SYSUTCDATETIME()) WHERE EmployeeId=@e AND LocationId=@l;'}
+                }
+                Invoke-GatePassNonQuery $taskAdmin $taskSql @{e=$taskEmployee;l=$taskLocation}
+                Expect-Error { Submit $taskP } 52701
+            } finally {
+                Invoke-GatePassNonQuery $taskAdmin 'IF NOT EXISTS(SELECT 1 FROM gp.EmployeeOfficeMemberships WHERE EmployeeId=@e AND LocationId=@l) INSERT gp.EmployeeOfficeMemberships(EmployeeId,LocationId,IsActive,VerifiedAtUtc) VALUES(@e,@l,1,SYSUTCDATETIME()); ELSE UPDATE gp.EmployeeOfficeMemberships SET IsActive=1,VerifiedAtUtc=SYSUTCDATETIME() WHERE EmployeeId=@e AND LocationId=@l;' @{e=$taskEmployee;l=$taskLocation}
+            }
+        }
+    }
+    Test-Case 'Cached and daily-reused Digital IDs cannot bypass revoked office entitlement' {
+        $taskP=New-Submission;$null=Submit $taskP
+        try {
+            Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeOfficeMemberships SET IsActive=0 WHERE EmployeeId=@e;' @{e=$taskFixture.hostEmployeeId}
+            Expect-Error { Submit $taskP } 52701
+            $taskRetry=New-Submission;Expect-Error { Submit $taskRetry } 52701
+        } finally {Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeOfficeMemberships SET IsActive=1,VerifiedAtUtc=SYSUTCDATETIME() WHERE EmployeeId=@e;' @{e=$taskFixture.hostEmployeeId}}
+    }
+    Test-Case 'Issued Digital ID loses entry permission after office revocation but occupants can exit' {
+        $taskP=New-Submission;$taskV=(Submit $taskP).visits[0]
+        try {
+            Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeOfficeMemberships SET IsActive=0 WHERE EmployeeId=@e;' @{e=$taskFixture.hostEmployeeId}
+            Expect-Error { Move-Visit $taskV } 52001
+            Expect-Error {Invoke-GatePassScalar $taskAdmin 'EXEC gp._RequireReceptionPass @actor,@visit,@now;' @{actor=[guid]$taskActors.GUARD.UserId;visit=[guid]$taskV.visitRequestId;now=[datetime]::UtcNow}} 53101
+            Expect-Error {Invoke-GatePassScalar $taskAdmin 'EXEC gp._RequirePrintablePass @v,@p,@now;' @{v=[guid]$taskV.visitRequestId;p=[guid]$taskV.accessPassId;now=[datetime]::UtcNow}} 53105
+            Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeOfficeMemberships SET IsActive=1 WHERE EmployeeId=@e;' @{e=$taskFixture.hostEmployeeId}
+            $taskEntryKey=[guid]::NewGuid();$null=Move-Visit $taskV 'ENTRY' $taskEntryKey
+            Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeOfficeMemberships SET IsActive=0 WHERE EmployeeId=@e;' @{e=$taskFixture.hostEmployeeId}
+            Expect-Error {Move-Visit $taskV 'ENTRY' $taskEntryKey} 52004
+            $taskExit=Move-Visit $taskV 'EXIT';Assert-Condition (-not $taskExit.isInside) 'Revocation stranded an occupant.'
+        } finally {Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeOfficeMemberships SET IsActive=1,VerifiedAtUtc=SYSUTCDATETIME() WHERE EmployeeId=@e;' @{e=$taskFixture.hostEmployeeId}}
+    }
+    Test-Case 'Project-only host membership cannot authorize a request at another office' {
+        $taskP=New-Submission 'EXTERNAL';$taskPair=Invoke-GatePassScalar $taskAdmin 'SELECT pl.ProjectLocationId FROM gp.ProjectLocations pl WHERE pl.ProjectId=(SELECT ProjectId FROM gp.ProjectLocations WHERE ProjectLocationId=@pair) AND pl.LocationId<>@location;' @{pair=[long]$taskFixture.projectLocationId;location=[int]$taskFixture.locationId}
+        $taskP.ProjectLocationId=[long]$taskPair;$taskP.LocationId=[int](Invoke-GatePassScalar $taskAdmin 'SELECT LocationId FROM gp.ProjectLocations WHERE ProjectLocationId=@pair;' @{pair=$taskPair})
+        Expect-Error { Submit $taskP } 52701
+    }
+    Test-Case 'Cross-office employee access requires an exact local host, supports approval, and permits scoped movement' {
+        $taskP=New-Submission 'EMPLOYEE_PROJECT'
+        $taskPair=[long](Invoke-GatePassScalar $taskAdmin 'SELECT ProjectLocationId FROM gp.ProjectLocations WHERE ProjectId=@p AND LocationId=@l;' @{p=[long]$taskFixture.projectId;l=[int]$taskFixture.otherLocationId})
+        $taskP.ProjectLocationId=$taskPair;$taskP.LocationId=[int]$taskFixture.otherLocationId
+        $taskSelector=New-Intake 'PUBLIC';$taskSelector.LocationCode='PUNE';$taskSelector.ProjectLocationId=$taskPair;$taskSelector.Search='Synthetic'
+        Assert-Condition ((Call $taskApi 'gp.GetRegistrationOptions' $taskSelector).hosts.Count -eq 0) 'Project-only host leaked into another office.'
+        try {
+            Invoke-GatePassNonQuery $taskAdmin 'INSERT gp.EmployeeOfficeMemberships(EmployeeId,LocationId,IsActive,VerifiedAtUtc) VALUES(@e,@l,1,SYSUTCDATETIME());INSERT gp.EmployeeProjectLocationMemberships(EmployeeId,ProjectLocationId,IsActive,VerifiedAtUtc) VALUES(@e,@p,1,SYSUTCDATETIME());' @{e=$taskOtherHost;l=$taskP.LocationId;p=$taskPair}
+            Assert-Condition ((Call $taskApi 'gp.GetRegistrationOptions' $taskSelector).hosts.Count -eq 1) 'Explicit local host missing.'
+            $taskV=(Submit $taskP).visits[0];Assert-Condition ($taskV.status -eq 'PENDING') 'Cross-office access bypassed approval.'
+            $taskDecision=Auth 'OTHERHOST';$taskDecision.ClientKey=[guid]::NewGuid();$taskDecision.VisitRequestId=[guid]$taskV.visitRequestId;$taskDecision.SnapshotVersion=1;$taskDecision.SnapshotHash=[Convert]::FromHexString((Invoke-GatePassScalar $taskAdmin 'SELECT CONVERT(varchar(64),SnapshotHash,2) FROM gp.VisitRequests WHERE VisitRequestId=@id;' @{id=[guid]$taskV.visitRequestId}));$taskDecision.Decision='APPROVED'
+            Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeProjectLocationMemberships SET IsActive=0 WHERE EmployeeId=@e AND ProjectLocationId=@p;' @{e=$taskOtherHost;p=$taskPair}
+            Assert-Condition ((Call $taskApi 'gp.GetRegistrationOptions' $taskSelector).hosts.Count -eq 0) 'Revoked local host stayed selectable.'
+            Expect-Error {Call $taskApi 'gp.DecideVisit' $taskDecision} 52004
+            Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeProjectLocationMemberships SET IsActive=1 WHERE EmployeeId=@e AND ProjectLocationId=@p;' @{e=$taskOtherHost;p=$taskPair}
+            $null=Call $taskApi 'gp.DecideVisit' $taskDecision
+            $taskMove=Auth 'WRONGLOCATION';$taskMove.ClientKey=[guid]::NewGuid();$taskMove.VisitRequestId=[guid]$taskV.visitRequestId;$taskMove.AccessPassId=[guid]$taskV.accessPassId;$taskMove.LocationId=$taskP.LocationId;$taskMove.SelectedProjectLocationId=$taskPair;$taskMove.EventType='ENTRY';$taskMove.EntryMethod='MANUAL'
+            Assert-Condition (Call $taskApi 'gp.RecordMovement' $taskMove).isInside 'Approved hosted cross-office employee could not enter.'
+            $taskMove.ClientKey=[guid]::NewGuid();$taskMove.EventType='EXIT';$null=Call $taskApi 'gp.RecordMovement' $taskMove
+        } finally {Invoke-GatePassNonQuery $taskAdmin 'DELETE gp.EmployeeProjectLocationMemberships WHERE EmployeeId=@e AND ProjectLocationId=@p;DELETE gp.EmployeeOfficeMemberships WHERE EmployeeId=@e AND LocationId=@l;' @{e=$taskOtherHost;p=$taskPair;l=$taskP.LocationId}}
+    }
+    Test-Case 'Revoked exact host assignment blocks submission despite project membership' {
+        $taskP=New-Submission 'EXTERNAL'
+        try {
+            Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeProjectLocationMemberships SET IsActive=0 WHERE EmployeeId=@e;' @{e=$taskOtherHost}
+            Expect-Error { Submit $taskP } 52701
+        } finally {Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeProjectLocationMemberships SET IsActive=1,VerifiedAtUtc=SYSUTCDATETIME() WHERE EmployeeId=@e;' @{e=$taskOtherHost}}
     }
     Test-Case 'Employee intake requires a verified active employee session and CSRF' {
         Expect-Error { New-Intake 'EMPLOYEE' 'GUARD' } 52701
@@ -196,7 +281,7 @@ try {
         $taskFirst=Submit (New-Submission);$taskSecond=Submit (New-Submission)
         Assert-Condition ($taskFirst.visits[0].accessPassId -eq $taskSecond.visits[0].accessPassId -and $taskSecond.visits[0].reused) 'Daily credential was duplicated.'
         Assert-Condition ((New-VisitCount) -eq 1) 'Parallel daily visits created.'
-        Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId=@id;' @{id=[guid]$taskFirst.visits[0].visitRequestId}) -eq 1) 'Duplicate manager notice.'
+        Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId=@id AND TemplateCode=''TEMP_ID_MANAGER_NOTICE'';' @{id=[guid]$taskFirst.visits[0].visitRequestId}) -eq 1) 'Duplicate manager notice.'
     }
     Test-Case 'An inside usable Digital ID is reused without creating another occupancy record' {
         $taskFirst=Submit (New-Submission);$null=Move-Visit $taskFirst.visits[0]
@@ -221,7 +306,11 @@ try {
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT VisitRequestId FROM gp.TemporaryIdSlots WHERE EmployeeId=@employee AND LocationId=@location;' @{employee=$taskFixture.hostEmployeeId;location=[int]$taskFixture.locationId}) -eq [guid]$taskSecond.visits[0].visitRequestId) 'Daily pointer not updated.'
     }
     Test-Case 'Same employee can hold separate location-scoped daily IDs' {
-        $taskFirst=Submit (New-Submission);$taskParams=New-Submission;$taskParams.LocationId=[int]$taskFixture.otherLocationId;$taskSecond=Submit $taskParams
+        $taskFirst=Submit (New-Submission);$taskParams=New-Submission;$taskParams.LocationId=[int]$taskFixture.otherLocationId
+        try {
+          Invoke-GatePassNonQuery $taskAdmin 'INSERT gp.EmployeeOfficeMemberships(EmployeeId,LocationId,IsActive,VerifiedAtUtc) VALUES(@e,@l,1,SYSUTCDATETIME());' @{e=$taskFixture.hostEmployeeId;l=$taskParams.LocationId}
+          $taskSecond=Submit $taskParams
+        } finally {Invoke-GatePassNonQuery $taskAdmin 'DELETE gp.EmployeeOfficeMemberships WHERE EmployeeId=@e AND LocationId=@l;' @{e=$taskFixture.hostEmployeeId;l=$taskParams.LocationId}}
         Assert-Condition ($taskFirst.visits[0].visitRequestId -ne $taskSecond.visits[0].visitRequestId -and (New-VisitCount) -eq 2) 'Locations incorrectly coupled.'
     }
     Test-Case 'External multi-person registration permits optional contact and creates independent pending rows' {
@@ -269,10 +358,10 @@ try {
     Test-Case 'Host must be active fresh and a current member of the requested project' {
         $taskParams=New-Submission 'EXTERNAL'
         Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeProjectMemberships SET IsActive=0 WHERE EmployeeId=@id;' @{id=$taskOtherHost}
-        try { Expect-Error { Submit $taskParams } 52704 }
+        try { Expect-Error { Submit $taskParams } 52701 }
         finally { Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.EmployeeProjectMemberships SET IsActive=1,VerifiedAtUtc=SYSUTCDATETIME() WHERE EmployeeId=@id;' @{id=$taskOtherHost} }
         Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.Employees SET LastSyncedAtUtc=DATEADD(day,-1,SYSUTCDATETIME()) WHERE EmployeeId=@id;' @{id=$taskOtherHost}
-        try { Expect-Error { Submit $taskParams } 52704 }
+        try { Expect-Error { Submit $taskParams } 52701 }
         finally { Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.Employees SET LastSyncedAtUtc=SYSUTCDATETIME() WHERE EmployeeId=@id;' @{id=$taskOtherHost} }
     }
     Test-Case 'Project availability and location must agree' {
@@ -290,13 +379,13 @@ try {
         $null=Submit (New-Submission 'EMPLOYEE_PROJECT')
         foreach ($taskChange in @('reason','photo','window')) {
             $taskParams=New-Submission 'EMPLOYEE_PROJECT' 1 $(if ($taskChange -eq 'photo') {Random-Hash} else {[byte[]]::new(32)})
-            if ($taskChange -eq 'reason') {$taskParams.Reason='Materially changed'}; if ($taskChange -eq 'window') {$taskParams.ValidUntilUtc=$taskParams.ValidUntilUtc.AddMinutes(10)}
+            if ($taskChange -eq 'reason') {$taskParams.Reason='Materially changed'}; if ($taskChange -eq 'window') {$taskParams.ValidUntilUtc=$taskParams.ValidUntilUtc.AddMinutes(-10)}
             Expect-Error { Submit $taskParams } 52703
         }
     }
     Test-Case 'Half-open adjacent employee project windows are independently allowed' {
-        $taskFirst=New-Submission 'EMPLOYEE_PROJECT';$null=Submit $taskFirst;$taskSecond=New-Submission 'EMPLOYEE_PROJECT'
-        $taskSecond.ValidFromUtc=$taskFirst.ValidUntilUtc;$taskSecond.ValidUntilUtc=$taskSecond.ValidFromUtc.AddHours(1);$null=Submit $taskSecond
+        $taskFirst=New-Submission 'EMPLOYEE_PROJECT';$taskDayEnd=$taskFirst.ValidUntilUtc;$taskFirst.ValidUntilUtc=[datetime]::UtcNow.AddTicks([long](($taskDayEnd-[datetime]::UtcNow).Ticks/2));$null=Submit $taskFirst;$taskSecond=New-Submission 'EMPLOYEE_PROJECT'
+        $taskSecond.ValidFromUtc=$taskFirst.ValidUntilUtc;$taskSecond.ValidUntilUtc=$taskDayEnd;$null=Submit $taskSecond
         Assert-Condition ((New-VisitCount) -eq 2) 'Adjacent windows were treated as overlap.'
     }
     Test-Case 'Same-key and new-key retries return the original result even without encryption envelopes' {
@@ -349,11 +438,6 @@ try {
         Assert-Condition (@($taskRace | Where-Object Success).Count -eq 1 -and @($taskRace | Where-Object {-not $_.Success -and $_.Error -eq 52703}).Count -eq 1 -and (New-VisitCount) -eq 1) 'Conflicting overlap was not serialized.'
     }
     Test-Case 'Cancelled inside employee project blocks overlap until actual reconciled exit' {
-        # Clear the two deliberately overlapping baseline employee fixtures through
-        # the real owner action before testing this new independent request.
-        foreach($taskLabel in @('EMP_DISABLED','EMP_STALE')) {
-            $taskP=Auth HOST;$taskP.ClientKey=[guid]::NewGuid();$taskP.VisitRequestId=[guid]$taskFixture.visits.Where({$_.Label -eq $taskLabel})[0].VisitId;$taskP.ExpectedPassId=[guid]$taskFixture.visits.Where({$_.Label -eq $taskLabel})[0].PassId;$taskP.Reason='Clear outside baseline fixture';$null=Call $taskApi 'gp.CancelVisit' $taskP
-        }
         $taskFirstParams=New-Submission 'EMPLOYEE_PROJECT';$taskFirstParams.ValidFromUtc=[datetime]::UtcNow;$taskFirstParams.ValidUntilUtc=[datetime]::UtcNow.AddMinutes(330).Date.AddDays(1).AddMinutes(-330)
         $taskFirst=Submit $taskFirstParams;$taskV=$taskFirst.visits[0]
         $taskP=Auth OTHERHOST;$taskP.VisitRequestId=[guid]$taskV.visitRequestId;$taskP.View='HOST';$taskD=Call $taskApi 'gp.GetVisitDetail' $taskP;$taskP.Remove('View');$taskP.ClientKey=[guid]::NewGuid();$taskP.SnapshotVersion=1;$taskP.SnapshotHash=[Convert]::FromHexString($taskD.snapshotHash);$taskP.Decision='APPROVED';$null=Call $taskApi 'gp.DecideVisit' $taskP

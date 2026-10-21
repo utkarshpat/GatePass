@@ -1,3 +1,4 @@
+import { employeeProjectSummary } from './EmployeeProjectSummary.ts';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { isDate, isUtc, isUuid } from './SqlVisitReadRepository.ts';
 import type { ReadParameter, VisitReadRepository } from './SqlVisitReadRepository.ts';
@@ -53,6 +54,8 @@ function row(value: unknown, context: ReadContext, detail = false) {
     requestType: source.requestType, personName: outText(source.personName, 200), locationId: source.locationId, locationName: outText(source.locationName, 150),
     status: source.status, passStatus: source.passStatus, isInside: source.isInside, validFromUtc: outTime(source.validFromUtc), validUntilUtc: outTime(source.validUntilUtc) };
   if (source.projectLocationId !== undefined) { result.projectLocationId = source.projectLocationId; result.projectName = outText(source.projectName, 200); }
+  if (result.requestType === 'DIGITAL_ID') { const projects=employeeProjectSummary(source.employeeProjects??{available:false,total:null,items:[]}); output(projects!==null); result.employeeProjects=projects; }
+  if (source.hostName !== undefined && source.hostName !== null) { result.hostName = outText(source.hostName, 200); }
   if (detail) {
     result.accessPassId = outUuid(source.accessPassId); result.publicPassNumber = outText(source.publicPassNumber, 50); result.checkedAtUtc = outTime(source.checkedAtUtc);
     for (const key of ['photoAvailable', 'canDecide', 'canCancel', 'canEnter', 'canExit', 'canReconcileExit']) { output(typeof source[key] === 'boolean'); result[key] = source[key]; }
@@ -85,6 +88,7 @@ function row(value: unknown, context: ReadContext, detail = false) {
   }
   return result;
 }
+export { row as normalizeVisitRow };
 export class VisitReadService {
   #repository: VisitReadRepository;
   constructor(repository: VisitReadRepository) { this.#repository = repository; }

@@ -97,7 +97,7 @@ await check('external grouped form creates independent pending visitors with enc
 });
 await check('employee project request derives employee identity and stays pending for its assigned host', async () => {
   const started = await service.start('EMPLOYEE_PROJECT', session); const photo = await service.recordPhoto(started.context, image);
-  const result = await service.submit(started.context, { ...planned, requestType: 'EMPLOYEE_PROJECT', clientKey: randomUUID(), people: [{ clientPersonKey: randomUUID(), photoAssetId: photo.photoAssetId }] });
+  const result = await service.submit(started.context, { ...planned, validFromUtc: new Date(Date.now()).toISOString(), validUntilUtc: new Date(new Date(Date.now()+330*60000).setUTCHours(24,0,0,0)-330*60000).toISOString(), requestType: 'EMPLOYEE_PROJECT', clientKey: randomUUID(), people: [{ clientPersonKey: randomUUID(), photoAssetId: photo.photoAssetId }] });
   assert.equal(result.visits[0].status, 'PENDING'); const row = await inspect(started.context, result.visits[0]);
   assert.equal(row.snapshotValues.employeeId, fixture.employeeId); assert.equal(row.snapshotValues.hostEmployeeId, fixture.hostEmployeeId);
 });

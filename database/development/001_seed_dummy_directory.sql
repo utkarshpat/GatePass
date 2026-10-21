@@ -9,21 +9,21 @@ IF NOT EXISTS(SELECT 1 FROM gp.SchemaMigrations WHERE Version='005') THROW 52910
 IF @Directory IS NULL OR ISJSON(@Directory)<>1 OR COALESCE(JSON_VALUE(@Directory,'$.schemaVersion'),'')<>'1'
  OR @Staff IS NULL OR ISJSON(@Staff)<>1 OR COALESCE(JSON_VALUE(@Staff,'$.developmentOnly'),'')<>'true'
  THROW 52910,'Explicit development fixture data required.',1;
-DECLARE @employees table(EmployeeId nvarchar(64) PRIMARY KEY,FullName nvarchar(200),OfficialEmail nvarchar(320),ManagerId nvarchar(64),IsActive bit,Projects nvarchar(max));
+DECLARE @employees table(EmployeeId nvarchar(64) PRIMARY KEY,FullName nvarchar(200),OfficialEmail nvarchar(320),ManagerId nvarchar(64),IsActive bit,Projects nvarchar(max),Offices nvarchar(max),Assignments nvarchar(max),PrimaryOffice varchar(16));
 DECLARE @projects table(ProjectCode nvarchar(80) PRIMARY KEY,ProjectName nvarchar(200),IsActive bit,Locations nvarchar(max));
-DECLARE @guards table(GuardId nvarchar(64) PRIMARY KEY,DisplayName nvarchar(200),LocationCode varchar(16),Capabilities nvarchar(max),Projects nvarchar(max));
+DECLARE @guards table(GuardId nvarchar(64) PRIMARY KEY,DisplayName nvarchar(200),LocationCode varchar(16),Capabilities nvarchar(max),Projects nvarchar(max),Areas nvarchar(max));
 INSERT @employees SELECT * FROM OPENJSON(@Directory,'$.employees') WITH(
  EmployeeId nvarchar(64) '$.employeeId',FullName nvarchar(200) '$.displayName',OfficialEmail nvarchar(320) '$.officialEmail',
- ManagerId nvarchar(64) '$.managerEmployeeId',IsActive bit '$.isActive',Projects nvarchar(max) '$.projectCodes' AS JSON);
+ ManagerId nvarchar(64) '$.managerEmployeeId',IsActive bit '$.isActive',Projects nvarchar(max) '$.projectCodes' AS JSON,Offices nvarchar(max) '$.locationCodes' AS JSON,Assignments nvarchar(max) '$.projectLocations' AS JSON,PrimaryOffice varchar(16) '$.primaryOfficeLocationCode');
 INSERT @projects SELECT * FROM OPENJSON(@Directory,'$.projects') WITH(
  ProjectCode nvarchar(80) '$.projectCode',ProjectName nvarchar(200) '$.projectName',IsActive bit '$.isActive',Locations nvarchar(max) '$.locationCodes' AS JSON);
 INSERT @guards SELECT * FROM OPENJSON(@Staff,'$.guards') WITH(
  GuardId nvarchar(64) '$.guardId',DisplayName nvarchar(200) '$.displayName',LocationCode varchar(16) '$.locationCode',
- Capabilities nvarchar(max) '$.capabilities' AS JSON,Projects nvarchar(max) '$.projectCodes' AS JSON);
+ Capabilities nvarchar(max) '$.capabilities' AS JSON,Projects nvarchar(max) '$.projectCodes' AS JSON,Areas nvarchar(max) '$.commonAreas' AS JSON);
 IF NOT EXISTS(SELECT 1 FROM @employees) OR NOT EXISTS(SELECT 1 FROM @projects) OR NOT EXISTS(SELECT 1 FROM @guards)
  THROW 52910,'Development seed lists cannot be empty.',1;
 IF EXISTS(SELECT 1 FROM @employees WHERE EmployeeId COLLATE Latin1_General_100_BIN2 NOT LIKE N'EMP[0-9][0-9][0-9]' OR OfficialEmail NOT LIKE N'%@example.com'
- OR FullName IS NULL OR IsActive IS NULL OR Projects IS NULL)
+ OR FullName IS NULL OR IsActive IS NULL OR Projects IS NULL OR Offices IS NULL OR Assignments IS NULL)
  OR EXISTS(SELECT 1 FROM @projects WHERE ProjectCode COLLATE Latin1_General_100_BIN2 NOT LIKE N'DEMO-PRJ-[0-9][0-9][0-9]' OR ProjectName IS NULL OR IsActive IS NULL OR Locations IS NULL)
  OR EXISTS(SELECT 1 FROM @guards WHERE GuardId COLLATE Latin1_General_100_BIN2 NOT LIKE N'GRD[0-9][0-9][0-9]' OR DisplayName IS NULL OR Capabilities IS NULL OR Projects IS NULL)
  THROW 52910,'Only labeled synthetic development records are accepted.',1;
@@ -35,6 +35,7 @@ IF EXISTS(SELECT 1 FROM @employees e WHERE e.ManagerId IS NOT NULL AND NOT EXIST
  OR EXISTS(SELECT 1 FROM @guards g CROSS APPLY OPENJSON(g.Projects) pc WHERE NOT EXISTS(
     SELECT 1 FROM @projects p CROSS APPLY OPENJSON(p.Locations) l WHERE p.ProjectCode=pc.value AND l.value=g.LocationCode))
  THROW 52910,'Invalid synthetic directory/staff relationships.',1;
+IF EXISTS(SELECT 1 FROM @employees e WHERE e.PrimaryOffice IS NULL OR NOT EXISTS(SELECT 1 FROM OPENJSON(e.Offices) x WHERE x.value=e.PrimaryOffice)) THROW 52910,'Explicit assigned primary office required.',1;
 DECLARE @issuer nvarchar(200)=N'urn:gatepass:development-directory',@now datetime2(3)=SYSUTCDATETIME(),@seedActor uniqueidentifier;
 BEGIN TRY
  BEGIN TRANSACTION;
@@ -79,6 +80,18 @@ BEGIN TRY
  INSERT gp.EmployeeProjectMemberships(EmployeeId,ProjectId,IsActive,VerifiedAtUtc)
  SELECT e.EmployeeId,p.ProjectId,1,@now FROM @employees e CROSS APPLY OPENJSON(e.Projects) pc JOIN gp.Projects p ON p.ExternalProjectCode=pc.value
  WHERE NOT EXISTS(SELECT 1 FROM gp.EmployeeProjectMemberships m WHERE m.EmployeeId=e.EmployeeId AND m.ProjectId=p.ProjectId);
+ UPDATE m SET IsPrimary=0 FROM gp.EmployeeOfficeMemberships m JOIN @employees e ON e.EmployeeId=m.EmployeeId;
+ UPDATE m SET IsPrimary=CASE WHEN l.LocationCode=e.PrimaryOffice THEN 1 ELSE 0 END,IsActive=CASE WHEN e.IsActive=1 AND EXISTS(SELECT 1 FROM OPENJSON(e.Offices) x WHERE x.value=l.LocationCode) THEN 1 ELSE 0 END,VerifiedAtUtc=@now
+ FROM gp.EmployeeOfficeMemberships m JOIN @employees e ON e.EmployeeId=m.EmployeeId JOIN gp.Locations l ON l.LocationId=m.LocationId;
+ INSERT gp.EmployeeOfficeMemberships(EmployeeId,LocationId,IsActive,VerifiedAtUtc,IsPrimary)
+ SELECT e.EmployeeId,l.LocationId,e.IsActive,@now,CASE WHEN l.LocationCode=e.PrimaryOffice THEN 1 ELSE 0 END FROM @employees e CROSS APPLY OPENJSON(e.Offices) x JOIN gp.Locations l ON l.LocationCode=x.value
+ WHERE NOT EXISTS(SELECT 1 FROM gp.EmployeeOfficeMemberships m WHERE m.EmployeeId=e.EmployeeId AND m.LocationId=l.LocationId);
+ UPDATE m SET IsActive=CASE WHEN e.IsActive=1 AND EXISTS(SELECT 1 FROM OPENJSON(e.Assignments) WITH(projectCode nvarchar(80),locationCode varchar(16)) x WHERE x.projectCode=p.ExternalProjectCode AND x.locationCode=l.LocationCode) THEN 1 ELSE 0 END,VerifiedAtUtc=@now
+ FROM gp.EmployeeProjectLocationMemberships m JOIN @employees e ON e.EmployeeId=m.EmployeeId JOIN gp.ProjectLocations pl ON pl.ProjectLocationId=m.ProjectLocationId JOIN gp.Projects p ON p.ProjectId=pl.ProjectId JOIN gp.Locations l ON l.LocationId=pl.LocationId;
+ INSERT gp.EmployeeProjectLocationMemberships(EmployeeId,ProjectLocationId,IsActive,VerifiedAtUtc)
+ SELECT e.EmployeeId,pl.ProjectLocationId,e.IsActive,@now FROM @employees e CROSS APPLY OPENJSON(e.Assignments) WITH(projectCode nvarchar(80),locationCode varchar(16)) x
+ JOIN gp.Projects p ON p.ExternalProjectCode=x.projectCode JOIN gp.Locations l ON l.LocationCode=x.locationCode JOIN gp.ProjectLocations pl ON pl.ProjectId=p.ProjectId AND pl.LocationId=l.LocationId
+ WHERE NOT EXISTS(SELECT 1 FROM gp.EmployeeProjectLocationMemberships m WHERE m.EmployeeId=e.EmployeeId AND m.ProjectLocationId=pl.ProjectLocationId);
  DECLARE @newGrants table(RoleGrantId bigint,UserId uniqueidentifier);
  INSERT gp.StaffRoleGrants(UserId,RoleCode,ScopeType,LocationId,GrantedByUserId,ValidFromUtc)
  OUTPUT inserted.RoleGrantId,inserted.UserId INTO @newGrants
@@ -102,6 +115,15 @@ BEGIN TRY
  UPDATE gp.Users SET AuthorizationVersion=AuthorizationVersion+1 WHERE IdentityIssuer=@issuer AND IdentitySubject<>N'local-seed';
  IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'GatePass.DevelopmentDirectoryMarker')
     EXEC sys.sp_addextendedproperty @name=N'GatePass.DevelopmentDirectoryMarker',@value=N'SYNTHETIC-DIRECTORY-V1';
+
+ INSERT gp.CommonAreas(LocationId,AreaName)
+ SELECT DISTINCT l.LocationId,x.value FROM @guards g CROSS APPLY OPENJSON(g.Areas) x JOIN gp.Locations l ON l.LocationCode=g.LocationCode
+ WHERE NOT EXISTS(SELECT 1 FROM gp.CommonAreas a WHERE a.LocationId=l.LocationId AND a.AreaName=x.value);
+ INSERT gp.GuardCommonAreaAssignments(GuardUserId,CommonAreaId,AssignedByUserId,ValidFromUtc,Reason)
+ SELECT u.UserId,a.CommonAreaId,@seedActor,@now,N'Explicit development common duty'
+ FROM @guards g CROSS APPLY OPENJSON(g.Areas) x JOIN gp.Locations l ON l.LocationCode=g.LocationCode
+ JOIN gp.CommonAreas a ON a.LocationId=l.LocationId AND a.AreaName=x.value JOIN gp.Users u ON u.IdentityIssuer=@issuer AND u.IdentitySubject=(N'guard:'+g.GuardId) COLLATE Latin1_General_100_BIN2
+ WHERE NOT EXISTS(SELECT 1 FROM gp.GuardCommonAreaAssignments ca WHERE ca.GuardUserId=u.UserId AND ca.CommonAreaId=a.CommonAreaId);
  DECLARE @metadata nvarchar(max)=(SELECT (SELECT COUNT(*) FROM @employees) AS employees,(SELECT COUNT(*) FROM @guards) AS guards,
     (SELECT COUNT(*) FROM @newGrants) AS newGuardGrants FOR JSON PATH,WITHOUT_ARRAY_WRAPPER);
  INSERT gp.SecurityAuditEvents(ActorUserId,ActionCode,TargetType,ResultCode,MetadataJson)

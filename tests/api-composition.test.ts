@@ -9,7 +9,7 @@ function fixture() {
   const actions = createServiceActions({ async callProcedure(name, parameters) { calls.push({ name, parameters }); throw { number: 52001 }; } });
   return { calls, actions };
 }
-test('24 protected routes bind only implemented services', () => { const f = fixture(); assert.equal(f.actions.size, 24); assert.equal(f.actions.has('/api/sql'), false); assert.equal(f.actions.has('/api/registration/submit'), false); });
+test('32 protected routes bind only implemented services', () => { const f = fixture(); assert.equal(f.actions.size, 32); assert.equal(f.actions.has('/api/sql'), false); assert.equal(f.actions.has('/api/registration/submit'), false); });
 test('route-owned view is bound to typed SQL without accepting a client actor', async () => {
   const f = fixture();
   await assert.rejects(f.actions.get('/api/guard/visits/list')!(session, { locationId: 1 }), /NOT_AUTHORIZED/u);

@@ -1,0 +1,1088 @@
+{
+  "documentDate": "2026-10-22",
+  "timezone": "Asia/Calcutta",
+  "gitBaseCommit": "96f92c1982dd14d9d665124b2292c090b79af94b",
+  "snapshot": "Local working tree including uncommitted changes; not pushed",
+  "migrationCount": 62,
+  "sqlDeclarationCounts": {
+    "TABLE": 41,
+    "PROCEDURE": 97,
+    "ROLE": 7,
+    "VIEW": 1,
+    "FUNCTION": 16
+  },
+  "sourceFiles": [
+    {
+      "path": "azure-pipelines.yml",
+      "sha256": "8fd4d58ba4e909e1d42bec83b79dda94e91db62fb0e0551fa5a7b8ae33da75df"
+    },
+    {
+      "path": "database/migrations/001_individual_visit_baseline.sql",
+      "sha256": "976155dd7b5eb1ef15bb13297dfb78dafabda7e6930746f9e3f409b827c6a80d"
+    },
+    {
+      "path": "database/migrations/002_reference_data.sql",
+      "sha256": "825a021ee1c46098fd8030ed4cd3a2fa20e82eb7248502ab0afde72501b97be6"
+    },
+    {
+      "path": "database/migrations/003_transaction_security_core.sql",
+      "sha256": "aabce96bce83cad002a3937366af33491df29e1f5ff3be7b7f6bb26d5a25c978"
+    },
+    {
+      "path": "database/migrations/004_notification_worker_leases.sql",
+      "sha256": "15e0f3ea5ace50e4228193d5e1e91a15b5d8150f295f0828d9c2208a0cf763bc"
+    },
+    {
+      "path": "database/migrations/005_worker_contract_hardening.sql",
+      "sha256": "266d3c607606d31d34d689bc4d018f17657ad8f5309ee47ed27fdfa22857fed7"
+    },
+    {
+      "path": "database/migrations/006_guard_password_authentication.sql",
+      "sha256": "8fb1e6cacfa92e502d8095d0bb37419f96ea9080171544a6b07298c04f103d45"
+    },
+    {
+      "path": "database/migrations/007_guard_challenge_generation.sql",
+      "sha256": "fae0d317bb606ea89845914c25e1dcabb41b1ab03422b8b5bffec7d2126d739c"
+    },
+    {
+      "path": "database/migrations/008_registration_and_digital_id.sql",
+      "sha256": "190ac7020bd0e8f17a809e1dea36c19923941ab0ff9f62f5592c7f1c94d4bd26"
+    },
+    {
+      "path": "database/migrations/009_registration_snapshot_canonicalization.sql",
+      "sha256": "9febaabd994b2dd9db2cd607d904e23342f99931ce4661da391073908c7ba330"
+    },
+    {
+      "path": "database/migrations/010_scoped_visit_reads.sql",
+      "sha256": "804c34943c557ae94b351ce6118731a2bfda69660d9ba2bc8d92fc55f955c232"
+    },
+    {
+      "path": "database/migrations/011_reissue_and_print_lifecycle.sql",
+      "sha256": "cf65de1fa30ce449bb03d732349c02a9cf08bb3b0b248b8ef01155e75a91e50f"
+    },
+    {
+      "path": "database/migrations/012_visitor_cards_and_guard_project_context.sql",
+      "sha256": "204f2bd2d683b621b23dc3edc4790d83cb68d4b243b92d973736967f699bc17f"
+    },
+    {
+      "path": "database/migrations/013_multi_project_guard_scan.sql",
+      "sha256": "b2f5ef92195dea68c117911d6fd855fcb53816a4daae462029cfcd030c311753"
+    },
+    {
+      "path": "database/migrations/014_trusted_card_details.sql",
+      "sha256": "66c3a72ad1c2b901984d521e1bf5d19bf82b3f96f96ed82ba9185b0cb5430d16"
+    },
+    {
+      "path": "database/migrations/015_individual_cancellation.sql",
+      "sha256": "5935993d4f5aaf737f65dbc6ac12b9c765e0e3a3fbd53eb9667b48886de50704"
+    },
+    {
+      "path": "database/migrations/016_cancelled_occupant_overlap.sql",
+      "sha256": "1f9fd9f021ff603d3d932fb1efe2c01465d72ddae504275d57ae2fac16b66ddf"
+    },
+    {
+      "path": "database/migrations/017_scoped_staff_administration.sql",
+      "sha256": "35d18f9a038710c706b73b25bc74ecd050ab0aaf12c98f868891f0a0ddcca84b"
+    },
+    {
+      "path": "database/migrations/018_staff_role_audit_scope.sql",
+      "sha256": "22b13cf7660a662cc8939cbb56fe69a7027540eac4f26720515f4ead84eede44"
+    },
+    {
+      "path": "database/migrations/019_scoped_administration_reads.sql",
+      "sha256": "a1f9e575dcae2b27516f8f9b45b63698d226c881c4e7a2602aab785647bba78b"
+    },
+    {
+      "path": "database/migrations/020_admin_read_boundaries.sql",
+      "sha256": "f342a77f380da5c41daeb907d0c6d7ea976d6d0bc2f886b66389f3b348d27893"
+    },
+    {
+      "path": "database/migrations/021_registration_locations.sql",
+      "sha256": "0053095d3ea97d6d234348686f4fc377ac5a1e22c81380d6a40da43e028ece1c"
+    },
+    {
+      "path": "database/migrations/022_qr_key_identifier_validation.sql",
+      "sha256": "0ed76a444598fdf56d4b57b007148e87e180a55d734150de607910244fce0a65"
+    },
+    {
+      "path": "database/migrations/023_registration_project_host_options.sql",
+      "sha256": "30b6498196c4e8df5c00cf1917b4e0a405b909d474d9b360f7da96244d11907e"
+    },
+    {
+      "path": "database/migrations/024_own_digital_id_image.sql",
+      "sha256": "c33435952229e6e6899743a13197e051982424e978ea9ba0b2ebf012eed9a982"
+    },
+    {
+      "path": "database/migrations/025_reception_workspace.sql",
+      "sha256": "c1fa00647be3fcabbc0e9a59d6954fbde2d76d0ed4c11d44ca48370e19367dab"
+    },
+    {
+      "path": "database/migrations/026_reception_empty_list.sql",
+      "sha256": "38d72c842a73e2b9cabac0082715a6f1a6f52c55be47e61fc183affda50c991a"
+    },
+    {
+      "path": "database/migrations/027_common_staff_entry.sql",
+      "sha256": "2b38c57c125cb9b96932709df9f4d77da13089a016390533020f51f31d37a560"
+    },
+    {
+      "path": "database/migrations/028_guard_email_login.sql",
+      "sha256": "1457cec2aad1c2048fd4eaae61e39ee0dfe947cc4a92c045eb9cae5579115db3"
+    },
+    {
+      "path": "database/migrations/029_local_staff_authentication.sql",
+      "sha256": "578e3e9c30402f19f605d51be7945fa9311aee684400a8b2902fa36a23410bb8"
+    },
+    {
+      "path": "database/migrations/030_staff_login_provider.sql",
+      "sha256": "1d49353b68582232914f3df66e54df29fd6134389f3382bccd99086bfa70076c"
+    },
+    {
+      "path": "database/migrations/031_external_reception_context.sql",
+      "sha256": "5cd2a84b94ab951163333c046b56e897f8b159de7d9dbb608018d9b9561d2e86"
+    },
+    {
+      "path": "database/migrations/032_project_lead_identity_policy.sql",
+      "sha256": "24c5c1905c74a7b4f10286ff09e6b80385a093e3f1bcdefc242df5e4bd5195c3"
+    },
+    {
+      "path": "database/migrations/033_platform_and_scoped_delegation.sql",
+      "sha256": "96426f1ce753f4c55c2b207fc2c9b86fe86570d66c98b3ad062fe506b235e1e2"
+    },
+    {
+      "path": "database/migrations/034_staff_discovery_scope.sql",
+      "sha256": "e2d04b43d33ed6b547e08ed8afed41a725d2e917cdf4ad71b6bc7706d2e9ca62"
+    },
+    {
+      "path": "database/migrations/035_admin_project_lead_workspace.sql",
+      "sha256": "02488d01ee6d8c36645da6ffb36177d5f8c77e4a93a5a1028365868e1142820f"
+    },
+    {
+      "path": "database/migrations/036_guard_workspace.sql",
+      "sha256": "0e5637c89d5bfa74dc4f660a883617a868a9fd53db2617ae6545ab3658599f76"
+    },
+    {
+      "path": "database/migrations/037_guard_pass_lookup.sql",
+      "sha256": "abada4ad6b0a68ada5a2339ee310dd30469015db756fc855a987fb8385129842"
+    },
+    {
+      "path": "database/migrations/038_guard_lookup_audit.sql",
+      "sha256": "722cf78aef82257f79efda28012475c7c3543baff5707fc5f8e96b622221bfb9"
+    },
+    {
+      "path": "database/migrations/039_guard_dashboard_cards.sql",
+      "sha256": "c0c717be5a6d0f49f1d3245da64e1043b1769bb8a901f84cef01e62542379049"
+    },
+    {
+      "path": "database/migrations/040_guard_visitor_queues.sql",
+      "sha256": "e6195396a9f8dded7c1645ad296e7106caf1b4417108f8bd68f15d29413b42c9"
+    },
+    {
+      "path": "database/migrations/041_guard_project_filter.sql",
+      "sha256": "fda112288bdaa458ae4d6d6ff8aac64165a8c27a188352349700917c34ae4096"
+    },
+    {
+      "path": "database/migrations/042_guard_movement_timeline.sql",
+      "sha256": "e2d5ed62944202ca17cdf42297ece9d4f63e0a9df798ff9517e8915a63f01571"
+    },
+    {
+      "path": "database/migrations/043_movement_timeline_boundaries.sql",
+      "sha256": "49a244e8afe979de93b242e68d1e1384ac5e4254bf33bbdc994dba3cb2a5e2d9"
+    },
+    {
+      "path": "database/migrations/044_registration_property_memory.sql",
+      "sha256": "994c57fd3fb9e8503c31b63a0e9c3af3b3ed1f5a61d1844a430a6b0f81e218f4"
+    },
+    {
+      "path": "database/migrations/045_preserve_qr_key_alphabet.sql",
+      "sha256": "bcbdc2d825c1f7b1018210b513ed9f2db70ad15814152e10f241b2c73874e92f"
+    },
+    {
+      "path": "database/migrations/046_guard_host_name.sql",
+      "sha256": "85160f6bb2a04bc3ef7d57599a7215eb9d0bc14fd39ed4fd51bcb73db5155cd5"
+    },
+    {
+      "path": "database/migrations/047_guard_employee_projects.sql",
+      "sha256": "de440e17c26b94d9df27e05f2ff8b79262d7977129dd469da4ed9c04c05fdb32"
+    },
+    {
+      "path": "database/migrations/048_employee_office_authorization.sql",
+      "sha256": "19acc06f3f21057a9b8ba941b5d8d067c14ca5441d32ed00997241d9814ea93a"
+    },
+    {
+      "path": "database/migrations/049_employee_office_card_lifecycle.sql",
+      "sha256": "c9db265e981e9693bbe5d84321ea04f688af9137bb73c88156022fbd08972a67"
+    },
+    {
+      "path": "database/migrations/050_employee_authorization_query_plans.sql",
+      "sha256": "ac8368d8e440140212a8b244cddf202b622a8931abcb64d8e4c49f0cc912cb5f"
+    },
+    {
+      "path": "database/migrations/051_employee_office_replay_authorization.sql",
+      "sha256": "75f04e499ab5dfc0f7151903e3f31684e69fc978ef4d05596fc501bdf1eec930"
+    },
+    {
+      "path": "database/migrations/052_scoped_office_card_revalidation.sql",
+      "sha256": "a98f5d0b5a05b51d999b321086580d5a7e0102240f042789edadda791375dbec"
+    },
+    {
+      "path": "database/migrations/053_guard_duty_contexts.sql",
+      "sha256": "8ee85c107dd8aec7d70ddc0f77a4e1060f84af39649d36ce961a760d9ccd9d81"
+    },
+    {
+      "path": "database/migrations/054_guard_duty_workflows.sql",
+      "sha256": "e3fcc9d2c68963bffb520dcbb2f7cb5badee0bd2c1cf87fe1c281b23e925d97d"
+    },
+    {
+      "path": "database/migrations/055_guard_duty_legacy_boundaries.sql",
+      "sha256": "bd0ab1bb076681640bff05656ccc7cf4d735497ff9f4764ea3d41f5a68e8d1b6"
+    },
+    {
+      "path": "database/migrations/056_common_duty_administration.sql",
+      "sha256": "dc2090136b71188f097b48fcff4716f820e3770df488c7d271545d3c821bcc82"
+    },
+    {
+      "path": "database/migrations/057_guard_duty_inside_owner.sql",
+      "sha256": "7ce04c147ac44f5cbd094f5e7f94d63b10fab395626f56af1d24647a9fc38582"
+    },
+    {
+      "path": "database/migrations/058_guard_duty_input_and_replay.sql",
+      "sha256": "7b55e51567f55e162a48c88eedd9c1b46cf3b17ed8fb15331037f916030a615b"
+    },
+    {
+      "path": "database/migrations/059_employee_project_presence_identity.sql",
+      "sha256": "3f4daa1cbe71683c9cfd075b12203fcecfeec6da9835cad872f24d2ae08a6c67"
+    },
+    {
+      "path": "database/migrations/060_project_presence_conflict_checks.sql",
+      "sha256": "3738401382916c65a659ed93502b7e86fb8da9481def2cc0adc5260c43ec8cae"
+    },
+    {
+      "path": "database/migrations/061_email_request_workflow.sql",
+      "sha256": "c571c70d31d82266b0575aff1b819f7f207b421ecb5523ee5070bb75fde3d7df"
+    },
+    {
+      "path": "database/migrations/062_outlook_action_decisions.sql",
+      "sha256": "f09848b9e1dfc2817b5a0af92bbdcb9245baaef2fcf15cde52aaa81f89deb1b8"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "35c3c31b0746c2d629a1e7ef6dca6310702bfd4c699e5934a597bf65a2936519"
+    },
+    {
+      "path": "package.json",
+      "sha256": "44ae641b8b404fa9c04348b214c4cef094b1efdd3554c349c6bf84715f09f4cf"
+    },
+    {
+      "path": "src/administration/AdminWorkspaceService.ts",
+      "sha256": "28e36ffe0c8a871c1c379f117d0b1238d471d5d0a246fc34909da2bf66235dfb"
+    },
+    {
+      "path": "src/administration/AdministrationReadService.ts",
+      "sha256": "d6063e7fa5848f23c2c058226a020b58a2c7dbe2dd3d27c90e8008ed2d6a1ca2"
+    },
+    {
+      "path": "src/administration/StaffAdministrationService.ts",
+      "sha256": "508fbee0ae8211c27a843240e719e2091f5923265028849dc9e89481e2bc1bf9"
+    },
+    {
+      "path": "src/app/PwaAssets.ts",
+      "sha256": "03813007454a094ca5ffe405cec2b6cddb6d316f096a8840ef6ddb777826350d"
+    },
+    {
+      "path": "src/app/admin.css",
+      "sha256": "38750789c99a86c5724d56244860ec0117113494d664f94f9b771cc31a252a89"
+    },
+    {
+      "path": "src/app/admin.html",
+      "sha256": "da588937ffa141ab15cb39c96977e768a36d1aaea8c589c965e2be283b006b7d"
+    },
+    {
+      "path": "src/app/admin.js",
+      "sha256": "40d4bb423b9d895d2d5c7ebeb5d12c64648279a36eb054ac2b3b8ee13e917f7e"
+    },
+    {
+      "path": "src/app/camera-session.js",
+      "sha256": "781125df70ceed7d9db96e4b4f50f096dc5dc344470a10cff5b9b438bc61061f"
+    },
+    {
+      "path": "src/app/email-request.js",
+      "sha256": "15c802939513fa04ebd5c490bd02a4ba4a2a896da9dc0300fce7f91b00413737"
+    },
+    {
+      "path": "src/app/employee-portal.css",
+      "sha256": "dd1a6ccf96018ef87704766dd3ce2325e0ee2910706ebd7b6f48d4b15322b825"
+    },
+    {
+      "path": "src/app/employee-portal.html",
+      "sha256": "bba0de389ee9a2d25446b2e33883d2b3e3e29c49305e1701f82dbc8d1e7f9ceb"
+    },
+    {
+      "path": "src/app/employee-portal.js",
+      "sha256": "a18824ad6ea188acb58946edda48d35e95ad71bbc1e845361f79dcc56f7e731e"
+    },
+    {
+      "path": "src/app/global.css",
+      "sha256": "8c39d885a8d23a42dc41018a8eab4b26a7c4a90b60ce2c14a178d86a9012c6cd"
+    },
+    {
+      "path": "src/app/guard-i18n.js",
+      "sha256": "01dd9a97ce359a25328a8722b5be00b6f674182abf75707cebdb574b01f61de4"
+    },
+    {
+      "path": "src/app/guard.css",
+      "sha256": "cda4136dfad77c7299519a164675fb9a94e7332b292331a3c5e889e97c4b01ee"
+    },
+    {
+      "path": "src/app/guard.html",
+      "sha256": "287adf9847d2c15dd7316c1a219225b032f5e6a1bbc5cb4f4b64088fd97297b4"
+    },
+    {
+      "path": "src/app/guard.js",
+      "sha256": "22391744d68dd0d900c52c099fdb8dce1089fbf8b5e51f61650e8bdcb100764d"
+    },
+    {
+      "path": "src/app/manifest.webmanifest",
+      "sha256": "db62188fad1bb7f09d077a98f2998bc5cc1099b8fd689a9d8f088c98ec8b0fa7"
+    },
+    {
+      "path": "src/app/offline.css",
+      "sha256": "9a61d7ab5b4d7e82909a507120f48e0d629186b6db592a55603fcca845b94af4"
+    },
+    {
+      "path": "src/app/offline.html",
+      "sha256": "7e18ee63d9d301b3c1dc7b4229a9d3d3edca420eb93ffa7a0c18e42b29a25d77"
+    },
+    {
+      "path": "src/app/photo-crop.js",
+      "sha256": "ceecdbd7dfa62b1edd3d0e46ae3803cef996206a4aa26816c2ae441f962f3d94"
+    },
+    {
+      "path": "src/app/pwa.js",
+      "sha256": "66093560d393e819b0dc166edce8b928b8e0ac0b54ad90b98b60f6c3dc5231c4"
+    },
+    {
+      "path": "src/app/reception-print-state.js",
+      "sha256": "3271442d85dc7955b1d8b1432ab7c3a2e1e989d535a6b62e01830e87a59db672"
+    },
+    {
+      "path": "src/app/reception-print.html",
+      "sha256": "57b4c8d4fc2d65411cff9d761985bfd9e186cf8641f72bf76a553d873e68d66a"
+    },
+    {
+      "path": "src/app/reception.css",
+      "sha256": "50496cffc30137bcb6b1ff91990b72634d8cb5c759212ff8c98efeac195e70eb"
+    },
+    {
+      "path": "src/app/reception.html",
+      "sha256": "d172b9610c27e375ed8e1e8f3d5902b8ab28f46ddad177593cdf7a633682b2c8"
+    },
+    {
+      "path": "src/app/reception.js",
+      "sha256": "28b0c03e8f849059ca1a16d5172d6103b09066aac3a8340c227c3144988b3a2a"
+    },
+    {
+      "path": "src/app/select-control.js",
+      "sha256": "2737ef0c8929ee8259819192274a8a54ad69516192edbac0423bc27a60f89a64"
+    },
+    {
+      "path": "src/app/service-worker.js",
+      "sha256": "f07c0a3853a8ff8508b80a4c392ade8fa633e69a9b148bacc055054757d596ce"
+    },
+    {
+      "path": "src/app/staff-entry.css",
+      "sha256": "1296bb7f657007ca75f7cb0c4737826c440a0ab131419515d326f3a8d7e5682e"
+    },
+    {
+      "path": "src/app/staff-entry.html",
+      "sha256": "e6bd48e9510f96c41cc1e1eba1d8b759ea0529a2e844df65e09714e6392798cd"
+    },
+    {
+      "path": "src/app/staff-entry.js",
+      "sha256": "1ec34529da6ac898ff7454db6d7c7eb3a22ecd3b7932981085e5cf738a00f5e2"
+    },
+    {
+      "path": "src/app/toast-notifications.js",
+      "sha256": "addb35826d2ad323184b6f068c95fa307a294d1377cc8725a0bdb05a2a6ed724"
+    },
+    {
+      "path": "src/app/visitor-components.js",
+      "sha256": "b0f775f8baaa4ef15b4807651c2454ae063e306b66567c97baf1e6f2647eb521"
+    },
+    {
+      "path": "src/development/AdminRoutes.ts",
+      "sha256": "f79c9f61526d28042c229a9a0b0d261e999ae64405a2c4acc42b7e5c5acd4d5b"
+    },
+    {
+      "path": "src/development/DevelopmentMailSandbox.ts",
+      "sha256": "fc10509c0f26cb670af9144a634b83b6592732e3451673fddf15084eb2202c6e"
+    },
+    {
+      "path": "src/development/DevelopmentTls.ts",
+      "sha256": "f4ed7812d79e6158253aaa95504cb2d53a01a4750093c1d690362e50c2149fad"
+    },
+    {
+      "path": "src/development/DummyEmployeeSso.ts",
+      "sha256": "1483c81df22c6c8ce055269008037d3885dae12ac8c19e6f2437122e298e286b"
+    },
+    {
+      "path": "src/development/DummySsoRoutes.ts",
+      "sha256": "b83ee8167cfa6df1a7c2d601bea4ec8aaf2b938d4143ebd3b08e2c1020cdde85"
+    },
+    {
+      "path": "src/development/EmailWorkflowRoutes.ts",
+      "sha256": "003dc15bb9dbe355dbda71772146a298118424f1fb14f4f96123b7ced5e4c9ee"
+    },
+    {
+      "path": "src/development/EmployeeDigitalIdRoutes.ts",
+      "sha256": "ea3e55355b283128eb0bbaafd7dbdd39f20d49649adbd8e01e3606c45f74b8e1"
+    },
+    {
+      "path": "src/development/GuardRoutes.ts",
+      "sha256": "9a3e95efc9704143d6dd5d5d0622afd08a7a3406ecb63724d0d401d1c3393399"
+    },
+    {
+      "path": "src/development/LocalDevelopmentApiClient.ts",
+      "sha256": "ddbadc98418d5804312bdbb91591a40d18f10f5aecb1bb7978d16cc1a2b25d72"
+    },
+    {
+      "path": "src/development/LoopbackHttpHandler.ts",
+      "sha256": "656c28ead256c9473164d2bf1d7b4a1be4e2154c9d414d126b4386b7df1fd6fa"
+    },
+    {
+      "path": "src/development/OfficeEntryContext.ts",
+      "sha256": "bcdba04291649a0532966429973c449f135759ce39a9b54877648fa06e472b61"
+    },
+    {
+      "path": "src/development/PowerShellRuntime.mjs",
+      "sha256": "5a922978d15657c019e52344080ac6e7c930039ebec9e21eadeb4c31d0c261b0"
+    },
+    {
+      "path": "src/development/ReceptionRoutes.ts",
+      "sha256": "25ea8f726e54c908637e0d8bbf5e8da90ddc0d1abaaa1dbd6ab592080d3d4888"
+    },
+    {
+      "path": "src/development/StaffEntryRoutes.ts",
+      "sha256": "4da595edbdcfbea1e7a385079237f132faa427e15c2bed6ff84bb9aac95bb477"
+    },
+    {
+      "path": "src/email/EmailLinkCodec.ts",
+      "sha256": "c78f072813efa0779b6dae3198f14b0d29aee88155d7c47dfcf0a69c708b5911"
+    },
+    {
+      "path": "src/email/EmailWorkflowService.ts",
+      "sha256": "b37b12a6a0a4468b202680c590c7d031dbf26d1c1c7cb4e3dc93c26da46ca1fb"
+    },
+    {
+      "path": "src/email/GraphMailTransport.ts",
+      "sha256": "fef6ec32058a65f44337561c896521db28b345e58025314bb35c344a61bd9c6e"
+    },
+    {
+      "path": "src/email/LocalEmailLinks.ts",
+      "sha256": "29aaffabd9706b87ea02a427eed0c31fbed10b78d51047e34eb2891456bd10b8"
+    },
+    {
+      "path": "src/email/LocalOutlookActionKeys.ts",
+      "sha256": "5ef80ae7e7bd182f9e0860a8a96b929c927656da4d63d12ffecb2973db931d74"
+    },
+    {
+      "path": "src/email/NotificationEmailWorker.ts",
+      "sha256": "45c6d5c0c0372488d460ea4e0c990269b8ee595ff5aa6252bef942467c540889"
+    },
+    {
+      "path": "src/email/OutlookActionCodec.ts",
+      "sha256": "ee6ff1357486d010de4535061ba5c21a6a67f4a482e2df4aaab73da6090aae85"
+    },
+    {
+      "path": "src/email/OutlookActionToken.ts",
+      "sha256": "5f965403e0c2d4abbbcc5f60a721d07482860076f74e9e3d59125cc858e8fa04"
+    },
+    {
+      "path": "src/email/OutlookApprovalCard.ts",
+      "sha256": "08fe85e21cab28ed72f9bfbf9169483213d99af8352571cabf6e27bcd763c08d"
+    },
+    {
+      "path": "src/email/OutlookConfiguration.ts",
+      "sha256": "fc4ab1455e9a4ee5fca65159bd905ad88e0c43ad7819c7bec4b96589a0c2f874"
+    },
+    {
+      "path": "src/email/OutlookDecisionService.ts",
+      "sha256": "99bc2b7ad0836c6d8af6e87e5413a0f05c874a617666991e87dd6734c7c78aff"
+    },
+    {
+      "path": "src/email/PersonalOutlookConnection.ts",
+      "sha256": "049c272c4216841d69f1b7fe2fe76db307eee53c69ad9a301b05399549f228e9"
+    },
+    {
+      "path": "src/integrations/directory/DirectoryGateway.ts",
+      "sha256": "0fca67889880f057dc21f3b14c66d0dfa56298371dce4a67ef0fa6f05d46a031"
+    },
+    {
+      "path": "src/printing/NodeQrMatrixEncoder.ts",
+      "sha256": "cd4cab940c2434668b3b742a8a2de224150bd45b4276a18698059266aff42fa9"
+    },
+    {
+      "path": "src/printing/OwnDigitalIdCardService.ts",
+      "sha256": "ca569fc66152cb9a808ce9513f23b2c2a32c974b99061886767294392b140cee"
+    },
+    {
+      "path": "src/printing/PassCardRenderer.ts",
+      "sha256": "4322500c9aa5044faa299b8d32d6b75219201bc857a2bf11ab40bcade83caea8"
+    },
+    {
+      "path": "src/printing/PassPrintService.ts",
+      "sha256": "cd622d11cacf17bc831c29ea23e5e0ec112e9b261f81f65ab8b09e31df45d577"
+    },
+    {
+      "path": "src/printing/SqlPassPrintRepository.ts",
+      "sha256": "bcbd3b68b056223b8afd65f4fe94ca7b0d63711800e6fad81865ec68864b1c91"
+    },
+    {
+      "path": "src/reception/ReceptionService.ts",
+      "sha256": "e53523be435c17bba33447224c6f4e259f83b2ab3aebbf47a5b520e4ae12f654"
+    },
+    {
+      "path": "src/registration/QrCredentialEnvelope.ts",
+      "sha256": "c38c4eb588fbc543a3abdc7ad4e9e16309ae71f3fa5de183d067b2e5d1f7d329"
+    },
+    {
+      "path": "src/registration/RegistrationDates.ts",
+      "sha256": "99dab47726a53de175105d863bd182e91fa4727f76995ebb492eef59b34e8b61"
+    },
+    {
+      "path": "src/registration/RegistrationPhoto.ts",
+      "sha256": "6df8e3d38e65ab6b48d72d1588719fe6b30db7ab39c40cc156190ec790deb97b"
+    },
+    {
+      "path": "src/registration/RegistrationService.ts",
+      "sha256": "fe9d58ac40e46f4dc484b534d8fcca2594fee5ba568eadb65c196b0cd3d8292d"
+    },
+    {
+      "path": "src/registration/SqlRegistrationRepository.ts",
+      "sha256": "1f318ad1b42c22673919b0b272bd39e33e6b627f42c7e39dc87fff72f34cfa93"
+    },
+    {
+      "path": "src/runtime/PowerShellRuntime.mjs",
+      "sha256": "45bab1be16d77f608ff62f14d62c379e804333ebd2fd04287de27d8dc14e2f33"
+    },
+    {
+      "path": "src/security/GuardAuthService.ts",
+      "sha256": "8dd69fcd2733f71849de5531f1b68f3a744263576ef9cba11ed8457bd75ad732"
+    },
+    {
+      "path": "src/security/GuardPasswordHasher.ts",
+      "sha256": "56fa0df8d915f927c926d1940c8d75600900624b3c0ae2694146f9c059d04702"
+    },
+    {
+      "path": "src/security/SqlGuardAuthRepository.ts",
+      "sha256": "d3b6fcb28783501d74fbb5ea62ce2b7644ebe64b41c88f1ccc9d68e05ea1bb19"
+    },
+    {
+      "path": "src/security/StaffAuthService.ts",
+      "sha256": "12e35214412c361db92bf2a0f889736242e21ca74118d1b582bdd10841de43ac"
+    },
+    {
+      "path": "src/storage/FilePhotoStore.ts",
+      "sha256": "d6c1b2e154c3b2bd0ad60866272344cf33c0973f616206355c77983940f8134f"
+    },
+    {
+      "path": "src/storage/FileQrKeySource.ts",
+      "sha256": "08f75c2fecfed173406b7b175d943cb34bdf23a5e2cafd2e3557c0aaf34d9970"
+    },
+    {
+      "path": "src/storage/LocalPrivateStorage.ts",
+      "sha256": "7da8d4a3e5d0b7174b7b29f1f0432f8d4f151b7360e664dc6785279bdb00a391"
+    },
+    {
+      "path": "src/storage/PlatformProtection.ts",
+      "sha256": "1bae3443ec447824093be54458ddc82e4256a862519b11abdf5b630e8b4d5e80"
+    },
+    {
+      "path": "src/storage/PrivateDirectory.ts",
+      "sha256": "ef6db9aae5158b9fe8597c0e6a288af0e3b1373925753a0c9afd0a64bf62c3d1"
+    },
+    {
+      "path": "src/transport/ApiHandler.ts",
+      "sha256": "42a1a14a796f414c30520e05535ef6edef965bbdeca76a33c8e76597e94e13f7"
+    },
+    {
+      "path": "src/transport/Composition.ts",
+      "sha256": "ae763972a7fd9f978538c6933f6e63512ff677fb559619b7ed99d0c3d8113f02"
+    },
+    {
+      "path": "src/transport/EmailPublicRoutes.ts",
+      "sha256": "935d9d90aea50921a56f9a8776bd1766136651f2e592a9777a36ff2dbde45c1b"
+    },
+    {
+      "path": "src/transport/OutlookActionHandler.ts",
+      "sha256": "241e369c304f54a6bbeedc0c2b822f161475b380713a3a47ef7de5274770a5b6"
+    },
+    {
+      "path": "src/transport/RegistrationHttpRoutes.ts",
+      "sha256": "8b624d98500cc1eaf72fb9bc3b2759105c322a897809831b4ae4786bcff70ade"
+    },
+    {
+      "path": "src/transport/SqlProcedureClient.ts",
+      "sha256": "20746990ee857db21bdfb9049f799c4488216b2133ce3155d06e33ece40c0ad2"
+    },
+    {
+      "path": "src/transport/runtime-identity.sql",
+      "sha256": "333fea2196e7e11b6c76b0439355b2f6d6a3cd057ba48b8bbd07841b9ffec170"
+    },
+    {
+      "path": "src/visits/EmployeeProjectSummary.ts",
+      "sha256": "52a2d6aaa989ff7ec55dbd68600d6a6645423b8e6d2f85f86b8df910a9a608b8"
+    },
+    {
+      "path": "src/visits/GuardDutyService.ts",
+      "sha256": "23b27a0789db819b93508910562768bb144f6545b01e76d358e3df8337b8ab63"
+    },
+    {
+      "path": "src/visits/GuardMovementService.ts",
+      "sha256": "15152c8c635b519f1b4c0ab386040744592634521924b97913b6c141422ef435"
+    },
+    {
+      "path": "src/visits/GuardWorkspaceService.ts",
+      "sha256": "f1d1055a72215ebb9d295f4ab8e60d84913aa1873a1d286ff09b1ec731605f92"
+    },
+    {
+      "path": "src/visits/SqlVisitReadRepository.ts",
+      "sha256": "9f5f4e74b204553b62090a493610abe527c4bbb28d3e38e1539e7757426ac553"
+    },
+    {
+      "path": "src/visits/VisitCancellationService.ts",
+      "sha256": "2c3a51d7f2fd5e2dabcb3c780e82a8c5f8c42c8c0bfafecc6675013e059988fe"
+    },
+    {
+      "path": "src/visits/VisitReadService.ts",
+      "sha256": "1f4293b3dee8428653b35b565b342171476695fa9a4d68ddd162276fcfcf3210"
+    },
+    {
+      "path": "tests/admin-workspace.test.ts",
+      "sha256": "a197927623551f7029ff03eec4fa5ea406687ebce8c33fd0ec915788674e2814"
+    },
+    {
+      "path": "tests/administration-reads.sql-integration.ts",
+      "sha256": "4b92bd3dc374da651418d7fb406e984805b073276b7d98d99b27e1211dcde7f7"
+    },
+    {
+      "path": "tests/administration-reads.test.ts",
+      "sha256": "30514c4119db3c15d6198d43905db51e9169f536142dc4b536449d03ffa26c5d"
+    },
+    {
+      "path": "tests/api-composition.test.ts",
+      "sha256": "76906d43a2941f8683ceb5643ce815122ba579f94257c79cfb35270703c59676"
+    },
+    {
+      "path": "tests/browser/reception.spec.ts",
+      "sha256": "edda4f30d57cce5201d4272946a3a7b8e5cf276675fdfb524459b2691030ee3b"
+    },
+    {
+      "path": "tests/browser/workflows.spec.ts",
+      "sha256": "268847816cba9e553500cd16c048514fda3d3b216b21541f2f6504300b45c3f6"
+    },
+    {
+      "path": "tests/ci-safety.test.ts",
+      "sha256": "5d679b10f09532a887683ce5ee657358f40a1b8f68d4cec4adc99eca52cd12fb"
+    },
+    {
+      "path": "tests/development-mail-sandbox.test.ts",
+      "sha256": "f55c1a6114fd8f6c22811c3d26e418c467b4d267590da7d80fd3d27d0227efc9"
+    },
+    {
+      "path": "tests/development-tls.test.ts",
+      "sha256": "a2f7c46610c71160be08ad3e3de9ee3f7255f8cf9b46484f7ea688d9e8f979c6"
+    },
+    {
+      "path": "tests/directory.test.ts",
+      "sha256": "38b5657a84ef1158c8287b410488ecfdcb43865df9694d627afbd45dbdb66fe0"
+    },
+    {
+      "path": "tests/dummy-sso.sql-integration.ts",
+      "sha256": "eba3deca9b187c601ff128dfd71b6c83a2b29cfd4b0646647dd87d71a011c413"
+    },
+    {
+      "path": "tests/dummy-sso.test.ts",
+      "sha256": "f9903f3285cc0a5e1a039d14699d1433782d068ab127335cbeaf8ba2308a1277"
+    },
+    {
+      "path": "tests/email-workflow.test.ts",
+      "sha256": "89a4d67eedfaa680e9ed3d3218a3d3c6c7fc376a35f4eb3d2e45ea591353b498"
+    },
+    {
+      "path": "tests/employee-digital-id.sql-integration.ts",
+      "sha256": "8fcb21232bacef2891ce260febfcf21efd70408921d11f66b0ac82ad8d6b76f0"
+    },
+    {
+      "path": "tests/employee-project-summary.test.ts",
+      "sha256": "1c1dfcbdd30021b1f6badebcb39f00f61dccf80ba86c67f3ee23a4009093eef7"
+    },
+    {
+      "path": "tests/guard-auth.sql-integration.ts",
+      "sha256": "b17a7330a9774009165a3ba683c66029c3b602120e0c9ac61fbc6bec76dac300"
+    },
+    {
+      "path": "tests/guard-auth.test.ts",
+      "sha256": "df0fe4f6d4062643d2ccae4dbe784d1b9ffb91da02ccd80e641b5bf74e3c9ba7"
+    },
+    {
+      "path": "tests/guard-duty.test.ts",
+      "sha256": "496661ce1a5451668161512fe2b5e41d9a728c1b4fd2f7d829cd8c07f017998c"
+    },
+    {
+      "path": "tests/guard-i18n.test.ts",
+      "sha256": "220baff35fff5de7d086fbca24f46562c5c5e577b02883da45ec6d39e429f703"
+    },
+    {
+      "path": "tests/guard-movement.test.ts",
+      "sha256": "d2b05e9f1237625626e86cdb0f08306812404031d4e5dc156f85c259a35764d2"
+    },
+    {
+      "path": "tests/guard-workspace.test.ts",
+      "sha256": "75e1188c8325dc4782927d0944f161c2559d0787b5883b2c455c7a4a28e7b759"
+    },
+    {
+      "path": "tests/helpers/AdministrationReads.SqlBridge.ps1",
+      "sha256": "5ade0f4705b28c3cbc9abc99ac7b87def7a8223b4939483106cf9318a5dcb052"
+    },
+    {
+      "path": "tests/helpers/Create-TestTls.ps1",
+      "sha256": "2ca4c22ce936682b1a196896cb02a71d19f8b01d0aeb24071a001629c2d20e80"
+    },
+    {
+      "path": "tests/helpers/GuardAuth.SqlBridge.ps1",
+      "sha256": "45dc7e054d86093e3e470c35de2debc539d94e613f80ecdfe02fa8e7f7f9db60"
+    },
+    {
+      "path": "tests/helpers/PassPrint.SqlBridge.ps1",
+      "sha256": "0393729c7bc283de4ae920f62bf1cf66aa9f115ff270818c0a3ddfc11376dc20"
+    },
+    {
+      "path": "tests/helpers/Registration.SqlBridge.ps1",
+      "sha256": "4a9bb098e9ccaa1040464c388e74410a55c60110506863201c1bc7ffbb568d12"
+    },
+    {
+      "path": "tests/helpers/StaffAdministration.SqlBridge.ps1",
+      "sha256": "3dcefa47ad1389a03fe747039e8fd1a6ecb4b73364ef68b39754faf953a954c6"
+    },
+    {
+      "path": "tests/helpers/VisitCancellation.SqlBridge.ps1",
+      "sha256": "0bcb41489be1c3c5e4b667ec245991491d5dd948638a51630cb5809d4e6ab547"
+    },
+    {
+      "path": "tests/helpers/VisitReads.SqlBridge.ps1",
+      "sha256": "fbf5065fec75052fbee00e0860e05e65bcd697fcf951de1c3f8056b5d54d3bec"
+    },
+    {
+      "path": "tests/http-api.test.ts",
+      "sha256": "949bdd7150b0cce03e3a71be3845a9e8ed9ed12a425c99404a63f37df395d937"
+    },
+    {
+      "path": "tests/loopback-http.test.ts",
+      "sha256": "68d5415325c707fdcfb94790ff5096cb08bdcf9762a0e4773bb02ebd97ca6d1c"
+    },
+    {
+      "path": "tests/notification-email.sql-integration.ts",
+      "sha256": "c93bd86cf1437d62a075e7920ea0fea9a71da02529a4ea39a51e9151823f9853"
+    },
+    {
+      "path": "tests/office-registration.test.ts",
+      "sha256": "bf5eede0f0a54a8af8825fdd9487dae0f5e730f937a2029ebb1fb957dde6f5fc"
+    },
+    {
+      "path": "tests/outlook-actions.test.ts",
+      "sha256": "e63fcfcfd9d80b5af752151e919051cf60f44054f368ca37442721c84eebbd8a"
+    },
+    {
+      "path": "tests/own-digital-card.test.ts",
+      "sha256": "ece4655a9d7f4afed7932d6283d88e9ddb014f716dd396d481c7d379c48c6bc1"
+    },
+    {
+      "path": "tests/pass-printing.sql-integration.ts",
+      "sha256": "3af872bde57c7b7673ee09645546bf80d8cfab7b57aef9bd10647b72da2aed60"
+    },
+    {
+      "path": "tests/pass-printing.test.ts",
+      "sha256": "4ac8328e82d87941d38a5eecd3862d3d9c48441b2fda6b02b3468e9140210075"
+    },
+    {
+      "path": "tests/personal-outlook.test.ts",
+      "sha256": "5f4b960f304b179912eedbf95839b843cf215514df9621b2a81bc6b5a40871d0"
+    },
+    {
+      "path": "tests/photo-crop.test.ts",
+      "sha256": "037761c4a1d62321d3839aff2e3f0280a3c4702e1fc753f31d4bb60adc9bbe91"
+    },
+    {
+      "path": "tests/powershell-runtime.test.ts",
+      "sha256": "001c9c2d35e49c0bb4df5eedd9d4a132b330e1628b8a50bfc25e649b25191fe1"
+    },
+    {
+      "path": "tests/private-storage.test.ts",
+      "sha256": "f0de8718bfd372b5795ba387f8b3eb7be50053a79e170653c88a4f48201e782b"
+    },
+    {
+      "path": "tests/public-registration.sql-integration.ts",
+      "sha256": "363e09539b716c124e4fd7c32c70e50d2a77471cf1677d4abdc44c8b53a9c3f7"
+    },
+    {
+      "path": "tests/pwa.test.ts",
+      "sha256": "2d9aabf059c12c58067438e8ccd4efb8367252a26bcc8aabbbd79633bb0a637a"
+    },
+    {
+      "path": "tests/reception-print-state.test.ts",
+      "sha256": "b1a93d78885903862e7f1a4a49fcefc978615db0d996d9be1dd64a15266c9e03"
+    },
+    {
+      "path": "tests/reception.test.ts",
+      "sha256": "1495327b3d4ccff1a4d427685882155582b2c68c85360ccfe8c629c89129aef7"
+    },
+    {
+      "path": "tests/registration-http.test.ts",
+      "sha256": "d597d6daf9f958a1e400ab1214a485a6d910cd921eb6271fef553ed704f8c21e"
+    },
+    {
+      "path": "tests/registration.sql-integration.ts",
+      "sha256": "dc73cc133d4b6da4badd70a11986f0b38699a5a273f722c44161692e65b9eed7"
+    },
+    {
+      "path": "tests/registration.test.ts",
+      "sha256": "a4342392ebd26219304304b40b6e734e3d74648a3739621cdf79ec84ced1aa34"
+    },
+    {
+      "path": "tests/select-control.test.ts",
+      "sha256": "b5d6fe95212efcad601dc4aca1ed6af3b1d9c317d413965e5fa14cfa41403d85"
+    },
+    {
+      "path": "tests/sql-procedure-client.test.ts",
+      "sha256": "8fcfc6ff9033694b31e0f162171841879e862c1e39c997891dadc013df864544"
+    },
+    {
+      "path": "tests/staff-administration.sql-integration.ts",
+      "sha256": "9a518d5549beaec29382c9025f68492f62ddea27738977a74bcdc569a80f5c01"
+    },
+    {
+      "path": "tests/staff-administration.test.ts",
+      "sha256": "a660a933ece0d411afdffc93c8f618c0b313a7f21768824d0ea853e8ac6ed0e8"
+    },
+    {
+      "path": "tests/staff-auth.test.ts",
+      "sha256": "ecbc174706f71a3be4d637a6ff429445a46c67f698c5a5743b4c526de931fa1d"
+    },
+    {
+      "path": "tests/staff-entry.test.ts",
+      "sha256": "715495e958ad9352eb29e32eea97f9af5a380d2da1da54c39f94b2962c385684"
+    },
+    {
+      "path": "tests/visit-cancellation.sql-integration.ts",
+      "sha256": "f14571feaa4d5f3cb5a436df3536912e739b4a1cc164bdaea12552f7212b59fb"
+    },
+    {
+      "path": "tests/visit-cancellation.test.ts",
+      "sha256": "3737ee9078ed2120a6ef4b9678ad8798f93172e0a4d14b089101b583302c6325"
+    },
+    {
+      "path": "tests/visit-reads.sql-integration.ts",
+      "sha256": "993aca057879590dffa342de8a81b5815d545f7cdcb3a7344b9635deb0f98bd0"
+    },
+    {
+      "path": "tests/visit-reads.test.ts",
+      "sha256": "a4a01293a0f66f895e41ea24d298496a9f963c43b0763fbcae65ddc34dced467"
+    },
+    {
+      "path": "tests/visitor-components.test.ts",
+      "sha256": "afcb21abd865c10b73efc1c3b65593fe8f00ad6c9f214e6c68b80dff36d9b077"
+    },
+    {
+      "path": "tests/workspace-auto-pages.test.ts",
+      "sha256": "633d755ff8adf50245515d51c990b640634e3dba77cc4626a921d23149ce745d"
+    },
+    {
+      "path": "tools/Claim-DevelopmentEmail.ps1",
+      "sha256": "fb1dfdc0db516cd35c2e0fa14cfbf94b41305afc769f99e8a1892b1ac6ad0bab"
+    },
+    {
+      "path": "tools/GatePass.DevelopmentApiBridge.ps1",
+      "sha256": "dd1326624dface6d18a00289ca6206d0ca80aaf351acf8d9944a5de84fd34443"
+    },
+    {
+      "path": "tools/GatePass.DevelopmentSqlBridge.ps1",
+      "sha256": "8ffced2fdfd970c8a08dcfddedc934301a58a8de4f186d87944cdac98351f5f5"
+    },
+    {
+      "path": "tools/GatePass.LocalSql.psm1",
+      "sha256": "3a7bb666c0217bda4a822eb08a6ac14ef0402b98248776153fbde58e299e280d"
+    },
+    {
+      "path": "tools/New-DevelopmentTls.ps1",
+      "sha256": "25031a630653b3158f094882fe923e6bb5de10b1b9faee305c21a79083106415"
+    },
+    {
+      "path": "tools/Prepare-GuardUiReview.ps1",
+      "sha256": "7e471f60bb5907ebcde0384bbc3ef05190fe91067e336615db1bb7c1787f6ec3"
+    },
+    {
+      "path": "tools/PrivateStorage.Windows.ps1",
+      "sha256": "0e7aa1ce17ebdcf7f4ed89df8e277f40c309e5d6668df3c40c0a5775e1b78bcf"
+    },
+    {
+      "path": "tools/Seed-DevelopmentGuardCredentials.ps1",
+      "sha256": "3855216f13fd7f5b6d594bf50b7a338f3071b996fa16297ff76324377119946e"
+    },
+    {
+      "path": "tools/Seed-DevelopmentStaffCredentials.ps1",
+      "sha256": "00eea0e97a1b8df1237cd8c8446b2b439fceeba830325c5fdbab219d2a183c17"
+    },
+    {
+      "path": "tools/Set-DevelopmentTestPasswords.ps1",
+      "sha256": "f7dc13b4c8c67526de53fc8d05a5ce682f54a8099d101afbed8770f280e49191"
+    },
+    {
+      "path": "tools/Start-DummySso.ps1",
+      "sha256": "331b092659314158eab4e0df4f74d94ac4587677f59d2a66469fdaf952fd86a5"
+    },
+    {
+      "path": "tools/build-pwa-icons.mjs",
+      "sha256": "59f10537282ab6c6345efb5a567cf21b5f2dc48b304593754cb316c2dd915a1b"
+    },
+    {
+      "path": "tools/build-redesigned-card-preview.ts",
+      "sha256": "db72c7521adc20f6f52d7e609c4a2d761faa4c41abc6d96b45ac616477d203cb"
+    },
+    {
+      "path": "tools/ci/Initialize-TestDatabase.ps1",
+      "sha256": "17aaa57cb591f585198dee6af4a1df98e67e282d9e0d9a3e7239cf77a417c7af"
+    },
+    {
+      "path": "tools/ci/Run-SqlChecks.ps1",
+      "sha256": "d969beb50238ccaf779a0430ad8d1390679d5c8442b50d0765746e4ea2f9fcfe"
+    },
+    {
+      "path": "tools/ci/migrations.mjs",
+      "sha256": "79fa9aa99053fb5579ed8f36edcc8494e4181b60bbacba6810b1171e266b342a"
+    },
+    {
+      "path": "tools/ci/release.mjs",
+      "sha256": "a2228b370c719741d66f99faf097a4a8da9175df6370372dbcd4f4c2cc79ff2f"
+    },
+    {
+      "path": "tools/ci/run-tests.mjs",
+      "sha256": "33fa4377c4d23b6dc9d8dab7ba3826bdaf756ee7bce763345593578b689c910a"
+    },
+    {
+      "path": "tools/ci/scan-secrets.mjs",
+      "sha256": "45c0478cdbfab5737ac6a127cfc9a839a3a85eefb3f1d8a8f201fcb2fcb7b58e"
+    },
+    {
+      "path": "tools/ci/staging-smoke.mjs",
+      "sha256": "d7c63092847b1f1c61ed16bea0cf964529c0d949463f8d45f9c7161158ada9ef"
+    },
+    {
+      "path": "tools/compare_live_catalog.py",
+      "sha256": "5c298904a2247314c1e0bc02d3405a34d3ffd5c74ef4b2e38a40c0f19ccaaf49"
+    },
+    {
+      "path": "tools/connect-personal-outlook.ts",
+      "sha256": "8ec008a28cd6420dcd60b5d006201466de4309aa0f495527e858e93af24195b0"
+    },
+    {
+      "path": "tools/create-email-test.ts",
+      "sha256": "c512e4743662bd67a234152fb15305b3e36d5af8b1ca590903740704a06d84c8"
+    },
+    {
+      "path": "tools/export_sql_schema.ps1",
+      "sha256": "c31339b004c4a7aa979986b5cefd1797a6d747affac529724f9412cd2eb7d27c"
+    },
+    {
+      "path": "tools/initialize-private-storage.ts",
+      "sha256": "17c32aac2515ca3d5cfe90c2738ed73b8ee85c59ef5752bab276137135d851e8"
+    },
+    {
+      "path": "tools/launch-dummy-sso.mjs",
+      "sha256": "3263130d2409a5a68494945acc6b5433b0a3b31f12485b992eb5e53d31f2f1a9"
+    },
+    {
+      "path": "tools/prepare_sql_parser.ps1",
+      "sha256": "26c6c08acdd387bf7f58f21be718ebe247374986007875193d584e216cf947be"
+    },
+    {
+      "path": "tools/preview-directory-combinations.ts",
+      "sha256": "30a6f4c4e73214c5c69aec9ce50aaca580d80f9b80b9ac7c31e56a819e99eeda"
+    },
+    {
+      "path": "tools/preview-directory.ts",
+      "sha256": "ad28a4f5986debe67dbf0463bdc17bfc8a6950597aa66947555d298133ae43a9"
+    },
+    {
+      "path": "tools/preview-email.ts",
+      "sha256": "00331bc35f393fb042c0913237d388a7250a9da19f0914bbac5d43ebe6db118d"
+    },
+    {
+      "path": "tools/preview-outlook-approval.ts",
+      "sha256": "39b34658569cf62d22cf3614bc1a52b962835bd8b9189b2ea693135240835668"
+    },
+    {
+      "path": "tools/preview-print-cards.ts",
+      "sha256": "7a3f8770a8ee6c1a8f1687fb52d72da7651e05f3a5263a9e042fe9f0fb8882c8"
+    },
+    {
+      "path": "tools/record-dummy-sso-evidence.py",
+      "sha256": "94abc1b93453abe34dd1c7e660947781c74a17d77ff104015145d3e37a819eaa"
+    },
+    {
+      "path": "tools/record-private-storage-evidence.py",
+      "sha256": "4f64ad2090152d81e319a51588476f0d1a79d60b985d5c4ce3e4c701d45636ce"
+    },
+    {
+      "path": "tools/record-registration-http-evidence.py",
+      "sha256": "99581fc71084eb57b21ca5eb4a56558959825ec2be5cf51705e5169db38c5545"
+    },
+    {
+      "path": "tools/record-transport-evidence.py",
+      "sha256": "c0851e20fa1543ab55b2ffdbcb87e600c88165aba650a47d9b55d025efb03b78"
+    },
+    {
+      "path": "tools/render_database_diagrams.cjs",
+      "sha256": "8f9c38dc1c701cec1d6b8be7ec39ac39e534f60bd3b74620506fc01070a96733"
+    },
+    {
+      "path": "tools/render_database_docs.py",
+      "sha256": "c188dbfbf63d227ce1d18f1c4fb43ee064c20e51192b62d8eda24a3c53f4988d"
+    },
+    {
+      "path": "tools/seed-development-guard-logins.ts",
+      "sha256": "91ae60a165e8406b726a5a71709c3f2f43fa1f11b4f2a8efbb76e66db848c53d"
+    },
+    {
+      "path": "tools/seed-development-staff-logins.ts",
+      "sha256": "b9e88ba8cb95b08c48b0ccbc12d7374c7f5e05fbc9f6387c351a843de4765fb0"
+    },
+    {
+      "path": "tools/set-development-test-passwords.ts",
+      "sha256": "4d4417be5cca39e84f0859a718eb71e89a10b3e8114711bf1ccfd1f201a97c6c"
+    },
+    {
+      "path": "tools/start-api.ts",
+      "sha256": "2775265a8c3076735e683a2cb90b6496a833781aeda69346d8f6228ef8a6c3bb"
+    },
+    {
+      "path": "tools/start-development-email.ts",
+      "sha256": "a0b62258228fff966b586fe8da5223d86a7bb5ccc2f29eeb5e934a8a771b6c6f"
+    },
+    {
+      "path": "tools/start-dummy-sso.ts",
+      "sha256": "2644e1180907ad669e479fc0364e8a5424b01ef5f6b46def7255d6b5163b2c22"
+    },
+    {
+      "path": "tools/start-email-worker.ts",
+      "sha256": "a99ea9f47dc51a9c4eb007cd7287e44b4b46ae2e18ae170143068972e85f82d8"
+    },
+    {
+      "path": "tools/validate_database_model.py",
+      "sha256": "3c29505c6e91daa58b2d37cafc1fdf2056eaf2b5e56ba8eda391798ed2304a12"
+    },
+    {
+      "path": "tools/validate_sql_syntax.ps1",
+      "sha256": "07d14dac09f515dd8cf395f4dc09f9afb59d10fc1b4eb67c38a58d7b1869f2a8"
+    }
+  ]
+}

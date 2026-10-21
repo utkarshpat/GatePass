@@ -22,3 +22,6 @@ database/validation/
 *.pem
 *.key
 *.sqlplan
+
+# Agent instructions
+GEMINI.md

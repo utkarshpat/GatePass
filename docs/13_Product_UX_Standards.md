@@ -19,6 +19,7 @@ User direction: a real production application with a clean, modern interface. On
 - Follow the planned role-specific screen map. Expose connected functions only; reusable components and visual consistency apply across visitor, employee, host, reception, guard and admin views.
 - Office selection is to be replaced by server-validated context from the office registration QR. This is a separately pending functional change, not a client-side default or arbitrary URL parameter.
 - Visual references guide layout/style. Existing approval, individual visit, neutral landscape card and online authorization rules take precedence over conflicting reference-image content.
+- Right-corner card items (e.g. status badges, timestamps, state tags) must remain right-aligned (`text-align: right`). Wherever dynamic content or translations pose an overflow risk, enforce wrapping (`white-space: pre-line`, `overflow-wrap: anywhere`) and bounded width (`max-width: 55%`), never allowing text to clip past container boundaries.
 
 Current content cleanup applies to the connected employee frontend. Office QR binding, the proposed step/photo/review flow, remaining role screens and visual acceptance remain separate pending work.
 

@@ -16,7 +16,7 @@ try {
  $taskProcess.StartInfo.Environment['NODE_ENV']='test';$taskProcess.StartInfo.Environment['GATEPASS_SSO_MODE']='dummy';$taskProcess.StartInfo.Environment['GATEPASS_DIRECTORY_MODE']='mock'
  $null=$taskProcess.Start();$taskProcess.StandardInput.Write((@{storageRoot=$taskStore;uiReviewReady=$(if($UiReview){Join-Path $taskRoot 'tmp/guard-ui-review-ready.json'}else{$null})}|ConvertTo-Json -Compress));$taskProcess.StandardInput.Close()
  $taskOutput=$taskProcess.StandardOutput.ReadToEndAsync();$taskErrors=$taskProcess.StandardError.ReadToEndAsync()
- if(-not $taskProcess.WaitForExit($(if($UiReview){1500000}else{240000}))){$taskProcess.Kill($true);throw 'Public registration integration timed out.'}
+ if(-not $taskProcess.WaitForExit($(if($UiReview){1500000}else{420000}))){$taskProcess.Kill($true);throw 'Public registration integration timed out.'}
  $taskRaw=$taskOutput.GetAwaiter().GetResult();$taskStderr=$taskErrors.GetAwaiter().GetResult()
  if(-not $taskRaw){throw ('No integration report: '+$taskStderr)}
  $taskReport=$taskRaw|ConvertFrom-Json
@@ -25,10 +25,12 @@ try {
  $taskVisitJson=ConvertTo-Json -InputObject @($taskReport.visits) -Compress
  if($taskReport.visits.Count -ne 4){throw 'Expected two visitor, one Digital ID and one extra project visit.'}
  if((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM gp.VisitRequests v JOIN OPENJSON(@VisitJson) j ON v.VisitRequestId=TRY_CONVERT(uniqueidentifier,j.value)" @{VisitJson=$taskVisitJson}) -ne 4){throw 'Expected exactly four owned visit records.'}
- if((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM gp.NotificationOutbox n JOIN OPENJSON(@VisitJson) j ON n.VisitRequestId=TRY_CONVERT(uniqueidentifier,j.value) WHERE n.Status='PENDING'" @{VisitJson=$taskVisitJson}) -ne 4){throw 'Expected one notification per independent visit.'}
- if((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM gp.VisitRequests v JOIN OPENJSON(@VisitJson) j ON v.VisitRequestId=TRY_CONVERT(uniqueidentifier,j.value) WHERE v.Status='PENDING'" @{VisitJson=$taskVisitJson}) -ne 3){throw 'Only Digital ID should be auto-approved.'}
+ if((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM gp.NotificationOutbox n JOIN OPENJSON(@VisitJson) j ON n.VisitRequestId=TRY_CONVERT(uniqueidentifier,j.value) WHERE n.TemplateCode IN('HOST_APPROVAL_REQUEST','TEMP_ID_MANAGER_NOTICE') AND n.Status='PENDING'" @{VisitJson=$taskVisitJson}) -ne 4){throw 'Expected one notification per independent visit.'}
+ if((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM gp.VisitRequests v JOIN OPENJSON(@VisitJson) j ON v.VisitRequestId=TRY_CONVERT(uniqueidentifier,j.value) WHERE v.Status='PENDING'" @{VisitJson=$taskVisitJson}) -ne 1){throw 'Only the independent additional project request should remain pending after email decisions.'}
  if($taskReport.cardCredentialHash -notmatch '^[A-F0-9]{64}$'){throw 'Missing decoded card QR digest.'}
  if((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM gp.AccessPasses p JOIN gp.VisitRequests v ON v.VisitRequestId=p.VisitRequestId WHERE v.EmployeeId='EMP014' AND v.RequestType='TEMP_ID' AND p.IsCurrent=1 AND p.CredentialHash=CONVERT(varbinary(32),@Hash,2)" @{Hash=$taskReport.cardCredentialHash}) -ne 1){throw 'Downloaded QR does not match issued SQL credential.'}
+ if((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM gp.NotificationOutbox n JOIN OPENJSON(@VisitJson) j ON n.VisitRequestId=TRY_CONVERT(uniqueidentifier,j.value) WHERE n.TemplateCode='REQUEST_RECEIVED'" @{VisitJson=$taskVisitJson}) -ne 4){throw 'Expected exactly one receipt per individual visit, including retries.'}
+ if((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM gp.NotificationOutbox n JOIN OPENJSON(@VisitJson) j ON n.VisitRequestId=TRY_CONVERT(uniqueidentifier,j.value) WHERE n.TemplateCode='VISIT_DECIDED'" @{VisitJson=$taskVisitJson}) -ne 2){throw 'Expected independent approval/rejection result emails.'}
  $taskProbe='gp_card_probe_'+[guid]::NewGuid().ToString('N');$taskProbeCreated=$false;$taskProbeActing=$false
  try{
   Invoke-GatePassNonQuery $taskConnection "CREATE USER [$taskProbe] WITHOUT LOGIN;";$taskProbeCreated=$true

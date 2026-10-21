@@ -67,7 +67,17 @@
       "isActive": true,
       "projectCodes": [
         "DEMO-PRJ-001"
-      ]
+      ],
+      "locationCodes": [
+        "NOIDA"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-001",
+          "locationCode": "NOIDA"
+        }
+      ],
+      "primaryOfficeLocationCode": "NOIDA"
     },
     {
       "employeeId": "EMP002",
@@ -78,7 +88,21 @@
       "projectCodes": [
         "DEMO-PRJ-001",
         "DEMO-PRJ-002"
-      ]
+      ],
+      "locationCodes": [
+        "NOIDA"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-001",
+          "locationCode": "NOIDA"
+        },
+        {
+          "projectCode": "DEMO-PRJ-002",
+          "locationCode": "NOIDA"
+        }
+      ],
+      "primaryOfficeLocationCode": "NOIDA"
     },
     {
       "employeeId": "EMP003",
@@ -88,7 +112,17 @@
       "isActive": true,
       "projectCodes": [
         "DEMO-PRJ-002"
-      ]
+      ],
+      "locationCodes": [
+        "BENGALURU"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-002",
+          "locationCode": "BENGALURU"
+        }
+      ],
+      "primaryOfficeLocationCode": "BENGALURU"
     },
     {
       "employeeId": "EMP004",
@@ -99,7 +133,21 @@
       "projectCodes": [
         "DEMO-PRJ-001",
         "DEMO-PRJ-003"
-      ]
+      ],
+      "locationCodes": [
+        "NOIDA"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-001",
+          "locationCode": "NOIDA"
+        },
+        {
+          "projectCode": "DEMO-PRJ-003",
+          "locationCode": "NOIDA"
+        }
+      ],
+      "primaryOfficeLocationCode": "NOIDA"
     },
     {
       "employeeId": "EMP005",
@@ -110,7 +158,21 @@
       "projectCodes": [
         "DEMO-PRJ-002",
         "DEMO-PRJ-004"
-      ]
+      ],
+      "locationCodes": [
+        "BENGALURU"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-002",
+          "locationCode": "BENGALURU"
+        },
+        {
+          "projectCode": "DEMO-PRJ-004",
+          "locationCode": "BENGALURU"
+        }
+      ],
+      "primaryOfficeLocationCode": "BENGALURU"
     },
     {
       "employeeId": "EMP006",
@@ -122,7 +184,21 @@
         "DEMO-PRJ-001",
         "DEMO-PRJ-002",
         "DEMO-PRJ-003"
-      ]
+      ],
+      "locationCodes": [
+        "PUNE"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-001",
+          "locationCode": "PUNE"
+        },
+        {
+          "projectCode": "DEMO-PRJ-002",
+          "locationCode": "PUNE"
+        }
+      ],
+      "primaryOfficeLocationCode": "PUNE"
     },
     {
       "employeeId": "EMP007",
@@ -132,7 +208,17 @@
       "isActive": true,
       "projectCodes": [
         "DEMO-PRJ-003"
-      ]
+      ],
+      "locationCodes": [
+        "CHENNAI"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-003",
+          "locationCode": "CHENNAI"
+        }
+      ],
+      "primaryOfficeLocationCode": "CHENNAI"
     },
     {
       "employeeId": "EMP008",
@@ -142,7 +228,17 @@
       "isActive": true,
       "projectCodes": [
         "DEMO-PRJ-004"
-      ]
+      ],
+      "locationCodes": [
+        "BENGALURU"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-004",
+          "locationCode": "BENGALURU"
+        }
+      ],
+      "primaryOfficeLocationCode": "BENGALURU"
     },
     {
       "employeeId": "EMP009",
@@ -153,7 +249,17 @@
       "projectCodes": [
         "DEMO-PRJ-001",
         "DEMO-PRJ-004"
-      ]
+      ],
+      "locationCodes": [
+        "CHENNAI"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-001",
+          "locationCode": "CHENNAI"
+        }
+      ],
+      "primaryOfficeLocationCode": "CHENNAI"
     },
     {
       "employeeId": "EMP010",
@@ -163,7 +269,17 @@
       "isActive": true,
       "projectCodes": [
         "DEMO-PRJ-005"
-      ]
+      ],
+      "locationCodes": [
+        "PUNE"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-005",
+          "locationCode": "PUNE"
+        }
+      ],
+      "primaryOfficeLocationCode": "PUNE"
     },
     {
       "employeeId": "EMP011",
@@ -174,7 +290,17 @@
       "projectCodes": [
         "DEMO-PRJ-001",
         "DEMO-PRJ-005"
-      ]
+      ],
+      "locationCodes": [
+        "BENGALURU"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-001",
+          "locationCode": "BENGALURU"
+        }
+      ],
+      "primaryOfficeLocationCode": "BENGALURU"
     },
     {
       "employeeId": "EMP012",
@@ -185,7 +311,17 @@
       "projectCodes": [
         "DEMO-PRJ-002",
         "DEMO-PRJ-005"
-      ]
+      ],
+      "locationCodes": [
+        "CHENNAI"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-005",
+          "locationCode": "CHENNAI"
+        }
+      ],
+      "primaryOfficeLocationCode": "CHENNAI"
     },
     {
       "employeeId": "EMP013",
@@ -195,7 +331,17 @@
       "isActive": true,
       "projectCodes": [
         "DEMO-PRJ-006"
-      ]
+      ],
+      "locationCodes": [
+        "PUNE"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-006",
+          "locationCode": "PUNE"
+        }
+      ],
+      "primaryOfficeLocationCode": "PUNE"
     },
     {
       "employeeId": "EMP014",
@@ -206,7 +352,21 @@
       "projectCodes": [
         "DEMO-PRJ-001",
         "DEMO-PRJ-006"
-      ]
+      ],
+      "locationCodes": [
+        "NOIDA"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-001",
+          "locationCode": "NOIDA"
+        },
+        {
+          "projectCode": "DEMO-PRJ-006",
+          "locationCode": "NOIDA"
+        }
+      ],
+      "primaryOfficeLocationCode": "NOIDA"
     },
     {
       "employeeId": "EMP015",
@@ -217,7 +377,21 @@
       "projectCodes": [
         "DEMO-PRJ-002",
         "DEMO-PRJ-006"
-      ]
+      ],
+      "locationCodes": [
+        "PUNE"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-002",
+          "locationCode": "PUNE"
+        },
+        {
+          "projectCode": "DEMO-PRJ-006",
+          "locationCode": "PUNE"
+        }
+      ],
+      "primaryOfficeLocationCode": "PUNE"
     },
     {
       "employeeId": "EMP016",
@@ -228,7 +402,17 @@
       "projectCodes": [
         "DEMO-PRJ-003",
         "DEMO-PRJ-005"
-      ]
+      ],
+      "locationCodes": [
+        "PUNE"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-005",
+          "locationCode": "PUNE"
+        }
+      ],
+      "primaryOfficeLocationCode": "PUNE"
     },
     {
       "employeeId": "EMP017",
@@ -239,7 +423,17 @@
       "projectCodes": [
         "DEMO-PRJ-004",
         "DEMO-PRJ-006"
-      ]
+      ],
+      "locationCodes": [
+        "BENGALURU"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-004",
+          "locationCode": "BENGALURU"
+        }
+      ],
+      "primaryOfficeLocationCode": "BENGALURU"
     },
     {
       "employeeId": "EMP018",
@@ -254,7 +448,29 @@
         "DEMO-PRJ-004",
         "DEMO-PRJ-005",
         "DEMO-PRJ-006"
-      ]
+      ],
+      "locationCodes": [
+        "NOIDA"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-001",
+          "locationCode": "NOIDA"
+        },
+        {
+          "projectCode": "DEMO-PRJ-002",
+          "locationCode": "NOIDA"
+        },
+        {
+          "projectCode": "DEMO-PRJ-003",
+          "locationCode": "NOIDA"
+        },
+        {
+          "projectCode": "DEMO-PRJ-006",
+          "locationCode": "NOIDA"
+        }
+      ],
+      "primaryOfficeLocationCode": "NOIDA"
     },
     {
       "employeeId": "EMP019",
@@ -265,7 +481,21 @@
       "projectCodes": [
         "DEMO-PRJ-001",
         "DEMO-PRJ-002"
-      ]
+      ],
+      "locationCodes": [
+        "NOIDA"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-001",
+          "locationCode": "NOIDA"
+        },
+        {
+          "projectCode": "DEMO-PRJ-002",
+          "locationCode": "NOIDA"
+        }
+      ],
+      "primaryOfficeLocationCode": "NOIDA"
     },
     {
       "employeeId": "EMP020",
@@ -275,7 +505,18 @@
       "isActive": true,
       "projectCodes": [
         "DEMO-PRJ-003"
-      ]
+      ],
+      "locationCodes": [
+        "BENGALURU",
+        "NOIDA"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-003",
+          "locationCode": "NOIDA"
+        }
+      ],
+      "primaryOfficeLocationCode": "BENGALURU"
     },
     {
       "employeeId": "EMP021",
@@ -285,7 +526,17 @@
       "isActive": true,
       "projectCodes": [
         "DEMO-PRJ-004"
-      ]
+      ],
+      "locationCodes": [
+        "BENGALURU"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-004",
+          "locationCode": "BENGALURU"
+        }
+      ],
+      "primaryOfficeLocationCode": "BENGALURU"
     },
     {
       "employeeId": "EMP022",
@@ -295,7 +546,17 @@
       "isActive": true,
       "projectCodes": [
         "DEMO-PRJ-005"
-      ]
+      ],
+      "locationCodes": [
+        "PUNE"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-005",
+          "locationCode": "PUNE"
+        }
+      ],
+      "primaryOfficeLocationCode": "PUNE"
     },
     {
       "employeeId": "EMP023",
@@ -306,7 +567,21 @@
       "projectCodes": [
         "DEMO-PRJ-001",
         "DEMO-PRJ-006"
-      ]
+      ],
+      "locationCodes": [
+        "NOIDA"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-001",
+          "locationCode": "NOIDA"
+        },
+        {
+          "projectCode": "DEMO-PRJ-006",
+          "locationCode": "NOIDA"
+        }
+      ],
+      "primaryOfficeLocationCode": "NOIDA"
     },
     {
       "employeeId": "EMP024",
@@ -318,7 +593,17 @@
         "DEMO-PRJ-002",
         "DEMO-PRJ-005",
         "DEMO-PRJ-006"
-      ]
+      ],
+      "locationCodes": [
+        "BENGALURU"
+      ],
+      "projectLocations": [
+        {
+          "projectCode": "DEMO-PRJ-002",
+          "locationCode": "BENGALURU"
+        }
+      ],
+      "primaryOfficeLocationCode": "BENGALURU"
     }
   ]
 }

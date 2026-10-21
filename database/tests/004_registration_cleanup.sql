@@ -11,8 +11,11 @@ DECLARE @users table(Id uniqueidentifier); INSERT @users SELECT UserId FROM gp.U
 DECLARE @visits table(Id uniqueidentifier); INSERT @visits SELECT VisitRequestId FROM gp.VisitRequests WHERE IntakeId IN(SELECT Id FROM @intakes);
 DECLARE @ops table(Id uniqueidentifier);
 INSERT @ops SELECT OperationId FROM gp.AccessEvents WHERE VisitRequestId IN(SELECT Id FROM @visits)
+    UNION SELECT OperationId FROM gp.EmployeeProjectAccessEvents WHERE VisitRequestId IN(SELECT Id FROM @visits)
     UNION SELECT OperationId FROM gp.ApprovalDecisions WHERE VisitRequestId IN(SELECT Id FROM @visits)
     UNION SELECT OperationId FROM gp.PassPrintJobs WHERE VisitRequestId IN(SELECT Id FROM @visits);
+DECLARE @notifications table(Id bigint);
+INSERT @notifications SELECT NotificationId FROM gp.NotificationOutbox WHERE VisitRequestId IN(SELECT Id FROM @visits);
 BEGIN TRANSACTION;
 DELETE gp.NotificationOutbox WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE r FROM gp.PassPrintRenderState r JOIN gp.PassPrintJobs j ON j.PrintJobId=r.PrintJobId WHERE j.VisitRequestId IN(SELECT Id FROM @visits);
@@ -20,12 +23,16 @@ DELETE gp.PassPrintJobs WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE gp.PassDeliveryLinks WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE gp.PassScanAttempts WHERE VisitRequestId IN(SELECT Id FROM @visits);
 UPDATE gp.VisitPresence SET IsInside=0,LastAccessEventId=NULL,LastMovementAtUtc=NULL WHERE VisitRequestId IN(SELECT Id FROM @visits);
+UPDATE gp.EmployeeProjectPresence SET LastEventId=NULL WHERE VisitRequestId IN(SELECT Id FROM @visits);
+DELETE gp.EmployeeProjectAccessEvents WHERE VisitRequestId IN(SELECT Id FROM @visits);
+DELETE gp.EmployeeProjectPresence WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE gp.AccessEvents WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE gp.VisitPresence WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE gp.ApprovalDecisions WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE s FROM gp.PassSecrets s JOIN gp.AccessPasses p ON p.AccessPassId=s.AccessPassId WHERE p.VisitRequestId IN(SELECT Id FROM @visits);
 DELETE gp.AccessPasses WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE gp.TemporaryIdSlots WHERE VisitRequestId IN(SELECT Id FROM @visits);
+DELETE gp.SecurityAuditEvents WHERE TargetType='NOTIFICATION' AND TargetReference IN(SELECT CONVERT(varchar(100),Id) FROM @notifications);
 DELETE gp.SecurityAuditEvents WHERE TargetReference IN(SELECT CONVERT(varchar(36),Id) FROM @visits)
     OR TargetReference IN(SELECT CONVERT(varchar(36),Id) FROM @intakes);
 DELETE gp.VisitRequests WHERE VisitRequestId IN(SELECT Id FROM @visits);
