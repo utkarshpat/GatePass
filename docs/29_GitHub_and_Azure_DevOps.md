@@ -20,11 +20,22 @@ tests the GitHub source; Dashboards displays project progress.
 7. Review and run. Verify the run uses the expected GitHub commit and that all
    steps pass. Connecting the repository alone does not verify the pipeline.
 
-The YAML installs Node 26.8.2, uses `npm ci`, and runs `npm test`. It runs no
-deployment and needs no application, database, SSO or photo-storage secrets.
-Live SQL tests require the separate isolated test database and are not included
-in hosted unit CI. Hosted-agent availability/parallel-job entitlement is an
-Azure organisation dependency; a queued run is not a passing build.
+The automatic Quality stage uses Node 26.8.2 and locked dependencies, scans full
+Git history for secrets, audits dependencies, checks TypeScript/lint/migration
+integrity, and publishes unit test/coverage results plus an allowlisted source
+release candidate. It does not deploy the application.
+
+In **Run pipeline**, enable **Run integration checks** for a fresh private
+Windows LocalDB schema, SQL security/concurrency/HTTP checks and Chromium
+workflow/accessibility checks. This is manual by default to control shared
+hosted-agent minutes. All data is synthetic; no application secrets are needed.
+The hosted image's LocalDB engine version is logged; this is a SQL 2022+
+compatibility check, not proof of a SQL 2025 Linux production rollout.
+
+The staging probe is separately disabled by default and requires an approved,
+already deployed HTTPS site. There is no staging VM configured by this package.
+Hosted-agent availability/parallel-job entitlement is an Azure organisation
+dependency; a queued run is not a passing build. No paid capacity is enabled.
 
 Boards integration is optional and can be configured later. Do not import the
 GitHub repository into Azure Repos to enable this workflow.

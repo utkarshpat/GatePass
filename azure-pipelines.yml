@@ -1,29 +1,152 @@
+# Heavy suites are opt-in to control shared hosted-agent build minutes.
+parameters:
+  - name: runIntegration
+    displayName: Run integration checks (fresh SQL + browser/accessibility)
+    type: boolean
+    default: false
+  - name: runStagingSmoke
+    displayName: Probe an already deployed staging site
+    type: boolean
+    default: false
+  - name: stagingOrigin
+    displayName: Approved staging HTTPS origin (only for staging probe)
+    type: string
+    default: 'not-configured'
+
 trigger:
+  batch: true
   branches:
-    include:
-      - main
-
+    include: [main]
+  paths:
+    exclude: ['docs/**', 'README.md']
 pr:
+  autoCancel: true
   branches:
-    include:
-      - main
+    include: [main]
+  paths:
+    exclude: ['docs/**', 'README.md']
 
-pool:
-  vmImage: ubuntu-24.04
+stages:
+  - stage: Quality
+    displayName: Code, security and unit checks
+    jobs:
+      - job: Checks
+        pool:
+          vmImage: ubuntu-24.04
+        timeoutInMinutes: 15
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            persistCredentials: false
+          - task: UseNode@1
+            inputs:
+              version: '26.8.2'
+          - script: node tools/ci/scan-secrets.mjs
+            displayName: Scan Git history for credentials (redacted)
+          - task: Cache@2
+            inputs:
+              key: 'npm | "$(Agent.OS)" | package-lock.json'
+              path: $(Pipeline.Workspace)/.npm
+          - script: npm ci --cache "$(Pipeline.Workspace)/.npm" --prefer-offline
+            displayName: Install locked dependencies
+          - script: npm audit --audit-level=high
+            displayName: Block known high/critical dependency vulnerabilities
+          - script: npm run typecheck && npm run lint && npm run check:migrations
+            displayName: Type safety, lint and migration integrity
+          - script: npm run test:ci
+            displayName: Unit/contract tests with JUnit and coverage
+            env:
+              GATEPASS_SHARP_PATH: $(Build.SourcesDirectory)/node_modules/sharp
+          - task: PublishTestResults@2
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: output/test-results/unit.xml
+              failTaskOnFailedTests: true
+              failTaskOnMissingResultsFile: true
+              publishRunAttachments: false
+              testRunTitle: Unit and contract tests (Linux)
+          - task: PublishCodeCoverageResults@2
+            condition: succeededOrFailed()
+            inputs:
+              summaryFileLocation: $(Build.SourcesDirectory)/output/coverage/lcov.info
+              pathToSources: $(Build.SourcesDirectory)
+              failIfCoverageEmpty: true
+          - script: npm run release:prepare
+            displayName: Validate and package allowlisted release candidate
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: output/release-candidate
+              artifact: source-release-candidate
 
-steps:
-  - task: UseNode@1
-    inputs:
-      version: '26.8.2'
-    displayName: Install Node.js
+  - ${{ if eq(parameters.runIntegration, true) }}:
+    - stage: Integration
+      displayName: Fresh SQL and real browser checks
+      dependsOn: Quality
+      jobs:
+        - job: SqlAndBrowser
+          pool:
+            vmImage: windows-2025
+          timeoutInMinutes: 35
+          variables:
+            GatePassTestSqlServer: ''
+          steps:
+            - checkout: self
+              persistCredentials: false
+            - task: UseNode@1
+              inputs:
+                version: '26.8.2'
+            - script: npm ci
+              displayName: Install locked test dependencies
+            - pwsh: ./tools/ci/Initialize-TestDatabase.ps1
+              displayName: Create private LocalDB and apply every migration
+              env:
+                CI: 'true'
+                NODE_ENV: test
+                GATEPASS_DIRECTORY_MODE: mock
+                GATEPASS_SSO_MODE: dummy
+            - pwsh: ./tools/ci/Run-SqlChecks.ps1
+              displayName: Real SQL permissions, concurrency and HTTP workflows
+              env:
+                CI: 'true'
+                NODE_ENV: test
+                GATEPASS_TEST_SQL_SERVER: $(GatePassTestSqlServer)
+                GATEPASS_SHARP_PATH: $(Build.SourcesDirectory)/node_modules/sharp
+                GATEPASS_DIRECTORY_MODE: mock
+                GATEPASS_SSO_MODE: dummy
+            - script: npx --no-install playwright install chromium
+              displayName: Install pinned test browser
+            - script: npm run test:browser
+              displayName: Browser workflows, responsive layout and accessibility
+              env:
+                CI: 'true'
+                NODE_ENV: test
+                GATEPASS_TEST_SQL_SERVER: $(GatePassTestSqlServer)
+            - task: PublishTestResults@2
+              condition: succeededOrFailed()
+              inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: |
+                  output/test-results/sql.xml
+                  output/test-results/browser.xml
+                failTaskOnFailedTests: true
+                failTaskOnMissingResultsFile: true
+                publishRunAttachments: false
+                testRunTitle: Isolated SQL and browser acceptance
 
-  - script: npm ci
-    displayName: Install locked dependencies
-
-  - script: npm test
-    displayName: Run unit and contract tests
-    env:
-      GATEPASS_SHARP_PATH: $(Build.SourcesDirectory)/node_modules/sharp
-
-# Live SQL integration is run separately against an isolated SQL Server test
-# database. This pipeline neither deploys the application nor accesses live data.
+  - ${{ if eq(parameters.runStagingSmoke, true) }}:
+    - stage: StagingSmoke
+      displayName: Existing staging HTTPS probe (no deployment)
+      dependsOn: Quality
+      jobs:
+        - job: Probe
+          pool:
+            vmImage: ubuntu-24.04
+          timeoutInMinutes: 5
+          steps:
+            - task: UseNode@1
+              inputs:
+                version: '26.8.2'
+            - script: node tools/ci/staging-smoke.mjs
+              env:
+                GATEPASS_STAGING_ORIGIN: ${{ parameters.stagingOrigin }}

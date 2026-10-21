@@ -80,7 +80,7 @@ export function normalizeDirectorySnapshot(input: unknown): DirectorySnapshot {
     while (current && !visited.has(current.employeeId)) {
       requireCondition(!path.has(current.employeeId), 'Cyclic manager relationship.');
       path.add(current.employeeId);
-      const manager = current.managerEmployeeId;
+      const manager: string | null = current.managerEmployeeId;
       requireCondition(manager === null || employeeMap.has(manager), 'Unknown manager reference.');
       current = manager === null ? undefined : employeeMap.get(manager);
     }

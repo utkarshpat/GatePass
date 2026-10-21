@@ -1,0 +1,8 @@
+title = "GatePass credential scanning"
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Non-secret QR purpose/version identifiers used by three negative test fixtures (not encryption keys)"
+regexTarget = "secret"
+regexes = ['''^qr\.v1\.k_fixture-key$''', '''^qr\.v1\.sqlfixture$''', '''^delivery\.v1\.test_key_1$''']

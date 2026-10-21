@@ -57,7 +57,7 @@ export class StaffAdministrationService {
     input(!!value && typeof value === 'object' && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value)));
     const data = value as Record<string, unknown>; input(Object.keys(data).every(key => ['clientKey', 'reason', ...keys].includes(key)) && isUuid(data.clientKey) && reasonValid(data.reason)); return data;
   }
-  async #call(session: Session, name: string, data: Record<string, unknown>, parameters: Record<string, ReadParameter>) {
+  async #call(session: Session, name: string, data: Record<string, unknown>, parameters: Record<string, ReadParameter>): Promise<Record<string, unknown> & { operationId: string }> {
     try {
       const r = await this.#repository.execute(name, { SessionHash: parameter('binary', token(session?.sessionToken)), CsrfHash: parameter('binary', token(session?.csrfToken)),
         ClientKey: parameter('guid', uuid(data.clientKey)), Reason: parameter('text', (data.reason as string).trim()), ...parameters });

@@ -14,12 +14,20 @@
     "printing:preview": "node tools/preview-print-cards.ts",
     "test:guard-movement": "node --test tests/guard-movement.test.ts",
     "test:transport": "node --test tests/http-api.test.ts tests/sql-procedure-client.test.ts tests/api-composition.test.ts tests/registration-http.test.ts",
-    "test": "node --test tests/*.test.ts",
+    "test": "node --test --test-concurrency=4 tests/*.test.ts",
     "start:api": "node tools/start-api.ts",
     "dev:sso": "node tools/launch-dummy-sso.mjs",
     "test:dummy-sso": "node --test tests/dummy-sso.test.ts",
     "storage:init": "node tools/initialize-private-storage.ts",
-    "test:storage": "node --test tests/private-storage.test.ts"
+    "test:storage": "node --test tests/private-storage.test.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test:ci": "node tools/ci/run-tests.mjs",
+    "test:browser": "playwright test",
+    "check:migrations": "node tools/ci/migrations.mjs",
+    "scan:secrets": "node tools/ci/scan-secrets.mjs",
+    "release:prepare": "node tools/ci/release.mjs",
+    "smoke:staging": "node tools/ci/staging-smoke.mjs"
   },
   "engines": {
     "node": ">=26.8.0 <27"
@@ -32,6 +40,15 @@
     "qrcode": "1.5.4"
   },
   "devDependencies": {
-    "sharp": "0.35.5"
+    "@axe-core/playwright": "4.14.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "@types/mssql": "12.3.0",
+    "@types/node": "26.6.5",
+    "@types/qrcode": "1.5.6",
+    "eslint": "10.13.0",
+    "sharp": "0.35.5",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0"
   }
 }

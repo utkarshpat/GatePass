@@ -1,5 +1,5 @@
 class ToastNotifications {
-  constructor(){this.region=document.createElement('div');this.region.className='toast-region';this.region.setAttribute('aria-label','Notifications');this.region.setAttribute('aria-live','polite');this.region.setAttribute('aria-relevant','additions');document.body.append(this.region);this.timers=new Map();}
+  constructor(){this.region=document.createElement('div');this.region.className='toast-region';this.region.setAttribute('role','region');this.region.setAttribute('aria-label','Notifications');this.region.setAttribute('aria-live','polite');this.region.setAttribute('aria-relevant','additions');document.body.append(this.region);this.timers=new Map();}
   clear(){for(const timer of this.timers.values())clearTimeout(timer);this.timers.clear();this.region.replaceChildren();}
   show(message,tone='info'){
     this.clear();if(!message)return;

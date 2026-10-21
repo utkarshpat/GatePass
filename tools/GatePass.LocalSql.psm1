@@ -3,9 +3,19 @@ Set-StrictMode -Version Latest
 
 function Open-GatePassLocalSql {
     param([string]$Server='localhost\SQLEXPRESS',[switch]$TrustLocalServerCertificate)
+    # CI can target only its newly-created private LocalDB instance. This never
+    # enables remote SQL or changes the normal developer's SQLEXPRESS default.
+    if ($env:GATEPASS_TEST_SQL_SERVER) {
+        if ($env:CI -ne 'true' -or $env:NODE_ENV -ne 'test' -or
+            $env:GATEPASS_TEST_SQL_SERVER -notmatch '^\(localdb\)\\GatePassCI_[a-f0-9]{32}$') {
+            throw 'CI SQL override requires test mode and an isolated GatePassCI LocalDB instance.'
+        }
+        $Server=$env:GATEPASS_TEST_SQL_SERVER
+    }
     $taskParts=$Server.Split('\')
-    if ($taskParts.Count -gt 2 -or $taskParts[0] -notin @('.','localhost','127.0.0.1',$env:COMPUTERNAME) -or
-        ($taskParts.Count -eq 2 -and $taskParts[1] -notmatch '^[a-zA-Z0-9_-]+$')) {
+    $taskCiLocalDb=$env:CI -eq 'true' -and $env:NODE_ENV -eq 'test' -and $Server -match '^\(localdb\)\\GatePassCI_[a-f0-9]{32}$'
+    if (-not $taskCiLocalDb -and ($taskParts.Count -gt 2 -or $taskParts[0] -notin @('.','localhost','127.0.0.1',$env:COMPUTERNAME) -or
+        ($taskParts.Count -eq 2 -and $taskParts[1] -notmatch '^[a-zA-Z0-9_-]+$'))) {
         throw 'Only a local SQL Server instance is allowed by this development helper.'
     }
     Add-Type -AssemblyName System.Data.SqlClient
