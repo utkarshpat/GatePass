@@ -4,7 +4,8 @@
 
 - Full Git history: Gitleaks 8.30.1, downloaded from its official release and
   checked against its release SHA-256. Output is redacted. Three exact QR
-  purpose/version fixture identifiers are allowlisted; no test folder is ignored.
+  purpose/version fixture identifiers are allowlisted. SHA-256 digests are also
+  allowed only in the exact migration manifest path; no test folder is ignored.
 - Dependency installation uses `npm ci` and the lockfile. `npm audit` blocks
   known high/critical advisories in development and runtime dependencies.
 - Strict TypeScript checks application modules, TypeScript tools and browser
