@@ -6,3 +6,10 @@ useDefault = true
 description = "Non-secret QR purpose/version identifiers used by three negative test fixtures (not encryption keys)"
 regexTarget = "secret"
 regexes = ['''^qr\.v1\.k_fixture-key$''', '''^qr\.v1\.sqlfixture$''', '''^delivery\.v1\.test_key_1$''']
+
+[[allowlists]]
+description = "Public SHA-256 integrity digests in the migration manifest only"
+condition = "AND"
+paths = ['''^database/migrations\.sha256\.json$''']
+regexTarget = "secret"
+regexes = ['''^[a-f0-9]{64}$''']
