@@ -67,6 +67,7 @@ stages:
               publishRunAttachments: false
               testRunTitle: Unit and contract tests (Linux)
           - task: PublishCodeCoverageResults@2
+            displayName: Publish TypeScript unit and contract coverage
             condition: succeededOrFailed()
             inputs:
               summaryFileLocation: $(Build.SourcesDirectory)/output/coverage/lcov.info
