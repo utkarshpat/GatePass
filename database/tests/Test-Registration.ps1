@@ -47,7 +47,7 @@ function New-Submission([string]$Type='TEMP_ID',[int]$Count=1,[byte[]]$PhotoCont
     $taskIntake=New-Intake $(if ($Type -eq 'EXTERNAL') {'PUBLIC'} else {'EMPLOYEE'})
     $taskPeople=@(for ($taskIndex=0;$taskIndex -lt $Count;$taskIndex++) {
         $taskPerson=@{clientPersonKey=[string][guid]::NewGuid();photoAssetId=[string](Add-Photo $taskIntake $PhotoContent)}
-        if ($Type -eq 'EXTERNAL') { $taskPerson.personName='Visitor '+($taskIndex+1);$taskPerson.personEmail=$null;$taskPerson.personPhone=$null }
+        if ($Type -eq 'EXTERNAL') { $taskPerson.personName='Visitor '+($taskIndex+1);$taskPerson.personEmail=$null;$taskPerson.personPhone='+919876543210' }
         $taskPerson
     })
     $taskParams=$taskIntake.Clone(); $taskParams.ClientKey=[guid]::NewGuid(); $taskParams.RequestType=$Type
@@ -124,6 +124,17 @@ try {
     Test-Case 'Worker and password-auth roles cannot create or submit registrations' {
         foreach ($taskConnection in @($taskWorker,$taskAuth)) { Expect-Error { Invoke-GatePassScalar $taskConnection 'EXEC gp.CreateRegistrationIntake;' } 229; Expect-Error { Invoke-GatePassScalar $taskConnection 'EXEC gp.SubmitRegistration;' } 229 }
         Expect-Error { Invoke-GatePassScalar $taskApi 'EXEC gp._BeginRegistrationOperation;' } 229
+    }
+    Test-Case 'Every external visitor requires an unpadded international phone before any registration is committed' {
+        $taskBefore=New-VisitCount
+        foreach($taskMode in @('missing','null','empty','padded','malformed','tooLong')){
+            $taskP=New-Submission 'EXTERNAL' 2;$taskPeople=@($taskP.PeopleJson|ConvertFrom-Json)
+            if($taskMode -eq 'missing'){$taskPeople[1].PSObject.Properties.Remove('personPhone')}
+            else{$taskPeople[1].personPhone=switch($taskMode){'null'{$null};'empty'{''};'padded'{'+919876543210 '};'malformed'{'+91notanumber'};'tooLong'{'+1234567890123456'}}}
+            $taskP.PeopleJson=ConvertTo-Json -InputObject $taskPeople -Compress
+            Expect-Error {Submit $taskP} 52702
+            Assert-Condition ((New-VisitCount) -eq $taskBefore) 'Invalid group contact persisted a participant.'
+        }
     }
     Test-Case 'Public intake creation retry preserves one intake and its expiry' {
         $taskIntake=New-Intake; $taskParams=$taskIntake.Clone();$taskParams.IntakeType='PUBLIC'

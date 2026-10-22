@@ -10,6 +10,7 @@ import { SqlGuardAuthRepository } from '../security/SqlGuardAuthRepository.ts';
 import { VisitReadService } from '../visits/VisitReadService.ts';
 import { SqlVisitReadRepository } from '../visits/SqlVisitReadRepository.ts';
 import { GuardDutyService } from '../visits/GuardDutyService.ts';
+import { GuardWorkspaceService } from '../visits/GuardWorkspaceService.ts';
 import { VisitCancellationService, SqlVisitCancellationRepository } from '../visits/VisitCancellationService.ts';
 import { StaffAdministrationService, SqlStaffAdministrationRepository } from '../administration/StaffAdministrationService.ts';
 import { AdministrationReadService, SqlAdministrationReadRepository } from '../administration/AdministrationReadService.ts';
@@ -52,6 +53,7 @@ export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): 
     const email=new EmailWorkflowService(api,links);
     const reads = new VisitReadService(new SqlVisitReadRepository(api, 'api'));
     const duty = new GuardDutyService(api);
+    const workspace = new GuardWorkspaceService(api);
     const cancellation = new VisitCancellationService(new SqlVisitCancellationRepository(api));
     const staff = new StaffAdministrationService(new SqlStaffAdministrationRepository(api));
     const admin = new AdministrationReadService(new SqlAdministrationReadRepository(api));
@@ -65,6 +67,11 @@ export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): 
         return reads.detail({ ...session, view }, data.visitRequestId);
       });
     }
+    actions.set('/api/guard/context', (session, body) => {
+      const data = body as Record<string, unknown>;
+      if (data && typeof data === 'object' && Object.keys(data).length > 0) throw Object.assign(new Error(), { code: 'INVALID_INPUT' });
+      return workspace.read(session);
+    });
     actions.set('/api/guard/contexts', (session, body) => {
       const data = body as Record<string, unknown>;
       if (Object.keys(data).some(key => key !== 'locationId')) throw Object.assign(new Error(), { code: 'INVALID_INPUT' });
@@ -75,6 +82,11 @@ export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): 
     actions.set('/api/admin/common-duties',(session,body)=>duty.administration(session,body));
     actions.set('/api/admin/common-duty',(session,body)=>duty.manage(session,body));
     actions.set('/api/guard/verify', (session, body) => duty.detail(session, body));
+    actions.set('/api/guard/detail', async (session, body) => {
+      const result = await duty.detail(session, body);
+      if (!result.visit) throw Object.assign(new Error(), { code: 'NOT_AUTHORIZED' });
+      return result.visit;
+    });
     actions.set('/api/guard/movement', (session, body) => duty.movement(session, body));
     actions.set('/api/email/host/detail',(session,body)=>email.detail(session,body,'HOST'));
     actions.set('/api/email/host/decide',(session,body)=>email.decide(session,body));

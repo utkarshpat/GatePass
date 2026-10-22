@@ -243,7 +243,15 @@
   .digital-card-actions .primary { width: 100%; }
   .result-card { padding: var(--gp-space-4); border: var(--gp-border-width) solid var(--gp-border); border-radius: var(--gp-radius-card); background: var(--gp-surface); box-shadow: var(--gp-shadow-card); }
   .result-card-heading { display: flex; justify-content: space-between; align-items: center; gap: var(--gp-space-2); }
-  .result-card-heading strong { min-width: 0; overflow-wrap: anywhere; font-size: var(--gp-text-md); }
+  .result-card-heading strong { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: var(--gp-text-md); }
+  .result-card-heading .status-pill {
+    text-align: right;
+    white-space: pre-line;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    max-width: 55%;
+    flex-shrink: 0;
+  }
   .result-reference { margin-top: var(--gp-space-2); color: var(--gp-text-muted); font-size: var(--gp-text-xs); font-family: var(--gp-font-mono); overflow-wrap: anywhere; }
   .success-actions { display: flex; flex-direction: column; align-items: center; gap: var(--gp-space-3); margin-top: var(--gp-space-6); }
   .success-home-btn { min-width: 12rem; padding: 0.75rem 2rem; font-size: var(--gp-text-sm); font-weight: var(--gp-weight-semibold); border-radius: var(--gp-radius-control); display: inline-flex; align-items: center; justify-content: center; gap: var(--gp-space-2); box-shadow: 0 4px 14px rgba(200, 16, 46, 0.25); }

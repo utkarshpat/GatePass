@@ -66,6 +66,12 @@ try {
     const wrong=directory.employees.find((row:any)=>row.isActive&&!row.projectCodes.includes(project.projectCode));assert.ok(wrong);
     const result=await submit({...payload,hostEmployeeId:wrong.employeeId});assert.ok([403,503].includes(result.status),JSON.stringify(result.body));
   });
+  await check('every external participant needs a valid mobile while visitor email stays optional',async()=>{
+    for(const phone of [undefined,null,'','+91123']){
+      const changed=people.map((person,index)=>index===1?{...person,phone}:person);
+      assert.equal((await submit({...payload,people:changed})).status,400,'Missing or invalid participant mobile must reject the group.');
+    }
+  });
   await check('future-date group visitor submission creates two independent pending visits and same-key retry returns them',async()=>{
     const first=await submit(payload);assert.equal(first.status,200,JSON.stringify(first.body));assert.equal(first.body.visits.length,2);assert.ok(first.body.visits.every((row:any)=>row.status==='PENDING'));
     const retry=await submit(payload);assert.equal(retry.status,200);assert.deepEqual(retry.body.visits,first.body.visits);for(const row of first.body.visits)visits.push(row.visitRequestId);
@@ -216,10 +222,20 @@ try {
      const png=await call('/api/email/external/image',{link});assert.equal(png.status,200,JSON.stringify(png.body));assert.equal(png.body.mimeType,'image/png');assert.equal((await sharp(Buffer.from(png.body.imageBase64,'base64')).metadata()).width,1712);
      assert.equal((await call('/api/email/request/detail',{visitRequestId:digitalId})).status,401);
    });
+   await check('external holder exchange survives reload without employee auth and remains bound to one signed request',async()=>{
+     const before=await call('/api/email/external/'+visits[0]+'/detail',{});assert.equal(before.status,403);
+     const exchange=await call('/api/email/external/session',{link:externalLink});assert.equal(exchange.status,200,JSON.stringify(exchange.body));assert.deepEqual(exchange.body,{visitRequestId:visits[0]});
+     const header=exchange.headers['set-cookie'][0];assert.match(header,/HttpOnly/u);assert.match(header,new RegExp('Path=/api/email/external/'+visits[0]+'/'));assert(!JSON.stringify(exchange.body).includes(externalLink));
+     assert.equal((await call('/api/email/external/'+visits[0]+'/detail',{})).body.status,'APPROVED');
+     assert.equal((await call('/api/email/external/'+visits[0]+'/image',{})).status,200);
+     assert.equal((await call('/api/email/external/'+visits[1]+'/detail',{})).status,403);
+     assert.equal((await call('/api/email/external/'+visits[0]+'/detail',{visitRequestId:visits[1]})).status,400);
+   });
    await check('email-linked browser shows the current card, downloads PNG and reauthenticates the host without a dashboard',async()=>{
     let stage='launch';const browser=await chromium.launch({headless:true});try{
      const context=await browser.newContext({viewport:{width:390,height:844},acceptDownloads:true});const page=await context.newPage();
      stage='open-holder';await page.goto('http://localhost:18446/request/'+visits[0]+'#link='+externalLink);stage='holder-card';await page.locator('#card').waitFor({state:'visible',timeout:60000});assert.equal(await page.locator('#message').innerText(),'Approved');assert.equal(await page.locator('#login').isVisible(),false);assert(!page.url().includes('#'));assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+     stage='holder-reload';await page.reload();await page.locator('#card').waitFor({state:'visible',timeout:60000});assert.equal(await page.locator('#login').isVisible(),false);assert(!await page.evaluate(()=>document.cookie.includes('gp-dev-holder')));
      stage='holder-accessibility';const accessibility=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();assert.deepEqual(accessibility.violations.map(v=>v.id),[],'Email accessibility: '+accessibility.violations.map(v=>v.id).join(','));
      stage='holder-download';const download=page.waitForEvent('download',{timeout:60000});await page.locator('#download').click();assert.equal((await download).suggestedFilename(),'GatePass-'+visits[0]+'.png');
      stage='host-login';let decisions=0;page.on('request',r=>{if(r.url().includes('/api/email/host/decide'))decisions++;});await page.goto('http://localhost:18446/approval/'+visits[0]+'#decision=APPROVED');await page.locator('#login').waitFor({state:'visible'});await page.locator('#email').fill(host.officialEmail);await page.locator('#password').fill('Sopra@123');await page.locator('#sign-in').click();stage='host-detail';await page.locator('#request').waitFor({state:'visible',timeout:60000});assert.equal(await page.locator('#message').innerText(),'Approved');assert.equal(await page.locator('#actions').isVisible(),false);assert.equal(decisions,0);

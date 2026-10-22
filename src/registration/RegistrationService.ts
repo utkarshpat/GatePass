@@ -143,7 +143,7 @@ export class RegistrationService {
       const person = object(value, ['clientPersonKey', 'photoAssetId', 'name', 'email', 'phone']);
       const name = string(person.name, 200, true); const email = string(person.email, 320, true); const phone = string(person.phone, 30, true);
       if (requestType !== 'EXTERNAL') requireInput(name === null && email === null && phone === null);
-      else requireInput(name !== null);
+      else requireInput(name !== null && phone !== null);
       if (name !== null) requireInput(!/[\u0000-\u001f\u007f]/u.test(name));
       if (email !== null) requireInput(/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(email) && !/[\u0000-\u001f\u007f]/u.test(email));
       if (phone !== null) {

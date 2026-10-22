@@ -41,9 +41,9 @@ export class DummySsoRoutes implements AdditionalHttpRoutes {
         delete input.email;input.employeeId=matched.employeeId;
       }
       if (Object.keys(input).some(k => k !== 'employeeId') || typeof input.employeeId !== 'string' || !/^EMP[0-9]{3}$/u.test(input.employeeId)) throw new HttpFailure(400);
-      const previous = cookies(req.headers.cookie)[this.#names().session] ? this.#session(req) : undefined;
+      let previous: Session | undefined; try { previous = cookies(req.headers.cookie)[this.#names().session] ? this.#session(req) : undefined; } catch { /* Stale cleanup */ }
       const result = await this.#sso.signIn(input.employeeId);
-      if (previous) await this.#sso.sessionAction('logout', previous);
+      if (previous) await this.#sso.sessionAction('logout', previous).catch(() => {});
       res.setHeader('Set-Cookie', this.#cookies(result.sessionToken,result.csrfToken));
       return { developmentOnly: true, employee: result.employee, csrfToken: result.csrfToken, idleExpiresAtUtc: result.idleExpiresAtUtc, absoluteExpiresAtUtc: result.absoluteExpiresAtUtc };
     }

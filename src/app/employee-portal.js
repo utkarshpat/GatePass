@@ -445,18 +445,35 @@ async function renderDigitalCard(job,container){
   }
 }
 
+function resultBindings(job) {
+  const people=new Map(job.people.map(person=>[person.key.toLowerCase(),person])),seen=new Set();
+  if(people.size!==job.people.length||job.result.visits.length!==people.size)return null;
+  const rows=[];
+  for(const visit of job.result.visits){
+    const key=typeof visit.clientPersonKey==='string'?visit.clientPersonKey.toLowerCase():'';
+    if(!people.has(key)||seen.has(key))return null;
+    seen.add(key);rows.push({visit,person:people.get(key)});
+  }
+  return rows;
+}
 function showResults() {
   screen('success');$('submission-results').replaceChildren();
   const done=state.jobs.filter(job=>job.result);$('success-title').textContent=state.mode==='employee'&&state.jobs.some(job=>job.body.requestType==='DIGITAL_ID')?'Digital ID created':'Visit submitted';
-  for(const job of done)job.result.visits.forEach((visit,index)=>{
+  const bindings=done.map(resultBindings);
+  if(bindings.some(rows=>!rows)){
+    $('success-title').textContent='Request saved';$('retry-pending').hidden=true;
+    const message=document.createElement('p');message.textContent='Participant details could not be matched. Contact reception to retrieve your pass.';$('submission-results').append(message);
+    notify('Pass details could not be matched.','error');$('success-title').focus();return;
+  }
+  done.forEach((job,jobIndex)=>bindings[jobIndex].forEach(({visit,person})=>{
     const card=document.createElement('div'),heading=document.createElement('div'),name=document.createElement('strong'),badge=document.createElement('span'),reference=document.createElement('div');
     const liveStatus=job.detail?(job.detail.status==='CANCELLED'?'CANCELLED':Date.parse(job.detail.validUntilUtc)<=Date.parse(job.detail.checkedAtUtc)?'EXPIRED':job.detail.passStatus):visit.status;
-    card.className='result-card';heading.className='result-card-heading';name.textContent=state.mode==='visitor'?job.people[index].name:job.label;badge.className='status-pill';badge.dataset.status=liveStatus;badge.textContent=(visit.reused?'Existing · ':'')+liveStatus.charAt(0)+liveStatus.slice(1).toLowerCase();heading.append(name,badge);
+    card.className='result-card';heading.className='result-card-heading';name.textContent=state.mode==='visitor'?person.name:job.label;badge.className='status-pill';badge.dataset.status=liveStatus;badge.textContent=(visit.reused?'Existing · ':'')+liveStatus.charAt(0)+liveStatus.slice(1).toLowerCase();heading.append(name,badge);
     reference.className='result-reference';reference.textContent=visit.publicPassNumber;card.append(heading,reference);
     if(job.detail){const validity=document.createElement('div');validity.className='meta';validity.textContent='Valid until '+new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(job.detail.validUntilUtc));card.append(validity);}
     $('submission-results').append(card);
     if(job.body.requestType==='DIGITAL_ID'){card.className='digital-card-result';card.replaceChildren();renderDigitalCard(job,card);}
-  });
+  }));
   $('retry-pending').hidden=done.length===state.jobs.length;$('success-title').focus();
 }
 

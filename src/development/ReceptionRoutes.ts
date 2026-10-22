@@ -26,7 +26,7 @@ export class ReceptionRoutes implements AdditionalHttpRoutes{
    const login=await this.#sso.signIn(employee.employeeId);
    try{
     const context=await this.#workspace.context(login);
-    if(cookies(req.headers.cookie)['gp-reception-session']){const previous=this.#session(req);await this.#sso.sessionAction('logout',previous);}
+    try{if(cookies(req.headers.cookie)['gp-reception-session']){const previous=this.#session(req);await this.#sso.sessionAction('logout',previous).catch(()=>{});}}catch{/* Stale cleanup */}
     res.setHeader('Set-Cookie',this.#cookie(login.sessionToken,login.csrfToken));return context;
    }catch(error){await this.#sso.sessionAction('logout',login).catch(()=>{});throw error;}
   }

@@ -40,7 +40,9 @@ Names from source only. Variables can be optional, process-specific or test-only
 | /api/employee/digital-id/detail | src/development/EmployeeDigitalIdRoutes.ts | 15 |
 | /api/employee/digital-id/image | src/development/EmployeeDigitalIdRoutes.ts | 15 |
 | /api/employee/digital-id/image | src/development/EmployeeDigitalIdRoutes.ts | 27 |
+| /api/guard/context | src/transport/Composition.ts | 70 |
 | /api/guard/contexts | src/transport/Composition.ts | 68 |
+| /api/guard/detail | src/transport/Composition.ts | 86 |
 | /api/guard/duties | src/transport/Composition.ts | 73 |
 | /api/guard/movement | src/transport/Composition.ts | 78 |
 | /api/guard/verify | src/transport/Composition.ts | 77 |

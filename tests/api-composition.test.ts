@@ -9,7 +9,7 @@ function fixture() {
   const actions = createServiceActions({ async callProcedure(name, parameters) { calls.push({ name, parameters }); throw { number: 52001 }; } });
   return { calls, actions };
 }
-test('32 protected routes bind only implemented services', () => { const f = fixture(); assert.equal(f.actions.size, 32); assert.equal(f.actions.has('/api/sql'), false); assert.equal(f.actions.has('/api/registration/submit'), false); });
+test('34 protected routes bind only implemented services', () => { const f = fixture(); assert.equal(f.actions.size, 34); assert.equal(f.actions.has('/api/sql'), false); assert.equal(f.actions.has('/api/registration/submit'), false); });
 test('route-owned view is bound to typed SQL without accepting a client actor', async () => {
   const f = fixture();
   await assert.rejects(f.actions.get('/api/guard/visits/list')!(session, { locationId: 1 }), /NOT_AUTHORIZED/u);
@@ -25,6 +25,8 @@ test('detail and context routes reject hidden extra fields', async () => {
   const f = fixture();
   await assert.rejects(async () => f.actions.get('/api/host/visits/detail')!(session, { visitRequestId: '00000000-0000-4000-8000-000000000001', view: 'ADMIN' }));
   await assert.rejects(async () => f.actions.get('/api/guard/contexts')!(session, { locationId: 1, projectLocationId: '1' }));
+  await assert.rejects(async () => f.actions.get('/api/guard/context')!(session, { extra: 'forbidden' }));
+  await assert.rejects(async () => f.actions.get('/api/guard/detail')!(session, { locationId: 1, dutyKind: 'PROJECT', dutyId: '1', visitRequestId: '00000000-0000-4000-8000-000000000001', extra: 'bad' }));
   assert.equal(f.calls.length, 0);
 });
 test('administrative route names confer no authority; denial comes from current SQL scope', async () => {

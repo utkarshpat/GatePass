@@ -37,6 +37,27 @@ try{
   $r=Read-Duty 'COMMON' $taskCommon 'GUARD' $taskPending.VisitId;Assert ($r.outcome -eq 'VALID' -and $r.visit.commonAccessAllowed -and $r.visit.verificationOnly -and -not $r.visit.canEnter -and -not $r.visit.canExit -and -not $r.visit.isInside) 'Common verification changed approval/presence policy.'
   $r=Read-Duty 'PROJECT' $taskPair 'GUARD' $taskPending.VisitId;Assert ($r.outcome -eq 'PENDING' -and -not $r.visit.canEnter) 'Pending visitor could enter project.'
  }
+ Case 'Cancelled visitor and employee project occupants retain reasoned reconciliation only' {
+  foreach($label in @('MOVEMENT','EMP_DISABLED')){
+   $visit=$taskFixture.visits.Where({$_.Label -eq $label})[0]
+   $p=Auth;$p.ClientKey=[guid]::NewGuid();$p.VisitRequestId=[guid]$visit.VisitId;$p.AccessPassId=[guid]$visit.PassId;$p.LocationId=$taskLocation;$p.DutyKind='PROJECT';$p.DutyId=$taskPair;$p.EventType='ENTRY';$p.EntryMethod='MANUAL';$null=Call 'RecordGuardDutyMovement' $p
+   $cancel=Auth 'HOST';$cancel.ClientKey=[guid]::NewGuid();$cancel.VisitRequestId=[guid]$visit.VisitId;$cancel.ExpectedPassId=[guid]$visit.PassId;$cancel.Reason='Owned cancelled occupant';$null=Call 'CancelVisit' $cancel
+   $r=Read-Duty 'PROJECT' $taskPair 'GUARD' $visit.VisitId;Assert ($r.visit.isInside -and -not $r.visit.canExit -and $r.visit.canReconcileExit) 'Cancelled project occupant lost reconciliation.'
+   $limited=Read-Duty 'PROJECT' $taskPair 'GUARD2' $visit.VisitId;Assert (-not $limited.visit.canReconcileExit) 'Guard without capability inherited reconciliation.'
+   $common=Read-Duty 'COMMON' $taskCommon 'GUARD' $visit.VisitId;Assert (-not $common.visit.canReconcileExit -and -not $common.visit.canExit) 'Common duty inherited exit.'
+   $p.ClientKey=[guid]::NewGuid();$p.EventType='EXIT';Expect {Call 'RecordGuardDutyMovement' $p} 52005
+   $p.ClientKey=[guid]::NewGuid();$p.EntryMethod='RECONCILE';$p.Reason='Observed departure';$denied=$p.Clone();$otherAuth=Auth 'GUARD2';$denied.SessionHash=$otherAuth.SessionHash;$denied.CsrfHash=$otherAuth.CsrfHash;$denied.ClientKey=[guid]::NewGuid();Expect {Call 'RecordGuardDutyMovement' $denied} 52001;$exit=Call 'RecordGuardDutyMovement' $p;Assert (-not $exit.isInside) 'Authorized reconciliation did not close visitor presence.'
+  }
+ }
+ Case 'Revoked visitor and employee project credentials retain reconciliation without normal exit' {
+  foreach($label in @('RECON_REVOKED','EMP_STALE')){
+   $visit=$taskFixture.visits.Where({$_.Label -eq $label})[0]
+   $p=Auth;$p.ClientKey=[guid]::NewGuid();$p.VisitRequestId=[guid]$visit.VisitId;$p.AccessPassId=[guid]$visit.PassId;$p.LocationId=$taskLocation;$p.DutyKind='PROJECT';$p.DutyId=$taskPair;$p.EventType='ENTRY';$p.EntryMethod='MANUAL';$null=Call 'RecordGuardDutyMovement' $p
+   Invoke-GatePassNonQuery $taskAdmin "UPDATE gp.AccessPasses SET Status='REVOKED',RevokedAtUtc=SYSUTCDATETIME(),RevocationReason=N'Owned audit' WHERE AccessPassId=@p;" @{p=[guid]$visit.PassId}
+   $r=Read-Duty 'PROJECT' $taskPair 'GUARD' $visit.VisitId;Assert ($r.visit.isInside -and -not $r.visit.canExit -and $r.visit.canReconcileExit) 'Revoked project occupant lost reconciliation.'
+   $p.ClientKey=[guid]::NewGuid();$p.EventType='EXIT';$p.EntryMethod='RECONCILE';$p.Reason='Observed departure';$null=Call 'RecordGuardDutyMovement' $p
+  }
+ }
  Case 'Common area duty cannot write an entry or exit event' {
   $p=Auth;$p.ClientKey=[guid]::NewGuid();$p.VisitRequestId=[guid]$taskTemp.VisitId;$p.AccessPassId=[guid]$taskTemp.PassId;$p.LocationId=$taskLocation;$p.DutyKind='COMMON';$p.DutyId=$taskCommon;$p.EventType='ENTRY';$p.EntryMethod='MANUAL';Expect {Call 'RecordGuardDutyMovement' $p} 52002
   Assert ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.EmployeeProjectAccessEvents WHERE VisitRequestId=@v;' @{v=[guid]$taskTemp.VisitId}) -eq 0) 'Common duty mutated presence.'

@@ -108,3 +108,9 @@ Migration 061 is forward-only and has been applied locally. Previous migrations 
 Microsoft references: [sendMail](https://learn.microsoft.com/en-us/graph/api/user-sendmail?view=graph-rest-1.0), [actionable message security](https://learn.microsoft.com/en-us/outlook/actionable-messages/security-requirements).
 
 Final local evidence: 351 unit tests with coverage gates, 52 registration SQL cases, 9 dedicated email SQL/capture-provider cases, 23 actual HTTP/SQL cases including browser card/download/host authentication, and 10 standalone mobile/desktop browser cases passed. Type-check, lint, migration hashes and fresh replay through 061 passed. No external email was sent.
+
+## Refresh-safe external holder session (22 October follow-up)
+
+The browser exchanges the signed fragment through POST /api/email/external/session only after signature and current SQL visibility checks. The result installs a session cookie scoped to /api/email/external/{visitId}/ (HttpOnly, SameSite=Strict and Secure in production). Scoped detail/image POSTs use this cookie and revalidate the signed proof and request/snapshot every time. Different visitors use different cookie paths; the cookie cannot authorize a host decision. The clean history entry stores only a non-secret external-view hint; localStorage/sessionStorage never store the proof. Exchange failure retains the original fragment for explicit retry rather than discarding the only proof.
+
+The external-link maximum lifetime is 92 days, matching the supported 90-day future booking horizon plus remaining visit day and one-day status grace. SQL still independently enforces current holder, snapshot, purge/validity and image eligibility. Existing short-lived links remain valid until their original expiry; key retention must cover outstanding link lifetimes. Pending statuses refresh while visible; authorization loss, revocation, expiry or newer detail responses invalidate old media and actions.

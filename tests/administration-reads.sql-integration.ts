@@ -20,7 +20,7 @@ await check('project selector interops with actual typed RPC and current scoped 
   const r = await service.projects(fixture.admin, { locationId: fixture.locationId, pageSize: 50 }); assert(r.projects.some(row => row.projectLocationId === fixture.projectLocationId)); assert(r.projects.every(row => row.locationId === fixture.locationId));
 });
 await check('guard selector interops with actual interval eligibility and overlap flags', async () => {
-  const r = await service.guards(fixture.admin, { projectLocationId: fixture.projectLocationId, namePrefix: 'Synthetic' }); assert.equal(r.guards.length, 2); assert(r.guards.every(row => row.canAllocate && !row.overlappingAssignment));
+  const r = await service.guards(fixture.admin, { projectLocationId: fixture.projectLocationId, namePrefix: 'Synthetic' }); assert.equal(r.guards.length, 3); assert.equal(r.guards.filter(row => row.canAllocate && !row.overlappingAssignment).length,2); assert.equal(r.guards.filter(row => !row.canAllocate && row.overlappingAssignment).length,1);
 });
 await check('role administrator searches subjects through a bounded keyset page', async () => {
   const r = await service.subjects(fixture.host, { namePrefix: 'Synthetic', pageSize: 2 }); assert.equal(r.users.length, 2); assert.equal(r.hasMore, true); assert.equal(r.afterUserId, r.users[1].userId);

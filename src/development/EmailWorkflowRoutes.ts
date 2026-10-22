@@ -8,12 +8,12 @@ import {requireDummySso} from './DummyEmployeeSso.ts';
 import type {EmailWorkflowService} from '../email/EmailWorkflowService.ts';
 import type {VisitPhotoService} from '../visits/VisitReadService.ts';
 import type {OwnDigitalIdCardService} from '../printing/OwnDigitalIdCardService.ts';
+import {EmailPublicRoutes} from '../transport/EmailPublicRoutes.ts';
 export class EmailWorkflowRoutes implements AdditionalHttpRoutes{
- #sso:DummyEmployeeSso;#service:EmailWorkflowService;#photos:VisitPhotoService;#cards:OwnDigitalIdCardService;#external:OwnDigitalIdCardService;
- constructor(sso:DummyEmployeeSso,service:EmailWorkflowService,photos:VisitPhotoService,cards:OwnDigitalIdCardService,external:OwnDigitalIdCardService){this.#sso=sso;this.#service=service;this.#photos=photos;this.#cards=cards;this.#external=external;}
- handles(path:string){return /^\/api\/email\/(host\/(detail|photo|decide)|request\/(detail|image)|external\/(detail|image))$/u.test(path);}
- async handle(req:IncomingMessage,_res:ServerResponse){requireDummySso();const path=req.url??'';if(!this.handles(path))throw new HttpFailure(404);const body=await readJsonBody(req);
-  if(path.includes('/external/')){if(path.endsWith('/detail'))return this.#service.external(body);if(Object.keys(body).join('|')!=='link')throw new HttpFailure(400);const p=await this.#service.linkParameters(body.link);try{return await this.#external.image({sessionToken:'',csrfToken:''},p.VisitRequestId.value,{RecipientEmailHash:p.RecipientEmailHash.value,SnapshotHash:p.SnapshotHash.value});}catch(e){throw new HttpFailure(e instanceof OwnCardError?e.status:503);}}
+ #sso:DummyEmployeeSso;#service:EmailWorkflowService;#photos:VisitPhotoService;#cards:OwnDigitalIdCardService;#external:EmailPublicRoutes;
+ constructor(sso:DummyEmployeeSso,service:EmailWorkflowService,photos:VisitPhotoService,cards:OwnDigitalIdCardService,external:OwnDigitalIdCardService){this.#sso=sso;this.#service=service;this.#photos=photos;this.#cards=cards;this.#external=new EmailPublicRoutes(service,external,{localHttp:true});}
+ handles(path:string){return this.#external.handles(path)||/^\/api\/email\/(host\/(detail|photo|decide)|request\/(detail|image))$/u.test(path);}
+ async handle(req:IncomingMessage,res:ServerResponse){requireDummySso();const path=req.url??'';if(!this.handles(path))throw new HttpFailure(404);if(this.#external.handles(path))return this.#external.handle(req,res);const body=await readJsonBody(req);
   const jar=cookies(req.headers.cookie),sessionToken=jar['gp-dev-session'],csrfToken=req.headers['x-csrf-token'];if(!token(sessionToken))throw new HttpFailure(401);if(!token(csrfToken)||!token(jar['gp-dev-csrf'])||!timingSafeEqual(Buffer.from(csrfToken),Buffer.from(jar['gp-dev-csrf'])))throw new HttpFailure(403);const session={sessionToken,csrfToken};if(!await this.#sso.verify(session))throw new HttpFailure(401);
   if(path.endsWith('/decide'))return this.#service.decide(session,body);
   if(path.endsWith('/detail'))return this.#service.detail(session,body,path.includes('/host/')?'HOST':'OWN');

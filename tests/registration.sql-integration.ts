@@ -89,7 +89,7 @@ const planned = { locationId: fixture.locationId, projectLocationId: String(fixt
   reason: 'Integration visit', validFromUtc: tomorrow.toISOString(), validUntilUtc: new Date(tomorrow.getTime() + 3600000).toISOString() };
 await check('external grouped form creates independent pending visitors with encrypted credentials', async () => {
   const started = await service.start('EXTERNAL'); const people = [];
-  for (let index = 1; index <= 2; index++) { const photo = await service.recordPhoto(started.context, image); people.push({ clientPersonKey: randomUUID(), photoAssetId: photo.photoAssetId, name: 'अतिथि ' + index }); }
+  for (let index = 1; index <= 2; index++) { const photo = await service.recordPhoto(started.context, image); people.push({ clientPersonKey: randomUUID(), photoAssetId: photo.photoAssetId, name: 'अतिथि ' + index, phone:'+919876543210' }); }
   const result = await service.submit(started.context, { ...planned, requestType: 'EXTERNAL', clientKey: randomUUID(), people });
   assert.equal(result.visits.length, 2); assert(result.visits.every(visit => visit.status === 'PENDING'));
   assert.notEqual(result.visits[0].visitRequestId, result.visits[1].visitRequestId);

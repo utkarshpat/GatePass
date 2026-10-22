@@ -141,8 +141,10 @@ test('common duty hides movement queues and scoped admin can open guard assignme
  await staffLogin(page,'admin1@example.com');
  await page.locator('#admin-office-trigger').click();await page.getByRole('option',{name:'Noida',exact:true}).click();await expect(page.locator('#office-name')).toHaveText('Noida');
  await expect(page.locator('#common-duties-open')).toBeVisible();
+ const commonResponse=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/admin/common-duties');
  await page.locator('#common-duties-open').click();
  await expect(page.locator('#common-dialog')).toBeVisible();
+ expect((await commonResponse).status(),'Common-duty read must succeed before rendering assignment options').toBe(200);
  await expect(page.locator('#common-area option').filter({hasText:/^Lobby$/u})).toHaveCount(1);
  await expect(page.locator('#common-area option').filter({hasText:/^Cafeteria$/u})).toHaveCount(1);
  await page.locator('#common-guard-search').fill('Guard 1');

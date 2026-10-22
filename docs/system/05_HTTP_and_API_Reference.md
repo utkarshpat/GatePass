@@ -46,3 +46,7 @@ Print request binds visit and client key. Status/render identifies printJobId. P
 Only controlled errors are exposed; no raw SQL/provider messages or secrets. Browser mocks prove rendering, not backend authorization.
 
 Sources: src/development/*Routes.ts; src/transport/RegistrationHttpRoutes.ts, Composition.ts, ApiHandler.ts, EmailPublicRoutes.ts, OutlookActionHandler.ts.
+
+## Refresh-safe external endpoints (follow-up)
+
+POST /api/email/external/session exchanges a signed link for a path-scoped HttpOnly holder cookie after current SQL checks. POST /api/email/external/{visitId}/detail and /image require an empty JSON body and that visit-scoped cookie. Legacy /external/detail and /external/image still require the original explicit signed link. No route grants approval authority. See docs/35_Email_Driven_Request_Workflow.md for expiry/key-retention policy.

@@ -9,7 +9,7 @@ import {receptionIdentity} from '../reception/ReceptionService.ts';
 type Session={sessionToken:string;csrfToken:string};
 const routes=['/api/staff/login','/api/staff/me','/api/staff/logout'];
 export class StaffEntryRoutes implements AdditionalHttpRoutes{
- #sso:DummyEmployeeSso;#guard:GuardAuthService;#client:{callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>};#source=randomBytes(32);#issued=new Map<string,{kind:'SSO'|'LOCAL';expires:number;lastTouched:number;touching?:Promise<boolean>}>();
+ #sso:DummyEmployeeSso;#guard:GuardAuthService;#client:{callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>};#source=randomBytes(32);#issued=new Map<string,{kind:'SSO'|'LOCAL';csrfToken:string;expires:number;lastTouched:number;touching?:Promise<boolean>}>();
  constructor(sso:DummyEmployeeSso,guard:GuardAuthService,client:{callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>}){this.#sso=sso;this.#guard=guard;this.#client=client;}
  handles(path:string){return routes.includes(path);}
  #key(session:Session){return createHash('sha256').update(session.sessionToken).digest('hex');}
@@ -41,8 +41,9 @@ export class StaffEntryRoutes implements AdditionalHttpRoutes{
    else{kind='LOCAL';signed=await this.#guard.signIn(login,input.password,{sourceHash:createHmac('sha256',this.#source).update(req.socket.remoteAddress??'unknown').digest()});if(!signed.ok)throw new HttpFailure(401);}
    try{
     const context=await this.#context(signed);
-    if(cookies(req.headers.cookie)['gp-staff-session']){const previous=this.session(req),old=this.#issued.get(this.#key(previous));if(old){await this.#revoke(previous,old.kind);this.#issued.delete(this.#key(previous));}}
-    this.#issued.set(this.#key(signed),{kind,lastTouched:Date.now(),expires:Date.parse(signed.absoluteExpiresAtUtc.endsWith('Z')?signed.absoluteExpiresAtUtc:signed.absoluteExpiresAtUtc+'Z')});
+    // Retire only a session this adapter issued, using its original binding even if browser CSRF is stale.
+    const previousToken=cookies(req.headers.cookie)['gp-staff-session'];if(token(previousToken)){const previousKey=createHash('sha256').update(previousToken).digest('hex'),previous=this.#issued.get(previousKey);if(previous){await this.#revoke({sessionToken:previousToken,csrfToken:previous.csrfToken},previous.kind);this.#issued.delete(previousKey);}}
+    this.#issued.set(this.#key(signed),{kind,csrfToken:signed.csrfToken,lastTouched:Date.now(),expires:Date.parse(signed.absoluteExpiresAtUtc.endsWith('Z')?signed.absoluteExpiresAtUtc:signed.absoluteExpiresAtUtc+'Z')});
     res.setHeader('Set-Cookie',this.#cookies(signed.sessionToken,signed.csrfToken));return context;
    }catch(error){await this.#revoke(signed,kind).catch(()=>{});throw error;}
   }

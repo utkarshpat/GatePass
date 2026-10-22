@@ -34,6 +34,8 @@ Inside lists current entries recorded by that guard for the selected duty. Anoth
 
 Common areas are office-scoped verification duties, not fake projects/campus checkpoints. They have no entry/exit/global occupancy. Pending or approved visitor identity may be verified there according to SQL policy; project entry remains approval-gated.
 
+Migration 064 updates reception/report read models: current Temporary ID occupants come from employee/project presence, including replacement IDs and unclosed overnight entries. Office reports count distinct employee IDs across authorized project duties; a project report counts only its authorized scope. Reception's matching-list Inside metric deduplicates replacement employee IDs. These current presence counts are separate from selected-day request totals and do not represent building occupancy.
+
 ## Print lifecycle
 Preview is a read. A keyed print request creates an audited job. Its immutable replay receipt may still say REQUESTED after dispatch, so the UI checks live status. Render is fenced and reauthorizes material; DISPATCHED means server handoff. Popup acknowledges successful image decoding with the exact job ID, origin and opener. Browser display and physical printing are distinct. Explicit reprint creates a separate job without rotating the current pass QR.
 

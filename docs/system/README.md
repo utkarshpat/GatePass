@@ -4,6 +4,10 @@ Current implementation handbook | 22 October 2026 | Documentation baseline 1.0
 
 Local working-tree snapshot, including uncommitted work. Git base: 96f92c1982dd. Source migrations 001-062. Not a release tag or production certification.
 
+Local follow-up: [post-push fixes and regression evidence](../39_Bug_Fixes_and_Regression.md) documents forward migration 063 and the email/reception corrections. The exported baseline PDF and source-hash snapshot remain historical; they have not been regenerated for this fix batch.
+
+Further local corrections: [participant, mobile and presence fixes](../41_Participant_Contact_and_Presence_Fixes.md) documents forward migration 064, result/person binding and mandatory external mobile validation.
+
 ## Reading guide
 
 | Audience | Chapters |

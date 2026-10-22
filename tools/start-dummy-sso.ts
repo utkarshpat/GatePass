@@ -106,23 +106,24 @@ try {
     // enforce exact Origin/Host and CSRF through the separate handler below.
     const publicPeer=['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress??'')&&req.headers.host===`localhost:${port}`;
     if(publicPeer&&pwaAssets(req,res))return;
-    if(req.method==='GET'&&req.url==='/assets/office-background.png'&&publicPeer){
+    const pathname=(req.url??'').split('?')[0];
+    if(req.method==='GET'&&pathname==='/assets/office-background.png'&&publicPeer){
       res.setHeader('Content-Type','image/png');res.setHeader('Cache-Control','public, max-age=86400');res.setHeader('X-Content-Type-Options','nosniff');res.end(officeImage);return;
     }
-    const flag=/^\/assets\/flags\/([a-z]{2})\.svg$/u.exec(req.url??'');
+    const flag=/^\/assets\/flags\/([a-z]{2})\.svg$/u.exec(pathname);
     if(req.method==='GET'&&flag&&publicPeer&&countryFlags.has(flag[1])){res.setHeader('Content-Type','image/svg+xml');res.setHeader('Cache-Control','public, max-age=86400');res.setHeader('X-Content-Type-Options','nosniff');res.end(countryFlags.get(flag[1]));return;}
-    if(req.method==='GET'&&['/','/guard','/guard/','/admin','/admin/','/reception','/reception/','/reception/print'].includes(req.url??'')&&publicPeer){
-      if(['/guard','/guard/','/admin','/admin/','/reception','/reception/'].includes(req.url??'')&&!/(?:^|;\s*)gp-(?:staff|reception)-session=/.test(req.headers.cookie??'')){res.statusCode=303;res.setHeader('Location','/');res.setHeader('Cache-Control','no-store');res.end();return;}
+    if(req.method==='GET'&&['/','/guard','/guard/','/admin','/admin/','/reception','/reception/','/reception/print'].includes(pathname)&&publicPeer){
+      if(['/guard','/guard/','/admin','/admin/','/reception','/reception/'].includes(pathname)&&!/(?:^|;\s*)gp-(?:staff|reception)-session=/.test(req.headers.cookie??'')){res.statusCode=303;res.setHeader('Location','/');res.setHeader('Cache-Control','no-store');res.end();return;}
       const nonce=randomBytes(24).toString('base64');res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');
       res.setHeader('Content-Security-Policy',`default-src 'none'; script-src 'nonce-${nonce}'; worker-src 'self'; manifest-src 'self'; style-src 'nonce-${nonce}'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`);
-      res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Permissions-Policy',['/guard','/guard/'].includes(req.url??'')?'camera=(self), microphone=(), geolocation=()':'camera=(), microphone=(), geolocation=()');
-      const page=req.url==='/'?staffHtml:['/guard','/guard/'].includes(req.url??'')?guardHtml:['/admin','/admin/'].includes(req.url??'')?adminHtml:req.url==='/reception/print'?printMarkup:receptionHtml;
-      res.end((req.url==='/reception/print'?page:withPwa(page)).replaceAll('__NONCE__',nonce).replaceAll('__COMPANY_LOGO__',companyLogo));return;
+      res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Permissions-Policy',['/guard','/guard/'].includes(pathname)?'camera=(self), microphone=(), geolocation=()':'camera=(), microphone=(), geolocation=()');
+      const page=pathname==='/'?staffHtml:['/guard','/guard/'].includes(pathname)?guardHtml:['/admin','/admin/'].includes(pathname)?adminHtml:pathname==='/reception/print'?printMarkup:receptionHtml;
+      res.end((pathname==='/reception/print'?page:withPwa(page)).replaceAll('__NONCE__',nonce).replaceAll('__COMPANY_LOGO__',companyLogo));return;
     }
-    if(req.method==='GET'&&/^\/(approval|request)\/[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/iu.test(req.url??'')&&publicPeer){
+    if(req.method==='GET'&&/^\/(approval|request)\/[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}\/?$/iu.test(pathname)&&publicPeer){
       const nonce=randomBytes(24).toString('base64');res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Content-Security-Policy',`default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`);res.end(emailHtml.replaceAll('__NONCE__',nonce).replaceAll('__COMPANY_LOGO__',companyLogo));return;
     }
-    const entry=/^\/office\/(noida|bengaluru|chennai|pune)\/?$/u.exec(req.url??'');
+    const entry=/^\/office\/(noida|bengaluru|chennai|pune)\/?$/u.exec(pathname);
     if (req.method === 'GET' && entry && publicPeer) {
       const officeCode=entry[1].toUpperCase();
       officeContext.issue(res,officeCode);

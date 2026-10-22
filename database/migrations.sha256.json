@@ -60,5 +60,7 @@
   "059_employee_project_presence_identity.sql": "3f4daa1cbe71683c9cfd075b12203fcecfeec6da9835cad872f24d2ae08a6c67",
   "060_project_presence_conflict_checks.sql": "3738401382916c65a659ed93502b7e86fb8da9481def2cc0adc5260c43ec8cae",
   "061_email_request_workflow.sql": "c571c70d31d82266b0575aff1b819f7f207b421ecb5523ee5070bb75fde3d7df",
-  "062_outlook_action_decisions.sql": "a1bd4af8463b8cd2d655b8cc891c97ad5c4bd5979806d75541a42b16f5a68056"
+  "062_outlook_action_decisions.sql": "a1bd4af8463b8cd2d655b8cc891c97ad5c4bd5979806d75541a42b16f5a68056",
+  "063_guard_visitor_reconciliation.sql": "41bf508db0a00f856270fe9ba1af43d7de730fb18e03005ca7fd3b5a97e5b195",
+  "064_presence_reads_and_visitor_mobile.sql": "036f0184ee93c621ff0b3cda27cfed1addf7a19acefdc44ba84744bda3d4f2f7"
 }

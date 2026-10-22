@@ -1,6 +1,6 @@
 'use strict';
 const $=id=>document.getElementById(id),toasts=new ToastNotifications();
-const state={context:null,location:null,rows:[],cursor:null,status:'ALL',listVersion:0,detailVersion:0,selected:null,detail:null,listBusy:false,listComplete:false,listFailed:false,printBusy:false,photoUrl:null,cardUrl:null,pendingPrint:null};
+const state={context:null,location:null,rows:[],cursor:null,status:'ALL',listVersion:0,calendarVersion:0,calendarBusy:false,detailVersion:0,selected:null,detail:null,listBusy:false,listComplete:false,listFailed:false,printBusy:false,photoUrl:null,cardUrl:null,pendingPrint:null};
 let searchTimer;
 const cookie=name=>document.cookie.split('; ').find(value=>value.startsWith(name+'='))?.split('=')[1];
 async function api(action,body={}){
@@ -16,19 +16,38 @@ const time=value=>new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',hour:
 const dateTime=value=>new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
 function releaseImages(){for(const key of ['photoUrl','cardUrl']){if(state[key])URL.revokeObjectURL(state[key]);state[key]=null;}}
 function imageUrl(result){if(!['image/png','image/jpeg','image/webp'].includes(result.mimeType)||typeof result.imageBase64!=='string'||result.imageBase64.length>7340032)throw new Error('Image unavailable.');const bytes=Uint8Array.from(atob(result.imageBase64),c=>c.charCodeAt(0));return URL.createObjectURL(new Blob([bytes],{type:result.mimeType}));}
-function showLogin(){state.context=null;state.listVersion++;state.detailVersion++;state.rows=[];state.cursor=null;state.pendingPrint.clear();closeVisit();location.replace('/');}
+function showLogin(){state.calendarVersion++;state.context=null;state.listVersion++;state.detailVersion++;state.rows=[];state.cursor=null;state.pendingPrint.clear();closeVisit();location.replace('/');}
 function setContext(context){
  state.context=context;state.location=context.locations[0];$('staff-name').textContent=context.displayName;$('staff-session').hidden=$('reception-dashboard').hidden=false;
- $('reception-date').value=context.currentDate;const base=Date.parse(context.currentDate+'T12:00:00.000Z');$('reception-date').min=new Date(base-30*86400000).toISOString().slice(0,10);$('reception-date').max=new Date(base+90*86400000).toISOString().slice(0,10);
+ setCalendar(context.currentDate);$('reception-date').value=context.currentDate;
  $('reception-location').replaceChildren(...context.locations.map(row=>new Option(row.locationName,String(row.locationId))));$('office-selector').hidden=context.locations.length===1;$('office-name').textContent=state.location.locationName;
  $('visit-search').value='';state.status='ALL';document.querySelectorAll('[data-status]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.status==='ALL')));loadVisits();
 }
+function setCalendar(currentDate){
+ if(typeof currentDate!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(currentDate)||new Date(currentDate+'T12:00:00.000Z').toISOString().slice(0,10)!==currentDate)throw new Error('Office date unavailable.');
+ const base=Date.parse(currentDate+'T12:00:00.000Z');state.context.currentDate=currentDate;
+ $('reception-date').min=new Date(base-30*86400000).toISOString().slice(0,10);$('reception-date').max=new Date(base+90*86400000).toISOString().slice(0,10);
+}
+async function refreshCalendar(forceToday=false){
+ if(!state.context||(!forceToday&&state.calendarBusy))return;state.calendarBusy=true;const version=++state.calendarVersion,previousDate=state.context.currentDate,selected=$('reception-date').value;$('today').disabled=true;
+ try{const context=await api('me');if(!state.context||version!==state.calendarVersion)return;setCalendar(context.currentDate);
+  if((forceToday||selected===previousDate)&&$('reception-date').value===selected){$('reception-date').value=context.currentDate;await loadVisits();}
+ }catch(error){if(version===state.calendarVersion&&state.context)toasts.show(error.message,'error');}
+ finally{if(version===state.calendarVersion){state.calendarBusy=false;$('today').disabled=false;}}
+}
+function currentIndiaDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+let calendarTimer;
+function watchCalendar(){clearInterval(calendarTimer);calendarTimer=setInterval(()=>{if(!document.hidden&&state.context&&currentIndiaDay()!==state.context.currentDate)void refreshCalendar();},60000);}
+watchCalendar();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.context)void refreshCalendar();});
+window.addEventListener('pagehide',()=>{state.calendarVersion++;state.calendarBusy=false;clearInterval(calendarTimer);});
+window.addEventListener('pageshow',event=>{if(event.persisted){watchCalendar();void refreshCalendar();}});
 function renderRows(){
  $('visit-rows').replaceChildren();
- let pendingCount=0,insideCount=0,printedCount=0;
+ let pendingCount=0,printedCount=0;const insideKeys=new Set();
  for(const row of state.rows){
   if(row.status==='PENDING')pendingCount++;
-  if(row.isInside)insideCount++;
+  if(row.isInside)insideKeys.add(row.requestType==='DIGITAL_ID'&&row.employeeId?'employee:'+row.employeeId:'visit:'+row.visitRequestId);
   printedCount+=row.printCount;
   const tr=document.createElement('tr'),person=document.createElement('td'),project=document.createElement('td'),status=document.createElement('td'),valid=document.createElement('td'),actions=document.createElement('td');
   const personWrap=document.createElement('div');personWrap.className='person-cell-content';
@@ -46,20 +65,20 @@ function renderRows(){
   valid.className='time-cell';valid.textContent=time(row.validUntilUtc)+' IST';const button=document.createElement('button');button.className='secondary';button.type='button';button.textContent='View pass';button.addEventListener('click',()=>openVisit(row));actions.append(button);tr.append(person,project,status,valid,actions);$('visit-rows').append(tr);
  }
  const complete=state.listComplete&&!state.listFailed;
- for(const [id,count] of [['stat-total',state.rows.length],['stat-pending',pendingCount],['stat-inside',insideCount],['stat-printed',printedCount]])if($(id))$(id).textContent=complete?String(count):state.listFailed?'\u2014':'\u2026';
+ for(const [id,count] of [['stat-total',state.rows.length],['stat-pending',pendingCount],['stat-inside',insideKeys.size],['stat-printed',printedCount]])if($(id))$(id).textContent=complete?String(count):state.listFailed?'\u2014':'\u2026';
  $('empty-visits').hidden=!complete||state.rows.length>0;$('load-more').hidden=!state.cursor;$('list-status').textContent=state.rows.length+' matching visits'+(state.cursor?' \u00b7 Loading more\u2026':'');
 
 }
 async function loadVisits(more=false){
  if(!state.context)return;const version=++state.listVersion;state.listBusy=true;state.listComplete=false;state.listFailed=false;$('refresh').disabled=$('load-more').disabled=true;$('load-more').hidden=true;$('empty-visits').hidden=true;
- if(!more){state.rows=[];state.cursor=null;$('visit-rows').replaceChildren();}$('list-status').textContent='Loading visits…';
- for(const id of ['stat-total','stat-pending','stat-inside','stat-printed'])if($(id))$(id).textContent='…';
+ if(!more){state.rows=[];state.cursor=null;$('visit-rows').replaceChildren();}$('list-status').textContent='Loading visits\u2026';
+ for(const id of ['stat-total','stat-pending','stat-inside','stat-printed'])if($(id))$(id).textContent='\u2026';
  const filter={locationId:state.location.locationId,visitDate:$('reception-date').value,search:$('visit-search').value.trim(),status:state.status};
  try{const cursors=new Set();do{
   const result=await api('list',{...filter,...(state.cursor?{cursor:state.cursor}:{})});if(version!==state.listVersion)return;
   const known=new Set(state.rows.map(row=>row.visitRequestId));state.rows.push(...result.visits.filter(row=>!known.has(row.visitRequestId)));state.cursor=result.cursor;
   if(state.cursor){const key=JSON.stringify(state.cursor);if(cursors.has(key))throw new Error('List changed. Refresh to retry.');cursors.add(key);}
-  if(!state.cursor){state.listBusy=false;state.listComplete=true;}renderRows();$('load-more').hidden=true;if(state.cursor)$('list-status').textContent='Loading visits…';
+  if(!state.cursor){state.listBusy=false;state.listComplete=true;}renderRows();$('load-more').hidden=true;if(state.cursor)$('list-status').textContent='Loading visits\u2026';
  }while(state.cursor);
  }catch(error){if(version!==state.listVersion)return;state.listFailed=true;renderRows();$('load-more').hidden=true;$('list-status').textContent='Visits could not be fully loaded. Use Refresh to retry.';toasts.show(error.message,'error');}
  finally{if(version===state.listVersion){state.listBusy=false;$('refresh').disabled=$('load-more').disabled=false;}}
@@ -69,14 +88,14 @@ function fitDialog(){const dialog=$('visit-dialog');if(!dialog.open)return;const
 function closeVisit(){state.detailVersion++;state.selected=null;state.detail=null;releaseImages();toasts.clear();document.body.append(toasts.region);if($('visit-dialog').open)$('visit-dialog').close();}
 function field(label,value){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;$('detail-fields').append(dt,dd);return dd;}
 async function openVisit(row){
- closeVisit();state.selected=row;const version=++state.detailVersion;const dialog=$('visit-dialog');dialog.append(toasts.region);$('detail-name').textContent=row.personName;$('detail-kind').textContent=kind(row);$('detail-badge').replaceChildren(badge(effective(row)));$('detail-fields').replaceChildren();$('detail-photo').hidden=$('reception-card').hidden=true;$('reception-card').replaceChildren();$('detail-status').textContent='Loading details…';$('card-status').textContent='';$('retry-detail').hidden=true;$('detail-print').disabled=true;$('detail-print').textContent=row.printCount?'Reprint pass':'Print pass';dialog.showModal();fitDialog();
+ closeVisit();state.selected=row;const version=++state.detailVersion;const dialog=$('visit-dialog');dialog.append(toasts.region);$('detail-name').textContent=row.personName;$('detail-kind').textContent=kind(row);$('detail-badge').replaceChildren(badge(effective(row)));$('detail-fields').replaceChildren();$('detail-photo').hidden=$('reception-card').hidden=true;$('reception-card').replaceChildren();$('detail-status').textContent='Loading details\u2026';$('card-status').textContent='';$('retry-detail').hidden=true;$('detail-print').disabled=true;$('detail-print').textContent=row.printCount?'Reprint pass':'Print pass';dialog.showModal();fitDialog();
  try {
   const detail=await api('detail',{visitRequestId:row.visitRequestId});if(version!==state.detailVersion)return;state.detail=detail;$('detail-status').textContent='';$('detail-name').textContent=detail.personName;$('detail-badge').replaceChildren(badge(effective(detail)));
   field('Pass ID',detail.publicPassNumber);field('Office',detail.locationName);if(detail.projectName)field('Project',detail.projectName);field('Purpose',detail.reason);field('Valid from',dateTime(detail.validFromUtc));field('Valid until',dateTime(detail.validUntilUtc));field('Print handoffs',String(row.printCount)).id='detail-print-count';
   if(detail.photoAvailable)api('photo',{visitRequestId:row.visitRequestId}).then(photo=>{if(version!==state.detailVersion)return;state.photoUrl=imageUrl(photo);$('detail-photo').src=state.photoUrl;$('detail-photo').hidden=false;}).catch(()=>{});
   const allowed=['PENDING','APPROVED'].includes(detail.status)&&['PENDING','ACTIVE'].includes(detail.passStatus)&&Date.parse(detail.validUntilUtc)>Date.now();
   if(!allowed){$('card-status').textContent='This pass is unavailable for printing.';return;}
-  $('card-status').textContent='Preparing card preview…';
+  $('card-status').textContent='Preparing card preview\u2026';
   try{const image=await api('preview',{visitRequestId:row.visitRequestId});if(version!==state.detailVersion)return;state.cardUrl=imageUrl(image);const img=document.createElement('img');img.src=state.cardUrl;img.alt='Pass for '+detail.personName;img.width=1712;img.height=1080;$('reception-card').append(img);$('reception-card').hidden=false;$('card-status').textContent='';$('detail-print').disabled=!state.location.canPrint||state.printBusy;}
   catch(error){if(version!==state.detailVersion)return;$('card-status').textContent='Preview unavailable. Retry to check the current pass.';$('retry-detail').hidden=false;toasts.show(error.message,'error');}
  }catch(error){if(version!==state.detailVersion)return;$('detail-status').textContent='Visit details could not be loaded.';$('retry-detail').hidden=false;toasts.show(error.message,'error');}
@@ -85,7 +104,7 @@ async function browserPrint(){
  if(state.printBusy||!state.detail||!state.selected)return;
  const row=state.selected,detail=state.detail,popup=window.open('/reception/print','_blank','popup,width=1000,height=700');
  if(!popup){toasts.show('Allow pop-ups to open the print window.','error');return;}
- state.printBusy=true;$('detail-print').disabled=true;$('detail-print').textContent='Preparing print…';
+ state.printBusy=true;$('detail-print').disabled=true;$('detail-print').textContent='Preparing print\u2026';
  const ready=new Promise((resolve,reject)=>{const timer=setTimeout(()=>{window.removeEventListener('message',receive);reject(new Error('Print window did not open. Please retry.'));},15000);function receive(event){if(event.origin===location.origin&&event.source===popup&&event.data?.type==='gatepass-print-ready'){clearTimeout(timer);window.removeEventListener('message',receive);resolve();}}window.addEventListener('message',receive);});
  const detailVersion=state.detailVersion;
  try{
@@ -107,7 +126,7 @@ async function browserPrint(){
 }
 $('staff-logout').addEventListener('click',async()=>{if(state.printBusy)return;try{if(cookie('gp-staff-csrf')){const response=await fetch('/api/staff/logout',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':cookie('gp-staff-csrf')},body:'{}'});if(!response.ok)throw new Error('Unable to sign out. Please retry.');}else await api('logout');showLogin();}catch(error){toasts.show(error.message,'error');}});
 $('refresh').addEventListener('click',()=>loadVisits());$('load-more').addEventListener('click',()=>loadVisits(true));
-$('reception-date').addEventListener('change',()=>{if($('reception-date').reportValidity())loadVisits();});$('today').addEventListener('click',()=>{$('reception-date').value=state.context.currentDate;loadVisits();});
+$('reception-date').addEventListener('change',()=>{if($('reception-date').reportValidity())loadVisits();});$('today').addEventListener('click',()=>void refreshCalendar(true));
 $('reception-location').addEventListener('change',()=>{closeVisit();state.location=state.context.locations.find(row=>String(row.locationId)===$('reception-location').value);$('office-name').textContent=state.location.locationName;loadVisits();});
 $('visit-search').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadVisits(),350);});
 for(const button of document.querySelectorAll('[data-status]'))button.addEventListener('click',()=>{state.status=button.dataset.status;document.querySelectorAll('[data-status]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));loadVisits();});
