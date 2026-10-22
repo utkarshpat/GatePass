@@ -67,5 +67,10 @@
   "066_reception_intake_audit_type.sql": "7473e49b9cb58923358f601fb2328820d40905244632a650a7ea64b8962d99e1",
   "067_reception_employee_timeline.sql": "6745d6396979ae6cb87b36cd9a7eecd55505a20bf7509f4f2ad7297bd495ca40",
   "068_host_reminders.sql": "88da2bac74f49d2f1f00475fcc0d494486fd6960ffbdecf5f9ee8ed4376b944d",
-  "069_reminder_pass_state.sql": "dc85f9f209130811f6519b9020aac58844384060b7d521b20efdca05eb00ad61"
+  "069_reminder_pass_state.sql": "dc85f9f209130811f6519b9020aac58844384060b7d521b20efdca05eb00ad61",
+  "070_admin_console_reads.sql": "83e6b25b812803efcfb2f92e6a5a8bf9001d005c8f7bd27e22b875a4570f8809",
+  "071_printed_pass_returns.sql": "9a2982369e5fd5f45b2842087cc6502b42173b1e60539f6e651e8d350219c0fe",
+  "072_returned_entry_replay.sql": "38764388483e07d963cb633af5418df549582e8cec6b932480e623962236fe96",
+  "073_returned_visit_registration.sql": "ddb459c9e7116c6a78298ca279b84290f22d42c5d538d9d4bbe6f75e592e8b73",
+  "074_returned_lifecycle_and_scope_guards.sql": "8c891306f92e2f0a240951b566b717b7e2276e54bd88353196f480b863362a6e"
 }

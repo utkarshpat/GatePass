@@ -152,3 +152,12 @@ test('invalid SQL row and cursor data cannot become partially trusted UI results
   for (const response of [{ visits: [visit(), visit()], hasMore: 'yes', checkedAtUtc: stamp }, { visits: [], hasMore: true, afterVisitRequestId: 'bad', checkedAtUtc: stamp },
     { visits: [{ ...visit(), isInside: 'true' }], hasMore: false, checkedAtUtc: stamp }]) await assert.rejects(new VisitReadService(fake(response).repository).list(context(), { locationId: 1 }), /UNAVAILABLE/u);
 });
+
+test('reception detail uses an authoritative return receipt and print count without disclosing them to other views',async()=>{
+ const original={...visit(),passStatus:'REVOKED',returnedAtUtc:stamp,printCount:3};
+ const result=await new VisitReadService(fake(original).repository).detail(context('RECEPTION'),original.visitRequestId);
+ assert.equal(result.returnedAtUtc,stamp);assert.equal(result.printCount,3);
+ for(const view of ['GUARD','OWN','ADMIN'] as const){const r=await new VisitReadService(fake(original).repository).detail(context(view),original.visitRequestId);assert.equal(Object.hasOwn(r,'returnedAtUtc'),false);assert.equal(Object.hasOwn(r,'printCount'),false);}
+ for(const invalid of [{returnedAtUtc:'yesterday'},{printCount:-1},{printCount:0.5}])await assert.rejects(new VisitReadService(fake({...original,...invalid}).repository).detail(context('RECEPTION'),original.visitRequestId),{code:'UNAVAILABLE'});
+ assert.equal((await new VisitReadService(fake({...original,returnedAtUtc:undefined}).repository).detail(context('RECEPTION'),original.visitRequestId)).returnedAtUtc,null);
+});

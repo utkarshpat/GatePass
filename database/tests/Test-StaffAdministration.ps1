@@ -35,7 +35,7 @@ function Reset {
 INSERT gp.StaffRoleGrants(UserId,RoleCode,ScopeType,GrantedByUserId,ValidFromUtc) VALUES(@host,'PLATFORM_ADMIN','PLATFORM',@host,DATEADD(hour,-1,SYSUTCDATETIME()));
 DECLARE @id bigint=SCOPE_IDENTITY();
 INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) VALUES(@id,'ROLE_GRANTS_MANAGE'),(@id,'GUARDS_MANAGE');
-INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT RoleGrantId,'VISITS_READ' FROM gp.StaffRoleGrants WHERE UserId IN(@guard,@guard2);
+INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT g.RoleGrantId,'VISITS_READ' FROM gp.StaffRoleGrants g WHERE g.UserId IN(@guard,@guard2) AND NOT EXISTS(SELECT 1 FROM gp.GrantCapabilities c WHERE c.RoleGrantId=g.RoleGrantId AND c.CapabilityCode='VISITS_READ');
 '@ @{host=[guid]$taskActors.HOST.UserId;guard=[guid]$taskActors.GUARD.UserId;guard2=[guid]$taskActors.GUARD2.UserId}
 }
 function Allocate-Parameters([string]$Actor='ADMIN',[string]$Guard='GUARD2') {$taskP=Auth $Actor;$taskP.ClientKey=[guid]::NewGuid();$taskP.GuardUserId=[guid]$taskActors[$Guard].UserId;$taskP.ProjectLocationId=$taskPairB;$taskP.ValidFromUtc=$null;$taskP.ValidUntilUtc=$null;$taskP.Reason='Scheduled project cover';return $taskP}

@@ -58,6 +58,10 @@ function row(value: unknown, context: ReadContext, detail = false) {
   if (source.hostName !== undefined && source.hostName !== null) { result.hostName = outText(source.hostName, 200); }
   if(context.view==='RECEPTION' && source.hostEmail!==undefined && source.hostEmail!==null)result.hostEmail=outText(source.hostEmail,320);
   if (detail) {
+    if(context.view==='RECEPTION'){
+      result.returnedAtUtc=source.returnedAtUtc===undefined||source.returnedAtUtc===null?null:outTime(source.returnedAtUtc);
+      if(source.printCount!==undefined){output(Number.isSafeInteger(source.printCount)&&Number(source.printCount)>=0);result.printCount=source.printCount;}
+    }
     result.accessPassId = outUuid(source.accessPassId); result.publicPassNumber = outText(source.publicPassNumber, 50); result.checkedAtUtc = outTime(source.checkedAtUtc);
     for (const key of ['photoAvailable', 'canDecide', 'canCancel', 'canEnter', 'canExit', 'canReconcileExit']) { output(typeof source[key] === 'boolean'); result[key] = source[key]; }
     if (context.view !== 'GUARD') result.reason = outText(source.reason, 1000);

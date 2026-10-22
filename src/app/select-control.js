@@ -9,7 +9,8 @@ function enhanceSelect(select) {
   if(typeof list.showPopover==='function')list.setAttribute('popover','manual');
   select.after(field);field.append(trigger);document.body.append(list);select.hidden=true;select.tabIndex=-1;
   let active=-1,rows=[],search='',searchTimeout;
-  const available=()=>rows.filter(row=>!row.option.disabled&&row.option.value!=='');
+  const isDisabled=option=>option.disabled||(select.required&&option.value==='');
+  const available=()=>rows.filter(row=>!isDisabled(row.option));
   function highlight(index) {
     active=index;
     for(const row of rows)row.element.classList.toggle('is-active',row.index===active);
@@ -22,11 +23,11 @@ function enhanceSelect(select) {
   }
   function refresh() {
     caption.textContent=select.selectedOptions[0]?.textContent??'';trigger.disabled=select.disabled;
-    trigger.classList.toggle('is-placeholder',!select.value);trigger.setAttribute('aria-invalid',select.getAttribute('aria-invalid')??'false');
+    trigger.classList.toggle('is-placeholder',select.required&&!select.value);trigger.setAttribute('aria-invalid',select.getAttribute('aria-invalid')??'false');
     if(select.disabled||select.parentElement?.closest('[hidden]'))close();
   }
   function choose(index) {
-    const row=rows[index];if(!row||row.option.disabled||row.option.value==='')return;
+    const row=rows[index];if(!row||isDisabled(row.option))return;
     select.value=row.option.value;select.removeAttribute('aria-invalid');refresh();close();trigger.focus();
     select.dispatchEvent(new Event('input',{bubbles:true}));select.dispatchEvent(new Event('change',{bubbles:true}));
   }
@@ -35,8 +36,8 @@ function enhanceSelect(select) {
     document.dispatchEvent(new CustomEvent('gp-select-open',{detail:select.id}));
     list.replaceChildren();rows=[];
     for(const [index,option] of [...select.options].entries()) {
-      const item=document.createElement('div');item.className='select-option';item.id=select.id+'-option-'+index;item.setAttribute('role','option');item.setAttribute('aria-label',option.textContent);item.setAttribute('aria-selected',String(option.selected&&option.value!==''));item.textContent=option.textContent;
-      const disabled=option.disabled||option.value==='';item.setAttribute('aria-disabled',String(disabled));
+      const item=document.createElement('div');item.className='select-option';item.id=select.id+'-option-'+index;item.setAttribute('role','option');item.setAttribute('aria-label',option.textContent);item.setAttribute('aria-selected',String(option.selected&&!isDisabled(option)));item.textContent=option.textContent;
+      const disabled=isDisabled(option);item.setAttribute('aria-disabled',String(disabled));
       item.addEventListener('pointerdown',event=>event.preventDefault());item.addEventListener('click',()=>choose(index));
       list.append(item);rows.push({element:item,option,index});
     }

@@ -1,0 +1,48 @@
+import {test,expect} from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+const id='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222';
+for(const width of [390,1366])test(`admin modules preserve scope and support role and allocation workflows at ${width}px`,async({page,context})=>{
+ await page.setViewportSize({width,height:844});await context.addCookies(['gp-staff-session','gp-staff-csrf'].map(name=>({name,value:'synthetic',url:'http://localhost:18447'})));
+ const writes:any[]=[];let revoked=false,allocated=false;
+ await page.route('**/api/admin/**',async route=>{const action=new URL(route.request().url()).pathname.split('/').at(-1),d=route.request().postDataJSON(),reply=(json:any)=>route.fulfill({json});
+ if(action==='context')return reply({displayName:'Scoped Admin',locations:[{locationId:1,locationCode:'NOIDA',locationName:'Noida',canManageCommonAreas:true}]});
+ if(action==='projects')return reply({projects:[{projectLocationId:'1',projectId:'1',projectName:'Project Alpha',projectCode:'ALPHA',directoryCurrent:true,canAssignLocation:true,canAssignProject:false}],cursor:null});
+ if(action==='scope')return reply({userId:id,currentDate:'2026-10-22',canReport:true,canReadVisits:true,canAudit:true,canManageRoles:true,canAssignGuards:true,roles:[{roleCode:'LOCATION_ADMIN',scopeType:'LOCATION'}],delegations:[{roleCode:'GUARD',scopeType:'LOCATION'},{roleCode:'RECEPTION',scopeType:'LOCATION'},...(d.projectLocationId?[{roleCode:'PROJECT_ADMIN',scopeType:'PROJECT_LOCATION'}]:[])]});
+ if(action==='summary')return reply({visits:{total:'4',pending:'1',approved:'2',denied:'1',cancelled:'0'},recordedPresence:{projectVisitsInside:'1',digitalIdsInside:'0'}});
+ if(action==='subjects')return reply({users:[{userId:other,displayName:'Staff Member',active:true}],hasMore:false,afterUserId:null});
+ if(action==='roles')return reply({grants:revoked?[]:[{roleGrantId:'5',userId:other,roleCode:'GUARD',scopeType:'LOCATION',locationId:1,projectId:null,projectLocationId:null,validFromUtc:'2026-10-21T00:00:00.000Z',validUntilUtc:null,revoked:false,capabilities:['VISITS_READ','PROJECT_MOVEMENT']}],hasMore:false});
+ if(['grant','revoke','allocate','deallocate'].includes(action!)){writes.push({action,...d});if(action==='revoke')revoked=true;if(action==='allocate')allocated=true;return reply({ok:true});}
+ if(action==='assignments')return reply({assignments:allocated?[{assignmentId:'7',userId:other,guardName:'Guard Test',validFromUtc:'2026-10-22T00:00:00.000Z',validUntilUtc:null}]:[],cursor:null});
+ if(action==='guards')return reply({guards:[{userId:other,displayName:'Guard Test',overlappingAssignment:allocated,canAllocate:!allocated}],hasMore:false});
+ if(action==='visits')return reply({visits:[{visitRequestId:id,personName:'Visitor Test',status:'APPROVED',publicReference:'V-TEST',validFromUtc:'2026-10-22T00:00:00.000Z',projectName:'Project Alpha'}],cursor:null});
+ if(action==='visit-detail')return reply({personName:'Visitor Test',status:'APPROVED',locationName:'Noida',projectName:'Project Alpha',hostName:'Employee Host',reason:'Meeting',publicPassNumber:'P-TEST',validFromUtc:'2026-10-22T00:00:00.000Z',validUntilUtc:'2026-10-23T00:00:00.000Z',movements:[]});
+ if(action==='audit')return reply({events:[{actionCode:'ROLE_GRANTED',actorDisplayName:'Scoped Admin',occurredAtUtc:'2026-10-22T00:00:00.000Z',targetType:'ROLE',resultCode:'SUCCESS'}],hasMore:false});
+ if(action==='office-qr')return reply({locationName:'Noida',url:'http://localhost:18447/office/noida',imageDataUrl:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/5FAAAAAASUVORK5CYII='});
+ return reply({leads:[],cursor:null});});
+ await page.goto('/admin');await expect(page.locator('#summary-cards')).toContainText('4');await expect(page.locator('#summary-cards')).toContainText('Registered');
+ await page.locator('[data-admin-view="projects"]').click();await expect(page.locator('#projects')).toContainText('Project Alpha');await page.getByRole('button',{name:'Project leads',exact:true}).click();await expect(page.locator('#lead-dialog')).toBeVisible();await page.locator('#close-leads').click();
+ await page.locator('[data-admin-view="staff"]').click();await page.locator('#subject-search').fill('Staff');await page.locator('#subject-form button').click();await page.getByRole('button',{name:'Manage access'}).click();await expect(page.locator('#staff-roles')).toContainText('Guard');await page.locator('#staff-reason').fill('Test assignment');await page.locator('#staff-capabilities input[value=VISITS_READ]').uncheck();await page.locator('#staff-grant').click();expect(writes.filter(x=>x.action==='grant')).toHaveLength(0);await page.locator('#staff-capabilities input[value=VISITS_READ]').check();await page.locator('#staff-grant').click();await expect.poll(()=>writes.filter(x=>x.action==='grant').length).toBe(1);expect(writes[0]).toMatchObject({targetUserId:other,scopeType:'LOCATION',locationId:1});
+ await page.getByRole('button',{name:'Revoke',exact:true}).click();await page.locator('#admin-confirm-reason').fill('End of duty');await page.locator('#admin-confirm-submit').click();await expect(page.locator('#admin-confirm-dialog')).not.toBeVisible();await expect(page.locator('#staff-roles')).toContainText('No roles');
+ await page.locator('#console-project').selectOption('1');await page.locator('[data-admin-view="assignments"]').click();await page.locator('#allocation-guard').selectOption(other);await page.locator('#allocation-reason').fill('Gate duty');await page.locator('#allocate-button').click();await expect(page.locator('#assignment-list')).toContainText('Guard Test');
+ await page.locator('[data-admin-view="reports"]').click();await expect(page.locator('#report-list')).toContainText('Visitor Test');await page.locator('#report-list button').click();await expect(page.locator('#admin-visit-fields')).toContainText('Employee Host');await page.locator('[data-close="admin-visit-dialog"]').click();
+ await page.locator('[data-admin-view="audit"]').click();await expect(page.locator('#audit-list')).toContainText('Role granted');
+ await page.locator('[data-admin-view="offices"]').click();await page.getByRole('button',{name:'Registration QR'}).click();await expect(page.locator('#qr-download')).toHaveAttribute('download','GatePass-NOIDA-QR.png');
+ await page.locator('#account-toggle').click();await page.locator('#admin-profile').click();await expect(page.locator('#profile-content')).toContainText('Location admin');await page.locator('[data-close="admin-profile-dialog"]').click();
+ const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(axe.violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)}))).toEqual([]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+ await page.screenshot({path:`output/admin-console-${width}.png`});
+});
+
+test('project admin falls back to its assigned project and cannot see office-wide roles or audit',async({page,context})=>{
+ await context.addCookies(['gp-staff-session','gp-staff-csrf'].map(name=>({name,value:'synthetic',url:'http://localhost:18447'})));
+ const requests:any[]=[];
+ await page.route('**/api/admin/**',async route=>{const action=new URL(route.request().url()).pathname.split('/').at(-1),d=route.request().postDataJSON();requests.push({action,...d});
+ if(action==='context')return route.fulfill({json:{displayName:'Project Lead',locations:[{locationId:1,locationCode:'NOIDA',locationName:'Noida',canManageCommonAreas:false}]}});
+ if(action==='projects')return route.fulfill({json:{projects:[{projectLocationId:'10',projectId:'2',projectName:'Scoped Project',projectCode:'SCOPE',directoryCurrent:true,canAssignLocation:true,canAssignProject:false}],cursor:null}});
+ if(action==='scope'&&!d.projectLocationId)return route.fulfill({status:403,json:{error:'NOT_AUTHORIZED'}});
+ if(action==='scope')return route.fulfill({json:{userId:id,currentDate:'2026-10-22',canReport:true,canReadVisits:true,canAudit:false,canAssignGuards:true,canManageRoles:true,roles:[{roleCode:'PROJECT_ADMIN',scopeType:'PROJECT_LOCATION'}],delegations:[{roleCode:'PROJECT_ADMIN',scopeType:'PROJECT_LOCATION'}]}});
+ if(action==='summary')return route.fulfill({json:{visits:{total:'1',pending:'1',approved:'0',denied:'0',cancelled:'0'},recordedPresence:{projectVisitsInside:'0',digitalIdsInside:'0'}}});
+ return route.fulfill({json:{users:[],grants:[],hasMore:false}});});
+ await page.goto('/admin');await expect(page.locator('#summary-cards')).toContainText('Registered');await expect(page.locator('#console-project')).toHaveValue('10');await expect(page.locator('[data-admin-view="audit"]')).toBeHidden();await expect(page.locator('#common-duties-open')).toBeHidden();expect(requests.find(x=>x.action==='summary')).toMatchObject({locationId:1,projectLocationId:'10'});
+ await page.locator('[data-admin-view="staff"]').click();await expect(page.locator('#staff-role option')).toHaveCount(1);await expect(page.locator('#staff-role')).toContainText('Project admin');
+ await expect(page.locator('#console-project option[value=""]')).toHaveCount(0);await page.locator('#refresh').click();await expect(page.locator('#admin-staff')).toBeVisible();await expect(page.locator('#console-project')).toHaveValue('10');
+});

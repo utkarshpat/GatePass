@@ -1,6 +1,543 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Projects & Delegation · Sopra Steria</title><style nonce="__NONCE__">__STYLES__</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Projects & Delegation · Sopra Steria</title>
+  <style nonce="__NONCE__">__STYLES__</style>
+</head>
+<body>
 <a class="skip" href="#workspace">Skip to content</a>
-<header class="reception-header"><div class="header-brand"><img src="data:image/png;base64,__COMPANY_LOGO__" width="192" alt="Sopra Steria"><span class="portal-tag">Admin Console</span></div><div id="staff-session" class="staff-user-menu" hidden><div class="user-avatar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><span id="staff-name"></span><button type="button" class="quiet logout-icon-btn" id="staff-logout" title="Sign out" aria-label="Sign out"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button></div></header>
-<main class="reception-workspace admin-workspace" id="workspace" tabindex="-1"><div class="reception-title"><div><h1>Project Governance</h1><p id="office-name" class="office-subtitle"></p></div><div class="admin-toolbar"><div id="office-selector" hidden><label class="sr-only" for="admin-office">Office</label><select id="admin-office"></select></div><button type="button" class="secondary" id="common-duties-open" hidden>Common areas</button><button type="button" class="secondary" id="refresh"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Refresh</button></div></div><p id="page-status" role="status" class="loading-state" aria-live="polite">Loading projects…</p><div id="projects" class="project-list"></div><div class="list-actions"><button type="button" class="secondary" id="more-projects" hidden>Load more</button></div></main>
-<dialog class="app-dialog lead-dialog" id="lead-dialog" aria-labelledby="lead-title"><div class="dialog-heading"><div><h2 id="lead-title">Project Leads</h2><p id="lead-project" class="hint"></p></div><button type="button" id="close-leads" class="quiet" aria-label="Close project leads">✕</button></div><div class="dialog-body"><p id="lead-status" role="status" aria-live="polite"></p><div id="lead-list"></div><button type="button" class="secondary" id="more-leads" hidden>Load more leads</button><form id="lead-form" hidden><h3>Assign New Project Lead</h3><div class="field"><label for="employee-search">Search Employee</label><input id="employee-search" type="search" maxlength="80" autocomplete="off" placeholder="Search name, email or employee ID"><p id="search-status" class="hint" role="status" aria-live="polite"></p><div id="employee-results" class="employee-results" role="group" aria-label="Matching employees"></div><div id="selected-employee" hidden></div></div><div class="field"><label for="lead-scope">Access Scope</label><select id="lead-scope"></select></div><div class="field"><label for="grant-reason">Assignment Reason</label><input id="grant-reason" maxlength="300" placeholder="e.g. Project Delivery Lead delegation" required></div><button type="submit" class="primary" id="add-lead" disabled>Assign Lead</button></form><form id="remove-form" hidden><h3 id="remove-title">Remove Project Lead</h3><div class="field"><label for="remove-reason">Revocation Reason</label><input id="remove-reason" maxlength="300" placeholder="e.g. Project transition / roll-off" required></div><div class="admin-toolbar"><button type="button" class="secondary" id="cancel-remove">Cancel</button><button type="submit" class="primary" id="remove-lead">Confirm Removal</button></div></form></div></dialog>
-<dialog class="app-dialog" id="common-dialog" aria-labelledby="common-title"><div class="dialog-heading"><h2 id="common-title">Common areas</h2><button id="common-close" type="button" class="quiet" aria-label="Close common areas">×</button></div><div class="dialog-body"><p id="common-status" role="status"></p><form id="common-create"><h3>New common area</h3><div class="field"><label for="common-name">Area name</label><input id="common-name" maxlength="100" required></div><div class="field"><label for="common-create-reason">Reason</label><input id="common-create-reason" maxlength="300" required></div><button type="submit" class="secondary">Create area</button></form><form id="common-assign"><h3>Assign guard</h3><div class="field"><label for="common-area">Common area</label><select id="common-area" required></select></div><div class="field"><label for="common-guard-search">Search guard</label><input id="common-guard-search" type="search" autocomplete="off" maxlength="80"><div id="common-guard-results" role="group" aria-label="Matching guards"></div><p id="common-selected" class="hint"></p></div><div class="field"><label for="common-assign-reason">Reason</label><input id="common-assign-reason" maxlength="300" required></div><button id="common-assign-button" type="submit" class="primary" disabled>Assign duty</button></form><h3>Assigned guards</h3><div id="common-assignments"></div><button id="common-more" type="button" class="secondary" hidden>Load more</button><form id="common-remove" hidden><h3 id="common-remove-title">Remove duty</h3><div class="field"><label for="common-remove-reason">Reason</label><input id="common-remove-reason" maxlength="300" required></div><div class="dialog-actions"><button id="common-cancel-remove" type="button" class="secondary">Cancel</button><button type="submit" class="primary">Remove duty</button></div></form></div></dialog><script nonce="__NONCE__">__SCRIPT__</script></body></html>
+
+<header class="admin-header">
+  <div class="header-brand-group">
+    <a class="admin-brand" href="/admin" aria-label="GatePass Administration">
+      <img src="data:image/png;base64,__COMPANY_LOGO__" width="180" alt="Sopra Steria">
+    </a>
+    <span class="portal-tag">Admin Console</span>
+  </div>
+
+  <div class="admin-header-actions">
+    <div id="office-selector" class="office-pill" hidden>
+      <svg class="office-pill-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+      <label class="sr-only" for="admin-office">Office</label>
+      <select id="admin-office" aria-label="Select office location"></select>
+    </div>
+
+    <div id="staff-session" class="admin-account" hidden>
+      <button id="account-toggle" class="quiet icon-button account-btn" type="button" aria-label="Account menu" aria-expanded="false" aria-haspopup="menu">
+        <span class="account-avatar-circle" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></svg>
+        </span>
+      </button>
+      <div id="account-menu" class="account-dropdown" role="menu" hidden>
+        <div class="account-menu-header">
+          <span class="account-role-label">Signed in as</span>
+          <strong id="staff-name"></strong>
+        </div>
+        <div class="account-menu-divider" role="separator"></div>
+        <button id="admin-profile" class="account-menu-item" role="menuitem" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Profile</span>
+        </button>
+        <button id="staff-logout" class="account-menu-item logout" role="menuitem" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Sign out</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="admin-layout">
+  <nav class="admin-nav" aria-label="Administration">
+    <div class="admin-nav-group">
+      <span class="admin-nav-heading">Console</span>
+      <button type="button" hidden data-admin-view="overview">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>
+        <span>Overview</span>
+      </button>
+      <button type="button" hidden data-admin-view="projects">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 7h18v14H3zM8 7V3h8v4"/></svg>
+        <span>Projects & leads</span>
+      </button>
+      <button type="button" hidden data-admin-view="staff">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M20 8v6M17 11h6"/></svg>
+        <span>Staff & access</span>
+      </button>
+      <button type="button" hidden data-admin-view="assignments">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Guard assignments</span>
+      </button>
+      <button type="button" hidden data-admin-view="offices">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 21h18M6 21V3h12v18M9 7h6M9 11h6M10 21v-5h4v5"/></svg>
+        <span>Offices & QR</span>
+      </button>
+    </div>
+    <div class="admin-nav-group">
+      <span class="admin-nav-heading">Reports & Log</span>
+      <button type="button" hidden data-admin-view="reports">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 3h16v18H4zM8 8h8M8 12h8M8 16h5"/></svg>
+        <span>Visits & reports</span>
+      </button>
+      <button type="button" hidden data-admin-view="audit">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 3h16v18H4zM8 7h8M8 11h8M8 15h4"/></svg>
+        <span>Audit log</span>
+      </button>
+    </div>
+  </nav>
+
+  <main id="workspace" class="admin-content" tabindex="-1">
+    <div class="admin-page-heading">
+      <div>
+        <h1 id="admin-title">Overview</h1>
+        <p id="office-name" class="hint"></p>
+      </div>
+      <div class="admin-actions">
+        <button type="button" class="secondary" id="common-duties-open" hidden>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Common areas</span>
+        </button>
+        <button type="button" class="secondary icon-button" id="refresh" aria-label="Refresh admin view" title="Refresh console">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <p id="page-status" role="status" aria-live="polite">Loading administration…</p>
+
+    <div id="console-scope" hidden class="admin-scope-bar">
+      <div class="scope-select-wrap">
+        <label for="console-project" class="scope-label">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h18v14H3zM8 7V3h8v4"/></svg>
+          <span>Project scope</span>
+        </label>
+        <select id="console-project">
+          <option value="">All authorized projects in office</option>
+        </select>
+      </div>
+      <p id="scope-hint" class="hint scope-hint-pill"></p>
+    </div>
+
+    <!-- 1. Overview Section -->
+    <section id="admin-overview" hidden aria-label="Operational overview">
+      <div class="admin-filterbar overview-filterbar">
+        <div class="filter-field">
+          <label for="overview-date">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Visit date</span>
+          </label>
+          <input id="overview-date" type="date" required>
+        </div>
+        <button id="summary-load" class="secondary" type="button">Apply date</button>
+      </div>
+
+      <div class="overview-section">
+        <div class="section-title-strip">
+          <h2>Visit date summary</h2>
+          <span class="badge-neutral">Selected Date Totals</span>
+        </div>
+        <div id="summary-cards" class="admin-stat-grid"></div>
+      </div>
+
+      <div class="admin-note presence-section">
+        <div class="section-title-strip">
+          <div class="presence-title">
+            <span class="live-pulse-dot" aria-hidden="true"></span>
+            <h2>Current recorded presence</h2>
+          </div>
+          <span class="badge-live">Latest recorded presence</span>
+        </div>
+        <div id="presence-cards" class="admin-stat-grid presence-grid"></div>
+        <p class="hint">Presence reflects the latest refresh; visit totals reflect the selected date above.</p>
+      </div>
+    </section>
+
+    <!-- 2. Projects & Leads Section -->
+    <section id="admin-projects" aria-label="Projects and leads" hidden>
+      <div id="projects" class="project-list"></div>
+      <button type="button" class="secondary load-more-btn" id="more-projects" hidden>Load more projects</button>
+    </section>
+
+    <!-- 3. Staff & Access Section -->
+    <section id="admin-staff" aria-label="Staff and access" hidden>
+      <form id="subject-form" class="admin-filterbar staff-filterbar">
+        <div class="filter-field search-field">
+          <label for="subject-search">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Find staff</span>
+          </label>
+          <input id="subject-search" type="search" maxlength="80" placeholder="Search staff name (at least 2 characters)" required minlength="2">
+        </div>
+        <button class="secondary" type="submit">Search</button>
+      </form>
+      <p class="hint">Select an existing employee or staff identity to manage its scoped roles.</p>
+      
+      <div id="subject-results" class="admin-list subject-results-list"></div>
+      <button id="subjects-more" class="secondary load-more-btn" type="button" hidden>Load more staff</button>
+
+      <section id="staff-detail" class="staff-detail-container" hidden>
+        <div class="admin-section-heading">
+          <div class="subject-title-wrap">
+            <div class="staff-avatar-placeholder" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <h2 id="subject-name"></h2>
+              <span class="subtext-muted">Staff identity roles & permissions</span>
+            </div>
+          </div>
+          <div class="role-filter-wrap">
+            <label for="role-state">Role history</label>
+            <select id="role-state">
+              <option value="CURRENT">Current active roles</option>
+              <option value="ALL">All roles history</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="staff-roles" class="admin-list staff-roles-list"></div>
+        <button id="roles-more" class="secondary load-more-btn" type="button" hidden>Load more roles</button>
+
+        <form id="staff-grant-form" class="admin-panel staff-grant-card">
+          <div class="panel-header">
+            <h3>Assign role & scope</h3>
+            <p class="hint">Grant scoped permissions to this staff member</p>
+          </div>
+          <div class="admin-form-grid">
+            <div class="field">
+              <label for="staff-role">Role and scope</label>
+              <select id="staff-role" required></select>
+            </div>
+            <div class="field">
+              <label for="staff-until">Valid until (optional)</label>
+              <input id="staff-until" type="datetime-local">
+            </div>
+          </div>
+          <fieldset id="staff-capabilities" class="capabilities-fieldset">
+            <legend>Workspace permissions</legend>
+          </fieldset>
+          <div class="field">
+            <label for="staff-reason">Assignment justification / Reason</label>
+            <input id="staff-reason" maxlength="300" placeholder="e.g. Project Delivery Lead delegation" required>
+          </div>
+          <div class="panel-actions">
+            <button class="primary" id="staff-grant" type="submit">Assign role</button>
+          </div>
+        </form>
+      </section>
+    </section>
+
+    <!-- 4. Guard Assignments Section -->
+    <section id="admin-assignments" aria-label="Guard project assignments" hidden>
+      <div class="assignments-header-note">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <p class="hint">Choose a project from the scope selector above to manage its guard roster. Common-area assignments use the Common areas button.</p>
+      </div>
+
+      <div class="assignments-layout-grid">
+        <div class="assignments-list-col">
+          <div class="col-title-strip">
+            <h3>Current assigned guards</h3>
+          </div>
+          <div id="assignment-list" class="admin-list"></div>
+          <button id="assignments-more" class="secondary load-more-btn" type="button" hidden>Load more assignments</button>
+        </div>
+
+        <div class="assignments-form-col">
+          <form id="allocation-form" class="admin-panel allocation-card">
+            <div class="panel-header">
+              <h2>Assign guard to project</h2>
+              <p class="hint">Assign an eligible guard to this project</p>
+            </div>
+            <div class="admin-form-grid">
+              <div class="field">
+                <label for="allocation-guard">Guard</label>
+                <select id="allocation-guard" required></select>
+              </div>
+              <div class="field">
+                <label for="allocation-until">Valid until (optional)</label>
+                <input id="allocation-until" type="datetime-local">
+              </div>
+            </div>
+            <div class="guards-refresh-actions">
+              <button id="guards-load" class="secondary small-btn" type="button">Refresh eligible guards</button>
+              <button id="guards-more" class="secondary small-btn" type="button" hidden>Load more guards</button>
+            </div>
+            <div class="field">
+              <label for="allocation-reason">Allocation reason</label>
+              <input id="allocation-reason" maxlength="300" placeholder="e.g. Shift assignment / gate cover" required>
+            </div>
+            <div class="panel-actions">
+              <button id="allocate-button" class="primary" type="submit">Assign guard</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Offices & QR Codes Section -->
+    <section id="admin-offices" aria-label="Offices and QR codes" hidden>
+      <div class="offices-container">
+        <div id="office-list" class="admin-list office-cards-grid"></div>
+        <div id="office-qr" class="admin-panel qr-card-panel" hidden>
+          <div class="panel-header">
+            <h2 id="qr-title"></h2>
+            <span class="badge-neutral">Visitor Registration QR</span>
+          </div>
+          <div class="qr-preview-box">
+            <img id="qr-image" alt="Office registration QR code" width="240" height="240">
+          </div>
+          <p id="qr-link" class="hint qr-link-text"></p>
+          <div class="qr-actions">
+            <a id="qr-download" class="secondary button-like" download="office-qr.png">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Download QR</span>
+            </a>
+          </div>
+          <p class="hint qr-disclaimer">Visitors scan this QR to open the office registration page. A localhost QR works only on the same device; deployment needs the published site address.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Visits & Reports Section -->
+    <section id="admin-reports" aria-label="Visit reports" hidden>
+      <form id="report-form" class="admin-filterbar reports-filterbar">
+        <div class="filter-field">
+          <label for="report-from">From date</label>
+          <input id="report-from" type="date" required>
+        </div>
+        <div class="filter-field">
+          <label for="report-to">To date</label>
+          <input id="report-to" type="date" required>
+        </div>
+        <div class="filter-field search-field">
+          <label for="report-reference">Pass / request reference</label>
+          <input id="report-reference" maxlength="40" placeholder="e.g. VIS-1024 or name">
+        </div>
+        <button type="submit" class="secondary">Apply filters</button>
+      </form>
+      <p id="report-status" class="filter-status-text" role="status"></p>
+      <div id="report-list" class="admin-list report-cards-list"></div>
+      <button id="reports-more" class="secondary load-more-btn" type="button" hidden>Load more visits</button>
+    </section>
+
+    <!-- 7. Security Audit Log Section -->
+    <section id="admin-audit" aria-label="Security audit log" hidden>
+      <form id="audit-form" class="admin-filterbar audit-filterbar">
+        <div class="filter-field">
+          <label for="audit-from">From date</label>
+          <input id="audit-from" type="date" required>
+        </div>
+        <div class="filter-field">
+          <label for="audit-to">To date</label>
+          <input id="audit-to" type="date" required>
+        </div>
+        <button type="submit" class="secondary">Filter log</button>
+      </form>
+      <p id="audit-status" class="filter-status-text" role="status"></p>
+      <div id="audit-list" class="admin-list audit-cards-list"></div>
+      <button id="audit-more" class="secondary load-more-btn" type="button" hidden>Load more events</button>
+    </section>
+  </main>
+</div>
+
+<!-- Profile Modal -->
+<dialog class="app-dialog" id="admin-profile-dialog" aria-labelledby="admin-profile-title">
+  <div class="dialog-heading">
+    <div class="dialog-title-group">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <h2 id="admin-profile-title">Admin Profile</h2>
+    </div>
+    <button type="button" class="quiet dialog-close-btn" data-close="admin-profile-dialog" aria-label="Close profile">✕</button>
+  </div>
+  <div class="dialog-body" id="profile-content"></div>
+</dialog>
+
+<!-- Confirmation Modal -->
+<dialog class="app-dialog" id="admin-confirm-dialog" aria-labelledby="admin-confirm-title">
+  <div class="dialog-heading">
+    <div class="dialog-title-group">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <h2 id="admin-confirm-title">Confirm change</h2>
+    </div>
+    <button type="button" class="quiet dialog-close-btn" data-close="admin-confirm-dialog" aria-label="Close confirmation">✕</button>
+  </div>
+  <form id="admin-confirm-form">
+    <div class="dialog-body">
+      <p id="admin-confirm-copy" class="confirm-copy-text"></p>
+      <div class="field">
+        <label for="admin-confirm-reason">Reason for change</label>
+        <input id="admin-confirm-reason" placeholder="e.g. Authorized staff departure / role revoke" required maxlength="300">
+      </div>
+      <p id="admin-confirm-status" class="filter-status-text" role="status"></p>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" class="secondary" data-close="admin-confirm-dialog">Cancel</button>
+      <button type="submit" id="admin-confirm-submit" class="primary danger-btn">Confirm change</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Visit Details Modal -->
+<dialog class="app-dialog visit-dialog" id="admin-visit-dialog" aria-labelledby="admin-visit-title">
+  <div class="dialog-heading">
+    <div class="dialog-title-group">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <div>
+        <h2 id="admin-visit-title">Visit details</h2>
+        <span class="subtext-muted">Recorded movement and visit data</span>
+      </div>
+    </div>
+    <button type="button" class="quiet dialog-close-btn" data-close="admin-visit-dialog" aria-label="Close visit">✕</button>
+  </div>
+  <div class="dialog-body">
+    <p id="admin-visit-status" class="filter-status-text" role="status"></p>
+    <div class="visit-detail-card">
+      <dl id="admin-visit-fields" class="admin-detail-grid"></dl>
+    </div>
+    <div class="timeline-container">
+      <h3 class="timeline-heading">Movement timeline</h3>
+      <div id="admin-visit-timeline" class="timeline-list"></div>
+    </div>
+  </div>
+</dialog>
+
+<!-- Project Leads Modal -->
+<dialog class="app-dialog lead-dialog" id="lead-dialog" aria-labelledby="lead-title">
+  <div class="dialog-heading">
+    <div class="dialog-title-group">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <div>
+        <h2 id="lead-title">Project Leads</h2>
+        <p id="lead-project" class="hint"></p>
+      </div>
+    </div>
+    <button type="button" id="close-leads" class="quiet dialog-close-btn" aria-label="Close project leads">✕</button>
+  </div>
+  <div class="dialog-body">
+    <p id="lead-status" role="status" aria-live="polite"></p>
+    <div id="lead-list" class="lead-list-container"></div>
+    <button type="button" class="secondary load-more-btn" id="more-leads" hidden>Load more leads</button>
+
+    <form id="lead-form" class="dialog-subform" hidden>
+      <h3>Assign New Project Lead</h3>
+      <div class="field">
+        <label for="employee-search">Search Employee</label>
+        <input id="employee-search" type="search" maxlength="80" autocomplete="off" placeholder="Search name, email or employee ID">
+        <p id="search-status" class="hint" role="status" aria-live="polite"></p>
+        <div id="employee-results" class="employee-results" role="group" aria-label="Matching employees"></div>
+        <div id="selected-employee" hidden></div>
+      </div>
+      <div class="field">
+        <label for="lead-scope">Access Scope</label>
+        <select id="lead-scope"></select>
+      </div>
+      <div class="field">
+        <label for="grant-reason">Assignment Reason</label>
+        <input id="grant-reason" maxlength="300" placeholder="e.g. Project Delivery Lead delegation" required>
+      </div>
+      <div class="dialog-actions">
+        <button type="submit" class="primary" id="add-lead" disabled>Assign Lead</button>
+      </div>
+    </form>
+
+    <form id="remove-form" class="dialog-subform danger-zone" hidden>
+      <h3 id="remove-title">Remove Project Lead</h3>
+      <div class="field">
+        <label for="remove-reason">Revocation Reason</label>
+        <input id="remove-reason" maxlength="300" placeholder="e.g. Project transition / roll-off" required>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="secondary" id="cancel-remove">Cancel</button>
+        <button type="submit" class="primary danger-btn" id="remove-lead">Confirm Removal</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- Common Areas Modal -->
+<dialog class="app-dialog common-dialog" id="common-dialog" aria-labelledby="common-title">
+  <div class="dialog-heading">
+    <div class="dialog-title-group">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 21h18M6 21V3h12v18M9 7h6M9 11h6M10 21v-5h4v5"/></svg>
+      <div>
+        <h2 id="common-title">Common areas</h2>
+        <span class="subtext-muted">Manage common areas and duty allocations</span>
+      </div>
+    </div>
+    <button id="common-close" type="button" class="quiet dialog-close-btn" aria-label="Close common areas">✕</button>
+  </div>
+  <div class="dialog-body">
+    <p id="common-status" role="status"></p>
+
+    <!-- Segmented nav inside modal -->
+    <div class="dialog-segmented-nav" role="tablist" aria-label="Common Area Views">
+      <button type="button" class="dialog-tab-btn active" data-common-tab="duties" role="tab" aria-selected="true">Assigned Guards</button>
+      <button type="button" class="dialog-tab-btn" data-common-tab="assign" role="tab" aria-selected="false">Assign Duty</button>
+      <button type="button" class="dialog-tab-btn" data-common-tab="create" role="tab" aria-selected="false">New Area</button>
+    </div>
+
+    <!-- Tab 1: Assigned guards -->
+    <div id="common-view-duties" class="common-tab-content">
+      <div id="common-assignments" class="common-assignments-list"></div>
+      <button id="common-more" type="button" class="secondary load-more-btn" hidden>Load more</button>
+    </div>
+
+    <!-- Tab 2: Assign guard -->
+    <form id="common-assign" class="common-tab-content" hidden>
+      <h3>Assign guard to common area</h3>
+      <div class="field">
+        <label for="common-area">Common area</label>
+        <select id="common-area" required></select>
+      </div>
+      <div class="field">
+        <label for="common-guard-search">Search guard</label>
+        <input id="common-guard-search" type="search" autocomplete="off" maxlength="80" placeholder="Type guard name...">
+        <div id="common-guard-results" role="group" aria-label="Matching guards"></div>
+        <p id="common-selected" class="hint"></p>
+      </div>
+      <div class="field">
+        <label for="common-assign-reason">Reason</label>
+        <input id="common-assign-reason" maxlength="300" placeholder="e.g. Reception patrol or gate duty" required>
+      </div>
+      <div class="dialog-actions">
+        <button id="common-assign-button" type="submit" class="primary" disabled>Assign duty</button>
+      </div>
+    </form>
+
+    <!-- Tab 3: New common area -->
+    <form id="common-create" class="common-tab-content" hidden>
+      <h3>Create new common area</h3>
+      <div class="field">
+        <label for="common-name">Area name</label>
+        <input id="common-name" maxlength="100" placeholder="e.g. Main Lobby, Cafeteria, North Gate" required>
+      </div>
+      <div class="field">
+        <label for="common-create-reason">Reason</label>
+        <input id="common-create-reason" maxlength="300" placeholder="e.g. Facility security zoning" required>
+      </div>
+      <div class="dialog-actions">
+        <button type="submit" class="primary">Create area</button>
+      </div>
+    </form>
+
+    <!-- Remove duty confirmation -->
+    <form id="common-remove" class="danger-zone" hidden>
+      <h3 id="common-remove-title">Remove duty</h3>
+      <div class="field">
+        <label for="common-remove-reason">Reason</label>
+        <input id="common-remove-reason" maxlength="300" placeholder="e.g. Duty reassignment" required>
+      </div>
+      <div class="dialog-actions">
+        <button id="common-cancel-remove" type="button" class="secondary">Cancel</button>
+        <button type="submit" class="primary danger-btn">Remove duty</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<script nonce="__NONCE__">__SCRIPT__</script>
+</body>
+</html>

@@ -13,10 +13,14 @@ DECLARE @ops table(Id uniqueidentifier);
 INSERT @ops SELECT OperationId FROM gp.AccessEvents WHERE VisitRequestId IN(SELECT Id FROM @visits)
     UNION SELECT OperationId FROM gp.EmployeeProjectAccessEvents WHERE VisitRequestId IN(SELECT Id FROM @visits)
     UNION SELECT OperationId FROM gp.ApprovalDecisions WHERE VisitRequestId IN(SELECT Id FROM @visits)
-    UNION SELECT OperationId FROM gp.PassPrintJobs WHERE VisitRequestId IN(SELECT Id FROM @visits);
+    UNION SELECT OperationId FROM gp.PassPrintJobs WHERE VisitRequestId IN(SELECT Id FROM @visits)
+    UNION SELECT OperationId FROM gp.PassReturns WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DECLARE @notifications table(Id bigint);
 INSERT @notifications SELECT NotificationId FROM gp.NotificationOutbox WHERE VisitRequestId IN(SELECT Id FROM @visits);
 BEGIN TRANSACTION;
+-- Serialize owned-fixture removal with API reads and writes that use the same gate.
+EXEC gp._TakeLock N'gp:authorization','Exclusive';
+DELETE gp.PassReturns WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE gp.NotificationOutbox WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE r FROM gp.PassPrintRenderState r JOIN gp.PassPrintJobs j ON j.PrintJobId=r.PrintJobId WHERE j.VisitRequestId IN(SELECT Id FROM @visits);
 DELETE gp.PassPrintJobs WHERE VisitRequestId IN(SELECT Id FROM @visits);

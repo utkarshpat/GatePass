@@ -16,7 +16,7 @@ function fixture() {
  const calls: string[] = []; const state = { verified: true, error: undefined as unknown };
  const sso = { verify: async () => { throw new Error('Central session must not use employee SSO'); } };
  const staff = { verify: async () => state.verified };
- const workspace = { context: async () => { calls.push('context'); return {}; }, list: async () => { calls.push('list'); return {}; } };
+ const workspace = { context: async () => { calls.push('context'); return {}; }, list: async () => { calls.push('list'); return {}; }, returnPass: async () => { calls.push('return'); if(state.error)throw state.error;return {returnedAtUtc:'2026-10-22T12:00:00.000Z'}; } };
  const photos = { read: async () => ({ mimeType: 'image/jpeg', bytes: Buffer.from('photo') }) };
  const cards = { image: async () => { if (state.error) throw state.error; return {}; } };
  const printing = { request: async () => ({}), status: async () => ({}) };
@@ -62,4 +62,11 @@ test('reception concurrent renders are bounded, return wiped buffers and release
  assert.ok(bytes.every(b => b === 0));
  f.render.renderAndDispatch = async () => ({ printJobId: 'retry', mimeType: 'image/svg+xml', bytes: Buffer.from('retry') });
  assert.equal((await f.route.handle(request('print/render', { printJobId: 'retry' }), res)).status, 'DISPATCHED');
+});
+
+test('return route uses verified reception session and rejects inside or unauthenticated operations', async()=>{
+ const f=fixture();assert.equal(f.route.handles('/api/reception/return'),true);
+ assert.deepEqual(await f.route.handle(request('return',{}),res),{returnedAtUtc:'2026-10-22T12:00:00.000Z'});
+ f.state.error={code:'INSIDE_PROJECT'};await rejectsStatus(f.route.handle(request('return',{}),res),409);
+ f.state.verified=false;await rejectsStatus(f.route.handle(request('return',{}),res),401);assert.deepEqual(f.calls,['return','return']);
 });

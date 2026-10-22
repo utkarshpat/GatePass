@@ -2,7 +2,7 @@ import {createHash} from 'node:crypto';
 import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
 import {isDate,isUtc,isUuid} from '../visits/SqlVisitReadRepository.ts';
 import {employeeProjectSummary} from '../visits/EmployeeProjectSummary.ts';
-export class ReceptionError extends Error{code:'INVALID_INPUT'|'NOT_AUTHORIZED'|'UNAVAILABLE';constructor(code:ReceptionError['code']){super(code);this.code=code;}}
+export class ReceptionError extends Error{code:'INVALID_INPUT'|'NOT_AUTHORIZED'|'CONFLICT'|'INSIDE_PROJECT'|'UNAVAILABLE';constructor(code:ReceptionError['code']){super(code);this.code=code;}}
 const requireInput=(v:unknown)=>{if(!v)throw new ReceptionError('INVALID_INPUT');};
 const requireOutput=(v:unknown)=>{if(!v)throw new ReceptionError('UNAVAILABLE');};
 const text=(v:unknown,max:number)=>typeof v==='string'&&v.length>0&&v.length<=max&&!/[\u0000-\u001f\u007f]/u.test(v);
@@ -14,7 +14,13 @@ export function receptionIdentity(session:{sessionToken:string;csrfToken:string}
 export class ReceptionService{
  #client:{callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>};
  constructor(client:{callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>}){this.#client=client;}
- async #call(name:string,p:Record<string,SqlParameter>){try{const row=JSON.parse(await this.#client.callProcedure(name,p));requireOutput(row&&typeof row==='object'&&!Array.isArray(row));return row;}catch(error){if(error instanceof ReceptionError)throw error;const n=Number((error as any)?.number);throw new ReceptionError([52001,52701,52801,53501].includes(n)?'NOT_AUTHORIZED':n===53502?'INVALID_INPUT':'UNAVAILABLE');}}
+ async #call(name:string,p:Record<string,SqlParameter>){try{const row=JSON.parse(await this.#client.callProcedure(name,p));requireOutput(row&&typeof row==='object'&&!Array.isArray(row));return row;}catch(error){if(error instanceof ReceptionError)throw error;const n=Number((error as any)?.number);throw new ReceptionError([52001,52701,52801,53501].includes(n)?'NOT_AUTHORIZED':[53502,54502].includes(n)?'INVALID_INPUT':n===54504?'INSIDE_PROJECT':n===54503||n===52003?'CONFLICT':'UNAVAILABLE');}}
+ async returnPass(session:{sessionToken:string;csrfToken:string},input:Record<string,unknown>){
+  requireInput(Object.keys(input).sort().join('|')==='clientKey|expectedPassId|visitRequestId'&&isUuid(input.clientKey)&&isUuid(input.visitRequestId)&&isUuid(input.expectedPassId));
+  const row=await this.#call('gp.ReturnReceptionPass',{...receptionIdentity(session),ClientKey:{type:'guid',value:String(input.clientKey)},VisitRequestId:{type:'guid',value:String(input.visitRequestId)},ExpectedPassId:{type:'guid',value:String(input.expectedPassId)}});
+  requireOutput(isUuid(row.visitRequestId)&&row.visitRequestId.toLowerCase()===String(input.visitRequestId).toLowerCase()&&isUuid(row.accessPassId)&&row.accessPassId.toLowerCase()===String(input.expectedPassId).toLowerCase()&&isUtc(row.returnedAtUtc));
+  return {visitRequestId:row.visitRequestId.toLowerCase(),accessPassId:row.accessPassId.toLowerCase(),returnedAtUtc:row.returnedAtUtc};
+ }
  async context(session:{sessionToken:string;csrfToken:string}){
   const row=await this.#call('gp.GetReceptionContext',receptionIdentity(session));requireOutput(text(row.displayName,200)&&isDate(row.currentDate)&&Array.isArray(row.locations)&&row.locations.length>0&&row.locations.length<=50);
   const locations=row.locations.map((l:any)=>{requireOutput(int(l.locationId)&&text(l.locationName,150)&&text(l.locationCode,16)&&typeof l.canPrint==='boolean');return {locationId:l.locationId,locationName:l.locationName,locationCode:l.locationCode,canPrint:l.canPrint};});
@@ -27,23 +33,26 @@ export class ReceptionService{
   requireOutput(!row.movementsHasMore||movements.length===100);return{isInside:row.isInside,movements,movementsHasMore:row.movementsHasMore};
  }
  async list(session:{sessionToken:string;csrfToken:string},input:Record<string,unknown>){
-  requireInput(Object.keys(input).every(k=>['locationId','visitDate','search','status','cursor'].includes(k))&&int(input.locationId));
+  requireInput(Object.keys(input).every(k=>['locationId','visitDate','search','status','cursor','pendingReturns'].includes(k))&&int(input.locationId));
   requireInput(input.visitDate===undefined||isDate(input.visitDate));requireInput(input.search===undefined||typeof input.search==='string'&&input.search.length<=100&&!/[\u0000-\u001f\u007f]/u.test(input.search));
+  requireInput(input.pendingReturns===undefined||typeof input.pendingReturns==='boolean');
   const status=input.status??'ALL';requireInput(['ALL','PENDING','APPROVED','DENIED','CANCELLED'].includes(String(status)));
   const cursor=input.cursor as any;requireInput(cursor===undefined||cursor&&typeof cursor==='object'&&Object.keys(cursor).sort().join('|')==='submittedAtUtc|visitRequestId'&&isUtc(cursor.submittedAtUtc)&&isUuid(cursor.visitRequestId));
-  const row=await this.#call('gp.ListReceptionVisits',{...receptionIdentity(session),LocationId:{type:'int',value:Number(input.locationId)},LocalVisitDate:{type:'date',value:input.visitDate as string??null},Search:{type:'text',value:input.search as string??null},Status:{type:'text',value:String(status)},AfterSubmittedAtUtc:{type:'datetime',value:cursor?.submittedAtUtc??null},AfterVisitRequestId:{type:'guid',value:cursor?.visitRequestId??null}});
+  const row=await this.#call('gp.ListReceptionVisits',{...receptionIdentity(session),PendingReturns:{type:'bit',value:input.pendingReturns===true},LocationId:{type:'int',value:Number(input.locationId)},LocalVisitDate:{type:'date',value:input.visitDate as string??null},Search:{type:'text',value:input.search as string??null},Status:{type:'text',value:String(status)},AfterSubmittedAtUtc:{type:'datetime',value:cursor?.submittedAtUtc??null},AfterVisitRequestId:{type:'guid',value:cursor?.visitRequestId??null}});
   requireOutput(Array.isArray(row.visits)&&row.visits.length<=50&&typeof row.hasMore==='boolean'&&isDate(row.visitDate));
   const visits=row.visits.map((v:any)=>{
    requireOutput(isUuid(v.visitRequestId)&&isUuid(v.accessPassId)&&text(v.personName,200)&&text(v.publicReference,40)&&text(v.publicPassNumber,50)&&['DIGITAL_ID','EMPLOYEE_PROJECT','EXTERNAL'].includes(v.requestType)&&['PENDING','APPROVED','DENIED','CANCELLED'].includes(v.status)&&['PENDING','ACTIVE','DENIED','REVOKED'].includes(v.passStatus)&&typeof v.isInside==='boolean'&&isUtc(v.validFromUtc)&&isUtc(v.validUntilUtc)&&isUtc(v.submittedAtUtc)&&Number.isInteger(v.printCount)&&v.printCount>=0);
+   requireOutput(v.returnedAtUtc===undefined||v.returnedAtUtc===null||isUtc(v.returnedAtUtc));
    requireOutput(v.employeeId===undefined||text(v.employeeId,64));requireOutput(v.projectName===undefined||text(v.projectName,200));
    requireOutput(v.hostName===undefined||text(v.hostName,200));requireOutput(v.hostEmail===undefined||text(v.hostEmail,320));
    const projects=v.requestType==='DIGITAL_ID'?employeeProjectSummary(v.employeeProjects??{available:false,total:null,items:[]}):null;
    requireOutput(v.requestType!=='DIGITAL_ID'||projects!==null);
    requireOutput(Date.parse(v.validUntilUtc)>Date.parse(v.validFromUtc));
-   return {visitRequestId:v.visitRequestId.toLowerCase(),accessPassId:v.accessPassId.toLowerCase(),personName:v.personName,employeeId:v.employeeId??null,requestType:v.requestType,publicReference:v.publicReference,publicPassNumber:v.publicPassNumber,status:v.status,passStatus:v.passStatus,projectName:v.projectName??null,hostName:v.hostName??null,hostEmail:v.hostEmail??null,...(projects?{employeeProjects:projects}:{}),isInside:v.isInside,validFromUtc:v.validFromUtc,validUntilUtc:v.validUntilUtc,submittedAtUtc:v.submittedAtUtc,printCount:v.printCount};
+   return {visitRequestId:v.visitRequestId.toLowerCase(),accessPassId:v.accessPassId.toLowerCase(),personName:v.personName,employeeId:v.employeeId??null,requestType:v.requestType,publicReference:v.publicReference,publicPassNumber:v.publicPassNumber,status:v.status,passStatus:v.passStatus,projectName:v.projectName??null,hostName:v.hostName??null,hostEmail:v.hostEmail??null,...(projects?{employeeProjects:projects}:{}),isInside:v.isInside,validFromUtc:v.validFromUtc,validUntilUtc:v.validUntilUtc,submittedAtUtc:v.submittedAtUtc,printCount:v.printCount,returnedAtUtc:v.returnedAtUtc??null};
   });
   requireOutput(new Set(visits.map((v:any)=>v.visitRequestId)).size===visits.length);if(row.hasMore){const last=visits.at(-1);requireOutput(visits.length===50&&isUuid(row.afterVisitRequestId)&&isUtc(row.afterSubmittedAtUtc)&&last?.visitRequestId===row.afterVisitRequestId.toLowerCase()&&last?.submittedAtUtc===row.afterSubmittedAtUtc);}
   if(input.visitDate!==undefined)requireOutput(row.visitDate===input.visitDate);
-  return {visits,visitDate:row.visitDate,cursor:row.hasMore?{submittedAtUtc:row.afterSubmittedAtUtc,visitRequestId:row.afterVisitRequestId.toLowerCase()}:null};
+  requireOutput(row.pendingReturnCount===undefined||Number.isSafeInteger(row.pendingReturnCount)&&row.pendingReturnCount>=0);
+  return {visits,visitDate:row.visitDate,pendingReturnCount:row.pendingReturnCount??null,cursor:row.hasMore?{submittedAtUtc:row.afterSubmittedAtUtc,visitRequestId:row.afterVisitRequestId.toLowerCase()}:null};
  }
 }

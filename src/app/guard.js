@@ -6,7 +6,7 @@ const state={view:'recent',queue:'EXPECTED',hasMore:false,profileVersion:0,recen
 let decoder=null;
 const camera=new CameraSession(()=>navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}},audio:false}));
 const csrf=()=>document.cookie.split('; ').find(v=>v.startsWith('gp-staff-csrf='))?.split('=')[1];
-async function api(action,body={},staff=false){let r;try{r=await fetch('/api/'+(staff?'staff/':'guard/')+action,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf()??''},body:JSON.stringify(body)});}catch{throw new Error(i18n.t('Connection lost. Please retry.'));}if(!r.ok){if(r.status===401){stopCamera();location.replace('/');}throw Object.assign(new Error(({400:i18n.t('Check the details.'),401:i18n.t('Sign in again to continue.'),403:i18n.t('This pass or area is outside your current access.'),409:i18n.t('Pass state changed. Refresh the pass before continuing.'),429:i18n.t('Please wait before trying again.')})[r.status]??i18n.t('Unable to complete the request. Please retry.')),{status:r.status});}return r.json();}
+async function api(action,body={},staff=false){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);let r;try{r=await fetch('/api/'+(staff?'staff/':'guard/')+action,{method:'POST',credentials:'same-origin',signal:controller.signal,headers:{'Content-Type':'application/json','X-CSRF-Token':csrf()??''},body:JSON.stringify(body)});if(!r.ok){if(r.status===401){stopCamera();location.replace('/');}throw Object.assign(new Error(({400:i18n.t('Check the details.'),401:i18n.t('Sign in again to continue.'),403:i18n.t('This pass or area is outside your current access.'),409:i18n.t('Pass state changed. Refresh the pass before continuing.'),429:i18n.t('Please wait before trying again.')})[r.status]??i18n.t('Unable to complete the request. Please retry.')),{status:r.status});}return await r.json();}catch(e){if(e.status)throw e;throw new Error(controller.signal.aborted?i18n.t('Request timed out. Please retry.'):i18n.t('Connection lost. Please retry.'));}finally{clearTimeout(timer);}}
 function text(tag,value,className){const n=document.createElement(tag);n.textContent=value;if(className)n.className=className;return n;}
 function notify(e){toasts.show(e.message,'error');}
 function showView(){state.view='recent';$('view-recent').hidden=false;$('visitor-search-form').hidden=false;}
@@ -59,10 +59,11 @@ async function recent(append=false){
  if(!append){state.recentRows=[];state.hasMore=false;renderRecent();$('recent-empty').hidden=true;}
  try{let more;do{
   const r=await api('visitors',{...scope,queue,search,offset});if(version!==state.recentVersion)return;
+  if(r.hasMore&&!r.visitors.length)throw new Error(i18n.t('Visitors unavailable. Please retry.'));
   const known=new Set(state.recentRows.map(v=>v.visitRequestId));state.recentRows.push(...r.visitors.filter(v=>!known.has(v.visitRequestId)));offset+=r.visitors.length;more=r.hasMore;state.hasMore=more;
   renderRecent();$('load-more').hidden=true;$('recent-status').textContent=more?i18n.t('Loading assignments…'):String(state.recentRows.length);
  }while(more);
- }catch(e){if(version===state.recentVersion){$('recent-status').textContent=i18n.t('Visitors unavailable. Please retry.');notify(e);}}
+ }catch(e){if(version===state.recentVersion){if(e.status===403){state.recentRows=[];state.hasMore=false;renderRecent();if(typeof closePass==='function')closePass();}$('recent-status').textContent=i18n.t('Visitors unavailable. Please retry.');notify(e);}}
  finally{if(version===state.recentVersion){$('refresh-recent').disabled=false;$('recent-scans').setAttribute('aria-busy','false');}}
 }
 

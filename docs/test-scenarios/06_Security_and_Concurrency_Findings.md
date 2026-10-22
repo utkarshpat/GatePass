@@ -1,0 +1,49 @@
+# 06. Security Boundaries, Audit Findings & E2E Verification
+
+## 1. Key Findings & Fixes Applied (22 October 2026)
+
+| # | Area | Finding | Fix Applied |
+|---|---|---|---|
+| 1 | SQL Pass Returns & Cancellation (`074`) | Returning a printed pass (`gp.ReturnReceptionPass`) left `gp.VisitRequests.Status` as `PENDING`/`APPROVED` while `gp._VisitReadJson` and `gp.CancelVisit` allowed the host or requester to cancel an already-returned pass, overwriting its status and `AccessPasses.RevocationReason`. | `gp._VisitReadJson` now sets `canCancel = 0` and `canDecide = 0` when a `PassReturns` row exists, and `gp.CancelVisit` rejects returned visits with `52005`. |
+| 2 | SQL Pass Returns & Outbox/Print Jobs (`074`) | `gp.ReturnReceptionPass` did not fail in-flight `REQUESTED`/`RENDERED` print jobs or cancel `PENDING`/`PROCESSING` outbox notifications, and `gp._NotificationRelevance` continued treating pending host approval emails as relevant after pass return. | `gp.ReturnReceptionPass` now fails in-flight print jobs and cancels pending notifications under `gp:outbox:claim`; `gp._NotificationRelevance` returns `STATE_CHANGED` for returned visits. |
+| 3 | SQL Registration Concurrency (`074`) | In `gp.SubmitRegistration`, `@reuse` was selected before acquiring `gp:visit:<@reuse>`. If reception returned `@reuse` while `SubmitRegistration` waited on the lock, `TEMP_ID` failed with `52705` and `EMPLOYEE_PROJECT` failed with `52703`. | `gp.SubmitRegistration` now rechecks `EXISTS(SELECT 1 FROM gp.PassReturns WHERE VisitRequestId = @reuse)` immediately after acquiring `gp:visit:<@reuse>` and clears `@reuse = NULL`. |
+| 4 | SQL Reception Presence Consistency (`074`) | `gp.ListReceptionVisits` and `gp.ReturnReceptionPass` used `gp._PersonInsideOffice`, whereas `gp._VisitReadJson` (for `RECEPTION`) and `gp.GetReceptionEmployeeTimeline` checked single-table presence, causing list vs detail mismatches when an employee had both a Digital ID and a project visit. | `gp._VisitReadJson` (`@View = 'RECEPTION'`) and `gp.GetReceptionEmployeeTimeline` now use `gp._PersonInsideOffice`. |
+| 5 | SQL Common Duty Administration (`074`) | `gp.ManageCommonDuty` (`ASSIGN`/`REMOVE`) did not prevent self-assignment, did not check for conflicting non-guard roles, and did not bump `Users.AuthorizationVersion`. | Added self-assignment check, non-`GUARD`/`RECEPTION` role conflict check, and `AuthorizationVersion` increment on `ASSIGN`/`REMOVE`. |
+| 6 | Staff Session CSRF Verification (`StaffEntryRoutes.ts`) | `StaffEntryRoutes.verify(session)` cached local staff sessions for 60s keyed only by `sessionToken` without verifying `session.csrfToken` against `issued.csrfToken`, and kept failed touches in `#issued`. | Added constant-time `timingSafeEqual` CSRF check in `verify(session)` and immediate `#issued.delete(key)` when `touch` fails. |
+| 7 | Reception Session Cookie Isolation (`ReceptionRoutes.ts`) | Signing in via `/api/reception/login` when a stale `gp-staff-session` cookie was present left `gp-staff-session` in the cookie jar, which `#session(req)` prioritized over the new `gp-reception-session`. | `ReceptionRoutes.#cookie` now clears `gp-staff-session` and `gp-staff-csrf` on reception login/logout. |
+| 8 | Reception UI State Sync (`reception.js`) | `openVisit()` did not copy fresh `status` and `isInside` onto the row; `browserPrint()` did not update `#detail-card-status` in the open modal; `#kpi-inside` retained stale `PENDING` status filters. | Synced `status`/`isInside` onto `row` and `state.rows`, updated `#detail-card-status` after print, and reset status filter on `#kpi-inside`. |
+| 9 | Admin Console Clock Skew & Request Fencing (`admin.js`) | Client `new Date()` initialized date inputs before `prepareConsole()`, preventing server `currentDate` from applying; `loadSummary`, `loadRoles`, and `loadAssignments` lacked request-token checks in `catch`/`finally`; `mayRevoke()` hid Revoke buttons for `PROJECT`/`PROJECT_LOCATION` grants in office-wide mode. | Initialized date inputs from `consoleState.scope.currentDate`, fenced `catch`/`finally` with `request === consoleState.requests.<kind>`, and enabled `mayRevoke()` using `state.projects` delegation flags. |
+| 10 | Custom Select Empty Option (`select-control.js`) | `enhanceSelect()` treated `value=""` options as disabled even on non-required filter selects. | Scoped empty-value disabling to `select.required === true`. |
+
+---
+
+## 2. Live Browser End-to-End Execution Log
+
+Executed on **22 October 2026** against the live local application (`http://localhost:8443`) backed by SQL Server (`GatePass_DesignTest` with Migrations `001`–`074`) and private storage across **Desktop (`1366×768`)**, **Tablet (`768×1024`)**, and **Mobile (`390×844`)** viewports.
+
+### Viewport & Layout Verification Matrix (Zero Horizontal Overflow: `scrollWidth <= innerWidth + 1`)
+
+| Flow / Screen | Desktop (`1366×768`) | Tablet (`768×1024`) | Mobile (`390×844`) | Functional Outcome |
+|---|---|---|---|---|
+| **Office Landing (`/office/noida`)** | PASS | PASS | PASS | Binds `NOIDA` cookie; shows SSI Employee & Visitor Check-in |
+| **Employee Details & Add Project Dialog** | PASS | PASS | PASS | Hydrates `EMP002`, `Primary Office: Noida`, adds `Project 3` (`Employee 18`) |
+| **Employee Photo Upload & Crop** | PASS | PASS | PASS | 600×800 portrait crop with zoom/pan/flip/reset |
+| **Employee Review & Submission Success** | PASS | PASS | PASS | Auto-approves `DIGITAL_ID` (`ACTIVE`), renders PNG card, queues `EMPLOYEE_PROJECT` (`PENDING`) |
+| **Employee Cross-Office (`/office/bengaluru`)** | PASS | PASS | PASS | Displays `Access to this office requires host approval.` and requires `+ Request project access` |
+| **Visitor Step 1 (Group Check-in + Country Picker)** | PASS | PASS | PASS | 2 visitors (`E2E Visitor One`, `E2E Visitor Two`), Country Picker modal, collapsed card |
+| **Visitor Step 2 (Project, Host, Purpose)** | PASS | PASS | PASS | Selects `Project 1`, host `Employee 19`, purpose `Contractor` |
+| **Visitor Step 3 & 4 (Group Photos, Review, Submit)** | PASS | PASS | PASS | Independent `VisitRequestId` and `GP-...` pass numbers per participant |
+| **Email Approval Login & Hash Strip (`/approval/<id>`)** | PASS | PASS | PASS | `#decision=APPROVED` stripped without auto-decision; non-owner blocked with `403` |
+| **Host Approval & Rejection (`/approval/<id>`)** | PASS | PASS | PASS | `Employee 19` approves Visitor 1 (`Approved`) and declines Visitor 2 (`Declined`) |
+| **Owner Request Status & Card (`/request/<id>`)** | PASS | PASS | PASS | `Employee 2` views `Approval pending` status and live rendered pass PNG |
+| **Staff Login (`/`)** | PASS | PASS | PASS | Routes `reception1@example.com`, `gaurd1@example.com`, `admin1@example.com` to their workspaces |
+| **Reception Dashboard, KPIs, Profile & History** | PASS | PASS | PASS | `Registered`, `Approval pending`, `Inside (matching)`, `Pending return` KPIs and multi-day History dialog |
+| **Reception Pass Preview, Print & Manual Intake** | PASS | PASS | PASS | Dispatches print job, updates `#detail-card-status` to `Printed — awaiting return`, loads isolated `/reception/register/noida` iframe |
+| **Guard Expected & Inside Queues (`/guard`)** | PASS | PASS | PASS | Checks in Visitor 1 and Employee 2 into `Project 1`; moves cards to `Inside` queue |
+| **Guard Common Area Verification (`Cafeteria`)** | PASS | PASS | PASS | Hides queue tabs and movement buttons; displays `Identity verified` (`verificationOnly: true`) |
+| **Guard Bilingual (`English + हिन्दी`), Profile & Scanner** | PASS | PASS | PASS | Renders English + Hindi labels, duty profile modal, and QR scanner modal |
+| **Reception Inside Fence & Final Pass Return** | PASS | PASS | PASS | Disables return button while `isInside === true`, aligns person-level `isInside` across `EMPLOYEE_PROJECT` and `DIGITAL_ID`, and records final return (`Returned`) after project exit |
+| **Admin Console (All 7 Modules & Modals)** | PASS | PASS | PASS | Verified `Overview`, `Projects & leads`, `Staff & access`, `Guard assignments`, `Common areas` (3 tabs), `Offices & QR`, `Visits & reports`, `Audit log`, and `Admin Profile` |
+
+All synthetic visits, passes, print jobs, movements, decisions, notifications, and intakes created during the live browser session were cleaned from `GatePass_DesignTest` after verification.
+

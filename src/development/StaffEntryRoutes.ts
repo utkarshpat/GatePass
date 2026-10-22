@@ -14,8 +14,8 @@ export class StaffEntryRoutes implements AdditionalHttpRoutes{
  handles(path:string){return routes.includes(path);}
  #key(session:Session){return createHash('sha256').update(session.sessionToken).digest('hex');}
  async verify(session:Session){
-  const issued=this.#issued.get(this.#key(session));if(!issued||issued.expires<=Date.now())return false;
-  if(Date.now()-issued.lastTouched>=60000){if(!issued.touching)issued.touching=(async()=>{try{const result=issued.kind==='LOCAL'?await this.#guard.sessionAction('touch',session.sessionToken,session.csrfToken):await this.#sso.sessionAction('touch',session);if(result.ok)issued.lastTouched=Date.now();return result.ok===true;}catch{return false;}finally{issued.touching=undefined;}})();return issued.touching;}
+  const key=this.#key(session),issued=this.#issued.get(key);if(!issued||issued.expires<=Date.now()||!token(session.csrfToken)||!timingSafeEqual(Buffer.from(session.csrfToken),Buffer.from(issued.csrfToken)))return false;
+  if(Date.now()-issued.lastTouched>=60000){if(!issued.touching)issued.touching=(async()=>{try{const result=issued.kind==='LOCAL'?await this.#guard.sessionAction('touch',session.sessionToken,issued.csrfToken):await this.#sso.sessionAction('touch',session);if(result.ok)issued.lastTouched=Date.now();else this.#issued.delete(key);return result.ok===true;}catch{return false;}finally{issued.touching=undefined;}})();return issued.touching;}
   return issued.kind==='LOCAL'||await this.#sso.verify(session);
  }
  #cookies(session:string,csrf:string,clear=false){const attributes='; Path=/; SameSite=Strict'+(clear?'; Max-Age=0':'');return ['gp-staff-session='+session+attributes+'; HttpOnly','gp-staff-csrf='+csrf+attributes,'gp-reception-session=; Path=/; SameSite=Strict; Max-Age=0; HttpOnly','gp-reception-csrf=; Path=/; SameSite=Strict; Max-Age=0'];}

@@ -271,6 +271,23 @@ try {
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin "SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId=@id AND TemplateCode='TEMP_ID_MANAGER_NOTICE' AND RecipientKind='MANAGER' AND RecipientEmployeeId=@employee AND RecipientEmail IS NULL;" @{id=[guid]$taskVisit.visitRequestId;employee=$taskFixture.hostEmployeeId}) -eq 1) 'Incorrect initial manager notice.'
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.ApprovalDecisions WHERE VisitRequestId=@id;' @{id=[guid]$taskVisit.visitRequestId}) -eq 0) 'Manager approval was introduced.'
     }
+    foreach($taskReturnedType in @('TEMP_ID','EMPLOYEE_PROJECT')){
+    Test-Case ("A returned "+$taskReturnedType+" permits a fresh request without reopening or reusing the returned pass") {
+        $taskFirst=Submit (New-Submission $taskReturnedType);$taskV=$taskFirst.visits[0]
+        foreach($cap in @('VISITS_READ','PASS_PRINT')){Invoke-GatePassNonQuery $taskAdmin 'INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT @g,@cap WHERE NOT EXISTS(SELECT 1 FROM gp.GrantCapabilities WHERE RoleGrantId=@g AND CapabilityCode=@cap);' @{g=[long]$taskActors.RECEPTION.GrantId;cap=$cap}}
+        $taskPrint=Auth 'RECEPTION';$taskPrint.ClientKey=[guid]::NewGuid();$taskPrint.VisitRequestId=[guid]$taskV.visitRequestId;$taskPrint.ExpectedPassId=[guid]$taskV.accessPassId
+        $null=Call $taskApi 'gp.RequestPassPrint' $taskPrint
+        Invoke-GatePassNonQuery $taskAdmin "UPDATE gp.PassPrintJobs SET Status='DISPATCHED',UpdatedAtUtc=SYSUTCDATETIME() WHERE VisitRequestId=@v;" @{v=$taskPrint.VisitRequestId}
+        $taskPrint.ClientKey=[guid]::NewGuid();$taskReceipt=Call $taskApi 'gp.ReturnReceptionPass' $taskPrint
+        $taskDetail=Auth 'RECEPTION';$taskDetail.VisitRequestId=$taskPrint.VisitRequestId;$taskDetail.View='RECEPTION';$taskDetailResult=Call $taskApi 'gp.GetVisitDetail' $taskDetail
+        Assert-Condition ($taskDetailResult.returnedAtUtc -eq $taskReceipt.returnedAtUtc -and $taskDetailResult.printCount -eq 1) 'Fresh receipt missing from detail read.'
+        $taskNew=Submit (New-Submission $taskReturnedType)
+        Assert-Condition (-not $taskNew.visits[0].reused -and $taskNew.visits[0].visitRequestId -ne $taskV.visitRequestId -and $taskNew.visits[0].accessPassId -ne $taskV.accessPassId) 'Returned credential reused or new visit blocked.'
+        Assert-Condition ((Invoke-GatePassScalar $taskAdmin "SELECT COUNT(*) FROM gp.AccessPasses WHERE AccessPassId=@p AND Status='REVOKED';" @{p=[guid]$taskV.accessPassId}) -eq 1) 'Closed pass was reopened.'
+        $taskAgain=Submit (New-Submission $taskReturnedType)
+        Assert-Condition ($taskAgain.visits[0].reused -and $taskAgain.visits[0].accessPassId -eq $taskNew.visits[0].accessPassId) 'Existing fresh request was duplicated.'
+    }
+    }
     Test-Case 'Digital ID uses trusted employee identity and current India local-day expiry' {
         $taskResult=Submit (New-Submission);$taskVisit=$taskResult.visits[0]
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.VisitRequests v JOIN gp.Employees e ON e.EmployeeId=v.EmployeeId WHERE v.VisitRequestId=@id AND v.PersonName=e.FullName AND v.PersonEmail=e.OfficialEmail AND v.ProjectLocationId IS NULL AND v.HostEmployeeId IS NULL AND v.ValidUntilUtc=DATEADD(minute,-330,DATEADD(day,1,CONVERT(datetime2(3),v.LocalVisitDate)));' @{id=[guid]$taskVisit.visitRequestId}) -eq 1) 'Incorrect trusted identity or expiry.'

@@ -72,10 +72,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </div>
       </div>
-      <div class="kpi" id="kpi-approved" role="button" tabindex="0" title="Click to filter approved registrations">
+      <div class="kpi" id="kpi-returns" role="button" tabindex="0" title="Show all unreturned printed passes for this office">
         <div>
-          <div class="kpi-value" id="stat-approved">0</div>
-          <div class="kpi-label">Approved</div>
+          <div class="kpi-value" id="stat-returns">0</div>
+          <div class="kpi-label">Pending return</div>
         </div>
         <div class="kpi-icon kpi-approved" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m7 12 3 3 7-7"/></svg></div>
       </div>
@@ -100,7 +100,7 @@
       <select class="select" id="printFilter" aria-label="Print filter">
         <option value="ALL">All print status</option>
         <option value="UNPRINTED">Not printed</option>
-        <option value="PRINTED">Printed</option>
+        <option value="PRINTED">Printed</option><option value="PENDING_RETURN">Pending return</option><option value="RETURNED">Returned</option>
       </select>
       <label class="sr-only" for="typeFilter">Type filter</label>
       <select class="select" id="typeFilter" aria-label="Type filter">

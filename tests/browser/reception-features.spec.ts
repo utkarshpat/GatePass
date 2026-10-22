@@ -34,7 +34,7 @@ test('manual registration embeds the real isolated intake form and stops its fra
   return route.fulfill({json:{ok:true}});
  });
  await page.goto('/reception');await expect(page.locator('#stat-total')).toHaveText('0');await page.locator('#assistedFab').click();
- const frame=page.frameLocator('#manual-content iframe');await expect(frame.getByRole('textbox',{name:/^Name/})).toBeEnabled();await frame.getByRole('textbox',{name:/^Name/}).fill('Synthetic Visitor');await frame.getByRole('textbox',{name:/^Mobile/}).fill('9876543210');await frame.getByRole('button',{name:'Continue',exact:true}).click();await expect(frame.locator('#project')).toBeEnabled();
+ const frame=page.frameLocator('#manual-content iframe');await expect(frame.getByRole('textbox',{name:/^Name/})).toBeEnabled();await frame.getByRole('textbox',{name:/^Name/}).fill('Synthetic Visitor');await frame.getByRole('textbox',{name:/^Mobile/}).fill('9876543210');await frame.getByRole('button',{name:'Continue',exact:true}).click();await expect(frame.locator('#project')).toBeEnabled();await expect(frame.locator('#purpose option').filter({hasText:/^(Contractor|Support staff)$/})).toHaveCount(2);await frame.locator('#purpose-trigger').click();await frame.getByRole('option',{name:'Contractor',exact:true}).click();await expect(frame.locator('#purpose')).toHaveValue('Contractor');
  expect(calls).toContain('/api/reception/manual/start');expect(calls.some(c=>c.startsWith('/api/registration/'))).toBe(false);
  await page.locator('#close-assisted').click();await expect(page.locator('#manual-content iframe')).toHaveCount(0);
 });

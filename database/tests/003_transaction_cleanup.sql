@@ -15,6 +15,8 @@ INSERT @assignments SELECT GuardAssignmentId FROM gp.GuardAssignments WHERE Guar
 DECLARE @notifications table(Id bigint);
 INSERT @notifications SELECT NotificationId FROM gp.NotificationOutbox WHERE VisitRequestId IN(SELECT Id FROM @visits);
 BEGIN TRANSACTION;
+-- Serialize owned-fixture removal with API reads and writes that use the same gate.
+EXEC gp._TakeLock N'gp:authorization','Exclusive';
 DELETE FROM gp.NotificationOutbox WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE r FROM gp.PassPrintRenderState r JOIN gp.PassPrintJobs j ON j.PrintJobId=r.PrintJobId WHERE j.VisitRequestId IN(SELECT Id FROM @visits);
 DELETE FROM gp.PassPrintJobs WHERE VisitRequestId IN(SELECT Id FROM @visits);

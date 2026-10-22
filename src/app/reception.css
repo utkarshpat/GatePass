@@ -1038,3 +1038,12 @@
 }
 
 @layer layouts {.reception-page .history-range label{margin:0}.reception-page .kpi-approved{color:#168153;background:#e8f7ef}}
+
+@layer layouts { .reception-page .btn:disabled {opacity:1;background:#edf1f6;color:#526174;box-shadow:none} }
+
+/* Return remains a compact status badge; it does not compete with pass actions. */
+.status.returned{color:#116044;background:#e6f5ee}
+.status.return-pass{font:inherit;cursor:pointer;border:1px solid #315fba;min-height:36px;padding:6px 12px}
+.status.return-pass:hover:not(:disabled){background:#dce8ff}
+.status.return-pass:focus-visible{outline:3px solid #172f61;outline-offset:3px}
+.status.return-pass:disabled{cursor:default;opacity:1;color:#536277;background:#edf0f5;border-color:#c3cbd8}

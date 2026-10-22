@@ -1,3 +1,5 @@
+import {AdministrationReadService,SqlAdministrationReadRepository} from '../src/administration/AdministrationReadService.ts';
+import {AdminConsoleService} from '../src/administration/AdminConsoleService.ts';
 import {HostReminderService} from '../src/email/HostReminderService.ts';
 import {EmailWorkflowRoutes} from '../src/development/EmailWorkflowRoutes.ts';
 import {EmailWorkflowService} from '../src/email/EmailWorkflowService.ts';
@@ -99,7 +101,7 @@ try {
   const employeeRequestCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,async svg=>sharp(svg,{density:300}).resize(1712,1080).png().toBuffer(),'REQUEST');
   const externalRequestCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,async svg=>sharp(svg,{density:300}).resize(1712,1080).png().toBuffer(),'EMAIL');
   const manualRegistration=new ReceptionRegistrationRoutes(staffEntry,new ReceptionService(client),registration,randomBytes(32),client);
-  const routes = [manualRegistration,new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,new GuardDutyService(client),new HostReminderService(client)),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),new GuardDutyService(client)),reception,new DummySsoRoutes(sso,{localHttp:true}),
+  const routes = [manualRegistration,new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,new GuardDutyService(client),new HostReminderService(client)),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),new GuardDutyService(client),new AdministrationReadService(new SqlAdministrationReadRepository(client)),new AdminConsoleService(client),receptionReads),reception,new DummySsoRoutes(sso,{localHttp:true}),
     new RegistrationHttpRoutes(registration,randomBytes(32),sso,{localHttp:true,allowedTypes:['DIGITAL_ID','EXTERNAL','EMPLOYEE_PROJECT'],office:req=>officeContext.read(req)}),
     new EmployeeDigitalIdRoutes(sso,new VisitReadService(new SqlVisitReadRepository(client,'api')),ownCards)];
   const api = createLoopbackHttpHandler(origin,{handles:path=>routes.some(route=>route.handles(path)),handle:(req,res)=>{

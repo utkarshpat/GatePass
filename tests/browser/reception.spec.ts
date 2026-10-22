@@ -32,5 +32,5 @@ for(const width of [390,1366])test(`reception pending preview, filter, direct pr
  for(let copy=0;copy<2;copy++){
   await page.locator('#detail-print').click();await expect.poll(()=>dispatches).toBe(copy+1);await expect(page.locator('#detail-print')).toHaveText('Reprint pass');await expect.poll(()=>page.frames().some(f=>f.url().endsWith('/reception/print'))).toBe(true);expect(page.context().pages()).toHaveLength(1);
  }
- expect(dispatches).toBe(2);expect(calls).toHaveLength(2);expect(calls[0].clientKey).not.toBe(calls[1].clientKey);await expect(page.locator('#stat-approved')).toHaveText('0');await expect(page.locator('#detail-print-count')).toHaveText('2');await expect(page.locator('.cell-card')).toHaveText('Printed');
+ expect(dispatches).toBe(2);expect(calls).toHaveLength(2);expect(calls[0].clientKey).not.toBe(calls[1].clientKey);await expect(page.locator('#stat-returns')).toHaveText('1');await expect(page.locator('#detail-print-count')).toHaveText('2');await expect(page.locator('.cell-card')).toHaveText('Printed');
 });
