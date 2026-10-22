@@ -56,6 +56,7 @@ function row(value: unknown, context: ReadContext, detail = false) {
   if (source.projectLocationId !== undefined) { result.projectLocationId = source.projectLocationId; result.projectName = outText(source.projectName, 200); }
   if (result.requestType === 'DIGITAL_ID') { const projects=employeeProjectSummary(source.employeeProjects??{available:false,total:null,items:[]}); output(projects!==null); result.employeeProjects=projects; }
   if (source.hostName !== undefined && source.hostName !== null) { result.hostName = outText(source.hostName, 200); }
+  if(context.view==='RECEPTION' && source.hostEmail!==undefined && source.hostEmail!==null)result.hostEmail=outText(source.hostEmail,320);
   if (detail) {
     result.accessPassId = outUuid(source.accessPassId); result.publicPassNumber = outText(source.publicPassNumber, 50); result.checkedAtUtc = outTime(source.checkedAtUtc);
     for (const key of ['photoAvailable', 'canDecide', 'canCancel', 'canEnter', 'canExit', 'canReconcileExit']) { output(typeof source[key] === 'boolean'); result[key] = source[key]; }

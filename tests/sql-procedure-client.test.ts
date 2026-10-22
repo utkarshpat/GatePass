@@ -19,7 +19,9 @@ test('driver uses exact stored-procedure RPC and explicit types', async () => {
   assert.equal(f.inputs[2].value, '9223372036854775807'); // Never coerce bigint IDs through Number.
 });
 test('API and auth procedure allowlists are disjoint and match DB grant counts', async () => {
-  assert.equal(procedureRoles.api.length, 45); assert.equal(procedureRoles.auth.length, 6);
+  assert.equal(procedureRoles.api.length, 48); assert.equal(procedureRoles.auth.length, 6);
+  assert.ok(procedureRoles.api.includes('GetReceptionEmployeeTimeline'));
+  assert.ok(procedureRoles.api.includes('AuditReceptionRegistration'));
   const api = fixture(); const auth = fixture('auth');
   await assert.rejects(api.client.callProcedure('gp.BeginGuardLogin', {}));
   await assert.rejects(auth.client.callProcedure('gp.ListVisits', {}));

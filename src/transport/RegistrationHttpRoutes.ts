@@ -21,17 +21,20 @@ export class RegistrationHttpRoutes implements AdditionalHttpRoutes {
   #active = 0;
   #localHttp:boolean;#types:ProductRequestType[];
   #office?: (req:IncomingMessage)=>string;
-  constructor(service: Service, cookieKey: Buffer, sso?: EmployeeSsoGate, options:{localHttp?:boolean;allowedTypes?:ProductRequestType[];office?:(req:IncomingMessage)=>string}={}) {
+  #surface:'PUBLIC'|'RECEPTION';
+  #submitted?: (req:IncomingMessage,context:RegistrationContext,result:unknown)=>Promise<void>;
+  constructor(service: Service, cookieKey: Buffer, sso?: EmployeeSsoGate, options:{localHttp?:boolean;allowedTypes?:ProductRequestType[];office?:(req:IncomingMessage)=>string;surface?:'PUBLIC'|'RECEPTION';submitted?:(req:IncomingMessage,context:RegistrationContext,result:unknown)=>Promise<void>}={}) {
     if (!Buffer.isBuffer(cookieKey) || cookieKey.length < 32) throw new Error('INVALID_INTAKE_COOKIE_KEY');
     this.#service = service; this.#key = Buffer.from(cookieKey); this.#sso = sso;
     this.#office=options.office;
+    this.#surface=options.surface??'PUBLIC';this.#submitted=options.submitted;
     this.#localHttp=options.localHttp===true;this.#types=[...(options.allowedTypes??types)] as ProductRequestType[];
     if(!this.#types.length||this.#types.some(t=>!types.includes(t)))throw new Error('INVALID_REGISTRATION_TYPES');
     this.#guard();
   }
   #guard(req?:IncomingMessage){if(this.#localHttp&&(!['development','test'].includes(process.env.NODE_ENV??'')||process.env.GATEPASS_SSO_MODE!=='dummy'||process.env.GATEPASS_DIRECTORY_MODE!=='mock'
     ||req&&!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress??'')))throw new HttpFailure(403);}
-  #names(){return this.#localHttp?{intake:'gp-dev-intake',csrf:'gp-dev-intake-csrf',session:'gp-dev-session',sessionCsrf:'gp-dev-csrf'}:{intake:'__Host-gp-intake',csrf:'__Host-gp-intake-csrf',session:'__Host-gp-session',sessionCsrf:'__Host-gp-csrf'};}
+  #names(){if(this.#surface==='RECEPTION'){const prefix=this.#localHttp?'gp-reception':'__Host-gp-reception';return{intake:prefix+'-intake',csrf:prefix+'-intake-csrf',session:prefix+'-session',sessionCsrf:prefix+'-csrf'};}return this.#localHttp?{intake:'gp-dev-intake',csrf:'gp-dev-intake-csrf',session:'gp-dev-session',sessionCsrf:'gp-dev-csrf'}:{intake:'__Host-gp-intake',csrf:'__Host-gp-intake-csrf',session:'__Host-gp-session',sessionCsrf:'__Host-gp-csrf'};}
   #attributes(){return `; Path=/; SameSite=Strict${this.#localHttp?'':'; Secure'}`;}
   handles(path: string) { return paths.includes(path); }
   #mac(value: string) { return createHmac('sha256', this.#key).update('GatePass|intake|v1|').update(value).digest('base64url'); }
@@ -139,7 +142,8 @@ export class RegistrationHttpRoutes implements AdditionalHttpRoutes {
         const options=await this.#service.options(context,data.officeCode);
         const dates=registrationDates(data.requestType,input.visitDate,options.currentDate,options.maxVisitDate);
         delete input.visitDate;
-        return this.#service.submit(context,{...input,locationId:options.locationId,...dates});
+        const result=await this.#service.submit(context,{...input,locationId:options.locationId,...dates});
+        await this.#submitted?.(req,context,result);return result;
       }
       return await this.#service.submit(context, input);
       // Keep the same cookie after submission so a lost-response retry uses the same clientKey/intake.

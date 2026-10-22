@@ -340,3 +340,6 @@
     body[data-view="landing"] .entry-choice { padding: var(--gp-space-2); min-height: 4rem; }
   }
 }
+
+/* Programmatic heading focus announces the step without a control-like outline. */
+#flow-title:focus {outline:none}

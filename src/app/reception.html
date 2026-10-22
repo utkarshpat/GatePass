@@ -1,75 +1,200 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Reception Desk · Sopra Steria GatePass</title><style nonce="__NONCE__">__STYLES__</style></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light"><title>Reception Desk · Sopra Steria GatePass</title><style nonce="__NONCE__">__STYLES__</style></head><body class="reception-page">
 <a class="skip" href="#workspace">Skip to content</a>
-<header class="reception-header"><div class="header-brand"><img src="data:image/png;base64,__COMPANY_LOGO__" width="192" alt="Sopra Steria"><span class="portal-tag">Reception Desk</span></div><div id="staff-session" class="staff-user-menu" hidden><div class="user-avatar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><span id="staff-name"></span><button type="button" class="quiet logout-icon-btn" id="staff-logout" title="Sign out" aria-label="Sign out"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button></div></header>
-<main id="workspace" class="reception-workspace" tabindex="-1">
-<p id="staff-loading" role="status" class="loading-state" hidden><span class="spinner" aria-hidden="true"></span>Loading reception…</p>
-<section id="reception-dashboard" hidden>
-<div class="reception-title"><div><h1>Reception</h1><p id="office-name" class="office-subtitle"></p></div><div class="reception-date-controls"><div class="reception-date"><label class="sr-only" for="reception-date">Visit date</label><input id="reception-date" type="date"><button id="today" class="secondary btn-today" type="button">Today</button><button id="refresh" class="secondary icon-action" type="button" aria-label="Refresh visits" title="Refresh visits"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button></div><div id="office-selector" hidden><label class="sr-only" for="reception-location">Office</label><select id="reception-location"></select></div></div></div>
 
-<div class="stats-grid" id="reception-stats" aria-label="Summary Metrics">
-  <div class="stat-card stat-primary"><div class="stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-content"><span class="stat-value" id="stat-total">0</span><span class="stat-label">Matching visits</span></div></div>
-  <div class="stat-card stat-warning"><div class="stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-content"><span class="stat-value" id="stat-pending">0</span><span class="stat-label">Pending Approval</span></div></div>
-  <div class="stat-card stat-info"><div class="stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="stat-content"><span class="stat-value" id="stat-inside">0</span><span class="stat-label">Currently Inside</span></div></div>
-  <div class="stat-card stat-success"><div class="stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div><div class="stat-content"><span class="stat-value" id="stat-printed">0</span><span class="stat-label">Print handoffs</span></div></div>
-</div>
+<header class="reception-header">
+  <div class="shell">
+    <div class="identity">
+      <img class="brand-img" src="data:image/png;base64,__COMPANY_LOGO__" alt="Sopra Steria">
 
-<div class="reception-filters-row">
-  <div class="status-filters" role="group" aria-label="Filter visits by status">
-    <button type="button" data-status="ALL" aria-pressed="true">All</button>
-    <button type="button" data-status="PENDING" aria-pressed="false">Pending</button>
-    <button type="button" data-status="APPROVED" aria-pressed="false">Approved</button>
-    <button type="button" data-status="DENIED" aria-pressed="false">Denied</button>
-    <button type="button" data-status="CANCELLED" aria-pressed="false">Cancelled</button>
-  </div>
-  <div class="reception-search">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <label class="sr-only" for="visit-search">Search name, employee ID or pass ID</label>
-    <input id="visit-search" type="search" maxlength="100" placeholder="Search name, pass ID or employee..." autocomplete="off">
-  </div>
-</div>
-
-<div id="list-status" class="list-status" role="status" aria-live="polite"></div>
-<div class="visits-table-wrap" tabindex="0" role="region" aria-label="Visits Table">
-  <table class="visits-table">
-    <thead>
-      <tr>
-        <th scope="col">Visitor / Person</th>
-        <th scope="col">Project Destination</th>
-        <th scope="col">Status</th>
-        <th scope="col">Valid Until</th>
-        <th scope="col" class="th-actions"><span class="sr-only">Actions</span></th>
-      </tr>
-    </thead>
-    <tbody id="visit-rows"></tbody>
-  </table>
-</div>
-<div id="empty-visits" class="reception-empty" hidden>
-  <div class="empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg></div>
-  <h2>No visits found</h2>
-  <p class="hint">No requests match the selected date or search filter.</p>
-</div>
-<div class="list-actions"><button class="secondary" id="load-more" type="button" hidden>Load more</button></div>
-</section></main>
-
-<dialog id="visit-dialog" class="app-dialog reception-detail" aria-labelledby="visit-title">
-  <div class="dialog-heading"><h2 id="visit-title">Visit details</h2><button id="close-visit" type="button" class="quiet" aria-label="Close visit details">✕</button></div>
-  <div class="dialog-body" tabindex="0" role="region" aria-label="Visit information and card preview">
-    <div id="detail-status" role="status"></div>
-    <div class="reception-person">
-      <img id="detail-photo" width="80" height="100" alt="Person photo" hidden>
-      <div class="reception-person-info">
-        <h3 id="detail-name"></h3>
-        <p id="detail-kind" class="detail-kind-tag"></p>
-        <div id="detail-badge"></div>
+    </div>
+    <div class="top-right">
+      <div class="office-badge" id="office-badge" title="Current Office">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 21s7-4.6 7-10a7 7 0 0 0-14 0c0 5.4 7 10 7 10Z"/><circle cx="12" cy="11" r="2.5"/></svg>
+        <span id="office-name">Noida</span>
+      </div>
+      <div id="office-selector" class="office-select-wrap" hidden>
+        <label class="sr-only" for="reception-location">Office</label>
+        <select id="reception-location" class="select-office"></select>
+      </div>
+      <div id="staff-session" class="staff-user-menu" hidden>
+        <button id="account-toggle" class="account-toggle" type="button" aria-label="Account menu" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></svg></button>
+        <div id="account-menu" class="account-menu" role="menu" hidden><strong id="staff-name"></strong><button id="open-profile" role="menuitem" type="button">Profile</button><button id="staff-logout" role="menuitem" type="button">Sign out</button></div>
       </div>
     </div>
-    <dl id="detail-fields" class="reception-fields"></dl>
+  </div>
+</header>
+
+<main id="workspace" class="reception-workspace shell" tabindex="-1">
+  <p id="staff-loading" role="status" class="loading-state" hidden><span class="spinner" aria-hidden="true"></span>Loading reception…</p>
+
+  <section id="reception-dashboard" hidden>
+    <div class="heading">
+      <div>
+        <h1>Reception</h1>
+        <span class="today-label" id="todayLabel" hidden></span>
+      </div>
+      <div class="reception-date-controls">
+        <div class="reception-date">
+          <input id="reception-date" type="hidden"><button id="today" type="button" hidden>Today</button><button id="open-history" class="btn outline" type="button">History</button>
+          <button id="refresh" class="btn outline icon-action" type="button" aria-label="Refresh visits" title="Refresh visits">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Filter KPIs -->
+    <section class="kpis" aria-label="Registration KPIs">
+      <div class="kpi" id="kpi-total" role="button" tabindex="0" title="Click to view all registrations">
+        <div>
+          <div class="kpi-value" id="stat-total">0</div>
+          <div class="kpi-label">Registered</div>
+        </div>
+        <div class="kpi-icon kpi-total" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2c0-3 3-5 6-5s6 2 6 5v2M17 11a3 3 0 0 0 0-6M17 14c3 0 4 2 4 4v2"/></svg>
+        </div>
+      </div>
+      <div class="kpi" id="kpi-pending" role="button" tabindex="0" title="Click to filter Pending Approvals">
+        <div>
+          <div class="kpi-value" id="stat-pending">0</div>
+          <div class="kpi-label">Approval pending</div>
+        </div>
+        <div class="kpi-icon kpi-pending" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg>
+        </div>
+      </div>
+      <div class="kpi" id="kpi-inside" role="button" tabindex="0" title="Click to filter Inside projects">
+        <div>
+          <div class="kpi-value" id="stat-inside">0</div>
+          <div class="kpi-label">Inside (matching)</div>
+        </div>
+        <div class="kpi-icon kpi-inside" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+      </div>
+      <div class="kpi" id="kpi-approved" role="button" tabindex="0" title="Click to filter approved registrations">
+        <div>
+          <div class="kpi-value" id="stat-approved">0</div>
+          <div class="kpi-label">Approved</div>
+        </div>
+        <div class="kpi-icon kpi-approved" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m7 12 3 3 7-7"/></svg></div>
+      </div>
+    </section>
+
+    <!-- Toolbar Filters -->
+    <section class="toolbar" aria-label="Registration filters">
+      <div class="search">
+        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.7"/><path d="m16 16 4.5 4.5"/></svg>
+        <label class="sr-only" for="visit-search">Search name, employee ID or pass ID</label>
+        <input id="visit-search" type="search" maxlength="100" placeholder="Search name, employee ID or pass ID" autocomplete="off">
+      </div>
+      <label class="sr-only" for="approvalFilter">Approval filter</label>
+      <select class="select" id="approvalFilter" aria-label="Approval filter">
+        <option value="ALL">All approvals</option>
+        <option value="APPROVED">Approved</option>
+        <option value="PENDING">Pending</option>
+        <option value="DENIED">Denied</option>
+        <option value="CANCELLED">Cancelled</option>
+      </select>
+      <label class="sr-only" for="printFilter">Print filter</label>
+      <select class="select" id="printFilter" aria-label="Print filter">
+        <option value="ALL">All print status</option>
+        <option value="UNPRINTED">Not printed</option>
+        <option value="PRINTED">Printed</option>
+      </select>
+      <label class="sr-only" for="typeFilter">Type filter</label>
+      <select class="select" id="typeFilter" aria-label="Type filter">
+        <option value="ALL">All types</option>
+        <option value="EMPLOYEE">Employee</option>
+        <option value="VISITOR">Visitor</option>
+      </select>
+      <button class="reset" id="clearFilters" type="button">Clear</button>
+      <div class="status-filters sr-only" role="group" aria-label="Filter visits by status" hidden>
+        <button type="button" data-status="ALL" aria-pressed="true">All</button>
+        <button type="button" data-status="PENDING" aria-pressed="false">Pending</button>
+        <button type="button" data-status="APPROVED" aria-pressed="false">Approved</button>
+        <button type="button" data-status="DENIED" aria-pressed="false">Denied</button>
+        <button type="button" data-status="CANCELLED" aria-pressed="false">Cancelled</button>
+      </div>
+    </section>
+
+    <!-- Section Heading & Table -->
+    <div class="section-heading">
+      <strong>Registrations</strong>
+      <div class="list-meta">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span id="list-status" role="status" aria-live="polite">0 matching visits</span>
+      </div>
+    </div>
+
+    <div class="visits-table-wrap" tabindex="0" role="region" aria-label="Visits Table">
+      <table class="visits-table">
+        <thead>
+          <tr class="table-header-row">
+            <th scope="col" class="th-identity">Person / Request</th>
+            <th scope="col" class="th-project">Project</th>
+            <th scope="col" class="th-host host-col">Host / Reference</th>
+            <th scope="col" class="th-approval">Approval</th>
+            <th scope="col" class="th-card">Card Status</th>
+            <th scope="col" class="th-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="visit-rows"></tbody>
+      </table>
+    </div>
+
+    <div id="empty-visits" class="empty" hidden>
+      No registrations found.
+    </div>
+
+    <div class="list-actions">
+      <button class="btn outline" id="load-more" type="button" hidden>Load more</button>
+    </div>
+  </section>
+</main>
+
+<!-- Floating Action Button for Manual registration -->
+<button class="fab" id="assistedFab" type="button" aria-haspopup="dialog" aria-expanded="false">
+  <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" fill="none" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg>
+  Manual registration
+</button>
+
+<!-- Visit Details & Print Dialog -->
+<dialog id="visit-dialog" class="modal app-dialog reception-detail" aria-labelledby="detail-name">
+  <div class="modal-header dialog-heading">
+    <div>
+      <h2 id="detail-name">Visit details</h2>
+      <small id="detail-kind" class="detail-kind-tag"></small>
+    </div>
+    <div class="modal-header-actions">
+      <div id="detail-badge"></div>
+      <button id="close-visit" type="button" class="close" aria-label="Close visit details">×</button>
+    </div>
+  </div>
+  <div class="modal-body dialog-body" tabindex="0" role="region" aria-label="Visit information and card preview">
+    <div id="detail-status" role="status"></div>
     <div id="card-status" class="card-status-message" role="status"></div>
     <div id="reception-card" class="reception-card" hidden></div>
+    <div class="reception-person" id="reception-person-wrap" hidden><img id="detail-photo" width="80" height="100" alt="Person photo" hidden></div>
+    <h3>Details</h3><dl id="detail-fields" class="info-grid"></dl>
+    <section aria-labelledby="timeline-heading"><h3 id="timeline-heading">Entry / exit timeline</h3><div id="detail-timeline"></div></section>
   </div>
-  <div class="dialog-actions">
-    <button id="retry-detail" class="secondary" type="button" hidden>Retry</button>
-    <button id="detail-print" class="primary btn-print" type="button" disabled><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print Pass</button>
+  <div class="row-actions dialog-actions">
+    <button id="retry-detail" class="btn outline" type="button" hidden>Retry</button>
+    <button id="remind-host" class="btn outline" type="button" hidden>Remind host</button><span id="reminder-status" role="status"></span>
+    <button id="detail-print" class="btn primary btn-print" type="button" disabled>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print pass
+    </button>
   </div>
 </dialog>
-<script nonce="__NONCE__">__SCRIPT__</script></body></html>
+
+<dialog id="assisted-dialog" class="modal app-dialog manual-dialog" aria-labelledby="assisted-title">
+ <div class="modal-header"><h2 id="assisted-title">Manual registration</h2><button id="close-assisted" class="close" type="button" aria-label="Close manual registration">×</button></div>
+ <div id="manual-content" class="manual-content"></div>
+</dialog>
+<dialog id="profile-dialog" class="modal app-dialog" aria-labelledby="profile-title"><div class="modal-header"><h2 id="profile-title">Profile</h2><button id="close-profile" class="close" type="button" aria-label="Close profile">×</button></div><div class="modal-body"><dl id="profile-fields" class="info-grid"></dl><h3>Assigned offices</h3><div id="profile-offices"></div></div></dialog>
+<dialog id="history-dialog" class="modal app-dialog history-dialog" aria-labelledby="history-title"><div class="modal-header"><h2 id="history-title">Registration history</h2><button id="close-history" class="close" type="button" aria-label="Close history">×</button></div><div class="modal-body"><div class="history-range"><label>From<input id="history-date" type="date"></label><label>To<input id="history-end" type="date"></label><button id="refresh-history" class="btn outline" type="button">Refresh history</button></div><p id="history-status" role="status"></p><div id="history-rows"></div></div></dialog>
+<script nonce="__NONCE__">__SCRIPT__</script>
+</body>
+</html>

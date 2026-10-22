@@ -1,6 +1,6 @@
 'use strict';
 const $=id=>document.getElementById(id),toasts=new ToastNotifications();
-const state={context:null,location:null,rows:[],cursor:null,status:'ALL',listVersion:0,calendarVersion:0,calendarBusy:false,detailVersion:0,selected:null,detail:null,listBusy:false,listComplete:false,listFailed:false,printBusy:false,photoUrl:null,cardUrl:null,pendingPrint:null};
+const state={context:null,location:null,rows:[],cursor:null,status:'ALL',listVersion:0,calendarVersion:0,calendarBusy:false,detailVersion:0,selected:null,detail:null,listBusy:false,listComplete:false,listFailed:false,printBusy:false,photoUrl:null,cardUrl:null,pendingPrint:null,insideOnly:false};
 let searchTimer;
 const cookie=name=>document.cookie.split('; ').find(value=>value.startsWith(name+'='))?.split('=')[1];
 async function api(action,body={}){
@@ -9,19 +9,34 @@ async function api(action,body={}){
  if(!response.ok){const messages={400:'Check the details.',401:'Sign in again to continue.',403:'Access unavailable for this office or pass.',409:'Pass or print state changed. Refresh and try again.',429:'Too many requests. Please wait.'};const error=Object.assign(new Error(messages[response.status]??'Unable to complete the request. Please retry.'),{status:response.status});if(response.status===401)showLogin();throw error;}return response.json();
 }
 state.pendingPrint=new ReceptionPrintCoordinator(api);
-function badge(status){const item=document.createElement('span');item.className='status-pill';item.dataset.status=status;item.textContent=status.charAt(0)+status.slice(1).toLowerCase();return item;}
+function badge(status){const item=document.createElement('span');item.className='status '+status.toLowerCase();item.textContent=status.charAt(0)+status.slice(1).toLowerCase();return item;}
 function effective(row){return row.status==='CANCELLED'?'CANCELLED':row.passStatus==='REVOKED'?'REVOKED':Date.parse(row.validUntilUtc)<=Date.now()?'EXPIRED':row.status;}
 const kind=row=>row.requestType==='DIGITAL_ID'?'Digital ID':row.requestType==='EMPLOYEE_PROJECT'?'Project access':'Visitor';
 const time=value=>new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit'}).format(new Date(value));
 const dateTime=value=>new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
+const eyeIcon='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+function canPrint(row){return !!state.location?.canPrint&&['PENDING','APPROVED'].includes(row.status)&&['PENDING','ACTIVE'].includes(row.passStatus)&&Date.parse(row.validUntilUtc)>Date.now();}
+function projectText(row){if(row.requestType!=='DIGITAL_ID')return row.projectName??'Project unavailable';const p=row.employeeProjects;return p?.available?(p.items.map(i=>i.name).join(' · ')+(p.total>p.items.length?' · '+(p.total-p.items.length)+' more':''))||'No assigned projects':'Assignments unavailable';}
+function renderTimeline(movements=[],hasMore=false){const root=$('detail-timeline');root.replaceChildren();if(!movements.length){root.textContent='No movements recorded.';return;}const ol=document.createElement('ol');ol.className='reception-timeline';for(const m of [...movements].sort((a,b)=>Date.parse(a.occurredAtUtc)-Date.parse(b.occurredAtUtc)||(BigInt(a.accessEventId)<BigInt(b.accessEventId)?-1:1))){const li=document.createElement('li'),title=document.createElement('strong'),time=document.createElement('time'),meta=document.createElement('p');title.textContent=m.eventType==='ENTRY'?'Entry':'Exit';time.dateTime=m.occurredAtUtc;time.textContent=dateTime(m.occurredAtUtc)+' IST';meta.textContent=(m.projectName?m.projectName+' / ':'')+m.guardName+' · '+({SCAN:'QR scan',MANUAL:'Manual',RECONCILE:'Reconciled exit'}[m.entryMethod]??m.entryMethod);li.append(title,time,meta);ol.append(li);}root.append(ol);if(hasMore){const p=document.createElement('p');p.textContent='Showing the latest '+movements.length+' movements.';root.append(p);}}
 function releaseImages(){for(const key of ['photoUrl','cardUrl']){if(state[key])URL.revokeObjectURL(state[key]);state[key]=null;}}
 function imageUrl(result){if(!['image/png','image/jpeg','image/webp'].includes(result.mimeType)||typeof result.imageBase64!=='string'||result.imageBase64.length>7340032)throw new Error('Image unavailable.');const bytes=Uint8Array.from(atob(result.imageBase64),c=>c.charCodeAt(0));return URL.createObjectURL(new Blob([bytes],{type:result.mimeType}));}
-function showLogin(){state.calendarVersion++;state.context=null;state.listVersion++;state.detailVersion++;state.rows=[];state.cursor=null;state.pendingPrint.clear();closeVisit();location.replace('/');}
+function showLogin(){state.calendarVersion++;state.context=null;state.listVersion++;state.detailVersion++;state.rows=[];state.cursor=null;state.pendingPrint.clear();closeVisit();closeManual();$('history-dialog').close();$('profile-dialog').close();$('visit-rows').replaceChildren();$('reception-dashboard').hidden=true;location.replace('/');}
 function setContext(context){
- state.context=context;state.location=context.locations[0];$('staff-name').textContent=context.displayName;$('staff-session').hidden=$('reception-dashboard').hidden=false;
+ state.rows=[];state.cursor=null;state.context=context;state.location=context.locations[0];$('staff-name').textContent=context.displayName;$('staff-session').hidden=$('reception-dashboard').hidden=false;
  setCalendar(context.currentDate);$('reception-date').value=context.currentDate;
  $('reception-location').replaceChildren(...context.locations.map(row=>new Option(row.locationName,String(row.locationId))));$('office-selector').hidden=context.locations.length===1;$('office-name').textContent=state.location.locationName;
- $('visit-search').value='';state.status='ALL';document.querySelectorAll('[data-status]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.status==='ALL')));loadVisits();
+ $('visit-search').value='';state.status='ALL';state.insideOnly=false;if($('approvalFilter'))$('approvalFilter').value='ALL';document.querySelectorAll('[data-status]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.status==='ALL')));
+ updateTodayLabel();updateActiveKpi();loadVisits();
+}
+function updateTodayLabel(){if(state.context)$('todayLabel').textContent=new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'long',year:'numeric'}).format(new Date(state.context.currentDate+'T12:00:00Z'));}
+function updateActiveKpi(){
+ document.querySelectorAll('.kpi').forEach(el=>el.classList.remove('active-kpi'));
+ if(state.insideOnly){$('kpi-inside')?.classList.add('active-kpi');return;}
+ if(state.status==='PENDING'){$('kpi-pending')?.classList.add('active-kpi');return;}
+ if(state.status==='APPROVED'){$('kpi-approved')?.classList.add('active-kpi');return;}
+ const pr=$('printFilter')?.value;
+
+ if(state.status==='ALL'&&(!pr||pr==='ALL')){$('kpi-total')?.classList.add('active-kpi');}
 }
 function setCalendar(currentDate){
  if(typeof currentDate!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(currentDate)||new Date(currentDate+'T12:00:00.000Z').toISOString().slice(0,10)!==currentDate)throw new Error('Office date unavailable.');
@@ -30,107 +45,181 @@ function setCalendar(currentDate){
 }
 async function refreshCalendar(forceToday=false){
  if(!state.context||(!forceToday&&state.calendarBusy))return;state.calendarBusy=true;const version=++state.calendarVersion,previousDate=state.context.currentDate,selected=$('reception-date').value;$('today').disabled=true;
- try{const context=await api('me');if(!state.context||version!==state.calendarVersion)return;setCalendar(context.currentDate);
+ try{const context=await api('me');if(!state.context||version!==state.calendarVersion)return;const updatedOffice=context.locations.find(l=>l.locationId===state.location.locationId);if(!updatedOffice){closeVisit();closeManual();$('history-dialog').close();setContext(context);return;}state.location=updatedOffice;state.context.locations=context.locations;$('reception-location').replaceChildren(...context.locations.map(l=>new Option(l.locationName,String(l.locationId))));$('reception-location').value=String(updatedOffice.locationId);$('office-selector').hidden=context.locations.length===1;setCalendar(context.currentDate);updateTodayLabel();
   if((forceToday||selected===previousDate)&&$('reception-date').value===selected){$('reception-date').value=context.currentDate;await loadVisits();}
  }catch(error){if(version===state.calendarVersion&&state.context)toasts.show(error.message,'error');}
  finally{if(version===state.calendarVersion){state.calendarBusy=false;$('today').disabled=false;}}
 }
 function currentIndiaDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
 let calendarTimer;
-function watchCalendar(){clearInterval(calendarTimer);calendarTimer=setInterval(()=>{if(!document.hidden&&state.context&&currentIndiaDay()!==state.context.currentDate)void refreshCalendar();},60000);}
+function watchCalendar(){clearInterval(calendarTimer);calendarTimer=setInterval(()=>{if(!document.hidden&&state.context){if(currentIndiaDay()!==state.context.currentDate)void refreshCalendar();renderRows();if(state.detail){$('detail-print').hidden=!canPrint(state.detail);void reminderState(state.detail,state.detailVersion);}}},60000);}
 watchCalendar();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.context)void refreshCalendar();});
-window.addEventListener('pagehide',()=>{state.calendarVersion++;state.calendarBusy=false;clearInterval(calendarTimer);});
-window.addEventListener('pageshow',event=>{if(event.persisted){watchCalendar();void refreshCalendar();}});
+window.addEventListener('pagehide',()=>{state.calendarVersion++;state.calendarBusy=false;state.listVersion++;clearInterval(calendarTimer);closeVisit();closeManual();$('history-dialog').close();$('profile-dialog').close();state.rows=[];$('visit-rows').replaceChildren();$('reception-dashboard').hidden=true;});
+window.addEventListener('pageshow',event=>{if(event.persisted){watchCalendar();api('me').then(setContext).catch(()=>showLogin());}});
 function renderRows(){
  $('visit-rows').replaceChildren();
- let pendingCount=0,printedCount=0;const insideKeys=new Set();
+ let pendingCount=0,approvedCount=0;const insideKeys=new Set();
+ const typeFilter=$('typeFilter')?.value||'ALL';
+ const printFilter=$('printFilter')?.value||'ALL';
+ const formatRef=ref=>typeof ref==='string'&&ref.startsWith('V-')&&ref.length>14?'V-'+ref.slice(2,10).toUpperCase():(ref??'—');
  for(const row of state.rows){
-  if(row.status==='PENDING')pendingCount++;
-  if(row.isInside)insideKeys.add(row.requestType==='DIGITAL_ID'&&row.employeeId?'employee:'+row.employeeId:'visit:'+row.visitRequestId);
-  printedCount+=row.printCount;
-  const tr=document.createElement('tr'),person=document.createElement('td'),project=document.createElement('td'),status=document.createElement('td'),valid=document.createElement('td'),actions=document.createElement('td');
-  const personWrap=document.createElement('div');personWrap.className='person-cell-content';
-  const avatar=document.createElement('span');avatar.className='avatar visit-avatar';
+  if(state.status!=='ALL'&&effective(row)!==state.status)continue;
+
+
+  if(state.insideOnly&&!row.isInside)continue;
+  const isPr=row.printCount>0;
+  if(printFilter==='PRINTED'&&!isPr)continue;
+  if(printFilter==='UNPRINTED'&&isPr)continue;
+  if(typeFilter==='EMPLOYEE'&&row.requestType==='EXTERNAL')continue;
+  if(typeFilter==='VISITOR'&&row.requestType!=='EXTERNAL')continue;
+
+  if(row.status==='PENDING')pendingCount++;if(row.isInside)insideKeys.add(row.requestType==='DIGITAL_ID'&&row.employeeId?'employee:'+row.employeeId:'visit:'+row.visitRequestId);if(effective(row)==='APPROVED')approvedCount++;
+  const tr=document.createElement('tr');tr.className='registration-row';
+  const person=document.createElement('td');person.className='cell-identity';
+  const personWrap=document.createElement('div');personWrap.className='identity-cell';
+  const avatar=document.createElement('div');avatar.className='avatar';
   const initials=(row.personName||'').split(' ').filter(Boolean).map(s=>s[0]).slice(0,2).join('').toUpperCase()||'V';
   avatar.textContent=initials;
-  const personInfo=document.createElement('div');
-  const name=document.createElement('button');name.className='visit-person';name.type='button';name.textContent=row.personName;name.addEventListener('click',()=>openVisit(row));
-  const id=document.createElement('span');id.className='visit-secondary';id.textContent=row.employeeId??row.publicReference;
+  const personInfo=document.createElement('div');personInfo.className='person-copy';
+  const name=document.createElement('button');name.className='visit-person name';name.type='button';name.textContent=row.personName;name.addEventListener('click',()=>openVisit(row));
+  const rawRef=row.employeeId??row.publicReference;
+  const id=document.createElement('div');id.className='sub';id.title=rawRef;id.textContent=formatRef(rawRef)+' \u00b7 '+kind(row)+' \u00b7 '+time(row.submittedAtUtc||row.validFromUtc);
   personInfo.append(name,id);personWrap.append(avatar,personInfo);person.append(personWrap);
-  const type=document.createElement('span');type.className='visit-type';type.textContent=kind(row);
-  const projName=document.createElement('div');projName.textContent=row.projectName??'—';
-  project.append(projName,type);
-  status.append(badge(effective(row)));if(row.isInside){const inside=document.createElement('span');inside.className='visit-secondary';inside.textContent='Inside';status.append(inside);}
-  valid.className='time-cell';valid.textContent=time(row.validUntilUtc)+' IST';const button=document.createElement('button');button.className='secondary';button.type='button';button.textContent='View pass';button.addEventListener('click',()=>openVisit(row));actions.append(button);tr.append(person,project,status,valid,actions);$('visit-rows').append(tr);
- }
- const complete=state.listComplete&&!state.listFailed;
- for(const [id,count] of [['stat-total',state.rows.length],['stat-pending',pendingCount],['stat-inside',insideKeys.size],['stat-printed',printedCount]])if($(id))$(id).textContent=complete?String(count):state.listFailed?'\u2014':'\u2026';
- $('empty-visits').hidden=!complete||state.rows.length>0;$('load-more').hidden=!state.cursor;$('list-status').textContent=state.rows.length+' matching visits'+(state.cursor?' \u00b7 Loading more\u2026':'');
 
+  const project=document.createElement('td');project.className='cell-project';
+  const projName=document.createElement('div');projName.className='cell-primary';projName.textContent=projectText(row);
+  const projType=document.createElement('div');projType.className='cell-secondary';projType.textContent=kind(row);
+  project.append(projName,projType);
+
+  const host=document.createElement('td');host.className='cell-host host-col';
+  const hostName=document.createElement('div');hostName.className='cell-primary';hostName.textContent=row.requestType==='DIGITAL_ID'?'Not applicable':row.hostName??'Host unavailable';
+  const hostSub=document.createElement('div');hostSub.className='cell-secondary';hostSub.textContent=row.requestType==='DIGITAL_ID'?'':(row.hostEmail??'');
+  host.append(hostName,hostSub);
+
+  const status=document.createElement('td');status.className='cell-status';
+  status.append(badge(effective(row)));if(row.isInside){const inside=document.createElement('span');inside.className='status inside';inside.textContent='Inside';status.append(inside);}
+
+  const cardStatus=document.createElement('td');cardStatus.className='cell-card';
+  const cardBadge=document.createElement('span');cardBadge.className='status '+(isPr?'printed':'unprinted');cardBadge.textContent=isPr?'Printed':'Not printed';
+  cardStatus.append(cardBadge);
+
+  const actions=document.createElement('td');actions.className='cell-actions actions';
+  const viewBtn=document.createElement('button');viewBtn.className='btn outline';viewBtn.type='button';viewBtn.innerHTML=eyeIcon;viewBtn.classList.add('icon-action');viewBtn.setAttribute('aria-label','View pass for '+row.personName);viewBtn.title='View pass';viewBtn.addEventListener('click',()=>openVisit(row));
+  const printBtn=document.createElement('button');printBtn.className='btn primary';printBtn.type='button';printBtn.textContent=row.printCount?'Reprint':'Print';printBtn.hidden=!canPrint(row);printBtn.disabled=state.printBusy;printBtn.addEventListener('click',()=>browserPrint(row));
+  actions.append(viewBtn,printBtn);
+
+  tr.tabIndex=0;tr.setAttribute('aria-label','View pass for '+row.personName);tr.addEventListener('click',event=>{if(!event.target.closest('button,a,input,select'))openVisit(row);});tr.addEventListener('keydown',event=>{if(event.target===tr&&['Enter',' '].includes(event.key)){event.preventDefault();openVisit(row);}});
+  tr.append(person,project,host,status,cardStatus,actions);
+  $('visit-rows').append(tr);
+ }
+ const complete=state.listComplete&&!state.listFailed;const hasRows=state.rows.length>0;
+ for(const [id,count] of [['stat-total',$('visit-rows').children.length],['stat-pending',pendingCount],['stat-inside',insideKeys.size],['stat-approved',approvedCount]])if($(id))$(id).textContent=complete||hasRows?String(count):state.listFailed?'\u2014':'\u2026';
+ $('empty-visits').hidden=!complete||$('visit-rows').children.length>0;$('load-more').hidden=!state.cursor;$('list-status').textContent=$('visit-rows').children.length+' matching visits'+(state.cursor?' \u00b7 Loading more\u2026':'');
+ if(typeof updateActiveKpi==='function')updateActiveKpi();
 }
 async function loadVisits(more=false){
- if(!state.context)return;const version=++state.listVersion;state.listBusy=true;state.listComplete=false;state.listFailed=false;$('refresh').disabled=$('load-more').disabled=true;$('load-more').hidden=true;$('empty-visits').hidden=true;
- if(!more){state.rows=[];state.cursor=null;$('visit-rows').replaceChildren();}$('list-status').textContent='Loading visits\u2026';
- for(const id of ['stat-total','stat-pending','stat-inside','stat-printed'])if($(id))$(id).textContent='\u2026';
- const filter={locationId:state.location.locationId,visitDate:$('reception-date').value,search:$('visit-search').value.trim(),status:state.status};
+ if(!state.context)return;const version=++state.listVersion,hadComplete=state.listComplete;state.listBusy=true;state.listFailed=false;$('refresh').disabled=$('load-more').disabled=true;$('load-more').hidden=true;$('empty-visits').hidden=true;
+ $('list-status').textContent=state.rows.length?'Updating visits…':'Loading visits…';$('visit-rows').setAttribute('aria-busy','true');
+ if(!state.rows.length&&!hadComplete)for(const id of ['stat-total','stat-pending','stat-inside','stat-approved'])if($(id))$(id).textContent='…';
+ const filter={locationId:state.location.locationId,visitDate:$('reception-date').value,search:$('visit-search').value.trim(),status:'ALL'},rows=more?[...state.rows]:[];let cursor=more?state.cursor:null;
  try{const cursors=new Set();do{
-  const result=await api('list',{...filter,...(state.cursor?{cursor:state.cursor}:{})});if(version!==state.listVersion)return;
-  const known=new Set(state.rows.map(row=>row.visitRequestId));state.rows.push(...result.visits.filter(row=>!known.has(row.visitRequestId)));state.cursor=result.cursor;
-  if(state.cursor){const key=JSON.stringify(state.cursor);if(cursors.has(key))throw new Error('List changed. Refresh to retry.');cursors.add(key);}
-  if(!state.cursor){state.listBusy=false;state.listComplete=true;}renderRows();$('load-more').hidden=true;if(state.cursor)$('list-status').textContent='Loading visits\u2026';
- }while(state.cursor);
- }catch(error){if(version!==state.listVersion)return;state.listFailed=true;renderRows();$('load-more').hidden=true;$('list-status').textContent='Visits could not be fully loaded. Use Refresh to retry.';toasts.show(error.message,'error');}
- finally{if(version===state.listVersion){state.listBusy=false;$('refresh').disabled=$('load-more').disabled=false;}}
+  const result=await api('list',{...filter,...(cursor?{cursor}:{})});if(version!==state.listVersion)return;
+  const known=new Set(rows.map(row=>row.visitRequestId));rows.push(...result.visits.filter(row=>!known.has(row.visitRequestId)));cursor=result.cursor;
+  if(cursor){const key=JSON.stringify(cursor);if(cursors.has(key))throw new Error('List changed. Refresh to retry.');cursors.add(key);}
+ }while(cursor);
+ state.rows=rows;state.cursor=null;state.listComplete=true;state.listBusy=false;renderRows();
+ }catch(error){if(version!==state.listVersion)return;state.listFailed=true;$('list-status').textContent='Could not update visits. Showing the previous list. Use Refresh to retry.';toasts.show(error.message,'error');}
+ finally{if(version===state.listVersion){state.listBusy=false;$('visit-rows').setAttribute('aria-busy','false');$('refresh').disabled=$('load-more').disabled=false;}}
 }
 
 function fitDialog(){const dialog=$('visit-dialog');if(!dialog.open)return;const v=window.visualViewport,w=v?.width??innerWidth,h=v?.height??innerHeight,mobile=w<=760,width=Math.max(0,Math.min(mobile?w:672,w-(mobile?0:32))),height=Math.max(0,Math.min(736,h-(mobile?16:32)));dialog.style.inset='auto';dialog.style.margin='0';dialog.style.width=width+'px';dialog.style.height=height+'px';dialog.style.left=((v?.offsetLeft??0)+(w-width)/2)+'px';dialog.style.top=((v?.offsetTop??0)+(mobile?h-height:(h-height)/2))+'px';}
 function closeVisit(){state.detailVersion++;state.selected=null;state.detail=null;releaseImages();toasts.clear();document.body.append(toasts.region);if($('visit-dialog').open)$('visit-dialog').close();}
-function field(label,value){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;$('detail-fields').append(dt,dd);return dd;}
+function field(label,value){const box=document.createElement('div');box.className='info';const dt=document.createElement('dt');dt.className='label';dt.textContent=label;const dd=document.createElement('dd');dd.className='value';dd.textContent=value;box.append(dt,dd);$('detail-fields').append(box);return dd;}
+function readOnlyCard(detail){const card=document.createElement('article');card.className='readonly-pass';card.setAttribute('aria-label','Read-only pass summary');for(const value of [detail.personName,kind(detail)+' · '+effective(detail),detail.publicPassNumber,detail.locationName,projectText(detail)]){const line=document.createElement('p');line.textContent=value;card.append(line);}const note=document.createElement('small');note.textContent='Details only · no entry credential';card.append(note);$('reception-card').replaceChildren(card);$('reception-card').hidden=false;}
 async function openVisit(row){
- closeVisit();state.selected=row;const version=++state.detailVersion;const dialog=$('visit-dialog');dialog.append(toasts.region);$('detail-name').textContent=row.personName;$('detail-kind').textContent=kind(row);$('detail-badge').replaceChildren(badge(effective(row)));$('detail-fields').replaceChildren();$('detail-photo').hidden=$('reception-card').hidden=true;$('reception-card').replaceChildren();$('detail-status').textContent='Loading details\u2026';$('card-status').textContent='';$('retry-detail').hidden=true;$('detail-print').disabled=true;$('detail-print').textContent=row.printCount?'Reprint pass':'Print pass';dialog.showModal();fitDialog();
+ closeVisit();state.selected=row;const version=++state.detailVersion;const dialog=$('visit-dialog');dialog.append(toasts.region);$('detail-name').textContent=row.personName;$('detail-kind').textContent=kind(row);$('detail-badge').replaceChildren(badge(effective(row)));$('detail-fields').replaceChildren();$('detail-timeline').replaceChildren();$('reception-person-wrap').hidden=true;$('detail-photo').hidden=$('reception-card').hidden=true;$('reception-card').replaceChildren();$('remind-host').hidden=true;$('reminder-status').textContent='';$('detail-status').textContent='Loading details\u2026';$('card-status').textContent='';$('retry-detail').hidden=true;$('detail-print').hidden=true;$('detail-print').disabled=true;$('detail-print').textContent=row.printCount?'Reprint pass':'Print pass';dialog.showModal();fitDialog();
  try {
-  const detail=await api('detail',{visitRequestId:row.visitRequestId});if(version!==state.detailVersion)return;state.detail=detail;$('detail-status').textContent='';$('detail-name').textContent=detail.personName;$('detail-badge').replaceChildren(badge(effective(detail)));
-  field('Pass ID',detail.publicPassNumber);field('Office',detail.locationName);if(detail.projectName)field('Project',detail.projectName);field('Purpose',detail.reason);field('Valid from',dateTime(detail.validFromUtc));field('Valid until',dateTime(detail.validUntilUtc));field('Print handoffs',String(row.printCount)).id='detail-print-count';
-  if(detail.photoAvailable)api('photo',{visitRequestId:row.visitRequestId}).then(photo=>{if(version!==state.detailVersion)return;state.photoUrl=imageUrl(photo);$('detail-photo').src=state.photoUrl;$('detail-photo').hidden=false;}).catch(()=>{});
-  const allowed=['PENDING','APPROVED'].includes(detail.status)&&['PENDING','ACTIVE'].includes(detail.passStatus)&&Date.parse(detail.validUntilUtc)>Date.now();
-  if(!allowed){$('card-status').textContent='This pass is unavailable for printing.';return;}
+  const detail=await api('detail',{visitRequestId:row.visitRequestId});if(version!==state.detailVersion)return;state.detail=detail;void reminderState(detail,version);$('detail-status').textContent='';$('detail-name').textContent=detail.personName;$('detail-badge').replaceChildren(badge(effective(detail)));
+  field('Pass ID',detail.publicPassNumber);field('Office',detail.locationName);field(detail.requestType==='DIGITAL_ID'?'Assigned projects':'Project',projectText(detail));if(detail.requestType!=='DIGITAL_ID'){const host=field('Host',detail.hostName??'Unavailable');const email=document.createElement('span');email.className='host-email';email.textContent=detail.hostEmail??'Email unavailable';host.append(email);}field('Purpose',detail.reason);field('Valid from',dateTime(detail.validFromUtc));field('Valid until',dateTime(detail.validUntilUtc));field('Print count',String(row.printCount)).id='detail-print-count';renderTimeline(detail.movements,detail.movementsHasMore);
+  const allowed=canPrint(detail);
+  if(detail.photoAvailable&&!allowed)api('photo',{visitRequestId:row.visitRequestId}).then(photo=>{if(version!==state.detailVersion)return;state.photoUrl=imageUrl(photo);$('detail-photo').src=state.photoUrl;$('detail-photo').hidden=$('reception-person-wrap').hidden=false;}).catch(()=>{});
+  if(!allowed){readOnlyCard(detail);$('card-status').textContent=state.location.canPrint?'This pass is unavailable for printing.':'View-only access. Printing is not permitted.';return;}
   $('card-status').textContent='Preparing card preview\u2026';
-  try{const image=await api('preview',{visitRequestId:row.visitRequestId});if(version!==state.detailVersion)return;state.cardUrl=imageUrl(image);const img=document.createElement('img');img.src=state.cardUrl;img.alt='Pass for '+detail.personName;img.width=1712;img.height=1080;$('reception-card').append(img);$('reception-card').hidden=false;$('card-status').textContent='';$('detail-print').disabled=!state.location.canPrint||state.printBusy;}
-  catch(error){if(version!==state.detailVersion)return;$('card-status').textContent='Preview unavailable. Retry to check the current pass.';$('retry-detail').hidden=false;toasts.show(error.message,'error');}
+  try{const image=await api('preview',{visitRequestId:row.visitRequestId});if(version!==state.detailVersion)return;state.cardUrl=imageUrl(image);const img=document.createElement('img');img.src=state.cardUrl;img.alt='Pass for '+detail.personName;img.width=1712;img.height=1080;$('reception-card').append(img);$('reception-card').hidden=false;$('card-status').textContent='';$('detail-print').hidden=false;$('detail-print').disabled=state.printBusy;}
+  catch(error){if(version!==state.detailVersion)return;readOnlyCard(detail);$('card-status').textContent='Preview unavailable. Retry to check the current pass.';$('retry-detail').hidden=false;toasts.show(error.message,'error');}
  }catch(error){if(version!==state.detailVersion)return;$('detail-status').textContent='Visit details could not be loaded.';$('retry-detail').hidden=false;toasts.show(error.message,'error');}
 }
-async function browserPrint(){
- if(state.printBusy||!state.detail||!state.selected)return;
- const row=state.selected,detail=state.detail,popup=window.open('/reception/print','_blank','popup,width=1000,height=700');
- if(!popup){toasts.show('Allow pop-ups to open the print window.','error');return;}
- state.printBusy=true;$('detail-print').disabled=true;$('detail-print').textContent='Preparing print\u2026';
- const ready=new Promise((resolve,reject)=>{const timer=setTimeout(()=>{window.removeEventListener('message',receive);reject(new Error('Print window did not open. Please retry.'));},15000);function receive(event){if(event.origin===location.origin&&event.source===popup&&event.data?.type==='gatepass-print-ready'){clearTimeout(timer);window.removeEventListener('message',receive);resolve();}}window.addEventListener('message',receive);});
- const detailVersion=state.detailVersion;
+async function browserPrint(row=state.selected){
+ if(state.printBusy||!row||!canPrint(row))return;
+ state.printBusy=true;$('reception-location').disabled=true;renderRows();$('detail-print').disabled=true;let frame;
  try{
-  await ready;if(popup.closed)throw new Error('Print window was closed.');
-  const image=await state.pendingPrint.handoff(row.visitRequestId,detail.accessPassId,()=>crypto.randomUUID());row.printCount++;renderRows();
-  if(popup.closed)throw new Error('Print window was closed after handoff. Use Reprint if needed.');
-  await new Promise((resolve,reject)=>{
-   const timer=setTimeout(()=>{window.removeEventListener('message',receive);reject(new Error('The job was handed off, but the print window did not confirm its preview. Use Reprint only if needed.'));},15000);
-   function receive(event){if(event.origin!==location.origin||event.source!==popup||event.data?.printJobId!==image.printJobId)return;
-    if(!['gatepass-print-loaded','gatepass-print-display-error'].includes(event.data.type))return;clearTimeout(timer);window.removeEventListener('message',receive);
-    if(event.data.type==='gatepass-print-loaded')resolve();else reject(new Error('Print window could not display this job. Use Reprint if needed.'));
-   }
-   window.addEventListener('message',receive);popup.postMessage({type:'gatepass-print-image',printJobId:image.printJobId,mimeType:image.mimeType,imageBase64:image.imageBase64},location.origin);
-  });
-  toasts.show('Print preview ready. Choose Print in the new window.','success');
-
- }catch(error){if(error.dispatched){await loadVisits();row.printCount=state.rows.find(item=>item.visitRequestId===row.visitRequestId)?.printCount??Math.max(row.printCount,1);}if(!popup.closed)popup.postMessage({type:'gatepass-print-error',message:error.message},location.origin);toasts.show(error.message,'error');}
- finally{state.printBusy=false;if(state.selected===row&&state.detailVersion===detailVersion){if($('detail-print-count'))$('detail-print-count').textContent=String(row.printCount);$('detail-print').disabled=!state.cardUrl||!state.location?.canPrint;$('detail-print').textContent=row.printCount?'Reprint pass':'Print pass';}}
+  const detail=row;if(!detail.accessPassId)throw new Error('Refresh the pass before printing.');
+  frame=document.createElement('iframe');frame.className='print-frame';frame.title='Pass print document';frame.setAttribute('aria-hidden','true');
+  const waitMessage=(type,jobId)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>{window.removeEventListener('message',receive);reject(new Error('Printer document unavailable. Retry to check this job.'));},15000);function receive(event){if(event.origin!==location.origin||event.source!==frame.contentWindow||jobId&&event.data?.printJobId!==jobId)return;if(event.data?.type===type||event.data?.type==='gatepass-print-display-error'){clearTimeout(timer);window.removeEventListener('message',receive);event.data.type===type?resolve():reject(new Error('Print image unavailable.'));}}window.addEventListener('message',receive);});
+  const ready=waitMessage('gatepass-print-ready');frame.src='/reception/print';document.body.append(frame);await ready;
+  const image=await state.pendingPrint.handoff(row.visitRequestId,detail.accessPassId,()=>crypto.randomUUID());row.printCount++;
+  const loaded=waitMessage('gatepass-print-loaded',image.printJobId);frame.contentWindow.postMessage({type:'gatepass-print-image',...image},location.origin);await loaded;
+  const printedFrame=frame;printedFrame.contentWindow.addEventListener('afterprint',()=>printedFrame.remove(),{once:true});setTimeout(()=>printedFrame.remove(),60000);
+  printedFrame.contentWindow.focus();printedFrame.contentWindow.print();frame=null;
+  toasts.show('Print dialog opened. A handoff does not confirm a physical print.','success');
+ }catch(error){if(error.dispatched){const visitDate=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(row.validFromUtc));try{const current=await api('list',{locationId:state.location.locationId,visitDate,search:row.publicReference,status:'ALL'});const refreshed=current.visits.find(v=>v.visitRequestId===row.visitRequestId);if(refreshed)Object.assign(row,refreshed);}catch{/* Keep the operation consumed; refreshing the page can recover its receipt. */}}toasts.show(error.message,'error');}
+ finally{frame?.remove();state.printBusy=false;$('reception-location').disabled=false;await loadVisits();if(state.selected){const current=state.rows.find(r=>r.visitRequestId===state.selected.visitRequestId);if(current)state.selected=current;$('detail-print').hidden=!canPrint(state.selected);$('detail-print').disabled=false;$('detail-print').textContent=state.selected.printCount?'Reprint pass':'Print pass';if($('detail-print-count'))$('detail-print-count').textContent=String(state.selected.printCount);}}
 }
 $('staff-logout').addEventListener('click',async()=>{if(state.printBusy)return;try{if(cookie('gp-staff-csrf')){const response=await fetch('/api/staff/logout',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':cookie('gp-staff-csrf')},body:'{}'});if(!response.ok)throw new Error('Unable to sign out. Please retry.');}else await api('logout');showLogin();}catch(error){toasts.show(error.message,'error');}});
 $('refresh').addEventListener('click',()=>loadVisits());$('load-more').addEventListener('click',()=>loadVisits(true));
 $('reception-date').addEventListener('change',()=>{if($('reception-date').reportValidity())loadVisits();});$('today').addEventListener('click',()=>void refreshCalendar(true));
-$('reception-location').addEventListener('change',()=>{closeVisit();state.location=state.context.locations.find(row=>String(row.locationId)===$('reception-location').value);$('office-name').textContent=state.location.locationName;loadVisits();});
+$('reception-location').addEventListener('change',()=>{closeVisit();closeManual();$('history-dialog').close();state.location=state.context.locations.find(row=>String(row.locationId)===$('reception-location').value);$('office-name').textContent=state.location.locationName;state.rows=[];renderRows();loadVisits();});
 $('visit-search').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadVisits(),350);});
-for(const button of document.querySelectorAll('[data-status]'))button.addEventListener('click',()=>{state.status=button.dataset.status;document.querySelectorAll('[data-status]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));loadVisits();});
-$('close-visit').addEventListener('click',closeVisit);$('visit-dialog').addEventListener('cancel',event=>{event.preventDefault();closeVisit();});$('retry-detail').addEventListener('click',()=>{if(state.selected)openVisit(state.selected);});$('detail-print').addEventListener('click',browserPrint);
+if($('approvalFilter'))$('approvalFilter').addEventListener('change',()=>{state.status=$('approvalFilter').value;document.querySelectorAll('[data-status]').forEach(item=>item.setAttribute('aria-pressed',String(item.dataset.status===state.status)));state.insideOnly=false;renderRows();});
+if($('printFilter'))$('printFilter').addEventListener('change',()=>renderRows());
+if($('typeFilter'))$('typeFilter').addEventListener('change',()=>renderRows());
+if($('clearFilters'))$('clearFilters').addEventListener('click',()=>{
+ $('visit-search').value='';if($('approvalFilter'))$('approvalFilter').value='ALL';if($('printFilter'))$('printFilter').value='ALL';if($('typeFilter'))$('typeFilter').value='ALL';
+ state.status='ALL';state.insideOnly=false;document.querySelectorAll('[data-status]').forEach(item=>item.setAttribute('aria-pressed',String(item.dataset.status==='ALL')));loadVisits();
+});
+
+// Interactive KPI Card Filters
+if($('kpi-total'))$('kpi-total').addEventListener('click',()=>{
+ $('visit-search').value='';if($('approvalFilter'))$('approvalFilter').value='ALL';if($('printFilter'))$('printFilter').value='ALL';if($('typeFilter'))$('typeFilter').value='ALL';
+ state.status='ALL';state.insideOnly=false;loadVisits();
+});
+if($('kpi-pending'))$('kpi-pending').addEventListener('click',()=>{
+ state.insideOnly=false;state.status='PENDING';if($('approvalFilter'))$('approvalFilter').value='PENDING';renderRows();
+});
+if($('kpi-inside'))$('kpi-inside').addEventListener('click',()=>{
+ state.insideOnly=!state.insideOnly;renderRows();
+});
+if($('kpi-approved'))$('kpi-approved').addEventListener('click',()=>{state.insideOnly=false;state.status='APPROVED';if($('approvalFilter'))$('approvalFilter').value='APPROVED';renderRows();});
+
+for(const button of document.querySelectorAll('[data-status]'))button.addEventListener('click',()=>{state.status=button.dataset.status;if($('approvalFilter'))$('approvalFilter').value=state.status;document.querySelectorAll('[data-status]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));loadVisits();});
+$('close-visit').addEventListener('click',closeVisit);$('visit-dialog').addEventListener('cancel',event=>{event.preventDefault();closeVisit();});$('retry-detail').addEventListener('click',()=>{if(state.selected)openVisit(state.selected);});$('detail-print').addEventListener('click',()=>browserPrint());
 window.addEventListener('resize',fitDialog);window.visualViewport?.addEventListener('resize',fitDialog);window.visualViewport?.addEventListener('scroll',fitDialog);
 enhanceSelect($('reception-location'));
-if(cookie('gp-staff-csrf')||cookie('gp-reception-csrf')){$('staff-loading').hidden=false;api('me').then(setContext).catch(()=>showLogin()).finally(()=>{$('staff-loading').hidden=true;});}else showLogin();
+
+// Manual intake uses isolated cookies and the same photo, validation and idempotency workflow.
+function closeManual(){if($('assisted-dialog').open)$('assisted-dialog').close();$('manual-content').replaceChildren();}
+$('assistedFab').addEventListener('click',()=>{if(!state.location)return;const frame=document.createElement('iframe');frame.title='Manual visitor registration';frame.allow='camera';frame.src='/reception/register/'+state.location.locationCode.toLowerCase();$('manual-content').replaceChildren(frame);$('assisted-dialog').showModal();});
+$('close-assisted').addEventListener('click',closeManual);$('assisted-dialog').addEventListener('cancel',event=>{event.preventDefault();closeManual();});
+window.addEventListener('message',event=>{const frame=$('manual-content').querySelector('iframe');if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;if(event.data?.type==='gatepass-manual-close')closeManual();if(event.data?.type==='gatepass-manual-submitted')void loadVisits();});
+$('account-toggle').addEventListener('click',()=>{const opened=$('account-menu').hidden;$('account-menu').hidden=!opened;$('account-toggle').setAttribute('aria-expanded',String(opened));if(opened)$('open-profile').focus();});
+function closeAccount(){ $('account-menu').hidden=true;$('account-toggle').setAttribute('aria-expanded','false'); }
+document.addEventListener('click',event=>{if(!$('staff-session').contains(event.target))closeAccount();});
+$('account-menu').addEventListener('keydown',event=>{const buttons=[...$('account-menu').querySelectorAll('button')];if(event.key==='Escape'){closeAccount();$('account-toggle').focus();}if(['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();buttons[(buttons.indexOf(document.activeElement)+(event.key==='ArrowDown'?1:buttons.length-1))%buttons.length].focus();}});
+$('open-profile').addEventListener('click',async()=>{closeAccount();try{const context=await api('me');$('profile-fields').replaceChildren();for(const [label,value] of [['Name',context.displayName],['Role','Reception']]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;$('profile-fields').append(dt,dd);}$('profile-offices').replaceChildren(...context.locations.map(l=>{const p=document.createElement('p');p.textContent=l.locationName+' · '+(l.canPrint?'View and print':'View only');return p;}));$('profile-dialog').showModal();}catch(error){toasts.show(error.message,'error');}});
+$('close-profile').addEventListener('click',()=>$('profile-dialog').close());
+let historyVersion=0;
+async function loadHistory(){const version=++historyVersion;$('history-rows').replaceChildren();$('history-status').textContent='Loading history…';const date=$('history-date').value,end=$('history-end').value;if(!$('history-date').reportValidity()||!$('history-end').reportValidity())return;if(date>end){$('history-status').textContent='From date must be on or before To date.';return;}const office=state.location.locationId;let cursor,count=0;const cursors=new Set();try{for(let day=date;day<=end;day=new Date(Date.parse(day+'T12:00:00Z')+86400000).toISOString().slice(0,10)){cursor=null;cursors.clear();do{const result=await api('list',{locationId:office,visitDate:day,status:'ALL',...(cursor?{cursor}:{})});if(version!==historyVersion)return;for(const row of result.visits){const item=document.createElement('button'),avatar=document.createElement('span'),copy=document.createElement('span'),name=document.createElement('strong'),meta=document.createElement('span'),ref=document.createElement('span'),arrow=document.createElement('span');item.type='button';item.className='history-row';item.setAttribute('aria-label','View pass for '+row.personName);avatar.className='history-avatar';avatar.textContent=(row.personName??'V').split(' ').filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();copy.className='history-copy';name.textContent=row.personName;meta.textContent=projectText(row)+' · '+dateTime(row.submittedAtUtc??row.validFromUtc);ref.className='history-reference';ref.textContent=row.employeeId??row.publicReference;ref.title=row.publicPassNumber;copy.append(name,meta,ref);arrow.className='history-eye';arrow.innerHTML=eyeIcon;item.append(avatar,copy,badge(effective(row)),arrow);item.addEventListener('click',()=>openVisit(row));$('history-rows').append(item);count++;}cursor=result.cursor;if(cursor){const key=JSON.stringify(cursor);if(cursors.has(key))throw new Error('History changed. Retry.');cursors.add(key);}}while(cursor);}if(version===historyVersion)$('history-status').textContent=count?count+' registrations':'No registrations in this range.';}catch(error){if(version===historyVersion)$('history-status').textContent='History could not be fully loaded. '+error.message;}}
+$('open-history').addEventListener('click',()=>{$('history-date').min=$('reception-date').min;$('history-date').max=$('reception-date').max;$('history-date').value=state.context.currentDate;for(const key of ['min','max','value'])$('history-end')[key]=$('history-date')[key];$('history-dialog').showModal();void loadHistory();});
+$('history-date').addEventListener('change',loadHistory);$('history-end').addEventListener('change',loadHistory);$('refresh-history').addEventListener('click',loadHistory);$('close-history').addEventListener('click',()=>$('history-dialog').close());$('history-dialog').addEventListener('close',()=>{historyVersion++;$('history-rows').replaceChildren();});
+for(const kpi of document.querySelectorAll('.kpi[role="button"]'))kpi.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();kpi.click();}});
+if(cookie('gp-staff-csrf')||cookie('gp-reception-csrf')){$('staff-loading').hidden=false;api('me').then(setContext).catch(error=>{if(error.status!==401){$('staff-loading').textContent='Reception could not load. Reload to retry.';$('staff-loading').hidden=false;toasts.show(error.message,'error');}}).finally(()=>{$('staff-loading').hidden=!!state.context;});}else showLogin();
+
+const reminderKeys=new Map();
+async function reminderState(detail,version){
+ $('remind-host').hidden=true;
+ if(detail.requestType==='DIGITAL_ID'||effective(detail)!=='PENDING')return;
+ $('remind-host').hidden=false;$('remind-host').disabled=true;
+ try{const r=await api('remind-host',{visitRequestId:detail.visitRequestId});if(version!==state.detailVersion)return;$('remind-host').hidden=!r.eligible;$('remind-host').disabled=!r.eligible||r.mailStatus==='QUEUED'||Date.parse(r.nextReminderAtUtc)>Date.now();$('reminder-status').textContent='Host email: '+r.mailStatus.toLowerCase()+' · Last queued '+dateTime(r.lastQueuedAtUtc)+(r.mailStatus==='SENT'?' (delivery not confirmed)':'')+(r.mailStatus!=='QUEUED'&&Date.parse(r.nextReminderAtUtc)>Date.now()?' · Next reminder '+dateTime(r.nextReminderAtUtc):'');$('remind-host').textContent=r.mailStatus==='FAILED'?'Retry host email':'Remind host';}catch{if(version===state.detailVersion){$('remind-host').disabled=false;$('reminder-status').textContent='Email status unavailable. Retry to check.';}}
+}
+$('remind-host').addEventListener('click',async()=>{const detail=state.detail,version=state.detailVersion;if(!detail)return;const id=detail.visitRequestId;if(!reminderKeys.has(id))reminderKeys.set(id,crypto.randomUUID());$('remind-host').disabled=true;try{const r=await api('remind-host',{visitRequestId:id,clientKey:reminderKeys.get(id)});reminderKeys.delete(id);if(version!==state.detailVersion)return;$('reminder-status').textContent=r.outcome==='COOLDOWN'?'Please wait five minutes between reminders.':r.outcome==='ALREADY_QUEUED'?'Host email is already queued.':'Host reminder queued.';await reminderState(detail,version);}catch(error){if(version===state.detailVersion){$('reminder-status').textContent=error.message;$('remind-host').disabled=false;}}});

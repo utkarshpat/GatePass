@@ -1,0 +1,13 @@
+# Reception performance and history refinement
+
+The local SQL adapter previously started PowerShell, loaded the SQL module and opened a new helper process for every stored-procedure call. A measured three-call baseline was 1215, 907 and 928 ms. The development adapter now reuses up to four bounded PowerShell helper processes; a disposable execute-only SQL principal and a fresh unpooled connection remain scoped to each individual call. Role selection, procedure allowlists and SQL authorization are unchanged. No provider response, image, credential or SQL result cache was introduced. Idle helpers close after five seconds and do not keep CLI/test processes alive. Broken or timed-out calls fail without an automatic write retry.
+
+A repeated benchmark measured 1406 ms for the initial process startup, then 21, 20 and 21 ms. These measurements isolate the bridge using rejected synthetic authorization, not an end-to-end card latency claim. Real authenticated HTTP/SQL integration subsequently measured card preview at 1180 ms and print request/render/dispatch at 1011 ms, including real protected QR recovery, private photo, render and authorization. Native print-dialog and printer timing are outside these measurements.
+
+The frontend no longer makes a redundant detail request before printing: the print request's expected pass ID and SQL authorization remain authoritative. Printable previews avoid a redundant separate headshot read; the card already includes the photo. A fresh check still protects preview output, and print begin/finish/dispatch checks remain unchanged.
+
+Reception refresh builds a full replacement list offscreen and commits only after all pages succeed. Existing rows and counters remain visible throughout refresh and on partial-chain/network failure. Office switches clear prior office data. Browser refresh creates a new document and still fetches fresh authorized data; no private browser-persistent list cache is used.
+
+Host name and email share one detail block. History uses clickable compact rows, status badges, readable dates, short request references and an aligned range/refresh toolbar. The toolbar stacks on narrow phones. Redundant subtitle and visible date below Reception are removed. Card status uses Printed/Not printed; this describes browser print handoff, not confirmed paper output. Per-pass print count remains in details. The print KPI is replaced with Approved valid registrations.
+
+Validation includes real manual HTTP/SQL registration, preview and print dispatch without a physical print or real email. Owned test fixtures are removed. Browser checks cover mobile/desktop layout, history toolbar alignment, refresh preservation, failed page-chain handling, host grouping and direct print.

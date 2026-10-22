@@ -12,23 +12,21 @@ async function setup(page:any,context:any){
  return{day:(value:string)=>{day=value;},delay:(value:Promise<void>|null)=>{delay=value;},dates};
 }
 test('Today gets the new India day and updates bounds despite a different browser timezone',async({page,context})=>{
- const f=await setup(page,context);f.day('2026-10-23');await page.locator('#today').click();
+ const f=await setup(page,context);f.day('2026-10-23');await page.evaluate(`void refreshCalendar(true)`);
  await expect(page.locator('#reception-date')).toHaveValue('2026-10-23');await expect.poll(()=>f.dates.at(-1)).toBe('2026-10-23');await expect(page.locator('#reception-date')).toHaveAttribute('min','2026-09-23');
 });
-test('automatic India rollover refreshes today but preserves manually selected historical dates',async({page,context})=>{
- await page.clock.install({time:new Date('2026-10-22T18:29:30.000Z')});const f=await setup(page,context);f.day('2026-10-23');
- await page.clock.fastForward(61000);await expect(page.locator('#reception-date')).toHaveValue('2026-10-23');
- await page.locator('#reception-date').fill('2026-10-20');await page.locator('#reception-date').press('Tab');await expect.poll(()=>f.dates.at(-1)).toBe('2026-10-20');
- f.day('2026-10-24');await page.clock.fastForward(86400000);await expect(page.locator('#reception-date')).toHaveValue('2026-10-20');
+test('India rollover updates the dashboard while preserving the open history day',async({page,context})=>{
+ await page.clock.install({time:new Date('2026-10-22T18:29:30.000Z')});const f=await setup(page,context);
+ await page.locator('#open-history').click();await page.locator('#history-date').fill('2026-10-20');await page.locator('#history-date').press('Tab');
+ f.day('2026-10-23');await page.clock.fastForward(61000);await expect(page.locator('#reception-date')).toHaveValue('2026-10-23');await expect(page.locator('#history-date')).toHaveValue('2026-10-20');
 });
-test('slow Today response cannot overwrite a newer manual date selection',async({page,context})=>{
- const f=await setup(page,context);let release=()=>{};const gate=new Promise<void>(resolve=>{release=resolve;});f.delay(gate);f.day('2026-10-23');
- await page.locator('#today').click();await page.locator('#reception-date').fill('2026-10-20');await page.locator('#reception-date').press('Tab');await expect.poll(()=>f.dates.at(-1)).toBe('2026-10-20');release();
- await expect(page.locator('#today')).toBeEnabled();await expect(page.locator('#reception-date')).toHaveValue('2026-10-20');
+
+test('history browsing is isolated from today and lists its selected date',async({page,context})=>{
+ const f=await setup(page,context);await page.locator('#open-history').click();await page.locator('#history-date').fill('2026-10-20');await page.locator('#history-date').press('Tab');await expect.poll(()=>f.dates.includes('2026-10-20')).toBe(true);await expect.poll(()=>f.dates.at(-1)).toBe('2026-10-22');await expect(page.locator('#reception-date')).toHaveValue('2026-10-22');await page.locator('#close-history').click();await expect(page.locator('#history-dialog')).not.toBeVisible();
 });
 
 test('reception inside count deduplicates replacement employee IDs but keeps independent visitors',async({page,context})=>{
  await setup(page,context);
- await page.evaluate(`state.rows=[{visitRequestId:'1',employeeId:'EMP001',requestType:'DIGITAL_ID',personName:'Employee',publicReference:'V-1',status:'APPROVED',passStatus:'ACTIVE',isInside:true,validUntilUtc:new Date(Date.now()+3600000).toISOString(),printCount:0},{visitRequestId:'2',employeeId:'EMP001',requestType:'DIGITAL_ID',personName:'Employee',publicReference:'V-2',status:'APPROVED',passStatus:'ACTIVE',isInside:true,validUntilUtc:new Date(Date.now()+3600000).toISOString(),printCount:0},{visitRequestId:'3',requestType:'EXTERNAL',personName:'Visitor',publicReference:'V-3',status:'APPROVED',passStatus:'ACTIVE',isInside:true,validUntilUtc:new Date(Date.now()+3600000).toISOString(),printCount:0}];state.listComplete=true;state.listFailed=false;renderRows();`);
+ await page.evaluate(`state.rows=[{visitRequestId:'1',employeeId:'EMP001',requestType:'DIGITAL_ID',personName:'Employee',publicReference:'V-1',status:'APPROVED',passStatus:'ACTIVE',isInside:true,validFromUtc:new Date().toISOString(),validUntilUtc:new Date(Date.now()+3600000).toISOString(),printCount:0},{visitRequestId:'2',employeeId:'EMP001',requestType:'DIGITAL_ID',personName:'Employee',publicReference:'V-2',status:'APPROVED',passStatus:'ACTIVE',isInside:true,validFromUtc:new Date().toISOString(),validUntilUtc:new Date(Date.now()+3600000).toISOString(),printCount:0},{visitRequestId:'3',requestType:'EXTERNAL',personName:'Visitor',publicReference:'V-3',status:'APPROVED',passStatus:'ACTIVE',isInside:true,validFromUtc:new Date().toISOString(),validUntilUtc:new Date(Date.now()+3600000).toISOString(),printCount:0}];state.listComplete=true;state.listFailed=false;renderRows();`);
  await expect(page.locator('#stat-total')).toHaveText('3');await expect(page.locator('#stat-inside')).toHaveText('2');
 });

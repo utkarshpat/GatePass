@@ -1,3 +1,4 @@
+import type {HostReminderService} from '../email/HostReminderService.ts';
 import type {IncomingMessage,ServerResponse} from 'node:http';
 import type {AdditionalHttpRoutes} from '../transport/ApiHandler.ts';
 import {HttpFailure,readJsonBody} from '../transport/ApiHandler.ts';
@@ -7,10 +8,12 @@ import type {GuardWorkspaceService} from '../visits/GuardWorkspaceService.ts';
 import type {GuardDutyService} from '../visits/GuardDutyService.ts';
 import {requireDummySso} from './DummyEmployeeSso.ts';
 export class GuardRoutes implements AdditionalHttpRoutes{
+ private reminders?:HostReminderService;
  #staff:StaffEntryRoutes;#workspace:GuardWorkspaceService;#reads:VisitReadService;#photos:VisitPhotoService;#duties:GuardDutyService;
- constructor(staff:StaffEntryRoutes,workspace:GuardWorkspaceService,reads:VisitReadService,photos:VisitPhotoService,duties:GuardDutyService){this.#staff=staff;this.#workspace=workspace;this.#reads=reads;this.#photos=photos;this.#duties=duties;}
- handles(path:string){return /^\/api\/guard\/(context|duties|projects|verify|lookup|detail|photo|recent|visitors|movement)$/u.test(path);}
+ constructor(staff:StaffEntryRoutes,workspace:GuardWorkspaceService,reads:VisitReadService,photos:VisitPhotoService,duties:GuardDutyService,reminders?:HostReminderService){this.reminders=reminders;this.#staff=staff;this.#workspace=workspace;this.#reads=reads;this.#photos=photos;this.#duties=duties;}
+ handles(path:string){return /^\/api\/guard\/(context|duties|projects|verify|lookup|detail|photo|recent|visitors|movement|remind-host)$/u.test(path);}
  async handle(req:IncomingMessage,_res:ServerResponse){requireDummySso();if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress??''))throw new HttpFailure(403);if(!this.handles(req.url??''))throw new HttpFailure(404);const session=this.#staff.session(req);if(!await this.#staff.verify(session))throw new HttpFailure(401);const d=await readJsonBody(req),action=req.url!.split('/').at(-1)!,context={...session,view:'GUARD' as const};
+  if(action==='remind-host'){if(!this.reminders)throw new HttpFailure(503);return this.reminders.run(session,d,'GUARD');}
   if(action==='context'){if(Object.keys(d).length)throw new HttpFailure(400);return this.#workspace.read(session);}
   if(action==='duties')return this.#duties.duties(session,d);
   if(action==='visitors')return this.#duties.visitors(session,d);

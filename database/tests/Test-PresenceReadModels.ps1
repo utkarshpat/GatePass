@@ -12,6 +12,7 @@ function ExpectDenied([scriptblock]$work,[int]$number=52001){try{$null=&$work}ca
 function Summary($pair=$null){$p=Auth 'ADMIN';$p.LocationId=[int]$f.locationId;$p.LocalVisitDate=[datetime]::UtcNow.AddMinutes(330).Date;if($null -ne $pair){$p.ProjectLocationId=[long]$pair};return Call 'GetOperationalSummary' $p}
 function Reception($day=[datetime]::UtcNow.AddMinutes(330).Date){$p=Auth 'RECEPTION';$p.LocationId=[int]$f.locationId;$p.LocalVisitDate=$day;$p.Search=$f.prefix;return Call 'ListReceptionVisits' $p}
 function Move-Presence([string]$event,[long]$pair){$p=Auth 'GUARD';$p.ClientKey=[guid]::NewGuid();$p.VisitRequestId=[guid]$temp.VisitId;$p.AccessPassId=[guid]$temp.PassId;$p.LocationId=[int]$f.locationId;$p.DutyKind='PROJECT';$p.DutyId=$pair;$p.EventType=$event;$p.EntryMethod='MANUAL';return Call 'RecordGuardDutyMovement' $p}
+function Timeline($visit=$temp.VisitId){$p=Auth 'RECEPTION';$p.VisitRequestId=[guid]$visit;return Call 'GetReceptionEmployeeTimeline' $p}
 function Passed([string]$message){$script:taskCases++;Write-Output ('PASS: '+$message)}
 try{
  $f=(Invoke-GatePassScalar $taskAdmin (Get-Content (Join-Path $PSScriptRoot '002_transaction_fixtures.sql') -Raw) @{RunId=$taskRun})|ConvertFrom-Json;$taskReady=$true
@@ -25,6 +26,8 @@ try{
  Assert ((Summary).recordedPresence.digitalIdsInside -eq [string]($baseline+1)) 'Office missed current employee occupant.'
  Assert ((Summary $pair).recordedPresence.digitalIdsInside -eq '1') 'Project missed current employee occupant.'
  Assert (Reception).visits.Where({$_.visitRequestId -eq $temp.VisitId})[0].isInside 'Reception missed employee project entry.'
+ $timeline=Timeline;Assert ($timeline.isInside -and $timeline.movements.Count -eq 1 -and $timeline.movements[0].eventType -eq 'ENTRY' -and $timeline.movements[0].projectName) 'Reception timeline missed scoped employee entry.'
+ $deniedTimeline=Auth 'GUARD';$deniedTimeline.VisitRequestId=[guid]$temp.VisitId;ExpectDenied {Call 'GetReceptionEmployeeTimeline' $deniedTimeline} 53501
  Passed 'Real guard entry is visible to reception and office/project reports'
  Invoke-GatePassNonQuery $taskAdmin 'INSERT gp.EmployeeProjectMemberships(EmployeeId,ProjectId,IsActive,VerifiedAtUtc) SELECT @e,ProjectId,1,SYSUTCDATETIME() FROM gp.ProjectLocations WHERE ProjectLocationId=@pair;INSERT gp.EmployeeProjectLocationMemberships(EmployeeId,ProjectLocationId,IsActive,VerifiedAtUtc) VALUES(@e,@pair,1,SYSUTCDATETIME());INSERT gp.GuardAssignments(GuardUserId,ProjectLocationId,AssignedByUserId,ValidFromUtc) VALUES(@g,@pair,@g,SYSUTCDATETIME());' @{e=$f.hostEmployeeId;pair=$other;g=[guid]$actors.GUARD.UserId}
  $null=Move-Presence 'ENTRY' $other
@@ -53,6 +56,8 @@ INSERT gp.VisitPresence(VisitRequestId) VALUES(@visit);
  $temp=[pscustomobject]@{VisitId=$newVisit;PassId=$newPass};$null=Move-Presence 'EXIT' $other
  Assert ((Summary).recordedPresence.digitalIdsInside -eq [string]$baseline) 'Replacement exit left report occupant.'
  Assert (-not(Reception).visits.Where({$_.visitRequestId -eq $newVisit})[0].isInside) 'Replacement exit left reception inside.'
+ Assert ((Timeline $newVisit).movements.Count -ge 3) 'Replacement ID lost the original employee timeline.'
+ Assert (-not(Timeline $newVisit).isInside) 'Timeline kept exited employee inside.'
  Passed 'Replacement ID sees and closes the original occupant without double counting'
  $temp=$original;$null=Move-Presence 'ENTRY' $pair
  Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.VisitRequests SET LocalVisitDate=DATEADD(day,-1,LocalVisitDate),ValidFromUtc=DATEADD(day,-1,ValidFromUtc),ValidUntilUtc=DATEADD(day,-1,ValidUntilUtc) WHERE VisitRequestId=@v;' @{v=[guid]$temp.VisitId}

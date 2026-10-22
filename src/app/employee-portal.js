@@ -1,5 +1,6 @@
 'use strict';
 
+const manualReception=document.body.dataset.receptionManual==='true';
 const $ = id => document.getElementById(id);
 const state = { mode:null, employee:null, options:null, step:0, accessEditor:false, host:null, hosts:[], extras:[], people:[], photoIndex:0, jobs:null, busy:false, searchVersion:0 };
 const camera = new CameraSession(() => navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:960},height:{ideal:1280}},audio:false}));
@@ -36,8 +37,9 @@ function notify(message='',tone='info') { toasts.show(message,tone); }
 
 async function send(path,body={},binary=false) {
   const headers={'Content-Type':binary?body.type:'application/json'};
-  if(cookie('gp-dev-csrf')) headers['X-CSRF-Token']=cookie('gp-dev-csrf');
-  if(cookie('gp-dev-intake-csrf')) headers['X-Intake-CSRF-Token']=cookie('gp-dev-intake-csrf');
+  if(manualReception){if(!path.startsWith('/api/registration/'))throw new Error('Employee authentication must use self-service.');path=path.replace('/api/registration/','/api/reception/manual/');headers['X-Reception-Office']=document.querySelector('meta[name="gp-office"]').content;headers['X-CSRF-Token']=cookie('gp-staff-csrf');headers['X-Intake-CSRF-Token']=cookie('gp-reception-intake-csrf');}
+  if(!manualReception&&cookie('gp-dev-csrf')) headers['X-CSRF-Token']=cookie('gp-dev-csrf');
+  if(!manualReception&&cookie('gp-dev-intake-csrf')) headers['X-Intake-CSRF-Token']=cookie('gp-dev-intake-csrf');
   let response;
   try { response=await fetch(path,{method:'POST',credentials:'same-origin',headers,body:binary?body:JSON.stringify(body)}); }
   catch { throw new Error('Connection lost. Please retry.'); }
@@ -181,6 +183,7 @@ function renderProjects() {
 }
 
 async function beginFlow(mode) {
+  if(manualReception&&mode!=='visitor')throw new Error('Employee verification required.');
   reset();state.mode=mode;
   $('flow-title').textContent=mode==='employee'?'Digital ID':'Visitor registration';
   $('employee-summary').hidden=$('employee-fields').hidden=mode!=='employee';$('visitor-fields').hidden=mode!=='visitor';
@@ -222,7 +225,7 @@ function renderStep(step) {
   if(current==='photo-step')renderPhoto();
   if(current==='review-step')renderReview();
   $('next-step').textContent=step===photoStep()?'Review':'Continue';
-  $('flow-title').focus();notify();rememberNavigation();
+  $('flow-title').focus({focusVisible:false,preventScroll:true});notify();rememberNavigation();
 }
 
 function checkControls(container) {
@@ -492,7 +495,7 @@ async function submitJobs() {
         try{job.detail=await send('/api/employee/digital-id/detail',{visitRequestId:job.result.visits[0].visitRequestId});}catch{/* Confirmed creation is retained if the subsequent read is unavailable. */}
       }
     }
-    showResults();notify('Request submitted.','success');
+    showResults();notify('Request submitted.','success');if(manualReception)parent.postMessage({type:'gatepass-manual-submitted'},location.origin);
   } catch(error) {
     const saved=state.jobs.some(job=>job.result);
     if(saved){showResults();notify('Digital ID saved. '+error.message,'error');}
@@ -529,7 +532,7 @@ $('login').addEventListener('submit',async event=>{
   }finally{$('sign-in').textContent='Sign in';busy(false);}
 });
 async function leaveFlow(){
-  if(state.busy)return;busy(true);
+  if(state.busy)return;if(manualReception){stopCamera();parent.postMessage({type:'gatepass-manual-close'},location.origin);return;}busy(true);
   try {if(state.employee)try{await auth('logout');}catch(error){if(error.status!==401&&error.status!==403)throw error;}
     reset();state.employee=null;screen('landing');
   }catch(error){notify(error.message,'error');}finally{busy(false);}
@@ -672,3 +675,5 @@ window.addEventListener('pagehide',stopCamera);
 
 // Enhance native selects while retaining their values, validation and change events.
 for(const select of $('registration').querySelectorAll('select'))enhanceSelect(select);
+
+if(manualReception){document.querySelector('.masthead')?.setAttribute('hidden','');$('employee-choice').hidden=true;void beginFlow('visitor');}

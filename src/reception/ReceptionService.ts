@@ -1,6 +1,7 @@
 import {createHash} from 'node:crypto';
 import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
 import {isDate,isUtc,isUuid} from '../visits/SqlVisitReadRepository.ts';
+import {employeeProjectSummary} from '../visits/EmployeeProjectSummary.ts';
 export class ReceptionError extends Error{code:'INVALID_INPUT'|'NOT_AUTHORIZED'|'UNAVAILABLE';constructor(code:ReceptionError['code']){super(code);this.code=code;}}
 const requireInput=(v:unknown)=>{if(!v)throw new ReceptionError('INVALID_INPUT');};
 const requireOutput=(v:unknown)=>{if(!v)throw new ReceptionError('UNAVAILABLE');};
@@ -19,6 +20,12 @@ export class ReceptionService{
   const locations=row.locations.map((l:any)=>{requireOutput(int(l.locationId)&&text(l.locationName,150)&&text(l.locationCode,16)&&typeof l.canPrint==='boolean');return {locationId:l.locationId,locationName:l.locationName,locationCode:l.locationCode,canPrint:l.canPrint};});
   requireOutput(new Set(locations.map((l:any)=>l.locationId)).size===locations.length);return {displayName:row.displayName,currentDate:row.currentDate,locations};
  }
+ async timeline(session:{sessionToken:string;csrfToken:string},visitRequestId:unknown){
+  requireInput(isUuid(visitRequestId));const row=await this.#call('gp.GetReceptionEmployeeTimeline',{...receptionIdentity(session),VisitRequestId:{type:'guid',value:String(visitRequestId).toLowerCase()}});
+  requireOutput(typeof row.isInside==='boolean'&&typeof row.movementsHasMore==='boolean'&&Array.isArray(row.movements)&&row.movements.length<=100);
+  const movements=row.movements.map((m:any)=>{requireOutput(typeof m.accessEventId==='string'&&/^[1-9][0-9]{0,18}$/u.test(m.accessEventId)&&BigInt(m.accessEventId)<=9223372036854775807n&&['ENTRY','EXIT'].includes(m.eventType)&&['SCAN','MANUAL','RECONCILE'].includes(m.entryMethod)&&text(m.guardName,200)&&text(m.projectName,200)&&isUtc(m.occurredAtUtc));return{accessEventId:m.accessEventId,eventType:m.eventType,entryMethod:m.entryMethod,guardName:m.guardName,projectName:m.projectName,occurredAtUtc:m.occurredAtUtc};});
+  requireOutput(!row.movementsHasMore||movements.length===100);return{isInside:row.isInside,movements,movementsHasMore:row.movementsHasMore};
+ }
  async list(session:{sessionToken:string;csrfToken:string},input:Record<string,unknown>){
   requireInput(Object.keys(input).every(k=>['locationId','visitDate','search','status','cursor'].includes(k))&&int(input.locationId));
   requireInput(input.visitDate===undefined||isDate(input.visitDate));requireInput(input.search===undefined||typeof input.search==='string'&&input.search.length<=100&&!/[\u0000-\u001f\u007f]/u.test(input.search));
@@ -29,8 +36,11 @@ export class ReceptionService{
   const visits=row.visits.map((v:any)=>{
    requireOutput(isUuid(v.visitRequestId)&&isUuid(v.accessPassId)&&text(v.personName,200)&&text(v.publicReference,40)&&text(v.publicPassNumber,50)&&['DIGITAL_ID','EMPLOYEE_PROJECT','EXTERNAL'].includes(v.requestType)&&['PENDING','APPROVED','DENIED','CANCELLED'].includes(v.status)&&['PENDING','ACTIVE','DENIED','REVOKED'].includes(v.passStatus)&&typeof v.isInside==='boolean'&&isUtc(v.validFromUtc)&&isUtc(v.validUntilUtc)&&isUtc(v.submittedAtUtc)&&Number.isInteger(v.printCount)&&v.printCount>=0);
    requireOutput(v.employeeId===undefined||text(v.employeeId,64));requireOutput(v.projectName===undefined||text(v.projectName,200));
+   requireOutput(v.hostName===undefined||text(v.hostName,200));requireOutput(v.hostEmail===undefined||text(v.hostEmail,320));
+   const projects=v.requestType==='DIGITAL_ID'?employeeProjectSummary(v.employeeProjects??{available:false,total:null,items:[]}):null;
+   requireOutput(v.requestType!=='DIGITAL_ID'||projects!==null);
    requireOutput(Date.parse(v.validUntilUtc)>Date.parse(v.validFromUtc));
-   return {visitRequestId:v.visitRequestId.toLowerCase(),accessPassId:v.accessPassId.toLowerCase(),personName:v.personName,employeeId:v.employeeId??null,requestType:v.requestType,publicReference:v.publicReference,publicPassNumber:v.publicPassNumber,status:v.status,passStatus:v.passStatus,projectName:v.projectName??null,isInside:v.isInside,validFromUtc:v.validFromUtc,validUntilUtc:v.validUntilUtc,submittedAtUtc:v.submittedAtUtc,printCount:v.printCount};
+   return {visitRequestId:v.visitRequestId.toLowerCase(),accessPassId:v.accessPassId.toLowerCase(),personName:v.personName,employeeId:v.employeeId??null,requestType:v.requestType,publicReference:v.publicReference,publicPassNumber:v.publicPassNumber,status:v.status,passStatus:v.passStatus,projectName:v.projectName??null,hostName:v.hostName??null,hostEmail:v.hostEmail??null,...(projects?{employeeProjects:projects}:{}),isInside:v.isInside,validFromUtc:v.validFromUtc,validUntilUtc:v.validUntilUtc,submittedAtUtc:v.submittedAtUtc,printCount:v.printCount};
   });
   requireOutput(new Set(visits.map((v:any)=>v.visitRequestId)).size===visits.length);if(row.hasMore){const last=visits.at(-1);requireOutput(visits.length===50&&isUuid(row.afterVisitRequestId)&&isUtc(row.afterSubmittedAtUtc)&&last?.visitRequestId===row.afterVisitRequestId.toLowerCase()&&last?.submittedAtUtc===row.afterSubmittedAtUtc);}
   if(input.visitDate!==undefined)requireOutput(row.visitDate===input.visitDate);

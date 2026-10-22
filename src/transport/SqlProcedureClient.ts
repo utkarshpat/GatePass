@@ -11,7 +11,7 @@ export const procedureRoles = {
   render: ['GetOwnDigitalIdCard','GetEmployeeRequestCard','GetEmailRequestCard','GetReceptionCardSource','BeginPassRender','FinishPassRender','DispatchPassPrint','FailPassPrint'],
   media: ['ResolveVisitPhoto'],
   api: ['ReadEmailRequest','ListGuardDuties','ReadGuardDutyPass','ListGuardDutyVisitors','RecordGuardDutyMovement','GetCommonDutyAdministration','ManageCommonDuty','FindGuardPass','GetGuardWorkspaceContext','ListGuardVisitors','ListGuardRecentScans','GetAdminWorkspaceContext','ListLeadProjects','SearchProjectLeadCandidates','ListProjectHeads','ManageStaffCredential','DecideVisit', 'RecordMovement', 'DeallocateGuard', 'ManageGuardCredential', 'CreateRegistrationIntake', 'RecordRegistrationPhoto', 'SubmitRegistration', 'ListRegistrationLocations', 'GetRegistrationOptions',
-    'GetStaffAccessContext', 'GetReceptionContext', 'ListReceptionVisits', 'ListVisits', 'GetVisitDetail', 'VerifyGuardPass', 'ReissuePass', 'RequestPassPrint', 'GetPassPrintJob', 'ListGuardWorkContexts', 'CancelVisit',
+    'GetStaffAccessContext', 'GetReceptionContext', 'RemindVisitHost', 'GetReceptionEmployeeTimeline', 'AuditReceptionRegistration', 'ListReceptionVisits', 'ListVisits', 'GetVisitDetail', 'VerifyGuardPass', 'ReissuePass', 'RequestPassPrint', 'GetPassPrintJob', 'ListGuardWorkContexts', 'CancelVisit',
     'AllocateGuard', 'GrantStaffRole', 'RevokeStaffRole', 'ListAdminProjectLocations', 'ListAdminGuards', 'SearchStaffSubjects', 'ListStaffRoles', 'GetOperationalSummary', 'ListScopedAuditEvents'],
 } as const;
 type Pool = { request(): { input(name: string, type: unknown, value: unknown): unknown; execute(name: string): Promise<any> }; close(): Promise<void> };

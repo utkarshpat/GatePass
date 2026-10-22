@@ -62,5 +62,10 @@
   "061_email_request_workflow.sql": "c571c70d31d82266b0575aff1b819f7f207b421ecb5523ee5070bb75fde3d7df",
   "062_outlook_action_decisions.sql": "a1bd4af8463b8cd2d655b8cc891c97ad5c4bd5979806d75541a42b16f5a68056",
   "063_guard_visitor_reconciliation.sql": "41bf508db0a00f856270fe9ba1af43d7de730fb18e03005ca7fd3b5a97e5b195",
-  "064_presence_reads_and_visitor_mobile.sql": "036f0184ee93c621ff0b3cda27cfed1addf7a19acefdc44ba84744bda3d4f2f7"
+  "064_presence_reads_and_visitor_mobile.sql": "036f0184ee93c621ff0b3cda27cfed1addf7a19acefdc44ba84744bda3d4f2f7",
+  "065_reception_operations.sql": "58f8726d7e8d7e9c0276fdf67360befa1f00ec8d011c56c4cb7fb28d9b7bfbc1",
+  "066_reception_intake_audit_type.sql": "7473e49b9cb58923358f601fb2328820d40905244632a650a7ea64b8962d99e1",
+  "067_reception_employee_timeline.sql": "6745d6396979ae6cb87b36cd9a7eecd55505a20bf7509f4f2ad7297bd495ca40",
+  "068_host_reminders.sql": "88da2bac74f49d2f1f00475fcc0d494486fd6960ffbdecf5f9ee8ed4376b944d",
+  "069_reminder_pass_state.sql": "dc85f9f209130811f6519b9020aac58844384060b7d521b20efdca05eb00ad61"
 }

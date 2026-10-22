@@ -1,0 +1,30 @@
+/* Shared staff header and workspace shell; role-specific screens own their content styles. */
+@layer layouts {
+  .reception-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gp-space-4);
+    min-height: var(--gp-header-height);
+    padding: var(--gp-space-3) clamp(1.25rem, 4vw, 3rem);
+    background: var(--gp-surface);
+    border-bottom: var(--gp-border-width) solid var(--gp-border);
+  }
+  .header-brand { display: flex; align-items: center; gap: var(--gp-space-3); }
+  .reception-header img { width: 11.5rem; height: auto; max-width: 45vw; }
+  .portal-tag { display: inline-flex; align-items: center; padding: 0.2rem 0.5rem; background: var(--gp-brand-soft); color: var(--gp-brand); border: var(--gp-border-width) solid var(--gp-brand-border); border-radius: var(--gp-radius-sm); font-size: var(--gp-text-xs); font-weight: var(--gp-weight-semibold); letter-spacing: 0.02em; text-transform: uppercase; }
+
+  .staff-user-menu { display: flex; align-items: center; gap: var(--gp-space-3); font-size: var(--gp-text-sm); }
+  .user-avatar { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: var(--gp-radius-round); background: var(--gp-surface-subtle); color: var(--gp-text); border: var(--gp-border-width) solid var(--gp-border); }
+  #staff-name { font-weight: var(--gp-weight-medium); color: var(--gp-text); }
+  .logout-icon-btn { display: grid; place-items: center; padding: var(--gp-space-2); min-height: auto; border-radius: var(--gp-radius-control); color: var(--gp-text-muted); }
+  .logout-icon-btn:hover { color: var(--gp-danger); background: var(--gp-danger-soft); }
+
+  .reception-workspace { max-width: var(--gp-content-width); margin: 0 auto; padding: var(--gp-space-6) clamp(1rem, 3vw, 2.5rem); }
+
+  .reception-title { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--gp-space-5); margin-bottom: var(--gp-space-6); }
+  .reception-title h1 { font-size: 1.625rem; font-weight: var(--gp-weight-bold); letter-spacing: -0.02em; }
+  .office-subtitle { color: var(--gp-text-muted); font-size: var(--gp-text-sm); margin-top: 0.125rem; }
+
+}
+@media(max-width:760px){@layer layouts{.reception-title{align-items:flex-start;flex-wrap:wrap}.reception-header{gap:12px}.portal-tag{display:none}}}
