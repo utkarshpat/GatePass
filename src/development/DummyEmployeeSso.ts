@@ -5,6 +5,7 @@ import type { EmployeeSsoGate } from '../transport/RegistrationHttpRoutes.ts';
 import type { Session } from '../transport/ApiHandler.ts';
 import { token } from '../transport/ApiHandler.ts';
 import { resolvePowerShell } from './PowerShellRuntime.mjs';
+import {JsonLineWorkerPool} from './JsonLineWorkerPool.ts';
 
 export function requireDummySso() {
   if (!['development', 'test'].includes(process.env.NODE_ENV ?? '') || process.env.GATEPASS_SSO_MODE !== 'dummy' || process.env.GATEPASS_DIRECTORY_MODE !== 'mock') throw new Error('DUMMY_SSO_DISABLED');
@@ -14,6 +15,7 @@ export type DummyEmployee = { employeeId: string; displayName: string; officialE
   projects: { projectCode: string; projectName: string }[] };
 export interface DevelopmentSsoRepository {
   execute(action: 'list' | 'create' | 'inspect' | 'touch' | 'logout' | 'refresh', employeeId: string | null, sessionHash: Buffer | null, csrfHash: Buffer | null): Promise<Record<string, unknown>>;
+  close?():void|Promise<void>;
 }
 const hash = (value: string) => createHash('sha256').update(Buffer.from(value, 'base64url')).digest();
 const employeeId = (v: unknown): v is string => typeof v === 'string' && /^EMP[0-9]{3}$/u.test(v);
@@ -33,29 +35,20 @@ function profile(v: unknown): DummyEmployee {
 
 /** Local Windows integrated helper for development only. Production uses its separate typed TDS adapter. */
 export class LocalDevelopmentSsoRepository implements DevelopmentSsoRepository {
-  #active = 0;
+  #pool=new JsonLineWorkerPool(()=>spawn(resolvePowerShell(),['-NoProfile','-File',fileURLToPath(new URL('../../tools/GatePass.DevelopmentSqlBridge.ps1',import.meta.url)),'-Persistent'],{windowsHide:true,stdio:['pipe','pipe','pipe']}));
   constructor() { requireDummySso(); }
   async execute(action: Parameters<DevelopmentSsoRepository['execute']>[0], employeeId: string | null, sessionHash: Buffer | null, csrfHash: Buffer | null): Promise<Record<string, unknown>> {
-    requireDummySso(); if (this.#active >= 4) throw new Error('DEVELOPMENT_SQL_BUSY'); this.#active++;
-    try {
-      return await new Promise((resolve, reject) => {
-        const child = spawn(resolvePowerShell(), ['-NoProfile', '-File', fileURLToPath(new URL('../../tools/GatePass.DevelopmentSqlBridge.ps1', import.meta.url))], { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
-        let output = ''; let size = 0;
-        const timer = setTimeout(() => { child.kill(); reject(new Error('DEVELOPMENT_SQL_UNAVAILABLE')); }, 20000);
-        child.stdout.on('data', bytes => { size += bytes.length; if (size > 1048576) { child.kill(); reject(new Error('DEVELOPMENT_SQL_UNAVAILABLE')); } else output += bytes; });
-        child.stderr.resume(); child.on('error', () => { clearTimeout(timer); reject(new Error('DEVELOPMENT_SQL_UNAVAILABLE')); });
-        child.on('close', code => { clearTimeout(timer); try { if (code !== 0) throw new Error(); const value = JSON.parse(output); if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(); resolve(value); } catch { reject(new Error('DEVELOPMENT_SQL_UNAVAILABLE')); } });
-        child.stdin.on('error', () => {});
-        child.stdin.end(JSON.stringify({ action, employeeId, SessionHash: sessionHash?.toString('base64') ?? null, CsrfHash: csrfHash?.toString('base64') ?? null }));
-      });
-    } finally { this.#active--; }
+    requireDummySso();if(!['list','create','inspect','touch','logout','refresh'].includes(action)||employeeId!==null&&!/^EMP[0-9]{3}$/u.test(employeeId)||[sessionHash,csrfHash].some(v=>v!==null&&(!Buffer.isBuffer(v)||v.length!==32)))throw new Error('INVALID_DEVELOPMENT_SQL_INPUT');
+    return this.#pool.call({action,employeeId,SessionHash:sessionHash?.toString('base64')??null,CsrfHash:csrfHash?.toString('base64')??null});
   }
+  close(){this.#pool.close();}
 }
 
 /** Dummy authentication of existing synthetic employees. This does not implement an OIDC provider. */
 export class DummyEmployeeSso implements EmployeeSsoGate {
   #repository: DevelopmentSsoRepository;
   #issued = new Map<string, { csrf: string; expires: number }>();
+  #inspecting = new Map<string, Promise<DummyEmployee|null>>();
   constructor(repository: DevelopmentSsoRepository) { requireDummySso(); this.#repository = repository; }
   #binding(session: Session) {
     requireDummySso();
@@ -84,9 +77,14 @@ export class DummyEmployeeSso implements EmployeeSsoGate {
   }
   async current(session: Session) {
     const binding = this.#binding(session); if (!binding) return null;
-    const result = await this.#repository.execute('inspect', null, binding.sessionHash, binding.csrfHash);
-    if (result.ok !== true) { this.#issued.delete(binding.sessionHash.toString('hex')); return null; }
-    return profile(result.employee);
+    const key=binding.sessionHash.toString('hex');let pending=this.#inspecting.get(key);
+    // Share only an inspection already in progress. Every later request performs
+    // a fresh SQL inspection; no authorization result is cached for a TTL.
+    if(!pending){pending=(async()=>{const result=await this.#repository.execute('inspect',null,binding.sessionHash,binding.csrfHash);
+      if(result.ok!==true){this.#issued.delete(key);return null;}return profile(result.employee);
+    })();this.#inspecting.set(key,pending);}
+    try{const employee=await pending;return this.#binding(session)&&employee?structuredClone(employee):null;}
+    finally{if(this.#inspecting.get(key)===pending)this.#inspecting.delete(key);}
   }
   async verify(session: Session) { return !!await this.current(session); }
   async sessionAction(action: 'touch' | 'logout', session: Session) {
@@ -99,5 +97,6 @@ export class DummyEmployeeSso implements EmployeeSsoGate {
     // Best-effort revoke of this process's own issued sessions only; no global employee logout.
     const entries = [...this.#issued]; this.#issued.clear();
     for (let index = 0; index < entries.length; index += 4) await Promise.allSettled(entries.slice(index, index + 4).map(([session, entry]) => this.#repository.execute('logout', null, Buffer.from(session, 'hex'), Buffer.from(entry.csrf, 'hex'))));
+    await this.#repository.close?.();
   }
 }

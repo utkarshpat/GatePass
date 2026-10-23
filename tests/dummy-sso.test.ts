@@ -34,6 +34,21 @@ test('SQL denial and incorrect returned identity fail closed',async()=>{await as
 test('guard/unknown session provenance never reaches dummy SSO SQL verification',async()=>{const f=fixture();assert.equal(await f.sso.verify({sessionToken:Buffer.alloc(32,1).toString('base64url'),csrfToken:Buffer.alloc(32,2).toString('base64url')}),false);assert.equal(f.calls.length,0);});
 test('issued sessions recheck current SQL authorization and directory state',async()=>{let active=true;const f=fixture(action=>action==='create'||active?{ok:true,employee,idleExpiresAtUtc:new Date(Date.now()+900000).toISOString(),absoluteExpiresAtUtc:new Date(Date.now()+28800000).toISOString()}:{ok:false});const session=await f.sso.signIn('EMP001');assert.equal(await f.sso.verify(session),true);active=false;assert.equal(await f.sso.verify(session),false);const n=f.calls.length;assert.equal(await f.sso.verify(session),false);assert.equal(f.calls.length,n);});
 test('wrong CSRF cannot use an issued session',async()=>{const f=fixture();const session=await f.sso.signIn('EMP001');assert.equal(await f.sso.verify({...session,csrfToken:Buffer.alloc(32,7).toString('base64url')}),false);assert.equal(f.calls.length,1);});
+
+test('parallel session inspections share pending work but later requests still recheck SQL',async()=>{
+ let inspect=0,release=()=>{};let gate:Promise<void>|null=new Promise(resolve=>{release=resolve;});
+ const repository:DevelopmentSsoRepository={async execute(action){if(action==='inspect'){inspect++;if(gate)await gate;}return{ok:true,employee,idleExpiresAtUtc:new Date(Date.now()+900000).toISOString(),absoluteExpiresAtUtc:new Date(Date.now()+28800000).toISOString()};}};
+ const sso=new DummyEmployeeSso(repository),session=await sso.signIn('EMP001');
+ const reads=Array.from({length:8},()=>sso.current(session));assert.equal(inspect,1);release();gate=null;
+ const people=await Promise.all(reads);assert(people.every(p=>p?.employeeId==='EMP001'));people[0]!.displayName='mutated';assert.equal(people[1]!.displayName,'Employee 1');
+ await sso.current(session);assert.equal(inspect,2);
+});
+test('logout during a shared inspection cannot revive the local session',async()=>{
+ let release=()=>{};const gate=new Promise<void>(resolve=>{release=resolve;});
+ const repository:DevelopmentSsoRepository={async execute(action){if(action==='inspect')await gate;return{ok:true,employee,idleExpiresAtUtc:new Date(Date.now()+900000).toISOString(),absoluteExpiresAtUtc:new Date(Date.now()+28800000).toISOString()};}};
+ const sso=new DummyEmployeeSso(repository),session=await sso.signIn('EMP001'),reading=sso.current(session);
+ await sso.sessionAction('logout',session);release();assert.equal(await reading,null);assert.equal(await sso.verify(session),false);
+});
 test('touch and logout use SQL; logout removes dummy provenance',async()=>{const f=fixture();const s=await f.sso.signIn('EMP001');assert.equal((await f.sso.sessionAction('touch',s)).ok,true);assert.equal((await f.sso.sessionAction('logout',s)).ok,true);assert.equal(await f.sso.verify(s),false);assert.deepEqual(f.calls.map(c=>c.action),['create','touch','logout']);});
 test('HTTP login sets secure opaque cookie and excludes raw session from response JSON',async()=>{const f=fixture();let jar:string[]=[];const result=await new DummySsoRoutes(f.sso).handle(req('login',{employeeId:'EMP001',password:'Sopra@123'}),{setHeader(_k:string,v:string[]){jar=v;}} as any);assert.equal(jar.length,2);assert.match(jar[0],/HttpOnly/u);assert.ok(jar.every(c=>c.includes('Secure')&&c.includes('SameSite=Strict')));assert.equal(Object.hasOwn(result,'sessionToken'),false);assert.equal((result as any).employee.manager.officialEmail,'employee19@example.com');});
 test('HTTP login succeeds even if browser sends a stale or invalid session cookie',async()=>{const f=fixture();let jar:string[]=[];const result=await new DummySsoRoutes(f.sso).handle(req('login',{employeeId:'EMP001',password:'Sopra@123'},{cookie:'__Host-gp-session=stale_or_invalid_session_token'}),{setHeader(_k:string,v:string[]){jar=v;}} as any);assert.equal(jar.length,2);assert.equal((result as any).employee.employeeId,'EMP001');});

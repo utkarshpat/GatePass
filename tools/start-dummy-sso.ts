@@ -7,6 +7,7 @@ import {localEmailLinks} from '../src/email/LocalEmailLinks.ts';
 import {GuardRoutes} from '../src/development/GuardRoutes.ts';
 import {GuardWorkspaceService} from '../src/visits/GuardWorkspaceService.ts';
 import {GuardDutyService} from '../src/visits/GuardDutyService.ts';
+import {localNameReadings} from '../src/development/LocalNameReadings.ts';
 import {AdminRoutes} from '../src/development/AdminRoutes.ts';
 import {AdminWorkspaceService} from '../src/administration/AdminWorkspaceService.ts';
 import {StaffAdministrationService,SqlStaffAdministrationRepository} from '../src/administration/StaffAdministrationService.ts';
@@ -21,6 +22,7 @@ import {PassPrintService,PassRenderService} from '../src/printing/PassPrintServi
 import {SqlPassPrintRepository} from '../src/printing/SqlPassPrintRepository.ts';
 import {OwnDigitalIdCardService} from '../src/printing/OwnDigitalIdCardService.ts';
 import {PassCardRenderer} from '../src/printing/PassCardRenderer.ts';
+import {rasterizeCardPng} from '../src/printing/CardPngRasterizer.ts';
 import {NodeQrMatrixEncoder} from '../src/printing/NodeQrMatrixEncoder.ts';
 import { getCountries } from 'libphonenumber-js/max';
 import { createServer } from 'node:http';
@@ -66,17 +68,19 @@ try {
   ]);
   const cropScript=await readFile(new URL('../src/app/photo-crop.js',import.meta.url),'utf8');
   const html = markup.replace('__APP_STYLES__',()=>globalStyles+'\n'+styles).replace('__APP_SCRIPT__',()=>phoneLibrary+'\n'+visitorComponents+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+cropScript+'\n'+script);
+  const liveRefreshScript=await readFile(new URL('../src/app/live-refresh.js',import.meta.url),'utf8');
   const workspaceShellStyles=await readFile(new URL('../src/app/workspace-shell.css',import.meta.url),'utf8');
   const [adminMarkup,adminStyles,adminScript]=await Promise.all(['admin.html','admin.css','admin.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')));
-  const adminHtml=adminMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+adminStyles).replace('__SCRIPT__',()=>toastScript+'\n'+selectScript+'\n'+adminScript);
+  const adminHtml=adminMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+adminStyles).replace('__SCRIPT__',()=>toastScript+'\n'+selectScript+'\n'+liveRefreshScript+'\n'+adminScript);
   const guardI18n=await readFile(new URL('../src/app/guard-i18n.js',import.meta.url),'utf8');
+  const guardNames=await readFile(new URL('../src/app/guard-names.js',import.meta.url),'utf8');
   const [guardMarkup,guardStyles,guardScript,qrDecoder]=await Promise.all(['../src/app/guard.html','../src/app/guard.css','../src/app/guard.js','../node_modules/@zxing/library/umd/index.min.js'].map(name=>readFile(new URL(name,import.meta.url),'utf8')));
-  const guardHtml=guardMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+guardStyles).replace('__SCRIPT__',()=>qrDecoder+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+guardI18n+'\n'+guardScript);
+  const guardHtml=guardMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+guardStyles).replace('__SCRIPT__',()=>qrDecoder+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+guardI18n+'\n'+guardNames+'\n'+liveRefreshScript+'\n'+guardScript);
   const staffStyles=await readFile(new URL('../src/app/staff-entry.css',import.meta.url),'utf8');
   const staffBrand=(await readFile(new URL('../assets/brand/gatepass-logo.png',import.meta.url))).toString('base64');
   const staffHtml=staffMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+staffStyles).replace('__GATEPASS_LOGO__',staffBrand).replace('__SCRIPT__',()=>toastScript+'\n'+staffScript);
   const receptionPrintState=await readFile(new URL('../src/app/reception-print-state.js',import.meta.url),'utf8');
-  const receptionHtml=receptionMarkup.replace('__STYLES__',()=>globalStyles+'\n'+receptionStyles).replace('__SCRIPT__',()=>qrDecoder+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+receptionPrintState+'\n'+receptionScript);
+  const receptionHtml=receptionMarkup.replace('__STYLES__',()=>globalStyles+'\n'+receptionStyles).replace('__SCRIPT__',()=>qrDecoder+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+receptionPrintState+'\n'+liveRefreshScript+'\n'+receptionScript);
   const companyLogo = (await readFile(new URL('../assets/brand/sopra-steria-logo.png', import.meta.url))).toString('base64');
   const [emailMarkup,emailScript]=await Promise.all(['email-request.html','email-request.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')));
   const emailHtml=emailMarkup.replace('__GLOBAL_STYLES__',()=>globalStyles).replace('__EMAIL_SCRIPT__',()=>emailScript);
@@ -90,18 +94,20 @@ try {
   const registration = new RegistrationService(new SqlRegistrationRepository(client),storage.keys,new SharpPhotoNormalizer(sharp),storage.photos);
   const [organisationLogoPng,applicationLogoPng,organisationIconPng]=await Promise.all(['sopra-steria-logo.png','gatepass-logo.png','sopra-steria-icon.png'].map(name=>readFile(new URL('../assets/brand/'+name,import.meta.url))));
   const cardRenderer=new PassCardRenderer(new NodeQrMatrixEncoder(),{organisationLogoPng,applicationLogoPng,organisationIconPng});
-  const ownCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,async svg=>sharp(svg,{density:300}).resize(1712,1080).png().toBuffer());
+  const ownCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,svg=>rasterizeCardPng(sharp,svg));
   const receptionReads=new VisitReadService(new SqlVisitReadRepository(client,'api'));
   const receptionPhotos=new VisitPhotoService(new SqlVisitReadRepository(client,'media'),storage.photos);
-  const receptionCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,async svg=>sharp(svg,{density:300}).resize(1712,1080).png().toBuffer(),'RECEPTION');
+  const receptionCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,svg=>rasterizeCardPng(sharp,svg),'RECEPTION');
   const guardAuth=await StaffAuthService.create(new SqlStaffAuthRepository(client));
   const staffEntry=new StaffEntryRoutes(sso,guardAuth,client);
   const reception=new ReceptionRoutes(sso,new ReceptionService(client),receptionReads,receptionPhotos,receptionCards,new PassPrintService(new SqlPassPrintRepository(client,'api'),storage.keys),new PassRenderService(new SqlPassPrintRepository(client,'render'),storage.keys,storage.photos,cardRenderer),staffEntry,new HostReminderService(client));
   const emailService=new EmailWorkflowService(client,await localEmailLinks(storage.root));
-  const employeeRequestCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,async svg=>sharp(svg,{density:300}).resize(1712,1080).png().toBuffer(),'REQUEST');
-  const externalRequestCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,async svg=>sharp(svg,{density:300}).resize(1712,1080).png().toBuffer(),'EMAIL');
+  const employeeRequestCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,svg=>rasterizeCardPng(sharp,svg),'REQUEST');
+  const externalRequestCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,svg=>rasterizeCardPng(sharp,svg),'EMAIL');
   const manualRegistration=new ReceptionRegistrationRoutes(staffEntry,new ReceptionService(client),registration,randomBytes(32),client);
-  const routes = [manualRegistration,new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,new GuardDutyService(client),new HostReminderService(client)),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),new GuardDutyService(client),new AdministrationReadService(new SqlAdministrationReadRepository(client)),new AdminConsoleService(client),receptionReads,organisationIconPng,sharp),reception,new DummySsoRoutes(sso,{localHttp:true}),
+  // Explicit opt-in only: public Input Tools is an experimental display aid.
+  const nameReadings=await localNameReadings(storage.root);
+  const routes = [manualRegistration,new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,new GuardDutyService(client),new HostReminderService(client),nameReadings),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),new GuardDutyService(client),new AdministrationReadService(new SqlAdministrationReadRepository(client)),new AdminConsoleService(client),receptionReads,organisationIconPng,sharp),reception,new DummySsoRoutes(sso,{localHttp:true}),
     new RegistrationHttpRoutes(registration,randomBytes(32),sso,{localHttp:true,allowedTypes:['DIGITAL_ID','EXTERNAL','EMPLOYEE_PROJECT'],office:req=>officeContext.read(req)}),
     new EmployeeDigitalIdRoutes(sso,new VisitReadService(new SqlVisitReadRepository(client,'api')),ownCards)];
   const api = createLoopbackHttpHandler(origin,{handles:path=>routes.some(route=>route.handles(path)),handle:(req,res)=>{
@@ -149,8 +155,8 @@ try {
   });
   server.requestTimeout=15000;server.headersTimeout=10000;server.keepAliveTimeout=5000;server.maxConnections=16;server.maxRequestsPerSocket=100;
   const refresh = setInterval(() => { void repository.execute('refresh',null,null,null).then(result=>{if(result.ok!==true)console.error('DUMMY_DIRECTORY_REFRESH_FAILED');}).catch(()=>console.error('DUMMY_DIRECTORY_REFRESH_FAILED')); },60000);refresh.unref();
-  const stop = () => { clearInterval(refresh);server.close(async () => { await sso.close(); process.exitCode=0; });server.closeIdleConnections(); };
-  server.on('error', async () => { clearInterval(refresh);console.error('DUMMY_SSO_LISTENER_UNAVAILABLE');await sso.close();process.exitCode=1; });
+  const stop = () => { clearInterval(refresh);server.close(async () => { storage.keys.clearCache();await sso.close();client.close(); process.exitCode=0; });server.closeIdleConnections(); };
+  server.on('error', async () => { clearInterval(refresh);storage.keys.clearCache();console.error('DUMMY_SSO_LISTENER_UNAVAILABLE');await sso.close();client.close();process.exitCode=1; });
   process.once('SIGINT',stop);process.once('SIGTERM',stop);
   server.listen(port,'127.0.0.1',()=>{
     console.log(`GatePass employee portal: ${origin} (local HTTP; temporary employee sign-in adapter)`);

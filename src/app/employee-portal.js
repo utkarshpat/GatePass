@@ -427,6 +427,13 @@ function prepareJobs() {
   return jobs;
 }
 
+function digitalCardRequest(job){
+  if(job.cardRequest)return job.cardRequest;
+  const pending=send('/api/employee/digital-id/image',{visitRequestId:job.result.visits[0].visitRequestId});job.cardRequest=pending;
+  // Prefetch may fail before results are displayed; retain retry without an
+  // unhandled rejection or a second request while this one is in progress.
+  pending.catch(()=>{});return pending;
+}
 async function renderDigitalCard(job,container){
   const preview=document.createElement('div');preview.className='digital-card-preview';
   const message=document.createElement('p');message.className='hint';message.textContent='Preparing card…';preview.append(message);container.append(preview);
@@ -436,11 +443,13 @@ async function renderDigitalCard(job,container){
   };
   if(job.cardUrl){display();return;}
   try {
-    const result=await send('/api/employee/digital-id/image',{visitRequestId:job.result.visits[0].visitRequestId});
+    const result=await digitalCardRequest(job);
     if(!state.jobs?.includes(job)||!container.isConnected)return;
     if(result.mimeType!=='image/png'||typeof result.imageBase64!=='string'||result.imageBase64.length>7340032)throw new Error('Unable to load the card. Please retry.');
-    const bytes=Uint8Array.from(atob(result.imageBase64),char=>char.charCodeAt(0));job.cardUrl=URL.createObjectURL(new Blob([bytes],{type:'image/png'}));job.cardFileName=result.fileName;display();
+    if(!job.cardUrl){const bytes=Uint8Array.from(atob(result.imageBase64),char=>char.charCodeAt(0));job.cardUrl=URL.createObjectURL(new Blob([bytes],{type:'image/png'}));job.cardFileName=result.fileName;}
+    job.cardRequest=null;display();
   }catch(error){
+    job.cardRequest=null;
     if(!container.isConnected)return;
     message.textContent='Card could not be loaded.';const retry=document.createElement('button');retry.type='button';retry.className='secondary';retry.textContent='Retry card';
     retry.addEventListener('click',()=>{preview.remove();retry.remove();renderDigitalCard(job,container);});container.append(retry);notify(error.message,'error');
@@ -490,9 +499,9 @@ async function submitJobs() {
       for(let index=0;index<job.people.length;index++)if(!job.photos[index])job.photos[index]=(await send('/api/registration/photo',job.people[index].file,true)).photoAssetId;
       if(!job.payload)job.payload={...job.body,people:job.people.map((entry,index)=>({clientPersonKey:entry.key,photoAssetId:job.photos[index],...(job.body.requestType==='EXTERNAL'?{name:entry.name,phone:entry.phone,...(entry.companyName?{companyName:entry.companyName}:{}),...(entry.deviceTypes?.length?{deviceTypes:entry.deviceTypes}:{}),...(entry.email?{email:entry.email}:{})}:{})}))};
       job.result=await send('/api/registration/submit',job.payload);
-      if(job.body.requestType==='DIGITAL_ID'){
-        try{job.detail=await send('/api/employee/digital-id/detail',{visitRequestId:job.result.visits[0].visitRequestId});}catch{/* Confirmed creation is retained if the subsequent read is unavailable. */}
-      }
+      // The digital result displays only the authorized card image. Fetching a
+      // separate detail record here added a blocking read whose UI was discarded.
+      if(job.body.requestType==='DIGITAL_ID')digitalCardRequest(job);
     }
     showResults();notify('Request submitted.','success');if(manualReception)parent.postMessage({type:'gatepass-manual-submitted'},location.origin);
   } catch(error) {

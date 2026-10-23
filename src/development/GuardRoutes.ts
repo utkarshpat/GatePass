@@ -7,13 +7,27 @@ import type {VisitReadService,VisitPhotoService} from '../visits/VisitReadServic
 import type {GuardWorkspaceService} from '../visits/GuardWorkspaceService.ts';
 import type {GuardDutyService} from '../visits/GuardDutyService.ts';
 import {requireDummySso} from './DummyEmployeeSso.ts';
+import {createHash} from 'node:crypto';
+import {NameReadings,NameReadingError} from '../visits/NameReadings.ts';
 export class GuardRoutes implements AdditionalHttpRoutes{
  private reminders?:HostReminderService;
  #staff:StaffEntryRoutes;#workspace:GuardWorkspaceService;#reads:VisitReadService;#photos:VisitPhotoService;#duties:GuardDutyService;
- constructor(staff:StaffEntryRoutes,workspace:GuardWorkspaceService,reads:VisitReadService,photos:VisitPhotoService,duties:GuardDutyService,reminders?:HostReminderService){this.reminders=reminders;this.#staff=staff;this.#workspace=workspace;this.#reads=reads;this.#photos=photos;this.#duties=duties;}
- handles(path:string){return /^\/api\/guard\/(context|duties|projects|verify|lookup|detail|photo|recent|visitors|movement|remind-host)$/u.test(path);}
+ #names:NameReadings;#nameRates=new Map<string,{count:number;until:number}>();
+ constructor(staff:StaffEntryRoutes,workspace:GuardWorkspaceService,reads:VisitReadService,photos:VisitPhotoService,duties:GuardDutyService,reminders?:HostReminderService,names=new NameReadings(null)){this.reminders=reminders;this.#staff=staff;this.#workspace=workspace;this.#reads=reads;this.#photos=photos;this.#duties=duties;this.#names=names;}
+ handles(path:string){return /^\/api\/guard\/(context|duties|projects|verify|lookup|detail|photo|recent|visitors|movement|remind-host|name-readings)$/u.test(path);}
  async handle(req:IncomingMessage,_res:ServerResponse){requireDummySso();if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress??''))throw new HttpFailure(403);if(!this.handles(req.url??''))throw new HttpFailure(404);const session=this.#staff.session(req);if(!await this.#staff.verify(session))throw new HttpFailure(401);const d=await readJsonBody(req),action=req.url!.split('/').at(-1)!,context={...session,view:'GUARD' as const};
   if(action==='remind-host'){if(!this.reminders)throw new HttpFailure(503);return this.reminders.run(session,d,'GUARD');}
+  if(action==='name-readings'){
+   // Recheck current guard access before even a cached display transformation.
+   // This endpoint transforms submitted text; it never searches the directory.
+   await this.#workspace.read(session);
+   const now=Date.now(),key=createHash('sha256').update(session.sessionToken).digest('hex');
+   for(const [k,v]of this.#nameRates)if(v.until<=now)this.#nameRates.delete(k);
+   const rate=this.#nameRates.get(key)??{count:0,until:now+60000};
+   if(rate.count>=30||!this.#nameRates.has(key)&&this.#nameRates.size>=256)throw new HttpFailure(429);
+   rate.count++;this.#nameRates.set(key,rate);
+   try{return await this.#names.read(d);}catch(e){if(e instanceof NameReadingError)throw new HttpFailure(e.code==='INVALID_INPUT'?400:429);throw e;}
+  }
   if(action==='context'){if(Object.keys(d).length)throw new HttpFailure(400);return this.#workspace.read(session);}
   if(action==='duties')return this.#duties.duties(session,d);
   if(action==='visitors')return this.#duties.visitors(session,d);

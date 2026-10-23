@@ -46,7 +46,9 @@ try{
 if($Persistent){
  while($null -ne ($taskLine=[Console]::In.ReadLine())){
   if($taskLine.Length -gt 2097152){throw 'RPC input too large.'}
-  $taskResult=Invoke-DevelopmentCall ($taskLine|ConvertFrom-Json)
-  [Console]::Out.WriteLine((@{result=[string]$taskResult}|ConvertTo-Json -Compress -Depth 3));[Console]::Out.Flush()
+  try{
+   $taskResult=Invoke-DevelopmentCall ($taskLine|ConvertFrom-Json)
+   [Console]::Out.WriteLine((@{result=[string]$taskResult}|ConvertTo-Json -Compress -Depth 3));[Console]::Out.Flush()
+  }finally{$taskResult=$null;$taskLine=$null}
  }
 }else{[Console]::Out.Write((Invoke-DevelopmentCall ([Console]::In.ReadToEnd()|ConvertFrom-Json)))}

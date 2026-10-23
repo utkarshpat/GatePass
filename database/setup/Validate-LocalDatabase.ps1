@@ -162,6 +162,7 @@ ELSE
     if ('002' -in @($taskVersions | ForEach-Object { $_.Version }) -and '001' -notin @($taskVersions | ForEach-Object { $_.Version })) {
         throw 'Migration history is inconsistent: 002 exists without 001.'
     }
+    Invoke-GatePassSql -Database master -Query 'ALTER DATABASE [GatePass_DesignTest] SET AUTO_CLOSE OFF;' | Out-Null
     foreach ($taskMigration in @(
         @{ Version = '001'; File = 'database/migrations/001_individual_visit_baseline.sql' },
         @{ Version = '002'; File = 'database/migrations/002_reference_data.sql' }

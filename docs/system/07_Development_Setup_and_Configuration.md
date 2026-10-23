@@ -13,6 +13,9 @@ From repository root, run npm.cmd ci, then npm.cmd run storage:init, then npm.cm
 Open http://localhost:8443/ for staff, or /office/noida for public intake. Despite port 8443, this runner uses HTTP. HTTPS against it produces SSL protocol errors. Stop its owning process cleanly and restart after asset/source changes; do not terminate unrelated listeners by guessed process/port. Ordinary startup must not reset passwords or reinstate revoked grants.
 
 ## Fresh development database
+
+For an existing synthetic `GatePass_DesignTest`, run `./database/setup/Optimize-LocalTestDatabase.ps1 -TrustLocalServerCertificate` from the repository root to verify/set `AUTO_CLOSE OFF`. Omit the certificate switch when the local certificate is trusted. This explicit local maintenance command preserves all records; ordinary server startup does not change database options. Fresh development/CI setup also sets this option. See [the measured performance result](../Performance_Optimization_Phase_3.md).
+
 1. Select the dedicated synthetic test database and approved migration identity.
 2. Read database/README.md and helper parameters. Validate-LocalDatabase.ps1 handles the historical baseline, not the complete current 062 installation.
 3. Apply missing reviewed migrations ascending through the baseline setup and Apply-LocalTransactionCore.ps1 path. Check ledger/compatibility; do not reapply recorded files or drop databases to hide failures.

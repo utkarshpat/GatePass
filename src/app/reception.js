@@ -67,9 +67,9 @@ window.addEventListener('pagehide',()=>{clearLookup();deviceReturn=null;$('devic
 window.addEventListener('pageshow',event=>{if(event.persisted){watchCalendar();api('me').then(setContext).catch(()=>showLogin());}});
 function renderRows(){
  $('visit-rows').replaceChildren();
- let pendingCount=0;const insideKeys=new Set();
+ let pendingCount=0,matched=0;const insideKeys=new Set();
  const typeFilter=$('typeFilter')?.value||'ALL';
- const printFilter=$('printFilter')?.value||'ALL';
+ const printFilter=$('printFilter')?.value||'ALL';const key=JSON.stringify([state.status,state.insideOnly,typeFilter,printFilter]);if(state.renderFilter!==key){state.renderFilter=key;state.renderLimit=50;}
  const formatRef=ref=>typeof ref==='string'&&ref.startsWith('V-')&&ref.length>14?'V-'+ref.slice(2,10).toUpperCase():(ref??'—');
  for(const row of state.rows){
   const pending=row.status==='PENDING'&&!row.returnedAtUtc&&row.passStatus==='PENDING'&&effective(row)==='PENDING';
@@ -86,6 +86,7 @@ function renderRows(){
   if(typeFilter==='VISITOR'&&row.requestType!=='EXTERNAL')continue;
 
   if(pending)pendingCount++;if(row.isInside)insideKeys.add(row.employeeId?'employee:'+row.employeeId:'visit:'+row.visitRequestId);
+  matched++;if(matched>(state.renderLimit??50))continue;
   const tr=document.createElement('tr');tr.className='registration-row';
   const person=document.createElement('td');person.className='cell-identity';
   const personWrap=document.createElement('div');personWrap.className='identity-cell';
@@ -124,12 +125,12 @@ function renderRows(){
   $('visit-rows').append(tr);
  }
  const complete=state.listComplete&&!state.listFailed;const hasRows=state.rows.length>0;
- for(const [id,count] of [['stat-total',$('visit-rows').children.length],['stat-pending',pendingCount],['stat-inside',insideKeys.size],['stat-returns',state.pendingReturnCount??state.rows.filter(r=>r.printCount>0&&!r.returnedAtUtc).length]])if($(id))$(id).textContent=complete||hasRows?String(count):state.listFailed?'\u2014':'\u2026';
- $('empty-visits').hidden=!complete||$('visit-rows').children.length>0;$('load-more').hidden=!state.cursor;$('list-status').textContent=state.accessDenied?'Access to this office is unavailable. Refresh your session.':state.listFailed?'Could not update visits. Showing the previous list. Use Refresh to retry.':state.listBusy?'Updating visits…':$('visit-rows').children.length+' matching visits'+(state.cursor?' \u00b7 Loading more\u2026':'');
+ for(const [id,count] of [['stat-total',matched],['stat-pending',pendingCount],['stat-inside',insideKeys.size],['stat-returns',state.pendingReturnCount??state.rows.filter(r=>r.printCount>0&&!r.returnedAtUtc).length]])if($(id))$(id).textContent=complete||hasRows?String(count):state.listFailed?'\u2014':'\u2026';
+ $('empty-visits').hidden=!complete||$('visit-rows').children.length>0;$('load-more').hidden=$('visit-rows').children.length>=matched;$('list-status').textContent=state.accessDenied?'Access to this office is unavailable. Refresh your session.':state.listFailed?'Could not update visits. Showing the previous list. Use Refresh to retry.':state.listBusy?'Updating visits…':($('visit-rows').children.length<matched?$('visit-rows').children.length+' / '+matched:matched)+' matching visits'+(state.cursor?' \u00b7 Loading more\u2026':'');
  if(typeof updateActiveKpi==='function')updateActiveKpi();
 }
-async function loadVisits(more=false){
- if(!state.context)return;const version=++state.listVersion,hadComplete=state.listComplete;state.listBusy=true;state.listFailed=false;state.accessDenied=false;$('refresh').disabled=$('load-more').disabled=true;$('load-more').hidden=true;$('empty-visits').hidden=true;
+async function loadVisits(more=false,quiet=false){
+ if(!state.context)return;if(!more&&!quiet)state.renderLimit=50;const version=++state.listVersion,hadComplete=state.listComplete;state.listBusy=true;state.listFailed=false;state.accessDenied=false;$('refresh').disabled=$('load-more').disabled=true;$('load-more').hidden=true;$('empty-visits').hidden=true;
  $('list-status').textContent=state.rows.length?'Updating visits…':'Loading visits…';$('visit-rows').setAttribute('aria-busy','true');
  if(!state.rows.length&&!hadComplete)for(const id of ['stat-total','stat-pending','stat-inside','stat-returns'])if($(id))$(id).textContent='…';
  const filter={locationId:state.location.locationId,visitDate:$('reception-date').value,search:$('visit-search').value.trim(),status:'ALL',pendingReturns:state.pendingReturns},rows=more?[...state.rows]:[];let cursor=more?state.cursor:null,pendingReturnCount=state.pendingReturnCount;
@@ -183,7 +184,7 @@ async function browserPrint(row=state.selected){
  finally{frame?.remove();state.printBusy=false;$('reception-location').disabled=false;await loadVisits();if(state.selected){const current=state.rows.find(r=>r.visitRequestId===state.selected.visitRequestId);if(current)state.selected=current;$('detail-print').hidden=!canPrint(state.selected);$('detail-print').disabled=false;$('detail-print').textContent=state.selected.printCount?'Reprint pass':'Print pass';if($('detail-print-count'))$('detail-print-count').textContent=String(state.selected.printCount);if($('detail-card-status'))$('detail-card-status').textContent=state.selected.returnedAtUtc?'Returned '+dateTime(state.selected.returnedAtUtc):state.selected.printCount?'Printed — awaiting return':'Not printed';if($('detail-card-control'))$('detail-card-control').replaceChildren(cardStatusControl(state.selected));}}
 }
 $('staff-logout').addEventListener('click',async()=>{if(state.printBusy||state.returnBusy)return;try{if(cookie('gp-staff-csrf')){const response=await fetch('/api/staff/logout',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':cookie('gp-staff-csrf')},body:'{}'});if(!response.ok)throw new Error('Unable to sign out. Please retry.');}else await api('logout');showLogin();}catch(error){toasts.show(error.message,'error');}});
-$('refresh').addEventListener('click',()=>loadVisits());$('load-more').addEventListener('click',()=>loadVisits(true));
+$('refresh').addEventListener('click',()=>loadVisits());$('load-more').addEventListener('click',()=>{state.renderLimit=(state.renderLimit??50)+50;renderRows();});
 $('reception-date').addEventListener('change',()=>{if($('reception-date').reportValidity())loadVisits();});$('today').addEventListener('click',()=>void refreshCalendar(true));
 $('reception-location').addEventListener('change',()=>{clearLookup();deviceReturn=null;$('devices-return-dialog').close();closeVisit();closeManual();$('history-dialog').close();state.location=state.context.locations.find(row=>String(row.locationId)===$('reception-location').value);$('office-name').textContent=state.location.locationName;state.pendingReturnCount=null;state.rows=[];renderRows();loadVisits();});
 $('visit-search').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadVisits(),350);});
@@ -302,3 +303,5 @@ $('correct-return-form').addEventListener('submit',async event=>{
 });
 
 document.addEventListener('visibilitychange',()=>{if(document.hidden)closeLookupScanner();});
+
+const liveRefresh=new LiveRefresh(()=>loadVisits(false,true),()=>!!state.context&&!state.listBusy&&!state.calendarBusy&&!state.printBusy&&!state.returnBusy&&!state.accessDenied&&workspaceIdle());

@@ -15,6 +15,20 @@ Card layout refinement: the company logo is compact at top-left (320 viewBox uni
 
 Preserve source proportions and colours; do not stretch, crop or recreate supplied logos. Use a white surface behind the dark wordmark. The simple light UI uses crimson primary actions, restrained orange accents, readable dark text and clear textual statuses. Colour alone must never communicate approval or access.
 
+## Optimized runtime logo assets
+
+On 23 October 2026, the three runtime PNG logos were resized for their current placements and compressed as indexed PNGs using Sharp with quality 100, compression level 9, effort 10 and dithering disabled. Aspect ratios and existing transparency are retained. These are resized delivery assets; the original images remain recoverable from Git history. The unused stacked alternative is unchanged.
+
+| Runtime asset | Original dimensions | Runtime dimensions | Original bytes | Runtime bytes |
+|---|---|---|---:|---:|
+| gatepass-logo.png | 1254 × 1254 | 192 × 192 | 1,089,201 | 14,993 |
+| sopra-steria-logo.png | 1024 × 137 | 768 × 103 | 34,390 | 18,693 |
+| sopra-steria-icon.png | 1524 × 1129 | 192 × 142 | 101,536 | 6,683 |
+
+Combined runtime brand payload falls from 1,225,127 to 40,369 bytes, a 96.7% reduction. The horizontal wordmark retains enough width for the 640-pixel rendered card header. The application mark and organisation icon cover the current footer and QR badge sizes. Enlarged future placements should use the original artwork or a separately generated larger delivery asset.
+
+Validation uses the existing printing suite, including exact-payload decoding for 24 synthetic credentials at 600, 1000 and 1600 pixel card widths, and full-card decoding at 1000 pixels. The local server preloads logos at startup, so a running instance must reload them before displaying the optimized assets. Physical printer acceptance remains separate.
+
 Printed passes are **landscape ID-card size: 85.6 × 54 mm**. Actual size / 100% printing is required. Keep every QR's quiet zone and high contrast. Pending and approved cards share an identity-only layout and QR. Print employee assigned-project summaries as affiliation; visitor cards show host identity and purpose. Do not print approval labels or access explanations. Live guard verification enforces project access. Card size, small references and QR readability require a physical reception-printer/guard-device pilot. See [the implementation contract](../database/14_Visitor_Identity_and_Multi_Project_Guards.md).
 
 

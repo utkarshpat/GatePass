@@ -17,7 +17,7 @@ test('malformed, partial and oversized assignment summaries fail closed', () => 
     { available: true, total: 1, items: [{ name: 'A'.repeat(201) }] }, { available: true, total: 1, items: [{ name: '\ud800' }] }]) assert.equal(employeeProjectSummary(value), null);
 });
 
-test('guard uses employee assignments for Digital ID and requested host project for project visits, without hash symbols', () => {
+test('guard keeps assignment/project labels separate from person and host names, without hash symbols', () => {
   const source = readFileSync(new URL('../src/app/guard.js', import.meta.url), 'utf8');
   const context: any = { state:{duty:null}, i18n: { t(key: string, values: any = {}) { return key.replace('{count}', String(values.count)); } } };
   vm.createContext(context);
@@ -28,10 +28,10 @@ test('guard uses employee assignments for Digital ID and requested host project 
   assert.equal(f.projectTitle(employee), 'Assigned A · Assigned B · Assigned C · 1 more');
   const extra = { requestType: 'EMPLOYEE_PROJECT', projectName: 'Requested project', hostName: 'Host One', employeeProjects: summary };
   assert.equal(f.projectTitle(extra), 'Requested project');
-  assert.equal(f.hostTitle(extra), 'Host One (Requested project)');
+  assert.equal(f.hostTitle(extra), 'Host One');
   assert.equal(f.projectDescription({ requestType: 'DIGITAL_ID', employeeProjects: { available: false } }), 'Assignments unavailable.');
   assert.equal(f.projectDescription({ requestType: 'DIGITAL_ID', employeeProjects: { available: true, total: 0, items: [] } }), 'No assigned projects');
   assert.equal(f.shortPass('GP-abcdef123456'), 'ABCDEF');
-  assert.equal(f.personTitle('Employee One', f.projectTitle(extra)), 'Employee One (Requested project)');
+  assert.equal(f.personTitle('Employee One'), 'Employee One');
   assert.ok(!f.shortPass('GP-abcdef123456').includes('#'));
 });

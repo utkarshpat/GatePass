@@ -4,6 +4,20 @@ Common areas are assignable, location-scoped verification duties. They are not p
 
 Each guard action identifies its selected duty (`PROJECT` or `COMMON`) and duty ID. SQL rechecks the active staff grant, capability, duty allocation, office and pass on every call. A dropdown selection is never trusted as authorization. A guard may have project duties, common duties or both; revocation takes effect on later operations and retries. Missing contexts fail closed.
 
+## All allocations in the guard filter
+
+The guard filter also offers **All allocations** for the selected office. It combines the lists for the guard's currently assigned project and common-area duties, follows each duty's pagination, and displays each visit/pass once. Reads use at most two concurrent duty requests. Individual allocation filters remain available and the initial selection remains the first assigned duty.
+
+The combined Expected view includes the identities returned by assigned common areas as well as project queues. The combined Inside view includes only project duties and retains the existing rule that the current entry belongs to that guard. A common-only guard has no Inside queue. Common-area verification never implies building occupancy or grants project movement.
+
+When a combined card belongs to several allocations, the guard chooses a concrete allocation before viewing its details. Scanning from All allocations also asks for the allocation first. The detail dialog identifies that allocation, and refresh, photo, reminder and movement requests retain the explicit project/common duty and ID. The server does not accept an `ALL` authorization scope. If a combined read returns an authorization denial, the combined cards and open pass are cleared rather than displaying a partial list as complete.
+
+All allocations, allocation types and the choice dialog support English with Hindi, Kannada, Tamil or Marathi. Card labels show Projects separately below Host, with both selected-language labels separated clearly.
+
+Optional regional person/host readings, spoken-label choices, free-provider limitations and local opt-in are documented in [Regional name readings](Guard_Name_Readings.md). They are display aids and never replace the original identity or duty authorization.
+
+The guard roster renders 24 cards per display page and defers photos/name readings near the viewport. Visible, idle workspaces recheck duties and refresh the selected roster every 20 seconds and on focus. This is polling; open dialogs and editing pause it. Complete server-page chains still supply totals and combined-allocation deduplication. See [list rendering and refresh](Performance_Optimization_Phase_7.md).
+
 | Duty | Verification | Movement |
 | --- | --- | --- |
 | Common area | Office-valid, unexpired, unrevoked employee identity; visitor may be pending or approved | No entry/exit and no campus-presence claim |

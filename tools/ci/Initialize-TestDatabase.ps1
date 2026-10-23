@@ -18,7 +18,7 @@ $env:GATEPASS_TEST_SQL_SERVER='(localdb)\'+$taskInstance
 Write-Output "##vso[task.setvariable variable=GatePassTestSqlServer]$env:GATEPASS_TEST_SQL_SERVER"
 Add-Type -AssemblyName System.Data.SqlClient
 $taskMaster=[Data.SqlClient.SqlConnection]::new("Data Source=$env:GATEPASS_TEST_SQL_SERVER;Initial Catalog=master;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;Pooling=False")
-try{$taskMaster.Open();$taskCreate=$taskMaster.CreateCommand();$taskCreate.CommandText='CREATE DATABASE [GatePass_DesignTest];';$null=$taskCreate.ExecuteNonQuery();$taskCreate.Dispose()}finally{$taskMaster.Dispose()}
+try{$taskMaster.Open();$taskCreate=$taskMaster.CreateCommand();$taskCreate.CommandText='CREATE DATABASE [GatePass_DesignTest]; ALTER DATABASE [GatePass_DesignTest] SET AUTO_CLOSE OFF;';$null=$taskCreate.ExecuteNonQuery();$taskCreate.Dispose()}finally{$taskMaster.Dispose()}
 & (Join-Path $taskRoot 'tools/prepare_sql_parser.ps1')
 Import-Module (Join-Path $taskRoot 'tools/GatePass.LocalSql.psm1') -Force
 Add-Type -Path (Join-Path $taskRoot '.tools/scriptdom/180.140.0/lib/net8.0/Microsoft.SqlServer.TransactSql.ScriptDom.dll')
