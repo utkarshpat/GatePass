@@ -16,8 +16,8 @@ export function sandboxTransport(provider:MailTransport,recipient:string):MailTr
 /** Enforces the selected visit again on every fenced content/relevance read. */
 export function sandboxSql(sql:EmailSql,visitId:string):EmailSql{
  if(!isUuid(visitId))throw new Error('SELECTED_VISIT_REQUIRED');requireDummySso();
- return{async callProcedure(name,parameters){requireDummySso();if(!['gp.GetNotificationEmail','gp.RenewNotificationLease','gp.CompleteNotification'].includes(name))throw new Error('SANDBOX_RPC_REJECTED');const raw=await sql.callProcedure(name,parameters);
-  if(name==='gp.GetNotificationEmail'){const job=JSON.parse(raw);if(job.status==='READY'&&job.visitRequestId?.toLowerCase()!==visitId.toLowerCase())throw new Error('SANDBOX_VISIT_MISMATCH');}return raw;
+ return{async callProcedure(name,parameters){requireDummySso();if(!['gp.GetNotificationEmail','gp.ResolveNotificationPhoto','gp.RenewNotificationLease','gp.CompleteNotification'].includes(name))throw new Error('SANDBOX_RPC_REJECTED');const raw=await sql.callProcedure(name,parameters);
+  if(name==='gp.GetNotificationEmail'||name==='gp.ResolveNotificationPhoto'){const job=JSON.parse(raw);if((name==='gp.ResolveNotificationPhoto'||job.status==='READY')&&job.visitRequestId?.toLowerCase()!==visitId.toLowerCase())throw new Error('SANDBOX_VISIT_MISMATCH');}return raw;
  }};
 }
 export async function claimDevelopmentEmail(visitRequestId:string){

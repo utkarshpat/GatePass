@@ -11,6 +11,8 @@ try{
  $f=(Invoke-GatePassScalar $c (Get-Content (Join-Path $PSScriptRoot '002_transaction_fixtures.sql') -Raw) @{RunId=$run})|ConvertFrom-Json;$ready=$true
  $hostActor=$f.actors.Where({$_.Label -eq 'HOST'})[0];$other=$f.actors.Where({$_.Label -eq 'OTHERHOST'})[0];$pending=$f.visits.Where({$_.Label -eq 'PENDING'})[0];$second=$f.visits.Where({$_.Label -eq 'DECISION_DENY'})[0];$claim=[guid]::NewGuid()
  Invoke-GatePassNonQuery $c "UPDATE gp.VisitRequests SET CompanyName=N'Acme Corp',DeviceTypesJson=N'[""LAPTOP""]' WHERE VisitRequestId=@v;" @{v=[guid]$pending.VisitId}
+ $photoBytes=[Convert]::FromBase64String('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aQ1cAAAAASUVORK5CYII=')
+ Invoke-GatePassNonQuery $c "UPDATE a SET StorageKey=LOWER(N'intakes/'+REPLACE(CONVERT(nvarchar(36),a.IntakeId),'-','')+'/'+REPLACE(CONVERT(nvarchar(36),a.PhotoAssetId),'-','')+'.png'),ContentHash=HASHBYTES('SHA2_256',@bytes),MimeType='image/png',ByteLength=@length,PixelWidth=1,PixelHeight=1 FROM gp.PhotoAssets a JOIN gp.VisitRequests v ON v.PhotoAssetId=a.PhotoAssetId WHERE v.VisitRequestId=@v;" @{v=[guid]$pending.VisitId;bytes=$photoBytes;length=$photoBytes.Length}
  $notification=[long](Invoke-GatePassScalar $c "INSERT gp.NotificationOutbox(VisitRequestId,RecipientKind,RecipientEmployeeId,TemplateCode,PayloadJson,DedupeHash,Status,AttemptCount,LockedBy,LockedUntilUtc) VALUES(@v,'EMPLOYEE',@host,'HOST_APPROVAL_REQUEST',(SELECT @v visitRequestId FOR JSON PATH,WITHOUT_ARRAY_WRAPPER),HASHBYTES('SHA2_256',CONVERT(binary(16),@v)),'PROCESSING',1,@claim,DATEADD(minute,5,SYSUTCDATETIME()));SELECT CONVERT(bigint,SCOPE_IDENTITY());" @{v=[guid]$pending.VisitId;host=$f.hostEmployeeId;claim=$claim})
  Invoke-GatePassNonQuery $c "CREATE USER [$principal] WITHOUT LOGIN;ALTER ROLE gp_worker_runtime ADD MEMBER [$principal];CREATE USER [$($principal)_api] WITHOUT LOGIN;ALTER ROLE gp_api_runtime ADD MEMBER [$($principal)_api];";$created=$true
  $worker=Open-GatePassLocalSql -TrustLocalServerCertificate:$TrustLocalServerCertificate;Invoke-GatePassNonQuery $worker "EXECUTE AS USER='$principal';"
@@ -29,6 +31,32 @@ try{
  Case 'Wrong or expired claim cannot read email content' {
   Expect {Invoke-GatePassScalar $worker 'EXEC gp.GetNotificationEmail @NotificationId=@n,@ClaimToken=@claim;' @{n=$notification;claim=[guid]::NewGuid()}} 52003
   try{Invoke-GatePassNonQuery $c 'UPDATE gp.NotificationOutbox SET LockedUntilUtc=DATEADD(second,-1,SYSUTCDATETIME()) WHERE NotificationId=@n;' @{n=$notification};Expect {Invoke-GatePassScalar $worker 'EXEC gp.GetNotificationEmail @NotificationId=@n,@ClaimToken=@claim;' $p} 52003}finally{Invoke-GatePassNonQuery $c 'UPDATE gp.NotificationOutbox SET LockedUntilUtc=DATEADD(minute,5,SYSUTCDATETIME()) WHERE NotificationId=@n;' @{n=$notification}}
+ }
+ Case 'Only a current relevant notification claim resolves its own person photo' {
+  $photo=(Invoke-GatePassScalar $worker 'EXEC gp.ResolveNotificationPhoto @NotificationId=@n,@ClaimToken=@claim;' $p)|ConvertFrom-Json
+  Assert ($photo.available -and $photo.visitRequestId -eq $pending.VisitId -and $photo.storageKey -match '^intakes/' -and $photo.contentHash.Length -eq 64) 'Notification photo was not scoped.'
+  Assert (($photo|ConvertTo-Json -Depth 4) -notmatch 'credential|ciphertext|session|recipientEmail') 'Photo metadata exposed unrelated material.'
+  Expect {Invoke-GatePassScalar $api 'EXEC gp.ResolveNotificationPhoto @NotificationId=@n,@ClaimToken=@claim;' $p} 229
+  Expect {Invoke-GatePassScalar $worker 'EXEC gp.ResolveNotificationPhoto @NotificationId=@n,@ClaimToken=@claim;' @{n=$notification;claim=[guid]::NewGuid()}} 52003
+  try{Invoke-GatePassNonQuery $c 'UPDATE gp.NotificationOutbox SET LockedUntilUtc=DATEADD(second,-1,SYSUTCDATETIME()) WHERE NotificationId=@n;' @{n=$notification};Expect {Invoke-GatePassScalar $worker 'EXEC gp.ResolveNotificationPhoto @NotificationId=@n,@ClaimToken=@claim;' $p} 52003}finally{Invoke-GatePassNonQuery $c 'UPDATE gp.NotificationOutbox SET LockedUntilUtc=DATEADD(minute,5,SYSUTCDATETIME()) WHERE NotificationId=@n;' @{n=$notification}}
+ }
+ Case 'Changed recipient and purged person photo cannot be exported by a live claim' {
+  try{Invoke-GatePassNonQuery $c 'UPDATE gp.NotificationOutbox SET RecipientEmployeeId=@other WHERE NotificationId=@n;' @{n=$notification;other=($f.prefix+'-OTHERHOST')};Expect {Invoke-GatePassScalar $worker 'EXEC gp.ResolveNotificationPhoto @NotificationId=@n,@ClaimToken=@claim;' $p} 52004}finally{Invoke-GatePassNonQuery $c 'UPDATE gp.NotificationOutbox SET RecipientEmployeeId=@host WHERE NotificationId=@n;' @{n=$notification;host=$f.hostEmployeeId}}
+  try{Invoke-GatePassNonQuery $c 'UPDATE gp.PhotoAssets SET PurgedAtUtc=SYSUTCDATETIME(),StorageKey=NULL WHERE PhotoAssetId=(SELECT PhotoAssetId FROM gp.VisitRequests WHERE VisitRequestId=@v);' @{v=[guid]$pending.VisitId};$r=(Invoke-GatePassScalar $worker 'EXEC gp.ResolveNotificationPhoto @NotificationId=@n,@ClaimToken=@claim;' $p)|ConvertFrom-Json;Assert (-not $r.available -and -not $r.PSObject.Properties['storageKey']) 'Purged photo remained exportable.'}finally{Invoke-GatePassNonQuery $c "UPDATE gp.PhotoAssets SET PurgedAtUtc=NULL,StorageKey=LOWER(N'intakes/'+REPLACE(CONVERT(nvarchar(36),IntakeId),'-','')+'/'+REPLACE(CONVERT(nvarchar(36),PhotoAssetId),'-','')+'.png') WHERE PhotoAssetId=(SELECT PhotoAssetId FROM gp.VisitRequests WHERE VisitRequestId=@v);" @{v=[guid]$pending.VisitId}}
+ }
+ Case 'Manager notice and visitor receipt can resolve only their correctly addressed individual photo' {
+  $temp=$f.visits.Where({$_.Label -eq 'TEMP'})[0]
+  $jobs=(Invoke-GatePassScalar $c @'
+DECLARE @added table(notificationId bigint,visitRequestId uniqueidentifier);
+INSERT gp.NotificationOutbox(VisitRequestId,RecipientKind,RecipientEmployeeId,RecipientEmail,TemplateCode,PayloadJson,DedupeHash,Status,AttemptCount,LockedBy,LockedUntilUtc)
+OUTPUT inserted.NotificationId,inserted.VisitRequestId INTO @added
+SELECT v.VisitRequestId,CASE WHEN v.VisitRequestId=@temp THEN 'MANAGER' ELSE 'EMAIL' END,CASE WHEN v.VisitRequestId=@temp THEN @host END,CASE WHEN v.VisitRequestId<>@temp THEN v.PersonEmail END,
+ CASE WHEN v.VisitRequestId=@temp THEN 'TEMP_ID_MANAGER_NOTICE' ELSE 'REQUEST_RECEIVED' END,'{}',HASHBYTES('SHA2_256',CONVERT(binary(16),NEWID())),'PROCESSING',1,@claim,DATEADD(minute,5,SYSUTCDATETIME()) FROM gp.VisitRequests v WHERE v.VisitRequestId IN(@temp,@pending);
+SELECT (SELECT * FROM @added FOR JSON PATH);
+'@ @{temp=[guid]$temp.VisitId;pending=[guid]$pending.VisitId;host=$f.hostEmployeeId;claim=$claim})|ConvertFrom-Json
+  foreach($job in $jobs){$r=(Invoke-GatePassScalar $worker 'EXEC gp.ResolveNotificationPhoto @NotificationId=@n,@ClaimToken=@claim;' @{n=[long]$job.notificationId;claim=$claim})|ConvertFrom-Json;Assert ($r.available -and $r.visitRequestId -eq $job.visitRequestId) 'Manager/holder photo mismatch.'}
+  $holder=$jobs.Where({$_.visitRequestId -eq $pending.VisitId})[0]
+  try{Invoke-GatePassNonQuery $c "UPDATE gp.NotificationOutbox SET RecipientEmail=N'wrong-person@example.invalid' WHERE NotificationId=@n;" @{n=[long]$holder.notificationId};Expect {Invoke-GatePassScalar $worker 'EXEC gp.ResolveNotificationPhoto @NotificationId=@n,@ClaimToken=@claim;' @{n=[long]$holder.notificationId;claim=$claim}} 52004}finally{Invoke-GatePassNonQuery $c 'UPDATE n SET RecipientEmail=v.PersonEmail FROM gp.NotificationOutbox n JOIN gp.VisitRequests v ON v.VisitRequestId=n.VisitRequestId WHERE n.NotificationId=@n;' @{n=[long]$holder.notificationId}}
  }
  Case 'Actual TypeScript worker sends through a capture provider and acknowledges its fenced SQL job' {
   $process=[Diagnostics.Process]::new();$process.StartInfo=[Diagnostics.ProcessStartInfo]::new('node');$process.StartInfo.ArgumentList.Add((Join-Path $taskRoot 'tests/notification-email.sql-integration.ts'));$process.StartInfo.WorkingDirectory=$taskRoot;$process.StartInfo.UseShellExecute=$false;$process.StartInfo.CreateNoWindow=$true;$process.StartInfo.RedirectStandardInput=$true;$process.StartInfo.RedirectStandardOutput=$true;$process.StartInfo.RedirectStandardError=$true;$process.StartInfo.Environment['NODE_ENV']='test';$process.StartInfo.Environment['GATEPASS_SSO_MODE']='dummy';$process.StartInfo.Environment['GATEPASS_DIRECTORY_MODE']='mock';$null=$process.Start();$process.StandardInput.Write((@{notificationId=$notification;claimToken=$claim;employeeId=$f.hostEmployeeId;visitId=$pending.VisitId;personName='Synthetic PENDING'}|ConvertTo-Json -Compress));$process.StandardInput.Close();$output=$process.StandardOutput.ReadToEndAsync();$stderr=$process.StandardError.ReadToEndAsync();if(-not $process.WaitForExit(120000)){$process.Kill($true);throw 'Capture provider integration timed out.'};$report=$output.GetAwaiter().GetResult()|ConvertFrom-Json;$null=$stderr.GetAwaiter().GetResult();Assert ($report.status -eq 'PASS' -and -not $report.externalMailSent) 'Actual worker/capture provider failed.'
@@ -53,6 +81,7 @@ try{
   Assert ((Invoke-GatePassScalar $c 'SELECT Status FROM gp.AccessPasses WHERE AccessPassId=@p;' @{p=[guid]$second.PassId}) -eq 'DENIED') 'Rejected pass stayed active.'
  }
  Case 'Stale approval email is cancelled before dispatch after decision' {
+  Expect {Invoke-GatePassScalar $worker 'EXEC gp.ResolveNotificationPhoto @NotificationId=@n,@ClaimToken=@claim;' $p} 52004
   $r=(Invoke-GatePassScalar $worker 'EXEC gp.GetNotificationEmail @NotificationId=@n,@ClaimToken=@claim;' $p)|ConvertFrom-Json;Assert ($r.status -eq 'CANCELLED') 'Old approval remained sendable.'
  }
  Case 'External status binds the recipient digest and immutable snapshot' {

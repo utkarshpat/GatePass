@@ -1,6 +1,6 @@
 # GatePass System Documentation
 
-> Latest local implementation and evidence: [23 October retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md), through migration 087. The 22 October handbook/export and hash snapshot below remain a dated baseline. Current increments include visitor company/devices, admin register/Excel/timelines, reception lookup/return correction local staff onboarding and office-scoped project creation.
+> Latest local implementation and evidence: [23 October retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md), through migration 088. The 22 October handbook/export and hash snapshot below remain a dated baseline. Current increments include visitor company/devices, admin register/Excel/timelines, reception lookup/return correction local staff onboarding and office-scoped project creation.
 
 Current implementation handbook | 22 October 2026 | Documentation baseline 1.0
 
@@ -41,3 +41,5 @@ Further local corrections: [participant, mobile and presence fixes](../41_Partic
 Earlier phase documents are historical. Current approved requirements and executable source resolve conflicts. Test numbers are recorded prior evidence, not fresh regression runs during documentation. No email, business mutation, migration, commit, push or deployment is part of authoring.
 
 The export package contains a combined reading PDF/HTML plus editable Markdown and the older Markdown reference tree. SQL catalog is source provenance, not live drift verification.
+
+23 October mail follow-up: [Outlook-compatible email layout, person photos and approval identity](../60_Email_Design_Person_Photos_And_Approvals.md).

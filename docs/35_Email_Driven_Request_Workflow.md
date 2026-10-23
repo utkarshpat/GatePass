@@ -11,13 +11,13 @@ Employee and host identities remain in the authorization model. They do not have
 - Each decision queues its own result notification. Guard screens already read current SQL state; email delivery is not a condition for access authorization.
 - Internal holders reopen `/request/{visitId}` through corporate authentication. External recipients get a signed, expiring capability in the URL fragment. Only the signed holder/snapshot can read that individual request and render its current neutral landscape card. There is no public reference-only lookup. The capability is not an approval or project entry permission.
 - The request page displays the current PNG and offers download. Rendering reauthorizes after private storage work. Cancelled/revoked/expired credentials cannot be exported as a valid pass; a receipt link may still display the cancellation/denial status until its expiry. Purged data is unavailable.
-- Photos for host review remain behind authenticated scoped access. Email contains reference, person, office, project, host, purpose and validity. Corporate branding is a CID PNG attachment supported by the Graph transport.
+- Host review photos remain available through authenticated scoped access. With migration 088 and protected mail-photo storage configured, host, manager and holder notifications also include the person's photo as an inline CID attachment. Email contains person, office, project, host, purpose, validity and reference. Corporate branding uses its separate CID PNG. No generated pass/QR attachment is added. See [email design and photo delivery](60_Email_Design_Person_Photos_And_Approvals.md).
 
 The approval/status page is a detail/action destination for email, not a workspace. No employee/host dashboard has been added. Standard email links use authenticated confirmation. The optional native Outlook `Action.Http` flow is implemented separately in [Direct Outlook Approvals](36_Outlook_Direct_Approvals.md), with Entra token validation and an isolated SQL decision identity. It remains disabled until organization onboarding and public HTTPS deployment. Real browser SSO/MFA remains the separately planned identity adapter.
 
 ## Queue and provider boundaries
 
-`NotificationEmailWorker` uses a dedicated `gp_worker_runtime` identity: bounded claim, fenced content, directory resolution, lease renewal, relevance recheck, provider send, then acknowledgement. Network/HTML work occurs outside SQL transactions. The worker cannot approve, read arbitrary photos/QR material or modify business tables. The API cannot claim notifications; encrypted card material remains render-role only.
+`NotificationEmailWorker` uses a dedicated `gp_worker_runtime` identity: bounded claim, fenced content/photo resolution, directory resolution, lease renewal, relevance recheck, provider send, then acknowledgement. Photo reads reauthorize after storage work. Network/HTML work occurs outside SQL transactions. The worker can resolve only the person photo belonging to its live relevant notification claim; it cannot approve, read arbitrary photos/QR material or modify business tables. The API cannot claim notifications; encrypted card material remains render-role only.
 
 Manager/employee addresses come from the approved directory adapter, not request JSON or stale outbox email caches. External addresses are bound to the submitted individual request. An unusable manager contact retries through the existing SQL failure policy.
 
@@ -25,7 +25,7 @@ The Graph transport calls fixed Microsoft HTTPS endpoints, uses an explicit send
 
 ## Live configuration — pending from organization
 
-The user selected Microsoft Graph but does not yet have app/mailbox configuration. No real email has been sent or Graph account changes made. Configure these through the deployment environment/secret store, not source control or chat:
+Company deployment still requires its approved Microsoft Graph application/mailbox configuration. The separate personal-Outlook test connection has delivered a sample notification, as confirmed by the user's inbox screenshot; this does not establish company sender or direct-Outlook approval configuration. Configure production settings through the deployment environment/secret store, not source control or chat:
 
 | Variable | Meaning |
 |---|---|
@@ -38,6 +38,7 @@ The user selected Microsoft Graph but does not yet have app/mailbox configuratio
 | `GATEPASS_WORKER_DB_USER`, `GATEPASS_WORKER_DB_PASSWORD` | Dedicated execute-only worker login |
 | `GATEPASS_MAIL_DIRECTORY_MODULE` | Absolute trusted module path exporting `createMailDirectory()` with `getEmployee(id)` / `getManager(id)`; returns active status and official email |
 | `GATEPASS_EMAIL_LINKS_MODULE` | Absolute trusted module path exporting `createEmailLinks()`; API and worker must share the same persistent protected signing-key ring |
+| `GATEPASS_MAIL_PHOTOS_ROOT` | Absolute protected application photos directory, outside the workspace; the worker may read only through its fenced notification-photo service |
 
 The application's composition supports the signed public request endpoints and injection of the isolated external card renderer. The local server wires the full detail/photo/decision/card flow with the existing dummy identity adapter. Production deployment must supply the corresponding protected renderer/media and corporate identity adapters; the mail worker will not fall back to mock directory data or elevated SQL credentials.
 
@@ -96,7 +97,7 @@ npm.cmd run mail:scenario -- verify <visit-uuid> <host-employee-id>
 
 Approval links use `http://localhost:8443` and work only on the developer's laptop. They still require the assigned dummy host and an explicit POST decision. Clicking an email link never approves automatically. A scenario-generated manifest under `~/.gatepass/email-tests` binds the synthetic name/visit/host for scripted test approval; it contains no session or email capability token. Download verification writes the synthetic PNG beside that manifest. Real company SSO, reachable HTTPS origin and production transport setup remain separate deployment work.
 
-`npm run mail:preview` writes three **synthetic** HTML and Outlook `.eml` samples into `~/.gatepass/email-previews`. It does not read/claim SQL notifications or call Graph. Preview links refer to synthetic requests. These previews are not evidence of inbox delivery.
+`npm run mail:preview` writes three **synthetic** HTML and Outlook `.eml` samples with person photos into `~/.gatepass/email-previews`. It does not read/claim SQL notifications or call Graph. Preview links refer to synthetic requests. These previews are not evidence of inbox delivery.
 
 - Unit cases: tampering, expiry, escaping, recipient resolution, manager notice, exact host snapshot, lease/relevance order, provider failures/202, token cache and CID branding.
 - `database/tests/Test-EmailWorkflow.ps1`: restricted role boundaries, actual fenced dispatch content, expired/wrong claims, real TypeScript worker with a capture provider and SQL acknowledgement, wrong host/snapshot, independent decisions, retry and external holder binding.

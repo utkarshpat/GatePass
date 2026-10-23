@@ -63,8 +63,14 @@
 ### TC-EMAIL-07: Post-Return Cancellation & Decision Fence (Migration 074)
 - **Steps**:
   1. Reception prints a pending pass and later marks it **Returned** (`gp.ReturnReceptionPass`).
-  2. Host opens `/approval/<visitRequestId>` or requester calls `/api/visits/cancel`.
+  2. Host opens `/approval/<visitRequestId>`; the backend cancellation test invokes `VisitCancellationService` / `gp.CancelVisit`. A public cancellation route or finished browser Cancel visit button is not currently wired.
 - **Expected Result**:
   - `gp._VisitReadJson` returns `canDecide: false` and `canCancel: false`.
   - `gp.CancelVisit` throws `52005` (`409 CONFLICT`), preventing post-return mutation of a closed visit.
   - `gp._NotificationRelevance` marks any pending outbox rows for the returned visit as `STATE_CHANGED` (`CANCELLED`).
+
+### TC-EMAIL-08: Person Photos and Outlook-Compatible Notification Layout (Migration 088)
+- Generate the host, manager and visitor notification samples with `npm.cmd run mail:preview`. Check explicit status, person/company, inline person photo, office/project/devices, purpose, validity and actions at desktop/mobile widths. The subject uses the person's name and office; the full request reference remains visible in the footer.
+- Verify the Graph capture contains `gatepass-company-logo` and `gatepass-person-photo` inline MIME parts, with no pass/QR attachment or public storage URL. Manager notices have no approval or private-holder link; pass-replacement notices have no person photo.
+- Under a restricted worker identity, resolve only a current relevant notification claim with `gp.ResolveNotificationPhoto`. API-role access, wrong/expired claims and changed recipients are denied. A purged photo has no storage metadata. The service rejects wrong visits, path traversal, bad length/hash and metadata/permission loss during file reads. The final relevance check prevents stale dispatch.
+- Ordinary HTML links still require the assigned host's active browser session or sign-in; no GET or mail scanner automatically decides. Direct Outlook actions require the separately configured Microsoft Entra actor-token flow. See [design, configuration and validation](../60_Email_Design_Person_Photos_And_Approvals.md).

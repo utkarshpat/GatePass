@@ -7,7 +7,7 @@ export const procedureRoles = {
   outlook: ['DecideOutlookVisit'],
   auth: ['BeginGuardLogin', 'CompleteGuardLogin', 'InspectGuardSetup', 'CompleteGuardSetup', 'TouchGuardSession', 'RevokeGuardSession'],
   staffAuth: ['ResolveStaffLoginIdentity','BeginStaffLogin','CompleteStaffLogin','InspectStaffSetup','CompleteStaffSetup','TouchStaffSession','RevokeStaffSession'],
-  worker: ['ClaimNotifications','GetNotificationDispatch','GetNotificationEmail','RenewNotificationLease','CompleteNotification'],
+  worker: ['ClaimNotifications','GetNotificationDispatch','GetNotificationEmail','ResolveNotificationPhoto','RenewNotificationLease','CompleteNotification'],
   render: ['GetOwnDigitalIdCard','GetEmployeeRequestCard','GetEmailRequestCard','GetReceptionCardSource','BeginPassRender','FinishPassRender','DispatchPassPrint','FailPassPrint'],
   media: ['ResolveVisitPhoto'],
   api: ['ReadEmailRequest','ListGuardDuties','ReadGuardDutyPass','ListGuardDutyVisitors','RecordGuardDutyMovement','GetCommonDutyAdministration','ManageCommonDuty','FindGuardPass','GetGuardWorkspaceContext','ListGuardVisitors','ListGuardRecentScans','ReadAdminVisitRegister','GetAdminConsoleScope','ListAdminGuardAssignments','CreateScopedProject','GetAdminWorkspaceContext','ListLeadProjects','SearchProjectLeadCandidates','ListProjectHeads','ManageStaffCredential','DecideVisit', 'RecordMovement', 'DeallocateGuard', 'ManageGuardCredential', 'CreateRegistrationIntake', 'RecordRegistrationPhoto', 'SubmitRegistration', 'ListRegistrationLocations', 'GetRegistrationOptions',

@@ -1,6 +1,6 @@
 # 03. Architecture and boundaries
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–088. The original 22 October export and snapshot remain historical.
 
 ## Components
 | Component | Responsibility | Source |
@@ -24,7 +24,7 @@ Reviewed forward SQL migrations define schema/contracts. Apply and inspect SQL, 
 | gp_api_runtime | Approved business procedures/scoped reads and mutations |
 | gp_auth_runtime | Legacy guard password/session verification |
 | gp_staff_auth_runtime | Generic staff password verification |
-| gp_worker_runtime | Outbox lease/content/relevance/result |
+| gp_worker_runtime | Outbox lease/content/relevance/result and own-claim person-photo resolution |
 | gp_media_runtime | Authorized photo read contract |
 | gp_render_runtime | Render/reissue material and dispatch |
 | gp_outlook_runtime | Independently authenticated Outlook decision only |

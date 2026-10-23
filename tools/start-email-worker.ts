@@ -6,6 +6,9 @@ import {NotificationEmailWorker} from '../src/email/NotificationEmailWorker.ts';
 import {GraphMailTransport,graphClientCredentials} from '../src/email/GraphMailTransport.ts';
 import {openPersonalOutlook} from '../src/email/PersonalOutlookConnection.ts';
 import {loadOutlookActions} from '../src/email/OutlookConfiguration.ts';
+import {NotificationPhotoService} from '../src/email/NotificationPhotoService.ts';
+import {PrivateDirectory} from '../src/storage/PrivateDirectory.ts';
+import {FilePhotoStore} from '../src/storage/FilePhotoStore.ts';
 const required=(name:string)=>{const v=process.env[name];if(!v)throw new Error('MAIL_CONFIGURATION_REQUIRED');return v;};
 async function adapter(name:string,factory:string){const file=required(name);if(!isAbsolute(file))throw new Error('ABSOLUTE_MAIL_ADAPTER_REQUIRED');const module=await import(pathToFileURL(file).href);if(typeof module[factory]!=='function')throw new Error('MAIL_ADAPTER_REQUIRED');return module[factory]();}
 let sql:Awaited<ReturnType<typeof connectSql>>|undefined;let stopping=false;
@@ -20,6 +23,7 @@ try{
  const origin=required('GATEPASS_ORIGIN');if(!origin.startsWith('https://'))throw new Error('LIVE_MAIL_REQUIRES_HTTPS');
  sql=await connectSql({server:required('GATEPASS_DB_SERVER'),port:Number(required('GATEPASS_DB_PORT')),database:required('GATEPASS_DB_NAME'),user:required('GATEPASS_WORKER_DB_USER'),password:required('GATEPASS_WORKER_DB_PASSWORD')},'worker');
  const outlook=await loadOutlookActions(process.env,origin);
- const worker=new NotificationEmailWorker(sql,directory,transport,links,origin,await readFile(new URL('../assets/brand/sopra-steria-logo.png',import.meta.url)),outlook?.card);process.once('SIGINT',()=>{stopping=true;});process.once('SIGTERM',()=>{stopping=true;});
+ const photos=new NotificationPhotoService(sql,new FilePhotoStore(await PrivateDirectory.create(required('GATEPASS_MAIL_PHOTOS_ROOT'),[process.cwd()])));
+ const worker=new NotificationEmailWorker(sql,directory,transport,links,origin,await readFile(new URL('../assets/brand/sopra-steria-logo.png',import.meta.url)),outlook?.card,photos);process.once('SIGINT',()=>{stopping=true;});process.once('SIGTERM',()=>{stopping=true;});
  do{const results=await worker.runOnce();console.log(JSON.stringify({batch:results}));if(process.argv.includes('--once'))break;for(let i=0;i<10&&!stopping;i++)await new Promise(r=>setTimeout(r,1000));}while(!stopping);
-}catch{console.error('EMAIL_WORKER_UNAVAILABLE: verify Graph mailbox/app, approved directory/link-key adapters and dedicated worker SQL identity.');process.exitCode=1;}finally{await sql?.close();}
+}catch{console.error('EMAIL_WORKER_UNAVAILABLE: verify Graph mailbox/app, approved directory/link-key adapters, protected mail-photo root and dedicated worker SQL identity.');process.exitCode=1;}finally{await sql?.close();}

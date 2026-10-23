@@ -105,3 +105,5 @@ The current shared Add flow and area/guard cards are documented in [Unified proj
 For register data, choose **Noida → Project 1**, then **Visit register**. The status shows the selected scope and active sort. See [register loading and shared scrollbars](58_Visit_Register_Loading_And_Theme_Scrollbars.md).
 
 Presentation account lookup: [current login IDs, roles, locations and project/duty assignments](59_Presentation_Account_Role_Assignment_List.md), snapshotted from local SQL on 23 October.
+
+Email presentation: [person-photo emails and why HTML approval links use host authentication](60_Email_Design_Person_Photos_And_Approvals.md). Use `npm.cmd run mail:preview` for synthetic HTML/Outlook examples. Generated pass/QR cards are not added to emails.

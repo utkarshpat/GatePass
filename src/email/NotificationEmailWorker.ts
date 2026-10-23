@@ -4,20 +4,22 @@ import {visitorDetails} from '../registration/VisitorDetails.ts';
 import {isUuid,isUtc} from '../visits/SqlVisitReadRepository.ts';
 import {outlookCardScript} from './OutlookApprovalCard.ts';
 import type {OutlookApprovalCard} from './OutlookApprovalCard.ts';
+import {notificationEmailLayout} from './NotificationEmailLayout.ts';
+import {photoTemplates} from './NotificationPhotoService.ts';
+import type {MailPhoto,NotificationPhotos} from './NotificationPhotoService.ts';
 const deviceLabels:Record<string,string>={LAPTOP:'Laptop',TABLET:'Tablet / iPad',PEN_DRIVE:'Pen Drive',CAMERA:'Camera',OTHER:'Other'};
-export type MailMessage={notificationId:string;to:string;subject:string;html:string;inlineLogo?:string};
+export type MailMessage={notificationId:string;to:string;subject:string;html:string;inlineLogo?:string;personPhoto?:{mimeType:MailPhoto['mimeType'];contentBytes:string}};
 export interface MailTransport{send(message:MailMessage):Promise<{providerMessageId?:string}>}
 export interface MailDirectory{getEmployee(id:string):Promise<{isActive:boolean;officialEmail:string}|null>;getManager(id:string):Promise<{isActive:boolean;officialEmail:string}|null>}
 export class MailFailure extends Error{code:string;constructor(code:string){super(code);this.code=code;}}
 const email=(s:unknown):s is string=>typeof s==='string'&&s.length<=320&&/^[^\s<>\x00-\x1f\x7f@]+@[^\s<>\x00-\x1f\x7f@]+\.[^\s<>\x00-\x1f\x7f@]+$/u.test(s);
-const escape=(s:unknown)=>String(s??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const templates=['HOST_APPROVAL_REQUEST','TEMP_ID_MANAGER_NOTICE','VISIT_DECIDED','PASS_DELIVERY','PASS_REISSUED','REQUEST_RECEIVED'];
 const validId=(v:unknown):v is number=>Number.isSafeInteger(v)&&Number(v)>0;
 export class NotificationEmailWorker{
- #sql:EmailSql;#directory:MailDirectory;#transport:MailTransport;#links:EmailLinkCodec;#origin:string;#logo:string|undefined;#outlook:OutlookApprovalCard|undefined;
- constructor(sql:EmailSql,directory:MailDirectory,transport:MailTransport,links:EmailLinkCodec,origin:string,logo?:Buffer,outlook?:OutlookApprovalCard){const u=new URL(origin);if(u.origin!==origin||u.protocol!=='https:'&&!(u.protocol==='http:'&&u.hostname==='localhost'&&['test','development'].includes(process.env.NODE_ENV??'')))throw new Error('INVALID_EMAIL_ORIGIN');this.#sql=sql;this.#directory=directory;this.#transport=transport;this.#links=links;this.#origin=origin;this.#outlook=outlook;if(logo){if(!Buffer.isBuffer(logo)||logo.length>524288||!logo.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex')))throw new Error('INVALID_EMAIL_BRAND');this.#logo=logo.toString('base64');}}
+ #sql:EmailSql;#directory:MailDirectory;#transport:MailTransport;#links:EmailLinkCodec;#origin:string;#logo:string|undefined;#outlook:OutlookApprovalCard|undefined;#photos:NotificationPhotos|undefined;
+ constructor(sql:EmailSql,directory:MailDirectory,transport:MailTransport,links:EmailLinkCodec,origin:string,logo?:Buffer,outlook?:OutlookApprovalCard,photos?:NotificationPhotos){const u=new URL(origin);if(u.origin!==origin||u.protocol!=='https:'&&!(u.protocol==='http:'&&u.hostname==='localhost'&&['test','development'].includes(process.env.NODE_ENV??'')))throw new Error('INVALID_EMAIL_ORIGIN');this.#sql=sql;this.#directory=directory;this.#transport=transport;this.#links=links;this.#origin=origin;this.#outlook=outlook;this.#photos=photos;if(logo){if(!Buffer.isBuffer(logo)||logo.length>524288||!logo.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex')))throw new Error('INVALID_EMAIL_BRAND');this.#logo=logo.toString('base64');}}
  async #rpc(name:string,p:Record<string,any>){return JSON.parse(await this.#sql.callProcedure(name,p));}
- async render(job:any):Promise<MailMessage>{
+ async render(job:any,photo?:MailPhoto|null):Promise<MailMessage>{
   if(!job||!validId(job.notificationId)||!templates.includes(job.templateCode)||!isUuid(job.visitRequestId)||!job.details||!['EMPLOYEE','MANAGER','EMAIL'].includes(job.recipientKind))throw new MailFailure('RENDER_FAILED');
   const d=job.details;if(!isUuid(d.visitRequestId)||d.visitRequestId.toLowerCase()!==job.visitRequestId.toLowerCase()||!isUtc(d.validFromUtc)||!isUtc(d.validUntilUtc)||typeof d.personName!=='string'||d.personName.length>200||typeof d.publicReference!=='string'||d.publicReference.length>40||typeof d.purpose!=='string'||d.purpose.length>1000)throw new MailFailure('RENDER_FAILED');
   let extras:ReturnType<typeof visitorDetails>;try{extras=visitorDetails(d.companyName,d.deviceTypes);}catch{throw new MailFailure('RENDER_FAILED');}
@@ -30,21 +32,25 @@ export class NotificationEmailWorker{
    if(!/^[a-f0-9]{64}$/iu.test(d.recipientEmailHash)||!/^[a-f0-9]{64}$/iu.test(d.snapshotHash))throw new MailFailure('RENDER_FAILED');
    href=this.#origin+'/request/'+job.visitRequestId.toLowerCase()+'#link='+await this.#links.issue({v:1,visit:job.visitRequestId.toLowerCase(),emailHash:d.recipientEmailHash.toLowerCase(),snapshot:d.snapshotHash.toLowerCase(),expires:Date.parse(d.validUntilUtc)+86400000});
   }
-  const title=approval?'Approval requested':job.templateCode==='TEMP_ID_MANAGER_NOTICE'?'Digital ID issued':job.templateCode==='VISIT_DECIDED'?(d.visitStatus==='APPROVED'?'Visit approved':'Visit declined'):job.templateCode==='PASS_REISSUED'?'Pass replaced':d.requestType==='TEMP_ID'?'Your Digital ID':'Visit request received';
-  const action=(label:string,url:string,color='#d60032')=>`<a href="${escape(url)}" style="display:inline-block;padding:12px 22px;margin:8px 8px 0 0;background:${color};color:#fff;border-radius:8px;text-decoration:none;font-weight:600">${label}</a>`;
-  const date=(s:string)=>new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'}).format(new Date(s))+' IST';
-  const fields=[['Name',d.personName],['Company',extras.companyName],['Devices',extras.deviceTypes?.length?extras.deviceTypes.map(code=>deviceLabels[code]).join(', '):undefined],['Request',d.publicReference],['Office',d.locationName],['Project',d.projectName],['Host',d.hostName],['Purpose',d.purpose],['Valid from',date(d.validFromUtc)],['Valid until',date(d.validUntilUtc)]];
-  const html=`<!doctype html><html lang="en"><body style="margin:0;background:#f5f7fa;font:15px Segoe UI,Arial,sans-serif;color:#172234"><main style="max-width:560px;margin:24px auto;padding:28px;background:white;border-top:4px solid #d60032;border-radius:12px">${this.#logo?'<img src="cid:gatepass-company-logo" width="180" alt="Sopra Steria" style="display:block;max-width:100%;height:auto">':'<div style="font-size:22px;font-weight:700">Sopra Steria</div>'}<h1 style="font-size:22px">${escape(title)}</h1>${job.templateCode==='TEMP_ID_MANAGER_NOTICE'?'<p>For your information. No approval is required.</p>':''}<table role="presentation" style="width:100%;border-collapse:collapse">${fields.filter(([,v])=>v).map(([k,v])=>`<tr><td style="padding:8px 16px 8px 0;color:#65728a;vertical-align:top">${escape(k)}</td><td style="padding:8px 0;overflow-wrap:anywhere">${escape(v)}</td></tr>`).join('')}</table>${approval?action('Approve',href+'#decision=APPROVED','#00845a')+action('Reject',href+'#decision=DENIED')+`<p><a href="${escape(href)}">View request</a></p>`:notice?'':action('View status / pass',href)}<p style="margin-top:28px;color:#65728a;font-size:12px">GatePass</p></main></body></html>`;
+  const title=approval?'Approval requested':job.templateCode==='TEMP_ID_MANAGER_NOTICE'?'Digital ID issued':job.templateCode==='VISIT_DECIDED'?(d.visitStatus==='APPROVED'?'Visit approved':'Visit declined'):job.templateCode==='PASS_REISSUED'?'Pass replaced':job.templateCode==='PASS_DELIVERY'?'Your visitor pass':['TEMP_ID','DIGITAL_ID'].includes(d.requestType)?'Your Digital ID':'Visit request received';
+  let personPhoto:MailMessage['personPhoto'];
+  if(photo&&photoTemplates.includes(job.templateCode)){
+   if(!Buffer.isBuffer(photo.bytes)||!photo.bytes.length||photo.bytes.length>5242880||!['image/jpeg','image/png','image/webp'].includes(photo.mimeType))throw new MailFailure('RENDER_FAILED');
+   personPhoto={mimeType:photo.mimeType,contentBytes:photo.bytes.toString('base64')};
+  }
+  const html=notificationEmailLayout({title,approval,manager:job.templateCode==='TEMP_ID_MANAGER_NOTICE',notice,status:d.visitStatus,personName:d.personName,companyName:extras.companyName,devices:extras.deviceTypes?.length?extras.deviceTypes.map(code=>deviceLabels[code]).join(', '):undefined,publicReference:d.publicReference,locationName:d.locationName,projectName:d.projectName,hostName:d.hostName,purpose:d.purpose,validFromUtc:d.validFromUtc,validUntilUtc:d.validUntilUtc,href,logo:!!this.#logo,photo:!!personPhoto});
   const card=approval&&this.#outlook?outlookCardScript(await this.#outlook.render(job,to)):'';
-  const content=card?html.replace('<html lang="en">','<html lang="en"><head>'+card+'</head>'):html;
-  return{notificationId:String(job.notificationId),to,subject:title+' · '+d.publicReference,html:content,...(this.#logo?{inlineLogo:this.#logo}:{})};
+  const content=card?html.replace('</head>',card+'</head>'):html;
+  return{notificationId:String(job.notificationId),to,subject:title+' · '+d.personName.replace(/[\r\n\x00-\x1f\x7f]/gu,' ').slice(0,80)+(d.locationName?' · '+String(d.locationName).replace(/[\r\n\x00-\x1f\x7f]/gu,' ').slice(0,80):''),html:content,...(this.#logo?{inlineLogo:this.#logo}:{}),...(personPhoto?{personPhoto}:{})};
  }
  async runOnce(){const jobs=await this.#rpc('gp.ClaimNotifications',{BatchSize:{type:'int',value:5},LeaseSeconds:{type:'int',value:120}});if(!Array.isArray(jobs)||jobs.length>5)throw new MailFailure('INTERNAL_ERROR');const results=[];
   for(const claim of jobs){if(!validId(claim.notificationId)||!isUuid(claim.claimToken))throw new MailFailure('INTERNAL_ERROR');results.push(await this.deliver(claim));}return results;
  }
  async deliver(claim:{notificationId:number;claimToken:string}){
   if(!validId(claim.notificationId)||!isUuid(claim.claimToken))throw new MailFailure('INTERNAL_ERROR');const p={NotificationId:{type:'bigint' as const,value:String(claim.notificationId)},ClaimToken:{type:'guid' as const,value:claim.claimToken}};
-  try{const job=await this.#rpc('gp.GetNotificationEmail',p);if(job.status==='CANCELLED')return{notificationId:claim.notificationId,status:'CANCELLED'};if(job.status!=='READY'||job.notificationId!==claim.notificationId)throw new MailFailure('RENDER_FAILED');const message=await this.render(job);
+  try{const job=await this.#rpc('gp.GetNotificationEmail',p);if(job.status==='CANCELLED')return{notificationId:claim.notificationId,status:'CANCELLED'};if(job.status!=='READY'||job.notificationId!==claim.notificationId)throw new MailFailure('RENDER_FAILED');
+   let photo:MailPhoto|null|undefined,message:MailMessage;
+   try{photo=this.#photos&&photoTemplates.includes(job.templateCode)?await this.#photos.read(claim,job.visitRequestId):undefined;message=await this.render(job,photo);}finally{photo?.bytes.fill(0);}
    await this.#rpc('gp.RenewNotificationLease',{...p,LeaseSeconds:{type:'int',value:120}});
    const fresh=await this.#rpc('gp.GetNotificationEmail',p);if(fresh.status==='CANCELLED')return{notificationId:claim.notificationId,status:'CANCELLED'};if(fresh.status!=='READY'||JSON.stringify(fresh.details)!==JSON.stringify(job.details)||fresh.recipientEmployeeId!==job.recipientEmployeeId||fresh.recipientEmail!==job.recipientEmail)throw new MailFailure('DIRECTORY_UNAVAILABLE');
    const accepted=await this.#transport.send(message);
