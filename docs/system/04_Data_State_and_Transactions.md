@@ -1,5 +1,9 @@
 # 04. Data, state and transactions
 
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+
+Approval, current pass validity, project presence and printed-card return are separate dimensions. A returned visit may retain `APPROVED` while its pass is `REVOKED`, the holder is outside and the printed-card control shows Returned. Return correction is receipt/pass-bound and audited; a replacement request/pass may fence correction. Optional `CompanyName` and canonical `DeviceTypesJson` belong to each individual visit snapshot. Migration 084 keeps the same five-code canonical order without an unbounded LOB sort. Migration 085 compares audit-window duration without overflowing far-future datetime values.
+
 ## Baseline and domains
 Source contains forward migrations 001-062. The generated SQL catalog records hashes/object declarations, not a fresh live-database drift attestation. Compare deployment ledger and approved artifacts before startup. Never rewrite an applied migration to change behavior.
 

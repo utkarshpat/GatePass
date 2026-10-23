@@ -1,5 +1,7 @@
 # 11. Readiness, gaps and roadmap
 
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+
 ## Status matrix
 | Area | Current status | Remaining acceptance |
 |---|---|---|

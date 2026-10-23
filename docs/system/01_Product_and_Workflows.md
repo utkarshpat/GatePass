@@ -1,5 +1,9 @@
 # 01. Product and workflows
 
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+
+The current visitor flow collects optional company and device types independently for each person. Reception-assisted intake uses the same form in an isolated staff-authorized frame. Final printed-pass return requires the holder to be outside and every declared device to be confirmed; a mistaken return can be corrected with a reason while retaining both audit records. Administration now includes local account onboarding, office/project rosters, a scoped visit register/Excel download and movement timelines. Today's presentation dataset is retained rather than cleaned after its rehearsal.
+
 ## Purpose and scope
 GatePass manages visitor requests, temporary employee identity, host-authorized project visits, online pass verification, project entry/exit and reception printing. The local application uses actual SQL and private media storage. Corporate authentication and directory integration remain development adapters. A working local application is not a completed production deployment.
 

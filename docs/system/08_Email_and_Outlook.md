@@ -1,5 +1,9 @@
 # 08. Email, Graph and Outlook
 
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+
+Current request/approval details and notification rendering include optional visitor company and declared device types. Host Approve/Reject stays disabled while sign-in details/photo loading is still in progress, preventing an ignored early click. The retained rehearsal verifies real host decisions in the browser; queued notifications do not establish mailbox delivery. It sends no real messages.
+
 ## Notifications
 New individual requests with a recipient queue REQUEST_RECEIVED. External/project requests separately notify the assigned host. Temporary IDs auto-approve and queue informational TEMP_ID_MANAGER_NOTICE. Decisions independently queue results. Reused IDs/same-key replay must not duplicate receipt records.
 

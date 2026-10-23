@@ -118,6 +118,27 @@ try {
         Invoke-GatePassNonQuery $taskAdmin ('CREATE USER '+$taskPair[0]+' WITHOUT LOGIN; ALTER ROLE '+$taskPair[1]+' ADD MEMBER '+$taskPair[0]+';'); $taskPrincipals.Add($taskPair[0])
     }
     $taskApi=Open-Restricted; $taskWorker=Open-Restricted 'gp_registration_worker_fixture'; $taskAuth=Open-Restricted 'gp_registration_auth_fixture'
+    Test-Case 'Visitor company is optional and device types remain per participant with canonical retries' {
+        $taskP=New-Submission 'EXTERNAL' 2;$taskPeople=@($taskP.PeopleJson|ConvertFrom-Json)
+        $taskPeople[0]|Add-Member companyName 'Acme Test'
+        $taskPeople[0]|Add-Member deviceTypes @('TABLET','LAPTOP')
+        $taskP.PeopleJson=ConvertTo-Json -InputObject $taskPeople -Depth 5 -Compress
+        $taskResult=Submit $taskP;Assert-Condition ($taskResult.visits.Count -eq 2) 'Group did not submit both participants.'
+        $taskFirst=@{i=$taskP.IntakeId;p=[guid]$taskPeople[0].clientPersonKey};$taskSecond=@{i=$taskP.IntakeId;p=[guid]$taskPeople[1].clientPersonKey}
+        Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT CompanyName FROM gp.VisitRequests WHERE IntakeId=@i AND ClientPersonKey=@p;' $taskFirst) -eq 'Acme Test') 'Company was not saved on its participant.'
+        Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT DeviceTypesJson FROM gp.VisitRequests WHERE IntakeId=@i AND ClientPersonKey=@p;' $taskFirst) -eq '["LAPTOP","TABLET"]') 'Devices were not canonicalized.'
+        Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.VisitRequests WHERE IntakeId=@i AND ClientPersonKey=@p AND CompanyName IS NULL AND DeviceTypesJson=N''[]'';' $taskSecond) -eq 1) 'Visitor details leaked to another participant.'
+        $taskPeople[0].deviceTypes=@('LAPTOP','TABLET');$taskP.PeopleJson=ConvertTo-Json -InputObject $taskPeople -Depth 5 -Compress
+        Assert-Condition ((Submit $taskP).visits.Count -eq 2) 'Reordered devices changed the retry payload.'
+        $taskPeople[0].companyName='Changed';$taskP.PeopleJson=ConvertTo-Json -InputObject $taskPeople -Depth 5 -Compress;Expect-Error {Submit $taskP} 52703
+    }
+    Test-Case 'Unknown duplicate device types and device identifiers are rejected before persistence' {
+        foreach($taskDevices in @(@('LAPTOP','LAPTOP'),@('SERIAL_NUMBER'),@('laptop'))){
+            $taskP=New-Submission 'EXTERNAL';$taskPeople=@($taskP.PeopleJson|ConvertFrom-Json);$taskPeople[0]|Add-Member deviceTypes $taskDevices;$taskP.PeopleJson=ConvertTo-Json -InputObject $taskPeople -Depth 5 -Compress
+            Expect-Error {Submit $taskP} 52702
+        }
+        $taskP=New-Submission 'EXTERNAL';$taskPeople=@($taskP.PeopleJson|ConvertFrom-Json);$taskPeople[0]|Add-Member makeModel 'Forbidden';$taskP.PeopleJson=ConvertTo-Json -InputObject $taskPeople -Compress;Expect-Error {Submit $taskP} 52702
+    }
     Test-Case 'Runtime cannot SELECT intake capabilities or encrypted pass material' {
         foreach ($taskTable in @('RegistrationIntakeAccess','RegistrationIntakes','PassSecrets')) { Expect-Error { Invoke-GatePassScalar $taskApi ('SELECT COUNT(*) FROM gp.'+$taskTable+';') } 229 }
     }

@@ -13,6 +13,11 @@ test('return rejects invalid and caller supplied identity fields before SQL',asy
  for(const input of [{...body(),actorId:randomUUID()},{...body(),expectedPassId:'bad'},{...body(),clientKey:null},{visitRequestId:randomUUID()}])await assert.rejects(s.returnPass(session,input),{code:'INVALID_INPUT'});
  assert.equal(calls,0);
 });
+
+test('device verification is a typed explicit confirmation rather than a truthy string',async()=>{
+ const input={...body(),devicesVerified:true};let calls=0;const service=new ReceptionService({async callProcedure(_name,p){calls++;assert.equal(p.DevicesVerified.type,'bit');assert.equal(p.DevicesVerified.value,true);return JSON.stringify({visitRequestId:input.visitRequestId,accessPassId:input.expectedPassId,returnedAtUtc:'2026-10-22T12:00:00.000Z'});}});
+ for(const devicesVerified of ['true',1,[]])await assert.rejects(service.returnPass(session,{...input,devicesVerified}),{code:'INVALID_INPUT'});assert.equal(calls,0);await service.returnPass(session,input);assert.equal(calls,1);
+});
 test('return redacts failures and distinguishes inside, changed and unauthorized operations',async()=>{
  for(const [number,code] of [[54504,'INSIDE_PROJECT'],[54503,'CONFLICT'],[54502,'INVALID_INPUT'],[53501,'NOT_AUTHORIZED'],[52001,'NOT_AUTHORIZED'],[1,'UNAVAILABLE']]){
  const s=new ReceptionService({async callProcedure(){throw{number};}});await assert.rejects(s.returnPass(session,body()),{code});}

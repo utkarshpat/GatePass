@@ -1,5 +1,7 @@
 # 01. Public & Employee Registration Scenarios
 
+> 23 October presentation run: [current evidence and retained demo data](../55_Presentation_Rehearsal_23_October_2026.md). Earlier execution counts/cleanup statements in this catalog describe their dated runs; this presentation dataset is retained.
+
 ## Surface
 - **Routes**: `/office/noida`, `/office/bengaluru`, `/office/chennai`, `/office/pune`
 - **APIs**: `/api/dev/sso/*`, `/api/registration/reset`, `/api/registration/start`, `/api/registration/options`, `/api/registration/photo`, `/api/registration/submit`, `/api/employee/digital-id/detail`, `/api/employee/digital-id/image`
@@ -24,11 +26,11 @@
   - Employee identity card displays `Employee 2`, `EMP002 · employee2@example.com`, `Primary Office: Noida`, and assigned project chips (`Project 1 · Noida`).
   - `+ Request access to another project` button is available.
 
-### TC-REG-03: Employee Digital ID Issuance (Eligible Office)
+### TC-REG-03: Employee Digital ID Issuance (Eligible Office, Camera-Only Capture)
 - **Steps**:
   1. Select Reason (`Forgot my card`, `Lost my card`, or `Other` with mandatory details).
   2. Click **Continue** to proceed to Photo Verification.
-  3. Upload a valid JPEG/PNG/WebP image or capture via camera; adjust zoom/pan/flip/reset controls.
+  3. Capture portrait via live camera (`input[type=file]` gallery picker is absent); adjust zoom/pan/flip/reset controls or use **Retake**.
   4. Click **Review**, verify details and 600×800 cropped portrait, and click **Submit Pass**.
 - **Expected Result**:
   - `DIGITAL_ID` (`TEMP_ID` in SQL) is auto-approved (`status: APPROVED`, `passStatus: ACTIVE`).
@@ -66,30 +68,32 @@
   - Submits both `DIGITAL_ID` (auto-approved) and `EMPLOYEE_PROJECT` (status `PENDING`, awaiting host approval) as separate visits.
   - Self-hosting (`HostEmployeeId = EmployeeId`) and hosts not eligible at that exact `ProjectLocationId` are rejected.
 
-### TC-REG-08: Single External Visitor Check-in (`EXTERNAL`)
+### TC-REG-08: Single External Visitor Check-in (`EXTERNAL`) with Optional Company & Devices
 - **Steps**:
   1. Open `/office/noida` and click **Visitor Check-in**.
-  2. Enter Name (`Arjun Mehta`), valid mobile (`9876543210` with `+91` country code), and optional Email (`visitor1@example.com`).
+  2. Enter Name (`Arjun Mehta`), valid mobile (`9876543210` with `+91` country code), optional Email (`visitor1@example.com`), optional **Company Name** (`Acme Corp`), and optional **Devices Carried** (`Laptop`, `Tablet / iPad`, `Pen Drive`, `Camera`, `Other`).
   3. Click **Continue** to Visit details.
   4. Select Project (`Project 1`), Visit date (within `[currentDate, maxVisitDate]`), search and select Host (`Employee 19`), and select Purpose (`Business meeting`, `Contractor`, `Support staff`, etc.).
-  5. Upload/capture visitor photo, review details, and click **Submit Pass**.
+  5. Capture visitor photo via camera, review details (verifying `Company` and `Devices` appear in the review summary), and click **Submit Pass**.
 - **Expected Result**:
-  - Request is created with `status: PENDING`, `passStatus: PENDING`.
+  - Request is created with `status: PENDING`, `passStatus: PENDING`, `CompanyName = 'Acme Corp'`, and canonical sorted `DeviceTypesJson = '["LAPTOP","TABLET"]'`.
   - Success screen shows `Approval pending` badge, reference `V-...`, and pass number `GP-...`.
 
-### TC-REG-09: Multi-Visitor Group Check-in & Independent Participant Binding
+### TC-REG-09: Multi-Visitor Group Check-in & Independent Participant Metadata (Migration 076)
 - **Steps**:
-  1. In Visitor Check-in step 1, fill Visitor 1 details and click `+ Add visitor`.
-  2. Verify Visitor 1 collapses into a summary card with `Edit` and `Remove` actions.
-  3. Fill Visitor 2 details (`Priya Nair`, `9123456780`).
-  4. Complete Visit details, upload photos for both Visitor 1 and Visitor 2 using the person switcher, review, and submit.
+  1. In Visitor Check-in step 1, fill Visitor 1 details (including `Company Name: Test Company` and devices `Laptop`, `Tablet / iPad`) and click `+ Add visitor`.
+  2. Verify Visitor 1 collapses into a summary card displaying `phone · email · Test Company · Laptop, Tablet / iPad` with `Edit` and `Remove` actions.
+  3. Fill Visitor 2 details (`Priya Nair`, `9123456780`, device `Camera`, no company) and verify Visitor 1's company/devices did not bleed into Visitor 2.
+  4. Click `Edit` on Visitor 1 to confirm its company and device checkboxes remain intact.
+  5. Complete Visit details, capture camera photos for both Visitor 1 and Visitor 2 using the person switcher, review, and submit.
 - **Expected Result**:
-  - Each visitor receives an independent `VisitRequestId`, `AccessPassId`, and host approval notification, bound strictly by `clientPersonKey`.
+  - Each visitor receives an independent `VisitRequestId`, `AccessPassId`, `CompanyName`, `DeviceTypesJson`, approval snapshot, and host approval notification bound strictly by `clientPersonKey`.
 
-### TC-REG-10: Validation Boundaries (Phone, Reason, Photo)
+### TC-REG-10: Validation Boundaries (Phone, Reason, Camera-Only Photo, Visitor Details)
 - **Steps**:
   1. Enter an invalid phone number (e.g., `12345`) or select country code via Country Picker dialog.
   2. Select `Other` in Reason/Purpose without filling Details textarea.
-  3. Attempt to continue from Photo step without uploading/capturing a photo.
+  3. Attempt to continue from Photo step without capturing a camera photo, or verify that no file-upload (`input[type=file]`) element exists.
+  4. Attempt to submit invalid device codes, duplicate device codes, company names > 200 chars, or disallowed ID-proof/serial-number fields to `/api/registration/submit`.
 - **Expected Result**:
-  - Inline validation and error toast block progression until all required inputs are valid.
+  - Inline validation and error toast block UI progression; backend `visitorDetails()` and `gp.SubmitRegistration` reject malformed or unknown properties with `400 INVALID_INPUT` (`52702`).

@@ -72,5 +72,16 @@
   "071_printed_pass_returns.sql": "9a2982369e5fd5f45b2842087cc6502b42173b1e60539f6e651e8d350219c0fe",
   "072_returned_entry_replay.sql": "38764388483e07d963cb633af5418df549582e8cec6b932480e623962236fe96",
   "073_returned_visit_registration.sql": "ddb459c9e7116c6a78298ca279b84290f22d42c5d538d9d4bbe6f75e592e8b73",
-  "074_returned_lifecycle_and_scope_guards.sql": "8c891306f92e2f0a240951b566b717b7e2276e54bd88353196f480b863362a6e"
+  "074_returned_lifecycle_and_scope_guards.sql": "8c891306f92e2f0a240951b566b717b7e2276e54bd88353196f480b863362a6e",
+  "075_common_duty_session_fencing.sql": "9d0ca77f920eafb8c482eb9fcecf9f8a76670c8156052cc85d1dd3de65baa76a",
+  "076_visitor_company_and_devices.sql": "da5fc566858e955adb613bdb2c6b18e19d9222a6dacaa182c7d894f328ba6b5b",
+  "077_admin_visit_register.sql": "59a9f76f78ce80fe6cb2fdc6d2e8cfd01ed4f9be730370d7ddcabf4dac481cd9",
+  "078_register_movements_and_presence.sql": "0c321a346c3cd25ac334f65ddecb4c2281bddc17f07c3444d0c37bef488be7f5",
+  "079_email_visitor_details.sql": "0d926558059c759927619aa1ac1fc09d78ff0c95a34e53374147cb4917bbca5f",
+  "080_reception_lookup_and_return_correction.sql": "6aa24e3edb1dfa726d443f60ca10dac2079d393f58cf906f2317d87656748c48",
+  "081_local_staff_onboarding.sql": "87e7058849d24f018ff0f30b4431b9d257da62e907b81ea5d291a789a5017bd6",
+  "082_local_account_authority.sql": "e473934f8e9856e59b2211857bca5a43c1eb528b6cc2471c739a636b6362972d",
+  "083_staff_login_hyphens.sql": "c66e9656ac7baf73d3d45150bddb1dffcad7e59ceb1c84e9686cc0020f58bd67",
+  "084_bounded_device_canonicalization.sql": "4eab8817baa68e0e5054735bcad1f5a0c43d3a0f5951d6b72f70ea7d0d241486",
+  "085_audit_window_overflow_guard.sql": "eba2c630e7879678c49c8b77817fdea17f3f542e5bf9a1bba5d356ed2f9abfcb"
 }

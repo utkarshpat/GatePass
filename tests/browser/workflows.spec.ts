@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import {syntheticCamera} from './camera.ts';
 import AxeBuilder from '@axe-core/playwright';
 
 async function noHorizontalOverflow(page: Page) {
@@ -41,6 +42,7 @@ for (const size of [{ width: 390, height: 844 }, { width: 1366, height: 768 }]) 
 }
 
 test('employee authentication resolves assigned identity and photo crop review', async ({ page }) => {
+  await syntheticCamera(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/office/noida');
   await page.getByRole('button', { name: /SSI Employee/u }).click();
@@ -51,9 +53,10 @@ test('employee authentication resolves assigned identity and photo crop review',
   await page.getByRole('combobox', { name: /^Reason/u }).click();
   await page.getByRole('option', { name: 'Forgot my card', exact: true }).click();
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  const sharp = (await import('sharp')).default;
-  const picture = await sharp({ create: { width: 800, height: 400, channels: 3, background: '#365870' } }).png().toBuffer();
-  await page.locator('#photo-file').setInputFiles({ name: 'synthetic.png', mimeType: 'image/png', buffer: picture });
+  await expect(page.locator('input[type=file]')).toHaveCount(0);
+  await page.locator('#open-camera').click();
+  await expect(page.locator('#camera-video')).toHaveJSProperty('videoWidth',800);
+  await page.locator('#capture-photo').click();
   await expect(page.locator('#photo-preview')).toBeVisible();
   await page.getByRole('button', { name: 'Review', exact: true }).click();
   await expect(page.locator('#review-step')).toBeVisible();
@@ -140,6 +143,7 @@ test('common duty hides movement queues and scoped admin can open guard assignme
  await page.locator('#account-toggle').click();await page.locator('#staff-logout').click();await expect(page).toHaveURL(/\/$/u);
  await staffLogin(page,'admin1@example.com');
  await page.locator('#admin-office-trigger').click();await page.getByRole('option',{name:'Noida',exact:true}).click();await expect(page.locator('#office-name')).toHaveText('Noida');
+ await page.locator('[data-admin-view="projects"]').click();
  await expect(page.locator('#common-duties-open')).toBeVisible();
  const commonResponse=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/admin/common-duties');
  await page.locator('#common-duties-open').click();

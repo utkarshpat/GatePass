@@ -1,5 +1,7 @@
 # 04. Guard Workspace & Movement Scenarios
 
+> 23 October presentation run: [current evidence and retained demo data](../55_Presentation_Rehearsal_23_October_2026.md). Earlier execution counts/cleanup statements in this catalog describe their dated runs; this presentation dataset is retained.
+
 ## Surface
 - **Routes**: `/guard`
 - **APIs**: `/api/guard/context`, `/api/guard/duties`, `/api/guard/visitors`, `/api/guard/verify`, `/api/guard/detail`, `/api/guard/photo`, `/api/guard/movement`, `/api/guard/remind-host`
@@ -9,13 +11,14 @@
 
 ## Test Cases
 
-### TC-GRD-01: Guard Sign-In, Duty Roster & Profile
+### TC-GRD-01: Guard Sign-In, Duty Roster, Profile & Common Duty Session Fencing (Migration 075)
 - **Steps**:
   1. Sign in at `/` with `gaurd1@example.com` / `Sopra@123`.
   2. Verify redirect to `/guard`, current office badge, and duty selector (`#project-filter`) listing assigned Project and Common area duties (`Project 1 · Project`, `Cafeteria · Common area`).
   3. Open Account menu -> **Profile**, verify assigned duties per office.
+  4. When an administrator assigns or removes a common-area duty (`gp.ManageCommonDuty`), verify the target guard's `Users.AuthorizationVersion` increments and existing guard sessions are denied until re-authenticated.
 - **Expected Result**:
-  - Guard sees only active, unrevoked project and common-area duties in their authorized office.
+  - Guard sees only active, unrevoked project and common-area duties in their authorized office, and duty changes immediately fence prior sessions.
 
 ### TC-GRD-02: Expected vs Inside Visitor Queues (Project Duty)
 - **Steps**:
@@ -71,9 +74,10 @@
   - Normal `#mark-exit` is hidden, but `#reconcile-exit` is visible for guards with `RECONCILE_EXIT` capability.
   - Submitting reconciliation records an audited `EXIT` with `EntryMethod = 'RECONCILE'` and clears inside presence.
 
-### TC-GRD-08: Bilingual Interface (`English` / `English + हिन्दी`)
+### TC-GRD-08: Bilingual Interface (`English` + `hi` / `kn` / `ta` / `mr`) with Company & Device Labels
 - **Steps**:
   1. Open Account menu -> **Language** (`#language-menu`).
-  2. Select `English + हिन्दी`.
+  2. Select `English + हिन्दी` (or Kannada, Tamil, Marathi).
+  3. Open a visitor pass with declared `companyName` and `deviceTypes`.
 - **Expected Result**:
-  - All guard labels, search placeholders, buttons, and pass dialog fields render bilingual English + Hindi labels without horizontal overflow.
+  - All guard labels, search placeholders, timeout/error messages (`Request timed out. Please retry.`), buttons, and pass dialog fields (including `Company`, `Devices`, `Laptop`, `Tablet / iPad`, `Pen Drive`, `Camera`, `Other`) render bilingual labels without horizontal overflow.

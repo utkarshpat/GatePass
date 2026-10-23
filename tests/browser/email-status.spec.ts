@@ -1,7 +1,20 @@
 import {test,expect} from '@playwright/test';
 const visit='11111111-1111-4111-8111-111111111111';
 const png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aQ1cAAAAASUVORK5CYII=';
-const row=()=>({visitRequestId:visit,status:'PENDING',passStatus:'PENDING',personName:'Visitor 1',publicReference:'V-test',locationName:'Noida',projectName:'Project 1',hostName:'Employee 19',reason:'Meeting',validFromUtc:new Date(Date.now()-3600000).toISOString(),validUntilUtc:new Date(Date.now()+3600000).toISOString()});
+const row=()=>({visitRequestId:visit,status:'PENDING',passStatus:'PENDING',personName:'Visitor 1',companyName:'Acme Corp',deviceTypes:['LAPTOP','TABLET'],publicReference:'V-test',locationName:'Noida',projectName:'Project 1',hostName:'Employee 19',reason:'Meeting',validFromUtc:new Date(Date.now()-3600000).toISOString(),validUntilUtc:new Date(Date.now()+3600000).toISOString()});
+test('host approval waits for login detail and photo loading before accepting one click',async({page})=>{
+ let signedIn=false,approved=false,decisions=0,release:()=>void=()=>{};const photo=new Promise<void>(resolve=>release=resolve);
+ await page.route('**/api/dev/sso/login',route=>{signedIn=true;return route.fulfill({json:{ok:true}});});
+ await page.route('**/api/email/host/**',async route=>{
+  const action=route.request().url().split('/').at(-1);
+  if(!signedIn)return route.fulfill({status:401,json:{error:'UNAUTHORIZED'}});
+  if(action==='photo'){await photo;return route.fulfill({status:503,json:{error:'UNAVAILABLE'}});}
+  if(action==='decide'){decisions++;approved=true;return route.fulfill({json:{visitRequestId:visit,decision:'APPROVED'}});}
+  return route.fulfill({json:{...row(),status:approved?'APPROVED':'PENDING',passStatus:approved?'ACTIVE':'PENDING',canDecide:!approved,photoAvailable:true,snapshotVersion:1,snapshotHash:'a'.repeat(64)}});
+ });
+ await page.goto('/approval/'+visit);await expect(page.locator('#login')).toBeVisible();await page.locator('#email').fill('employee19@example.com');await page.locator('#password').fill('Sopra@123');await page.locator('#sign-in').click();
+ await expect(page.locator('#actions')).toBeVisible();await expect(page.locator('#approve')).toBeDisabled();expect(decisions).toBe(0);release();await expect(page.locator('#approve')).toBeEnabled();await page.locator('#approve').click();await expect(page.locator('#message')).toHaveText('Approved');expect(decisions).toBe(1);
+});
 for(const width of [390,1366])test('external status reload, HttpOnly and revocation at '+width+'px',async({page,context})=>{
  await page.setViewportSize({width,height:width===390?844:768});let current=row(),exchanges=0,forbidden=0;
  await page.route('**/api/email/**',async route=>{
@@ -11,7 +24,7 @@ for(const width of [390,1366])test('external status reload, HttpOnly and revocat
   if(!route.request().headers().cookie?.includes('gp-dev-holder=synthetic'))return route.fulfill({status:403,json:{error:'UNAUTHORIZED'}});
   return route.fulfill({json:path.endsWith('/detail')?current:{mimeType:'image/png',imageBase64:png}});
  });
- await page.goto('/request/'+visit+'#link=synthetic');await expect(page.locator('#message')).toHaveText('Approval pending');await expect(page).toHaveURL('/request/'+visit);
+ await page.goto('/request/'+visit+'#link=synthetic');await expect(page.locator('#message')).toHaveText('Approval pending');await expect(page.locator('#fields')).toContainText('Acme Corp');await expect(page.locator('#fields')).toContainText('Laptop, Tablet / iPad');await expect(page).toHaveURL('/request/'+visit);
  const cookie=(await context.cookies()).find(c=>c.name==='gp-dev-holder')!;expect(cookie.httpOnly).toBe(true);expect(cookie.path).toBe('/api/email/external/'+visit+'/');
  expect(await page.evaluate(()=>document.cookie.includes('gp-dev-holder')||!!localStorage.getItem('link')||!!sessionStorage.getItem('link'))).toBe(false);
  await page.reload();await expect(page.locator('#message')).toHaveText('Approval pending');expect(exchanges).toBe(1);

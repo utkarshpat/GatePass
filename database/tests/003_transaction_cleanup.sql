@@ -17,6 +17,7 @@ INSERT @notifications SELECT NotificationId FROM gp.NotificationOutbox WHERE Vis
 BEGIN TRANSACTION;
 -- Serialize owned-fixture removal with API reads and writes that use the same gate.
 EXEC gp._TakeLock N'gp:authorization','Exclusive';
+DELETE FROM gp.PassReturnCorrections WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE FROM gp.NotificationOutbox WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE r FROM gp.PassPrintRenderState r JOIN gp.PassPrintJobs j ON j.PrintJobId=r.PrintJobId WHERE j.VisitRequestId IN(SELECT Id FROM @visits);
 DELETE FROM gp.PassPrintJobs WHERE VisitRequestId IN(SELECT Id FROM @visits);
@@ -34,6 +35,7 @@ DELETE FROM gp.AccessPasses WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE FROM gp.TemporaryIdSlots WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE gp.SecurityAuditEvents WHERE TargetType='NOTIFICATION' AND TargetReference IN(SELECT CONVERT(varchar(100),Id) FROM @notifications);
 DELETE FROM gp.SecurityAuditEvents WHERE ActorUserId IN(SELECT Id FROM @users)
+    OR ProjectLocationId IN(SELECT pl.ProjectLocationId FROM gp.ProjectLocations pl JOIN gp.Projects p ON p.ProjectId=pl.ProjectId WHERE p.ExternalProjectCode IN(@prefix+'-A',@prefix+'-B'))
     OR TargetReference IN(SELECT CONVERT(varchar(36),Id) FROM @visits)
     OR (ActionCode IN('GUARD_DEALLOCATED','GUARD_DEALLOCATION_FAILED')
         AND TargetReference IN(SELECT CONVERT(varchar(100),Id) FROM @assignments));

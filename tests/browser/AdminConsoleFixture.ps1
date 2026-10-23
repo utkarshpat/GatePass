@@ -10,7 +10,7 @@ try {
   $admin=$f.actors.Where({$_.Label -eq 'ADMIN'})[0];$login='audit-'+$RunId.ToString('N')+'@example.invalid'
   Invoke-GatePassNonQuery $db @'
 BEGIN TRANSACTION;EXEC gp._TakeLock N'gp:authorization','Exclusive';
-INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT @grant,Code FROM(VALUES('ROLE_GRANTS_MANAGE'),('VISITS_READ'),('REPORTS_READ'),('AUDIT_READ')) x(Code);
+INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT @grant,Code FROM(VALUES('ROLE_GRANTS_MANAGE'),('VISITS_READ'),('REPORTS_READ'),('AUDIT_READ'),('STAFF_CREDENTIALS_MANAGE')) x(Code);
 INSERT gp.StaffProfiles(UserId,StaffCode) VALUES(@id,@code);
 INSERT gp.GuardCredentials(UserId,LoginId,EncodedPasswordHash,MustChangePassword,PasswordChangedAtUtc)
 SELECT @id,@login,EncodedPasswordHash,0,SYSUTCDATETIME() FROM gp.GuardCredentials WHERE LoginId='admin2@example.com';

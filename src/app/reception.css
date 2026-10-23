@@ -1047,3 +1047,28 @@
 .status.return-pass:hover:not(:disabled){background:#dce8ff}
 .status.return-pass:focus-visible{outline:3px solid #172f61;outline-offset:3px}
 .status.return-pass:disabled{cursor:default;opacity:1;color:#536277;background:#edf0f5;border-color:#c3cbd8}
+
+@layer layouts {
+ .reception-page .heading {gap:1rem;flex-wrap:wrap}
+ .reception-lookup {flex:1;max-width:680px;min-width:260px;position:relative}
+ .reception-lookup-form {display:flex;gap:.5rem;align-items:center}
+ .reception-lookup-form input {flex:1;min-width:0;width:100%}
+ .reception-lookup-panel {position:absolute;top:calc(100% + .5rem);left:0;right:0;z-index:30;background:var(--gp-surface);border:1px solid var(--gp-border);box-shadow:var(--gp-shadow-raised);padding:1rem;border-radius:16px;max-height:60dvh;overflow:auto;overscroll-behavior:contain}
+ .reception-lookup-panel[hidden] {display:none}
+ .lookup-match {display:flex;flex-direction:column;gap:.35rem;width:100%;text-align:left;padding:.85rem;background:transparent;border:0;border-bottom:1px solid var(--gp-border);cursor:pointer}
+ .lookup-match:hover {background:var(--gp-canvas)}
+ .lookup-match span {font-size:.8rem;color:var(--gp-text-muted);overflow-wrap:anywhere}
+ .card-status-select {max-width:100%;width:auto;min-height:38px;border:1px solid var(--gp-border);border-radius:999px;padding:.4rem .65rem;background:var(--gp-surface);color:var(--gp-text)}
+ #lookup-video {display:block;width:100%;max-height:48dvh;object-fit:cover;background:#15222e;border-radius:12px}
+ #correct-return-reason {width:100%;min-height:90px;box-sizing:border-box}
+ #devices-return-form,#correct-return-form {display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-height:0;overflow:hidden}
+ html:has(.reception-page dialog[open]),.reception-page:has(dialog[open]) {overflow:hidden;overscroll-behavior:none}
+ @media(max-width:760px){.reception-lookup{order:3;flex-basis:100%;max-width:none}.reception-lookup-form .btn{padding:.55rem}.reception-page .reception-date-controls{margin-left:auto}}
+}
+
+@layer layouts {
+ .reception-page .reception-scan-fab {width:60px;height:60px;padding:0;display:grid;place-items:center;border-radius:20px;bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+ .reception-page .reception-scan-fab svg {width:28px;height:28px}
+ .reception-page #assistedFab {bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+ .reception-page .reception-workspace {padding-bottom:170px}
+}

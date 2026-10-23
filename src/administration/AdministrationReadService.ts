@@ -97,7 +97,7 @@ export class AdministrationReadService {
   async subjects(session: Session, value: unknown) {
     const d = this.#body(value, ['namePrefix', 'pageSize', 'afterUserId']); const size = pageSize(d);
     const r = await this.#call(session, 'gp.SearchStaffSubjects', { NamePrefix: p('text', prefix(d.namePrefix)), PageSize: p('int', size), AfterUserId: p('guid', optionalUuid(d.afterUserId)) });
-    const result = this.#page(r, 'users', 'afterUserId', size, row => ({ userId: uuidOut(row.userId), displayName: textOut(row.displayName, 200), active: boolOut(row.active) }), row => row.userId, true);
+    const result = this.#page(r, 'users', 'afterUserId', size, row => ({ userId: uuidOut(row.userId), displayName: textOut(row.displayName, 200), active: boolOut(row.active),...(row.localAccount===undefined?{}:{localAccount:boolOut(row.localAccount)}) }), row => row.userId, true);
     return { users: result.rows, hasMore: result.hasMore, afterUserId: result.after, checkedAtUtc: result.checkedAtUtc };
   }
   async roles(session: Session, value: unknown) {
@@ -128,7 +128,7 @@ export class AdministrationReadService {
     const location = d.locationId === undefined || d.locationId === null ? null : int(d.locationId); const pair = optionalId(d.projectLocationId); input(!pair || location !== null); const size = pageSize(d);
     const r = await this.#call(session, 'gp.ListScopedAuditEvents', { FromUtc: p('datetime', from), UntilUtc: p('datetime', until), LocationId: p('int', location), ProjectLocationId: p('bigint', pair), PageSize: p('int', size), AfterAuditEventId: p('bigint', optionalId(d.afterAuditEventId)) });
     const result = this.#page(r, 'events', 'afterAuditEventId', size, row => { output(typeof row.resultCode === 'string' && ['SUCCESS', 'DENIED', 'ERROR'].includes(row.resultCode)); output(row.locationId === null || positiveInt(row.locationId)); output(row.projectLocationId === null || big(row.projectLocationId)); output(row.projectLocationId === null || row.locationId !== null); output(location === null || row.locationId === location); output(pair === null || row.projectLocationId === pair);
-      const at = stampOut(row.occurredAtUtc); output(from <= at && at < until); return { auditEventId: idOut(row.auditEventId), actionCode: textOut(row.actionCode, 80), targetType: textOut(row.targetType, 50), resultCode: row.resultCode as string, locationId: row.locationId as number | null, projectLocationId: row.projectLocationId as string | null, actorDisplayName: textOut(row.actorDisplayName, 200), occurredAtUtc: at }; }, row => row.auditEventId);
+      const at = stampOut(row.occurredAtUtc); output(from <= at && at < until); return { auditEventId: idOut(row.auditEventId), actionCode: textOut(row.actionCode, 80), targetType: textOut(row.targetType, 50), resultCode: row.resultCode as string, locationId: row.locationId as number | null, projectLocationId: row.projectLocationId as string | null, actorDisplayName: textOut(row.actorDisplayName, 200),...Object.fromEntries((['targetDisplayName','staffCode','roleCode','scopeName','reason'] as const).filter(k=>row[k]!==undefined&&row[k]!==null).map(k=>[k,textOut(row[k],k==='reason'?300:k==='staffCode'?64:k==='roleCode'?24:k==='scopeName'?150:200)])), occurredAtUtc: at }; }, row => row.auditEventId);
     return { events: result.rows, hasMore: result.hasMore, afterAuditEventId: result.after, checkedAtUtc: result.checkedAtUtc };
   }
 }

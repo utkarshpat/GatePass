@@ -21,7 +21,7 @@ SELECT (SELECT v.VisitRequestId visitRequestId,p.AccessPassId accessPassId,
  CONVERT(varchar(64),v.SnapshotHash,2) snapshotHash,
 
  CONVERT(varchar(max),CONVERT(varbinary(max),(SELECT vv.SnapshotVersion snapshotVersion,vv.RequestType requestType,vv.EmployeeId employeeId,
- vv.PersonName personName,vv.PersonEmail personEmail,vv.PersonPhone personPhone,vv.PhotoAssetId photoAssetId,
+ vv.PersonName personName,vv.PersonEmail personEmail,vv.PersonPhone personPhone,vv.CompanyName companyName,JSON_QUERY(vv.DeviceTypesJson) deviceTypes,vv.PhotoAssetId photoAssetId,
  CONVERT(varchar(64),aa.ContentHash,2) photoContentHash,vv.LocationId locationId,vv.ProjectLocationId projectLocationId,
  vv.HostEmployeeId hostEmployeeId,vv.Reason reason,vv.TemporaryIdReason temporaryIdReason,
  REPLACE(CONVERT(char(23),vv.ValidFromUtc,121),' ','T')+'Z' validFromUtc,
@@ -30,7 +30,7 @@ SELECT (SELECT v.VisitRequestId visitRequestId,p.AccessPassId accessPassId,
  FOR JSON PATH,INCLUDE_NULL_VALUES,WITHOUT_ARRAY_WRAPPER)),2) snapshotBytes,
 
 
- JSON_QUERY((SELECT v.SnapshotVersion snapshotVersion,v.RequestType requestType,v.EmployeeId employeeId,v.PersonName personName,v.PersonEmail personEmail,v.PersonPhone personPhone,
+ JSON_QUERY((SELECT v.SnapshotVersion snapshotVersion,v.RequestType requestType,v.EmployeeId employeeId,v.PersonName personName,v.PersonEmail personEmail,v.PersonPhone personPhone,v.CompanyName companyName,JSON_QUERY(v.DeviceTypesJson) deviceTypes,
   v.PhotoAssetId photoAssetId,CONVERT(varchar(64),a.ContentHash,2) photoContentHash,v.LocationId locationId,v.ProjectLocationId projectLocationId,v.HostEmployeeId hostEmployeeId,
   v.Reason reason,v.TemporaryIdReason temporaryIdReason,REPLACE(CONVERT(char(23),v.ValidFromUtc,121),' ','T')+'Z' validFromUtc,REPLACE(CONVERT(char(23),v.ValidUntilUtc,121),' ','T')+'Z' validUntilUtc
   FOR JSON PATH,INCLUDE_NULL_VALUES,WITHOUT_ARRAY_WRAPPER)) snapshotValues

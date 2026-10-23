@@ -18,7 +18,7 @@ test('opening a stale list row reads the current return receipt and print total'
  if(action.endsWith('/list'))return route.fulfill({json:{visits:[row],pendingReturnCount:0,cursor:null}});
  if(action.endsWith('/detail'))return route.fulfill({json:{...row,passStatus:'REVOKED',returnedAtUtc:'2026-10-22T11:00:00.000Z',printCount:4,locationName:'Noida',reason:'Visit',photoAvailable:false,movements:[]}});
  return route.fulfill({status:403});});
- await page.goto('/reception');await expect(page.locator('#visit-rows tr')).toHaveCount(1);await page.locator('.visit-person').click();await expect(page.locator('#detail-fields')).toContainText('Returned');await expect(page.locator('#detail-print-count')).toHaveText('4');await expect(page.locator('#detail-print')).toBeHidden();await page.locator('#close-visit').click();await expect(page.locator('.cell-card')).toHaveText('Returned');await expect(page.locator('.return-pass')).toHaveCount(0);
+ await page.goto('/reception');await expect(page.locator('#visit-rows tr')).toHaveCount(1);await page.locator('.visit-person').click();await expect(page.locator('#detail-fields')).toContainText('Returned');await expect(page.locator('#detail-print-count')).toHaveText('4');await expect(page.locator('#detail-print')).toBeHidden();await page.locator('#close-visit').click();await expect(page.locator('.cell-card select option:checked')).toHaveText('Returned');await expect(page.locator('.return-pass')).toHaveCount(0);
 });
 
 test('changing authorized context clears old office data and resets return filters even if the new office fails',async({page,context})=>{

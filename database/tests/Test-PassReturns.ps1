@@ -24,9 +24,14 @@ try{
  $p=ReturnParams;$p.ExpectedPassId=[guid]::NewGuid();Expect {Call 'ReturnReceptionPass' $p} 54503
  Expect {Invoke-GatePassScalar $api 'SELECT COUNT(*) FROM gp.PassReturns;'} 229
  Write-Output 'PASS: role, office, credential and unprinted boundaries; no runtime table access'
+ # Device declarations are immutable registration details. A return needs explicit confirmation.
+ Invoke-GatePassNonQuery $c 'UPDATE gp.VisitRequests SET DeviceTypesJson=N''["LAPTOP","TABLET"]'',CompanyName=N''Owned Test Company'' WHERE VisitRequestId=@v;' @{v=[guid](Visit 'MOVEMENT').VisitId}
  $originalEntry=MoveParams 'MOVEMENT' 'ENTRY';$null=Call 'RecordMovement' $originalEntry;Expect {Call 'ReturnReceptionPass' (ReturnParams)} 54504
  $null=Call 'RecordMovement' (MoveParams 'MOVEMENT' 'EXIT')
- $p=ReturnParams;$first=Call 'ReturnReceptionPass' $p;Assert ((Call 'ReturnReceptionPass' $p) -eq $first) 'Idempotent replay changed receipt'
+ $p=ReturnParams;Expect {Call 'ReturnReceptionPass' $p} 54503
+ Assert ((Invoke-GatePassScalar $c 'SELECT COUNT(*) FROM gp.PassReturns WHERE VisitRequestId=@v;' @{v=$p.VisitRequestId}) -eq 0) 'Unverified devices allowed final return'
+ $p.DevicesVerified=$true;$first=Call 'ReturnReceptionPass' $p;Assert ((Call 'ReturnReceptionPass' $p) -eq $first) 'Idempotent replay changed receipt'
+ Assert ((Invoke-GatePassScalar $c 'SELECT CONVERT(int,DevicesVerified) FROM gp.PassReturns WHERE VisitRequestId=@v;' @{v=$p.VisitRequestId}) -eq 1) 'Device verification was not recorded'
  Expect {Call 'ReturnReceptionPass' (ReturnParams)} 54503
  Expect {Call 'RecordMovement' (MoveParams 'MOVEMENT' 'ENTRY')} 52005
  Expect {Call 'RecordMovement' $originalEntry} 52005

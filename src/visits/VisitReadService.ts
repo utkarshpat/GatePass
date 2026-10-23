@@ -1,3 +1,4 @@
+import {visitorDetails} from '../registration/VisitorDetails.ts';
 import { employeeProjectSummary } from './EmployeeProjectSummary.ts';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { isDate, isUtc, isUuid } from './SqlVisitReadRepository.ts';
@@ -57,6 +58,7 @@ function row(value: unknown, context: ReadContext, detail = false) {
   if (result.requestType === 'DIGITAL_ID') { const projects=employeeProjectSummary(source.employeeProjects??{available:false,total:null,items:[]}); output(projects!==null); result.employeeProjects=projects; }
   if (source.hostName !== undefined && source.hostName !== null) { result.hostName = outText(source.hostName, 200); }
   if(context.view==='RECEPTION' && source.hostEmail!==undefined && source.hostEmail!==null)result.hostEmail=outText(source.hostEmail,320);
+  if(source.companyName!==undefined||source.deviceTypes!==undefined){try{Object.assign(result,visitorDetails(source.companyName,source.deviceTypes));}catch{throw new VisitReadError('UNAVAILABLE');}}
   if (detail) {
     if(context.view==='RECEPTION'){
       result.returnedAtUtc=source.returnedAtUtc===undefined||source.returnedAtUtc===null?null:outTime(source.returnedAtUtc);

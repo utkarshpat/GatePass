@@ -1,6 +1,6 @@
-# GatePass database - v1.11, DB-first through Phase 02K
+# GatePass database — current local implementation
 
-> Current baseline: source migrations 001-062. This guide retains historical staged setup examples; the baseline helper alone does not install the complete current application. Start with [the consolidated handbook](../docs/system/README.md) and inspect the actual runner/source ledger before applying missing migrations.
+> Current source: migrations 001–085. See [23 October browser rehearsal and migration notes](../docs/55_Presentation_Rehearsal_23_October_2026.md). Migration 084 bounds device canonicalization to avoid oversized SQL memory grants. This guide retains historical staged setup examples; the baseline helper alone does not install the complete current application. Start with [the consolidated handbook](../docs/system/README.md) and inspect the actual runner/source ledger before applying missing migrations.
 
 
 Start with [the numbered design guide](../docs/database/00_READ_ME_FIRST.md).

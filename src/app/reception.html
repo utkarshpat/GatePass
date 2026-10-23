@@ -33,6 +33,15 @@
         <h1>Reception</h1>
         <span class="today-label" id="todayLabel" hidden></span>
       </div>
+      <div class="reception-lookup">
+        <form id="lookup-form" class="reception-lookup-form" role="search" aria-label="Find a visit across dates">
+          <label class="sr-only" for="lookup-search">Find pass, name, mobile or employee ID across dates</label>
+          <input id="lookup-search" type="search" maxlength="100" autocomplete="off" placeholder="Find pass, name, mobile or employee ID">
+
+
+        </form>
+        <div id="lookup-panel" class="reception-lookup-panel" hidden><p id="lookup-status" role="status"></p><div id="lookup-results"></div><button id="lookup-more" type="button" class="btn outline" hidden>More matches</button><button id="lookup-clear" type="button" class="btn outline">Close results</button></div>
+      </div>
       <div class="reception-date-controls">
         <div class="reception-date">
           <input id="reception-date" type="hidden"><button id="today" type="button" hidden>Today</button><button id="open-history" class="btn outline" type="button">History</button>
@@ -153,6 +162,8 @@
   </section>
 </main>
 
+<button id="lookup-scan" class="fab reception-scan-fab" aria-haspopup="dialog" aria-controls="lookup-scanner" type="button" aria-label="Scan pass QR" title="Scan pass QR"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m8 0h5v-5"/><path d="M8 8h3v3H8zm5 0h3v3h-3zm-5 5h3v3H8zm5 0h3v3h-3z"/></svg></button>
+
 <!-- Floating Action Button for Manual registration -->
 <button class="fab" id="assistedFab" type="button" aria-haspopup="dialog" aria-expanded="false">
   <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" fill="none" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg>
@@ -181,7 +192,7 @@
   </div>
   <div class="row-actions dialog-actions">
     <button id="retry-detail" class="btn outline" type="button" hidden>Retry</button>
-    <button id="remind-host" class="btn outline" type="button" hidden>Remind host</button><span id="reminder-status" role="status"></span>
+    <div id="detail-card-control"></div><button id="remind-host" class="btn outline" type="button" hidden>Remind host</button><span id="reminder-status" role="status"></span>
     <button id="detail-print" class="btn primary btn-print" type="button" disabled>
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Print pass
@@ -195,6 +206,9 @@
 </dialog>
 <dialog id="profile-dialog" class="modal app-dialog" aria-labelledby="profile-title"><div class="modal-header"><h2 id="profile-title">Profile</h2><button id="close-profile" class="close" type="button" aria-label="Close profile">×</button></div><div class="modal-body"><dl id="profile-fields" class="info-grid"></dl><h3>Assigned offices</h3><div id="profile-offices"></div></div></dialog>
 <dialog id="history-dialog" class="modal app-dialog history-dialog" aria-labelledby="history-title"><div class="modal-header"><h2 id="history-title">Registration history</h2><button id="close-history" class="close" type="button" aria-label="Close history">×</button></div><div class="modal-body"><div class="history-range"><label>From<input id="history-date" type="date"></label><label>To<input id="history-end" type="date"></label><button id="refresh-history" class="btn outline" type="button">Refresh history</button></div><p id="history-status" role="status"></p><div id="history-rows"></div></div></dialog>
+<dialog id="devices-return-dialog" class="modal app-dialog" aria-labelledby="devices-return-title"><form id="devices-return-form"><div class="modal-header"><h2 id="devices-return-title">Confirm final pass return</h2><button id="cancel-devices-return" type="button" class="close" aria-label="Cancel device verification">×</button></div><div class="modal-body"><p id="devices-return-person"></p><p id="return-explanation">Confirm the printed pass has been collected and all project exits are recorded.</p><div id="devices-return-list"></div><p id="devices-return-status" role="status"></p></div><div class="modal-footer"><button type="submit" class="btn primary" id="confirm-devices-return">Verify devices &amp; mark returned</button></div></form></dialog>
+<dialog id="lookup-scanner" class="modal app-dialog" aria-labelledby="lookup-scanner-title"><div class="modal-header"><h2 id="lookup-scanner-title">Scan pass QR</h2><button id="lookup-scan-close" class="close" type="button" aria-label="Close QR scanner">×</button></div><div class="modal-body"><video id="lookup-video" muted playsinline autoplay aria-label="Pass QR camera preview"></video><p id="lookup-camera-status" role="status"></p><p>Scan the visitor's pass to open its record. You can also search by pass ID, name or mobile.</p></div></dialog>
+<dialog id="correct-return-dialog" class="modal app-dialog" aria-labelledby="correct-return-title"><form id="correct-return-form"><div class="modal-header"><h2 id="correct-return-title">Correct mistaken return</h2><button id="correct-return-close" class="close" type="button" aria-label="Cancel return correction">×</button></div><div class="modal-body"><p id="correct-return-person"></p><p>Use only if the pass was marked returned by mistake. The original return and this correction will remain in the audit trail. A replacement request or changed pass can block correction.</p><label for="correct-return-reason">Reason for correction</label><textarea id="correct-return-reason" required minlength="5" maxlength="300"></textarea><p id="correct-return-status" role="status"></p></div><div class="modal-footer"><button id="correct-return-submit" class="btn primary" type="submit">Correct return</button></div></form></dialog>
 <script nonce="__NONCE__">__SCRIPT__</script>
 </body>
 </html>

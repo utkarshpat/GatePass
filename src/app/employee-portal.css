@@ -206,11 +206,7 @@
   
   .capture-actions { display: flex; flex-direction: row; flex-wrap: nowrap; gap: var(--gp-space-2); margin-top: var(--gp-space-4); width: 100%; max-width: 24rem; margin-inline: auto; }
   .capture-actions > * { flex: 1; min-width: 0; white-space: nowrap; justify-content: center; }
-  .capture-actions .primary, .capture-actions .secondary, .photo-picker { padding-inline: var(--gp-space-3); font-size: var(--gp-text-xs); }
-  .photo-picker { display: inline-flex; position: relative; align-items: center; justify-content: center; gap: var(--gp-space-2); min-height: var(--gp-control-height); overflow: hidden; margin: 0; border: var(--gp-border-width) solid var(--gp-control-border); border-radius: var(--gp-radius-control); font-size: var(--gp-text-xs); font-weight: var(--gp-weight-semibold); background: var(--gp-surface); cursor: pointer; }
-  .photo-picker input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-  .photo-picker:focus-within { outline: var(--gp-focus-width) solid var(--gp-focus); outline-offset: var(--gp-focus-offset); }
-  .photo-picker:has(input:disabled) { background: var(--gp-surface-disabled); color: var(--gp-text-disabled); cursor: not-allowed; }
+  .capture-actions .primary, .capture-actions .secondary { padding-inline: var(--gp-space-3); font-size: var(--gp-text-xs); }
   .photo-people { display: flex; flex-wrap: wrap; gap: var(--gp-space-2); margin-top: var(--gp-space-3); }
   .person-photo { min-height: 2.25rem; padding: 0.25rem 0.75rem; border: var(--gp-border-width) solid var(--gp-border); border-radius: 9999px; background: var(--gp-surface); color: var(--gp-text-muted); font-size: var(--gp-text-xs); }
   .person-photo[aria-current="true"] { border-color: var(--gp-brand); background: var(--gp-brand-soft); color: var(--gp-brand); font-weight: var(--gp-weight-semibold); }
@@ -343,3 +339,5 @@
 
 /* Programmatic heading focus announces the step without a control-like outline. */
 #flow-title:focus {outline:none}
+
+@layer layouts { .visitor-devices { border:1px solid var(--gp-border);border-radius:12px;padding:1rem;margin-top:1rem; } .device-options { display:flex;flex-wrap:wrap;gap:1rem; } .device-options label { display:flex;align-items:center;gap:.5rem; } .device-options input[type="checkbox"] { width:1.15rem;height:1.15rem;min-height:0;accent-color:var(--gp-brand); } }

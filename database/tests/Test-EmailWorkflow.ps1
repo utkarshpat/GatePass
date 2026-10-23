@@ -10,6 +10,7 @@ function Case($name,[scriptblock]$work){try{$null=&$work;$results.Add(@{name=$na
 try{
  $f=(Invoke-GatePassScalar $c (Get-Content (Join-Path $PSScriptRoot '002_transaction_fixtures.sql') -Raw) @{RunId=$run})|ConvertFrom-Json;$ready=$true
  $hostActor=$f.actors.Where({$_.Label -eq 'HOST'})[0];$other=$f.actors.Where({$_.Label -eq 'OTHERHOST'})[0];$pending=$f.visits.Where({$_.Label -eq 'PENDING'})[0];$second=$f.visits.Where({$_.Label -eq 'DECISION_DENY'})[0];$claim=[guid]::NewGuid()
+ Invoke-GatePassNonQuery $c "UPDATE gp.VisitRequests SET CompanyName=N'Acme Corp',DeviceTypesJson=N'[""LAPTOP""]' WHERE VisitRequestId=@v;" @{v=[guid]$pending.VisitId}
  $notification=[long](Invoke-GatePassScalar $c "INSERT gp.NotificationOutbox(VisitRequestId,RecipientKind,RecipientEmployeeId,TemplateCode,PayloadJson,DedupeHash,Status,AttemptCount,LockedBy,LockedUntilUtc) VALUES(@v,'EMPLOYEE',@host,'HOST_APPROVAL_REQUEST',(SELECT @v visitRequestId FOR JSON PATH,WITHOUT_ARRAY_WRAPPER),HASHBYTES('SHA2_256',CONVERT(binary(16),@v)),'PROCESSING',1,@claim,DATEADD(minute,5,SYSUTCDATETIME()));SELECT CONVERT(bigint,SCOPE_IDENTITY());" @{v=[guid]$pending.VisitId;host=$f.hostEmployeeId;claim=$claim})
  Invoke-GatePassNonQuery $c "CREATE USER [$principal] WITHOUT LOGIN;ALTER ROLE gp_worker_runtime ADD MEMBER [$principal];CREATE USER [$($principal)_api] WITHOUT LOGIN;ALTER ROLE gp_api_runtime ADD MEMBER [$($principal)_api];";$created=$true
  $worker=Open-GatePassLocalSql -TrustLocalServerCertificate:$TrustLocalServerCertificate;Invoke-GatePassNonQuery $worker "EXECUTE AS USER='$principal';"
@@ -22,7 +23,7 @@ try{
  }
  Case 'Fenced email content contains individual details without private photo, QR, session or recipient cache' {
   $r=(Invoke-GatePassScalar $worker 'EXEC gp.GetNotificationEmail @NotificationId=@n,@ClaimToken=@claim;' $p)|ConvertFrom-Json
-  Assert ($r.status -eq 'READY' -and $r.details.visitRequestId -eq $pending.VisitId -and $r.recipientEmployeeId -eq $f.hostEmployeeId) 'Wrong email subject/recipient.'
+  Assert ($r.status -eq 'READY' -and $r.details.visitRequestId -eq $pending.VisitId -and $r.recipientEmployeeId -eq $f.hostEmployeeId -and $r.details.companyName -eq 'Acme Corp' -and @($r.details.deviceTypes) -contains 'LAPTOP') 'Wrong email subject/recipient.'
   Assert (($r|ConvertTo-Json -Depth 8) -notmatch 'storageKey|credentialHash|ciphertext|SessionHash|recipientEmail"') 'Email content exposed private source.'
  }
  Case 'Wrong or expired claim cannot read email content' {
@@ -56,7 +57,7 @@ try{
  }
  Case 'External status binds the recipient digest and immutable snapshot' {
   $proof=@{v=[guid]$pending.VisitId;hash=[Convert]::FromHexString($pending.SnapshotHex);email=[Convert]::FromHexString((Invoke-GatePassScalar $c "SELECT CONVERT(varchar(64),HASHBYTES('SHA2_256',LOWER(PersonEmail)),2) FROM gp.VisitRequests WHERE VisitRequestId=@v;" @{v=[guid]$pending.VisitId}))}
-  $sql='EXEC gp.ReadEmailRequest @VisitRequestId=@v,@RecipientEmailHash=@email,@SnapshotHash=@hash;';$r=(Invoke-GatePassScalar $api $sql $proof)|ConvertFrom-Json;Assert ($r.status -eq 'APPROVED' -and $r.personName) 'Holder status missing.'
+  $sql='EXEC gp.ReadEmailRequest @VisitRequestId=@v,@RecipientEmailHash=@email,@SnapshotHash=@hash;';$r=(Invoke-GatePassScalar $api $sql $proof)|ConvertFrom-Json;Assert ($r.status -eq 'APPROVED' -and $r.personName -and $r.companyName -eq 'Acme Corp' -and @($r.deviceTypes) -contains 'LAPTOP') 'Holder status missing.'
   $wrong=$proof.Clone();$wrong.email=[Security.Cryptography.RandomNumberGenerator]::GetBytes(32);Expect {Invoke-GatePassScalar $api $sql $wrong} 54101
   $wrong=$proof.Clone();$wrong.hash=[Security.Cryptography.RandomNumberGenerator]::GetBytes(32);Expect {Invoke-GatePassScalar $api $sql $wrong} 54101
   $wrong=$proof.Clone();$wrong.v=[guid]$second.VisitId;Expect {Invoke-GatePassScalar $api $sql $wrong} 54101

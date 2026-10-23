@@ -25,7 +25,7 @@ async function invoke(payload: Record<string, unknown>): Promise<any> {
     child.stdin.end(JSON.stringify({ server: fixture.server, trustLocalCertificate: fixture.trustLocalCertificate, ...payload }));
   });
   const result = JSON.parse(text);
-  if (result?.bridgeError) throw Object.assign(new Error('SQL_TEST_ERROR'), { number: result.number });
+  if (result?.bridgeError) { process.stderr.write('SQL_TEST_ERROR '+String(result.number)+'\n');throw Object.assign(new Error('SQL_TEST_ERROR'), { number: result.number }); }
   return result;
 }
 const client = { async callProcedure(procedure: string, parameters: Record<string, RegistrationParameter>) {
@@ -68,7 +68,7 @@ await check('stored AES envelope recovers the same QR and independently matches 
 });
 await check('SQL snapshot hash interoperates with independently serialized Unicode slash-containing data', async () => {
   const row = await inspect(digitalContext, digital.visits[0]); const values = row.snapshotValues;
-  const ordered = Object.fromEntries(['snapshotVersion','requestType','employeeId','personName','personEmail','personPhone','photoAssetId','photoContentHash','locationId','projectLocationId','hostEmployeeId','reason','temporaryIdReason','validFromUtc','validUntilUtc'].map(key => [key, values[key]]));
+  const ordered = Object.fromEntries(['snapshotVersion','requestType','employeeId','personName','personEmail','personPhone','companyName','deviceTypes','photoAssetId','photoContentHash','locationId','projectLocationId','hostEmployeeId','reason','temporaryIdReason','validFromUtc','validUntilUtc'].map(key => [key, values[key]]));
   const canonical = JSON.stringify(ordered).replaceAll('/', '\\/');
   assert.equal(values.reason, digitalBody.reason);
   assert.equal(hash(Buffer.from(canonical, 'utf16le')), row.snapshotHash);

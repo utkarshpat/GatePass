@@ -16,7 +16,7 @@ function fixture() {
  const calls: string[] = []; const state = { verified: true, error: undefined as unknown };
  const sso = { verify: async () => { throw new Error('Central session must not use employee SSO'); } };
  const staff = { verify: async () => state.verified };
- const workspace = { context: async () => { calls.push('context'); return {}; }, list: async () => { calls.push('list'); return {}; }, returnPass: async () => { calls.push('return'); if(state.error)throw state.error;return {returnedAtUtc:'2026-10-22T12:00:00.000Z'}; } };
+ const workspace = { context: async () => { calls.push('context'); return {}; }, list: async () => { calls.push('list'); return {}; }, lookup: async () => { calls.push('lookup'); return { matches: [], cursor: null }; }, correctReturn: async () => { calls.push('correct-return'); if (state.error) throw state.error; return { correctedAtUtc: '2026-10-22T12:05:00.000Z' }; }, returnPass: async () => { calls.push('return'); if(state.error)throw state.error;return {returnedAtUtc:'2026-10-22T12:00:00.000Z'}; } };
  const photos = { read: async () => ({ mimeType: 'image/jpeg', bytes: Buffer.from('photo') }) };
  const cards = { image: async () => { if (state.error) throw state.error; return {}; } };
  const printing = { request: async () => ({}), status: async () => ({}) };
@@ -65,8 +65,10 @@ test('reception concurrent renders are bounded, return wiped buffers and release
 });
 
 test('return route uses verified reception session and rejects inside or unauthenticated operations', async()=>{
- const f=fixture();assert.equal(f.route.handles('/api/reception/return'),true);
+ const f=fixture();assert.equal(f.route.handles('/api/reception/return'),true);assert.equal(f.route.handles('/api/reception/lookup'),true);assert.equal(f.route.handles('/api/reception/correct-return'),true);
+ assert.deepEqual(await f.route.handle(request('lookup',{locationId:1,search:'Visitor'}),res),{matches:[],cursor:null});
  assert.deepEqual(await f.route.handle(request('return',{}),res),{returnedAtUtc:'2026-10-22T12:00:00.000Z'});
- f.state.error={code:'INSIDE_PROJECT'};await rejectsStatus(f.route.handle(request('return',{}),res),409);
- f.state.verified=false;await rejectsStatus(f.route.handle(request('return',{}),res),401);assert.deepEqual(f.calls,['return','return']);
+ assert.deepEqual(await f.route.handle(request('correct-return',{}),res),{correctedAtUtc:'2026-10-22T12:05:00.000Z'});
+ f.state.error={code:'INSIDE_PROJECT'};await rejectsStatus(f.route.handle(request('return',{}),res),409);await rejectsStatus(f.route.handle(request('correct-return',{}),res),409);
+ f.state.verified=false;await rejectsStatus(f.route.handle(request('return',{}),res),401);await rejectsStatus(f.route.handle(request('lookup',{}),res),401);await rejectsStatus(f.route.handle(request('correct-return',{}),res),401);assert.deepEqual(f.calls,['lookup','return','correct-return','return','correct-return']);
 });

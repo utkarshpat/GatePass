@@ -1,5 +1,9 @@
 # 10. Testing, CI and evidence
 
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+
+Fresh 23 October evidence: all 65 Chromium/Axe browser tests passed on the final full rerun. 458 unit tests passed with one skip; coverage is 95.42% lines / 88.87% branches / 94.12% functions. All 15 selected live SQL/HTTP suites pass, including registration (57), guard duty (19), admin reads (38), printing (55), public/employee HTTP/SQL (25) and manual reception HTTP/SQL (7). The retained browser runner separately persists realistic synthetic records and verifies decisions, movement/return/correction, real rendered QR decoding, new staff setup/login and Excel export. Signed holder-cookie exchange/reload and employee status/card checks use actual local SQL and signing keys without sending mail. See the linked report for final browser counts and artifact paths.
+
 ## Confidence layers
 | Layer | Proves within scope | Does not prove |
 |---|---|---|

@@ -63,6 +63,36 @@ test('admin dispatch preserves authenticated identity and limits grant roles/sco
  for (const body of [{ roleCode: 'INDIA_ADMIN', scopeType: 'PROJECT' }, { roleCode: 'PROJECT_ADMIN', scopeType: 'COUNTRY' }]) await rejectsStatus(f.admin.handle(request('/api/admin/grant', body), response), 400);
  assert.equal(f.calls.filter(c => c.name === 'grant').length, 1);
 });
+test('admin office-qr generates decodable QR code with organization badge', async () => {
+ const f = fixture();
+ f.reads.read = async (_session: any, action: string) => {
+  if (action === 'context') return { locations: [{ locationId: 10, locationCode: 'noida', locationName: 'Noida SEZ' }] };
+  return {};
+ };
+ const req = request('/api/admin/office-qr', { locationId: 10 });
+ req.headers.origin = 'http://localhost:8443';
+ const result = await f.admin.handle(req, response);
+ assert.equal(result.url, 'http://localhost:8443/office/noida');
+ assert.equal(result.locationName, 'Noida SEZ');
+ assert.match(result.imageDataUrl, /^data:image\/png;base64,/);
+
+ const sharpPath = process.env.GATEPASS_SHARP_PATH;
+ if (sharpPath) {
+  const { createRequire } = await import('node:module');
+  const sharp = createRequire(import.meta.url)(sharpPath);
+  const ZXing = await import('@zxing/library');
+  const pngBuf = Buffer.from(result.imageDataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
+  const raw = await sharp(pngBuf).flatten({ background: 'white' }).removeAlpha().greyscale().raw().toBuffer({ resolveWithObject: true });
+  const luminance = new ZXing.RGBLuminanceSource(new Uint8ClampedArray(raw.data.buffer, raw.data.byteOffset, raw.data.byteLength), raw.info.width, raw.info.height);
+  const text = new ZXing.QRCodeReader().decode(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(luminance)), new Map([[ZXing.DecodeHintType.TRY_HARDER, true]])).getText();
+  assert.equal(text, 'http://localhost:8443/office/noida');
+ }
+ const fallbackAdmin = new AdminRoutes({ session: () => session, verify: async () => true } as any, f.reads as any, {} as any, f.duties as any, undefined, undefined, undefined, Buffer.from('bad'), () => { throw new Error('broken'); });
+ const fallbackReq = request('/api/admin/office-qr', { locationId: 10 });
+ fallbackReq.headers.origin = 'http://localhost:8443';
+ const fallbackResult = await fallbackAdmin.handle(fallbackReq, response);
+ assert.match(fallbackResult.imageDataUrl, /^data:image\/png;base64,/);
+});
 test('guard dispatch fixes read scope and validates context/lookup request shapes', async () => {
  const f = fixture();
  for (const [action, name, body] of [ ['context', 'workspace', {}], ['duties', 'duties', { locationId: 1 }], ['visitors', 'visitors', { locationId: 1 }], ['projects', 'contexts', { locationId: 1 }], ['recent', 'workspace', { locationId: 1 }], ['verify', 'duty-detail', { visitRequestId: id }], ['movement', 'movement', { visitRequestId: id }], ['detail', 'duty-detail', { visitRequestId: id }] ] as const) {

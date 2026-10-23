@@ -11,7 +11,7 @@ import type {VisitReadService,VisitPhotoService} from '../visits/VisitReadServic
 import type {OwnDigitalIdCardService} from '../printing/OwnDigitalIdCardService.ts';
 import {OwnCardError} from '../printing/OwnDigitalIdCardService.ts';
 import type {PassPrintService,PassRenderService} from '../printing/PassPrintService.ts';
-const paths=['login','me','logout','list','detail','photo','preview','print/request','print/status','print/render','remind-host','return'].map(p=>'/api/reception/'+p);
+const paths=['login','me','logout','list','detail','photo','preview','print/request','print/status','print/render','remind-host','return','lookup','correct-return'].map(p=>'/api/reception/'+p);
 export class ReceptionRoutes implements AdditionalHttpRoutes{
  private reminders?:HostReminderService;
  #sso:DummyEmployeeSso;#workspace:ReceptionService;#reads:VisitReadService;#photos:VisitPhotoService;#cards:OwnDigitalIdCardService;#printing:PassPrintService;#render:PassRenderService;#rendering=0;#staff?:{verify(session:{sessionToken:string;csrfToken:string}):Promise<boolean>};
@@ -35,6 +35,8 @@ export class ReceptionRoutes implements AdditionalHttpRoutes{
   const session=this.#session(req);const central=!!cookies(req.headers.cookie)['gp-staff-session'];if(!(central?await this.#staff?.verify(session):await this.#sso.verify(session)))throw new HttpFailure(401);
   if(path===paths[2]){if(Object.keys(input).length)throw new HttpFailure(400);await this.#sso.sessionAction('logout',session);res.setHeader('Set-Cookie',this.#cookie('','',true));return{ok:true};}
   if(path===paths[1]){if(Object.keys(input).length)throw new HttpFailure(400);return this.#workspace.context(session);}
+  if(path==='/api/reception/lookup')return this.#workspace.lookup(session,input);
+  if(path==='/api/reception/correct-return'){try{return await this.#workspace.correctReturn(session,input);}catch(error){if((error as {code?:string})?.code==='INSIDE_PROJECT')throw new HttpFailure(409);throw error;}}
   if(path==='/api/reception/return'){try{return await this.#workspace.returnPass(session,input);}catch(error){if((error as {code?:string})?.code==='INSIDE_PROJECT')throw new HttpFailure(409);throw error;}}
   if(path==='/api/reception/remind-host'){if(!this.reminders)throw new HttpFailure(503);return this.reminders.run(session,input,'RECEPTION');}
   if(path===paths[3])return this.#workspace.list(session,input);

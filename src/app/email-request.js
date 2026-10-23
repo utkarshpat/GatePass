@@ -18,10 +18,10 @@ function payload(){return external?{}:{visitRequestId:visit};}
 function downloadable(v){return !host&&Date.parse(v.validUntilUtc)>Date.now()&&['PENDING','APPROVED'].includes(v.status)&&['PENDING','ACTIVE'].includes(v.passStatus);}
 function render(v){
  current=v;$('login').hidden=true;$('request').hidden=false;$('fields').replaceChildren();
- for(const [label,value] of [['Name',v.personName],['Request',v.publicReference],['Office',v.locationName],['Project',v.projectName],['Host',v.hostName],['Purpose',v.reason],['Valid from',v.validFromUtc],['Valid until',v.validUntilUtc]]){
+ for(const [label,value] of [['Name',v.personName],['Company',v.companyName],['Devices',v.deviceTypes?.length?v.deviceTypes.map(code=>({LAPTOP:'Laptop',TABLET:'Tablet / iPad',PEN_DRIVE:'Pen Drive',CAMERA:'Camera',OTHER:'Other'})[code]).join(', '):null],['Request',v.publicReference],['Office',v.locationName],['Project',v.projectName],['Host',v.hostName],['Purpose',v.reason],['Valid from',v.validFromUtc],['Valid until',v.validUntilUtc]]){
   if(!value)continue;const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=label.startsWith('Valid ')?new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'}).format(new Date(value))+' IST':value;$('fields').append(dt,dd);
  }
- const expired=Date.parse(v.validUntilUtc)<=Date.now();state(expired?'Expired':v.passStatus==='REVOKED'?'Revoked':({PENDING:'Approval pending',APPROVED:'Approved',DENIED:'Declined',CANCELLED:'Cancelled'}[v.status]??'Request unavailable'));$('actions').hidden=!host||!v.canDecide||expired;$('download').hidden=!downloadable(v);
+ const expired=Date.parse(v.validUntilUtc)<=Date.now();state(expired?'Expired':v.passStatus==='REVOKED'?'Revoked':({PENDING:'Approval pending',APPROVED:'Approved',DENIED:'Declined',CANCELLED:'Cancelled'}[v.status]??'Request unavailable'));$('actions').hidden=!host||!v.canDecide||expired;$('approve').disabled=$('reject').disabled=busy;$('download').hidden=!downloadable(v);
 }
 async function showPass(download,expected=version){
  if(!current||!downloadable(current))return;$('download').disabled=true;
@@ -45,7 +45,7 @@ async function refresh(){
  await load();
 }
 $('refresh').addEventListener('click',()=>void refresh());
-$('login').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;$('sign-in').disabled=true;try{await api('/api/dev/sso/login',{email:$('email').value.trim(),password:$('password').value});$('password').value='';await load();}catch(e){state(e.status===401?'Email or password is incorrect.':'Sign-in unavailable. Please try again.');}finally{busy=false;$('sign-in').disabled=false;}});
+$('login').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;$('sign-in').disabled=true;try{await api('/api/dev/sso/login',{email:$('email').value.trim(),password:$('password').value});$('password').value='';await load();}catch(e){state(e.status===401?'Email or password is incorrect.':'Sign-in unavailable. Please try again.');}finally{busy=false;$('sign-in').disabled=$('approve').disabled=$('reject').disabled=false;}});
 async function decide(decision){if(busy||!current?.canDecide)return;busy=true;$('approve').disabled=$('reject').disabled=$('refresh').disabled=true;const binding=current.snapshotHash+'|'+decision;if(!keys.has(binding))keys.set(binding,crypto.randomUUID());state('Saving…');try{await api('/api/email/host/decide',{visitRequestId:visit,clientKey:keys.get(binding),snapshotVersion:current.snapshotVersion,snapshotHash:current.snapshotHash,decision});await load();}catch(e){error(e);}finally{busy=false;$('approve').disabled=$('reject').disabled=$('refresh').disabled=false;}}
 $('approve').addEventListener('click',()=>void decide('APPROVED'));$('reject').addEventListener('click',()=>void decide('DENIED'));
 $('download').addEventListener('click',()=>void showPass(true));

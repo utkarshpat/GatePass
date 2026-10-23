@@ -366,10 +366,10 @@
     flex-shrink: 0;
     max-width: 55%;
   }
-  .guard-id-card[data-status="PENDING"] { --guard-state: #d97706; background: #fffcf0; }
-  .guard-id-card[data-status="APPROVED"] { --guard-state: #059669; background: #f0fdf4; }
+  .guard-id-card[data-status="PENDING"] { --guard-state: #925000; background: #fffcf0; }
+  .guard-id-card[data-status="APPROVED"] { --guard-state: #047857; background: #f0fdf4; }
   .guard-id-card[data-status="INSIDE"] { --guard-state: #2563eb; background: #eff6ff; }
-  .guard-id-card[data-status="REVOKED"], .guard-id-card[data-status="DENIED"], .guard-id-card[data-status="CANCELLED"] { --guard-state: #e11d48; background: #fff1f2; }
+  .guard-id-card[data-status="REVOKED"], .guard-id-card[data-status="DENIED"], .guard-id-card[data-status="CANCELLED"] { --guard-state: #be123c; background: #fff1f2; }
   .guard-id-card[data-status="EXPIRED"] { --guard-state: #64748b; background: #f8fafc; }
 
   /* Account Popover Menu */
@@ -434,7 +434,14 @@
   }
 
   /* Pass Details Modal */
-  .guard-pass-dialog { width: min(30rem, calc(100vw - 1.5rem)); height: min(38rem, calc(100dvh - 1.5rem)); }
+  .guard-pass-dialog { width: min(38rem, calc(100vw - 1.5rem)); height: min(45rem, calc(100dvh - 1.5rem)); }
+  .guard-app .reception-person { display: flex; align-items: center; gap: var(--gp-space-4); margin: var(--gp-space-4) 0; min-width: 0; }
+  .guard-app .reception-person > div { flex: 1; min-width: 0; }
+  .guard-app .reception-person img { width: 4.5rem; height: 6rem; object-fit: cover; border-radius: var(--gp-radius-control); flex-shrink: 0; }
+  .guard-app .reception-person h3 { font-size: var(--gp-text-lg); font-weight: var(--gp-weight-bold); margin: 0 0 var(--gp-space-2); overflow-wrap: anywhere; }
+  .guard-app .reception-fields { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.5fr); gap: var(--gp-space-3) var(--gp-space-4); font-size: var(--gp-text-sm); margin: var(--gp-space-4) 0; }
+  .guard-app .reception-fields dt { color: var(--gp-text-muted); }
+  .guard-app .reception-fields dd { margin: 0; min-width: 0; overflow-wrap: anywhere; font-weight: var(--gp-weight-medium); }
   #pass-status { padding: var(--gp-space-3) var(--gp-space-4); border-radius: var(--gp-radius-control); background: var(--gp-danger-soft); color: var(--gp-danger); font-size: var(--gp-text-sm); font-weight: var(--gp-weight-medium); }
   #pass-status[data-allowed="true"] { background: var(--gp-success-soft); color: var(--gp-success); }
   .guard-empty { text-align: center; padding: clamp(2rem, 8vh, 5rem) var(--gp-space-4); }
@@ -560,7 +567,11 @@
     font-size: 0.6875rem;
     color: var(--gp-text-muted);
     font-variant-numeric: tabular-nums;
-    white-space: nowrap;
+    white-space: pre-line;
+    text-align: right;
+    overflow-wrap: anywhere;
+    max-width: 55%;
+    flex-shrink: 0;
   }
   .timeline-meta {
     display: flex;
@@ -578,7 +589,8 @@
     color: var(--gp-text);
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
   .timeline-guard-icon {
     display: inline-flex;

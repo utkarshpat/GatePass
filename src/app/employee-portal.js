@@ -1,4 +1,5 @@
 'use strict';
+const deviceLabels={LAPTOP:"Laptop",TABLET:"Tablet / iPad",PEN_DRIVE:"Pen Drive",CAMERA:"Camera",OTHER:"Other"};
 
 const manualReception=document.body.dataset.receptionManual==='true';
 const $ = id => document.getElementById(id);
@@ -27,7 +28,7 @@ window.addEventListener('popstate',event=>{
     else {screen('landing');}
   }finally{restoringNavigation=false;history.replaceState(navigationState(),'');}
 });
-const person = () => ({key:crypto.randomUUID(),name:'',phone:'',phoneRaw:'',country:'IN',email:'',expanded:true,file:null,url:null});
+const person = () => ({key:crypto.randomUUID(),name:'',phone:'',phoneRaw:'',country:'IN',email:'',companyName:'',deviceTypes:[],expanded:true,file:null,url:null});
 const toasts=new ToastNotifications();
 const cookie = name => document.cookie.split('; ').find(value=>value.startsWith(name+'='))?.split('=')[1];
 const steps = () => state.mode==='employee'?['Details','Photo','Review']:['People','Visit','Photo','Review'];
@@ -56,7 +57,6 @@ function stopCamera() {
   $('camera-video').srcObject=null;
   $('camera-video').hidden=true;
   $('capture-photo').hidden=true;
-  if($('upload-photo-label'))$('upload-photo-label').hidden=false;
   const entry=state.people?.[state.photoIndex];
   const hasPhoto=!!entry?.url;
   $('open-camera').hidden=hasPhoto;
@@ -137,7 +137,8 @@ function syncPeople() {
   if(state.mode!=='visitor')return;
   for(const card of $('visitors').children) {
     const entry=state.people.find(row=>row.key===card.dataset.key);if(!entry)continue;
-    for(const key of ['name','email'])entry[key]=card.querySelector(`[name="${key}"]`).value.trim();
+    for(const key of ['name','email','companyName'])entry[key]=card.querySelector(`[name="${key}"]`).value.trim();
+    entry.deviceTypes=[...card.querySelectorAll('[name="deviceTypes"]:checked')].map(input=>input.value);
     entry.phoneRaw=card.phoneField.input.value.trim();entry.country=card.phoneField.country;entry.phone=card.phoneField.number;
   }
 }
@@ -146,7 +147,7 @@ function setVisitorExpanded(card,entry,expanded){
   entry.expanded=expanded;card.querySelector('.visitor-details').hidden=!expanded;card.querySelector('.visitor-summary').hidden=expanded;
   card.querySelector('.edit-visitor').hidden=expanded;card.querySelector('.edit-visitor').setAttribute('aria-expanded',String(expanded));
   card.querySelector('h2').textContent=expanded?'Visitor '+(state.people.indexOf(entry)+1):entry.name;
-  card.querySelector('.visitor-summary').textContent=[entry.phone,entry.email].filter(Boolean).join(' · ');
+  card.querySelector('.visitor-summary').textContent=[entry.phone,entry.email,entry.companyName,entry.deviceTypes?.length?entry.deviceTypes.map(code=>deviceLabels[code]).join(', '):''].filter(Boolean).join(' · ');
 }
 function validateVisitorCard(card){
   const entry=state.people.find(row=>row.key===card.dataset.key);
@@ -159,7 +160,8 @@ function renderPeople() {
   CountryPicker.close();$('visitors').replaceChildren();
   state.people.forEach((entry,index)=>{
     const fragment=$('visitor-template').content.cloneNode(true),card=fragment.querySelector('.visitor-card');card.dataset.key=entry.key;
-    for(const key of ['name','email'])card.querySelector(`[name="${key}"]`).value=entry[key];
+    for(const key of ['name','email','companyName'])card.querySelector(`[name="${key}"]`).value=entry[key];
+    for(const box of card.querySelectorAll('[name="deviceTypes"]'))box.checked=(entry.deviceTypes??[]).includes(box.value);
     const input=card.querySelector('[name="phone"]');input.id='mobile-'+entry.key;card.querySelector('.mobile-label').htmlFor=input.id;
     const feedback=card.querySelector('.phone-feedback');feedback.id=input.id+'-feedback';input.setAttribute('aria-describedby',feedback.id);
     card.phoneField=new VisitorPhoneField(card.querySelector('.phone-control'),entry.country,entry.phoneRaw);
@@ -349,8 +351,6 @@ function renderPhoto() {
   $('photo-placeholder').hidden=hasPhoto;
   $('retake-photo').hidden=!hasPhoto;
   $('open-camera').hidden=hasPhoto;
-  if($('upload-photo-label'))$('upload-photo-label').hidden=false;
-  if($('upload-label-text'))$('upload-label-text').textContent=hasPhoto?'Upload new':'Upload photo';
   if($('photo-zoom-controls'))$('photo-zoom-controls').hidden=!hasPhoto;
   if(hasPhoto){
     $('photo-preview').src=entry.url;
@@ -368,14 +368,14 @@ function renderPhoto() {
   });
 }
 
-function selectPhoto(file) {
-  if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type)||!file.size||file.size>5242880){notify('Choose a JPG, PNG or WebP photo up to 5 MB.','error');return;}
+function useCapturedPhoto(file) {
+  if(!file||file.type!=='image/jpeg'||!file.size||file.size>5242880){notify('Camera capture failed. Retake the photo.','error');return;}
   const entry=state.people[state.photoIndex];if(entry.url)URL.revokeObjectURL(entry.url);
   entry.file=file;entry.rawFile=file;entry.flipped=false;entry.pan={x:0,y:0};entry.zoom=1;entry.url=URL.createObjectURL(file);stopCamera();renderPhoto();notify();
 }
 
 async function openCamera() {
-  if(!navigator.mediaDevices?.getUserMedia){notify('Camera unavailable. Choose a photo instead.','error');return;}
+  if(!navigator.mediaDevices?.getUserMedia){notify('Camera unavailable. Use a device with camera access.','error');return;}
   $('open-camera').disabled=true;
   try {
     const stream=await camera.open();if(!stream)return;
@@ -384,10 +384,9 @@ async function openCamera() {
     if(camera.stream!==stream)return;
     $('camera-video').hidden=false;$('photo-preview').hidden=true;$('photo-placeholder').hidden=true;
     $('open-camera').hidden=true;$('retake-photo').hidden=true;
-    if($('upload-photo-label'))$('upload-photo-label').hidden=true;
     if($('photo-zoom-controls'))$('photo-zoom-controls').hidden=true;
     $('capture-photo').hidden=false;notify();
-  } catch {stopCamera();if(!$('photo-step').hidden)notify('Camera unavailable. Allow camera access or choose a photo.','error');}
+  } catch {stopCamera();if(!$('photo-step').hidden)notify('Camera unavailable. Allow camera access and try again.','error');}
   finally {$('open-camera').disabled=false;}
 }
 
@@ -399,7 +398,7 @@ async function capture() {
   const ctx=canvas.getContext('2d');ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,canvas.width,canvas.height);
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.88));
   if(camera.stream!==stream||state.people[state.photoIndex]!==entry)return;
-  if(blob)selectPhoto(new File([blob],'photo.jpg',{type:'image/jpeg'}));
+  if(blob)useCapturedPhoto(new File([blob],'photo.jpg',{type:'image/jpeg'}));
 }
 
 function reviewItem(label,value) {
@@ -410,7 +409,7 @@ function renderReview() {
   $('review-people').replaceChildren();
   for(const entry of state.people) {
     const row=document.createElement('div'),img=document.createElement('img'),copy=document.createElement('div'),name=document.createElement('strong'),contact=document.createElement('span');
-    row.className='review-person';img.src=entry.croppedUrl??entry.url;img.alt=entry.name;name.textContent=entry.name;contact.textContent=state.mode==='employee'?state.employee.employeeId:[entry.phone,entry.email].filter(Boolean).join(' · ');copy.append(name,contact);row.append(img,copy);$('review-people').append(row);
+    row.className='review-person';img.src=entry.croppedUrl??entry.url;img.alt=entry.name;name.textContent=entry.name;contact.textContent=state.mode==='employee'?state.employee.employeeId:[entry.phone,entry.email].filter(Boolean).join(' · ');copy.append(name,contact);if(state.mode==='visitor'){if(entry.companyName){const company=document.createElement('span');company.textContent='Company: '+entry.companyName;copy.append(company);}if(entry.deviceTypes?.length){const devices=document.createElement('span');devices.textContent='Devices: '+entry.deviceTypes.map(code=>deviceLabels[code]).join(', ');copy.append(devices);}}row.append(img,copy);$('review-people').append(row);
   }
   const rows=[reviewItem('Office',state.options.locationName)];
   if(state.mode==='employee') {rows.push(reviewItem('Reason',$('reason').selectedOptions[0].textContent));if($('reason-details').value.trim())rows.push(reviewItem('Details',$('reason-details').value.trim()));}
@@ -489,7 +488,7 @@ async function submitJobs() {
       if(job.result)continue;
       if(!job.started){await send('/api/registration/reset');await send('/api/registration/start',{requestType:job.body.requestType});job.started=true;}
       for(let index=0;index<job.people.length;index++)if(!job.photos[index])job.photos[index]=(await send('/api/registration/photo',job.people[index].file,true)).photoAssetId;
-      if(!job.payload)job.payload={...job.body,people:job.people.map((entry,index)=>({clientPersonKey:entry.key,photoAssetId:job.photos[index],...(job.body.requestType==='EXTERNAL'?{name:entry.name,phone:entry.phone,...(entry.email?{email:entry.email}:{})}:{})}))};
+      if(!job.payload)job.payload={...job.body,people:job.people.map((entry,index)=>({clientPersonKey:entry.key,photoAssetId:job.photos[index],...(job.body.requestType==='EXTERNAL'?{name:entry.name,phone:entry.phone,...(entry.companyName?{companyName:entry.companyName}:{}),...(entry.deviceTypes?.length?{deviceTypes:entry.deviceTypes}:{}),...(entry.email?{email:entry.email}:{})}:{})}))};
       job.result=await send('/api/registration/submit',job.payload);
       if(job.body.requestType==='DIGITAL_ID'){
         try{job.detail=await send('/api/employee/digital-id/detail',{visitRequestId:job.result.visits[0].visitRequestId});}catch{/* Confirmed creation is retained if the subsequent read is unavailable. */}
@@ -555,7 +554,6 @@ $('host-search').addEventListener('keydown',event=>{if(event.key==='Escape'){$('
 $('host-results').addEventListener('keydown',event=>{if(event.key==='Escape'){$('host-results').hidden=true;$('host-search').setAttribute('aria-expanded','false');$('host-search').focus();}if(['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();const next=event.key==='ArrowDown'?event.target.nextElementSibling:event.target.previousElementSibling;next?.focus();}});
 $('open-camera').addEventListener('click',openCamera);$('capture-photo').addEventListener('click',capture);
 $('retake-photo').addEventListener('click',()=>{const entry=state.people[state.photoIndex];if(entry.url)URL.revokeObjectURL(entry.url);if(entry.croppedUrl)URL.revokeObjectURL(entry.croppedUrl);entry.croppedUrl=null;entry.rawFile=null;entry.url=null;entry.file=null;renderPhoto();openCamera();});
-$('photo-file').addEventListener('change',()=>{selectPhoto($('photo-file').files[0]);$('photo-file').value='';});
 $('edit-details').addEventListener('click',()=>{if(!state.jobs)renderStep(0);});
 $('previous-step').addEventListener('click',()=>{if(state.jobs)return;if(state.accessEditor){renderStep(0);return;}if(state.step===0){reset();screen('landing');}else renderStep(state.step-1);});
 function setupPhotoEditor() {

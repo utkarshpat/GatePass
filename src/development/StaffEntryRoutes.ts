@@ -7,7 +7,7 @@ import {requireDummySso} from './DummyEmployeeSso.ts';import type {DummyEmployee
 import {dummyPasswordValid} from './DummySsoRoutes.ts';import type {GuardAuthService} from '../security/GuardAuthService.ts';
 import {receptionIdentity} from '../reception/ReceptionService.ts';
 type Session={sessionToken:string;csrfToken:string};
-const routes=['/api/staff/login','/api/staff/me','/api/staff/logout'];
+const routes=['/api/staff/login','/api/staff/me','/api/staff/logout','/api/staff/setup'];
 export class StaffEntryRoutes implements AdditionalHttpRoutes{
  #sso:DummyEmployeeSso;#guard:GuardAuthService;#client:{callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>};#source=randomBytes(32);#issued=new Map<string,{kind:'SSO'|'LOCAL';csrfToken:string;expires:number;lastTouched:number;touching?:Promise<boolean>}>();
  constructor(sso:DummyEmployeeSso,guard:GuardAuthService,client:{callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>}){this.#sso=sso;this.#guard=guard;this.#client=client;}
@@ -31,6 +31,7 @@ export class StaffEntryRoutes implements AdditionalHttpRoutes{
  async handle(req:IncomingMessage,res:ServerResponse){
   requireDummySso();if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress??''))throw new HttpFailure(403);
   if(!this.handles(req.url??''))throw new HttpFailure(404);const input=await readJsonBody(req);
+  if(req.url===routes[3]){if(Object.keys(input).sort().join('|')!=='password|token'||typeof input.password!=='string'||input.password.length>512||!token(input.token))throw new HttpFailure(400);const result=await this.#guard.completeSetup(input.token,input.password,{sourceHash:createHmac('sha256',this.#source).update(req.socket.remoteAddress??'unknown').digest()});if(!result.ok)throw new HttpFailure(400);return{ok:true};}
   if(req.url===routes[0]){
    if(Object.keys(input).sort().join('|')!=='login|password'||typeof input.login!=='string'||!input.login.trim()||input.login.length>320||typeof input.password!=='string'||input.password.length>512)throw new HttpFailure(400);
    for(const[key,value]of this.#issued)if(value.expires<=Date.now())this.#issued.delete(key);if(this.#issued.size>=256)throw new HttpFailure(429);

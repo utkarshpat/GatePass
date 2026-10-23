@@ -1,5 +1,7 @@
 # GatePass System Documentation
 
+> Latest local implementation and evidence: [23 October retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md), through migration 085. The 22 October handbook/export and hash snapshot below remain a dated baseline. Current increments include visitor company/devices, admin register/Excel/timelines, reception lookup/return correction and local staff onboarding.
+
 Current implementation handbook | 22 October 2026 | Documentation baseline 1.0
 
 Local working-tree snapshot, including uncommitted work. Git base: 96f92c1982dd. Source migrations 001-062. Not a release tag or production certification.

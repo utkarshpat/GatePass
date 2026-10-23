@@ -1,5 +1,7 @@
 # 12. Maintenance and reference map
 
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+
 ## Precedence
 This handbook is the consolidated local baseline dated 22 October 2026. Earlier numbered documents are historical increments. Resolve conflict using latest approved requirements, executable source/migrations and applicable current evidence; update the handbook when behavior changes. Historical reports are not current environment attestations.
 
@@ -8,6 +10,11 @@ The package contains current chapters, source-derived inventories and existing M
 ## Source map
 | Topic | Read first |
 |---|---|
+| Current presentation/release evidence | docs/55_Presentation_Rehearsal_23_October_2026.md |
+| Local staff onboarding/audit | docs/54_Local_Staff_Onboarding_And_Audit.md |
+| Reception all-date lookup/return correction | docs/53_Reception_Lookup_And_Return_Correction.md |
+| Admin visit register | docs/52_Admin_Visit_Register.md |
+| Visitor company/devices/camera | docs/51_Visitor_Company_Devices_And_Camera.md |
 | Original domain/ER/dictionary | docs/database/00_READ_ME_FIRST.md, 01_Domain_and_Design_Decisions.md, 03_Data_Dictionary.md |
 | Identity/delegation | docs/database/29_Staff_Identity_and_Delegation.md |
 | Office policy | docs/33_Employee_Office_Authorization.md |

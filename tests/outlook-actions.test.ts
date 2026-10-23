@@ -36,11 +36,14 @@ test('Outlook capability binds exact request host snapshot decision client key p
 });
 function job(){return{notificationId:1,visitRequestId:visit,templateCode:'HOST_APPROVAL_REQUEST',recipientKind:'EMPLOYEE',recipientEmployeeId:'EMP001',details:{visitRequestId:visit,snapshotHash:snapshot,validFromUtc:new Date().toISOString(),validUntilUtc:new Date(Date.now()+3600000).toISOString(),personName:'Test </script><script>evil</script>',publicReference:'V-test',locationName:'Noida',projectName:'Project 1',hostName:'Host 1',purpose:'Meeting'}};}
 test('Outlook card has bound direct POST decisions, expected actor, provider ID and fallback with safe script embedding',async()=>{
- const card=await new OutlookApprovalCard(cardConfig,codec).render(job(),'host@example.com');assert.equal(card.originator,providerId);assert.deepEqual(card.expectedActors,['host@example.com']);assert.equal(card.actions.length,3);
+ const j=job() as any;j.details.companyName='Acme Corp';j.details.deviceTypes=['LAPTOP'];
+ const card=await new OutlookApprovalCard(cardConfig,codec).render(j,'host@example.com');assert.equal(card.originator,providerId);assert.deepEqual(card.expectedActors,['host@example.com']);assert.equal(card.actions.length,3);
+ assert.deepEqual((card.body[1] as any).facts.slice(1,3),[{title:'Company',value:'Acme Corp'},{title:'Devices',value:'Laptop'}]);
  const decisions=[];for(const a of card.actions.slice(0,2) as any[]){assert.equal(a.type,'Action.Http');assert.equal(a.method,'POST');assert.equal(a.url,cardConfig.origin+'/api/outlook/decision');decisions.push((await codec.verify(JSON.parse(a.body).capability)).decision);}
  assert.deepEqual(decisions,['APPROVED','DENIED']);const html=outlookCardScript(card);assert.equal((html.match(/<\/script>/gu)??[]).length,1);assert(!html.includes('<script>evil'));
  for(const origin of ['http://localhost:8443','https://localhost','https://127.0.0.1','https://example.com/path'])assert.throws(()=>new OutlookApprovalCard({...cardConfig,origin},codec));
  await assert.rejects(new OutlookApprovalCard(cardConfig,codec).render({...job(),recipientKind:'EMAIL'},'host@example.com'));
+ await assert.rejects(new OutlookApprovalCard(cardConfig,codec).render({...job(),details:{...job().details,deviceTypes:['BAD']}},'host@example.com'));
 });
 test('host approval worker embeds the optional Outlook card; other templates and default delivery stay ordinary HTML',async()=>{
  const sql={callProcedure:async()=>''},directory={getEmployee:async()=>({isActive:true,officialEmail:'host@example.com'}),getManager:async()=>null},links=new EmailLinkCodec(source),transport={send:async()=>({})};

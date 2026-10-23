@@ -13,12 +13,12 @@ for(const width of [390,1366])test(`printed pass returns and older pending retur
   return route.fulfill({status:403,json:{error:'NOT_AUTHORIZED'}});
  });
  await page.goto('/reception');await expect(page.locator('#stat-returns')).toHaveText('1');await expect(page.locator('#visit-rows tr')).toHaveCount(0);
- await page.locator('#kpi-returns').click();await expect(page.locator('#visit-rows tr')).toHaveCount(1);await expect(page.getByRole('button',{name:'Mark printed pass returned for Synthetic Return Visitor'})).toBeDisabled();await expect(page.locator('.cell-actions .primary')).toBeHidden();
- inside=false;await page.locator('#refresh').click();const button=page.getByRole('button',{name:'Mark printed pass returned for Synthetic Return Visitor'});await expect(button).toBeEnabled();
- fail=true;await button.click();await expect(button).toBeEnabled();expect(keys).toHaveLength(1);fail=false;await button.click();await expect(page.locator('#stat-returns')).toHaveText('0');await expect(page.locator('#visit-rows tr')).toHaveCount(0);expect(keys).toHaveLength(2);expect(keys[0]).toBe(keys[1]);expect(queues).toContain(true);
+ await page.locator('#kpi-returns').click();await expect(page.locator('#visit-rows tr')).toHaveCount(1);await expect(page.getByRole('combobox',{name:'Card status for Synthetic Return Visitor'})).toBeDisabled();await expect(page.locator('.cell-actions .primary')).toBeHidden();
+ inside=false;await page.locator('#refresh').click();const button=page.getByRole('combobox',{name:'Card status for Synthetic Return Visitor'});await expect(button).toBeEnabled();
+ fail=true;await button.selectOption('RETURN');await page.locator('#confirm-devices-return').click();await expect(page.locator('#devices-return-status')).toContainText('Return failed');expect(keys).toHaveLength(1);fail=false;await page.locator('#confirm-devices-return').click();await expect(page.locator('#stat-returns')).toHaveText('0');await expect(page.locator('#visit-rows tr')).toHaveCount(0);expect(keys).toHaveLength(2);expect(keys[0]).toBe(keys[1]);expect(queues).toContain(true);
  // History retains the returned receipt and never offers print/return actions again.
  await page.unroute('**/api/reception/**');await page.route('**/api/reception/list',route=>route.fulfill({json:{visits:[row()],pendingReturnCount:0,cursor:null}}));
- await page.locator('#kpi-total').click();await expect(page.locator('.cell-card')).toHaveText('Returned');await expect(page.locator('.return-pass')).toHaveCount(0);await expect(page.locator('.cell-actions .primary')).toBeHidden();
+ await page.locator('#kpi-total').click();await expect(page.locator('.cell-card select option:checked')).toHaveText('Returned');await expect(page.locator('.return-pass')).toHaveCount(0);await expect(page.locator('.cell-actions .primary')).toBeHidden();
  const a11y=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(a11y.violations.map(v=>v.id)).toEqual([]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await page.screenshot({path:`output/reception-returns-${width}.png`});
 });

@@ -23,8 +23,8 @@ for(const width of [390,1366])test(`reception pending preview, filter, direct pr
  await expect(page).toHaveURL(/\/reception$/u);await expect(page.locator('#stat-total')).toHaveText('1');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  if(width>760){const boxes=await page.locator('#visit-rows tr').first().evaluate(row=>{const card=row.querySelector('.cell-card .status')!.getBoundingClientRect(),action=row.querySelector('.cell-actions button')!.getBoundingClientRect();return{right:card.right,left:action.left};});expect(boxes.right).toBeLessThanOrEqual(boxes.left);}
- await page.getByRole('searchbox').fill('Nobody');await expect(page.locator('#empty-visits')).toBeVisible();await expect(page.locator('#stat-total')).toHaveText('0');
- await page.getByRole('searchbox').fill('Reception');await expect(page.locator('#visit-rows tr')).toHaveCount(1);
+ await page.locator('#visit-search').fill('Nobody');await expect(page.locator('#empty-visits')).toBeVisible();await expect(page.locator('#stat-total')).toHaveText('0');
+ await page.locator('#visit-search').fill('Reception');await expect(page.locator('#visit-rows tr')).toHaveCount(1);
  await page.getByRole('button',{name:'View pass for Reception Test Visitor',exact:true}).click();await expect(page.locator('#reception-card img')).toBeVisible();await expect(page.locator('#detail-print')).toBeEnabled();
  const bounds=await page.locator('#visit-dialog').boundingBox();expect(bounds!.x).toBeGreaterThanOrEqual(0);expect(bounds!.x+bounds!.width).toBeLessThanOrEqual(width+1);
  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(axe.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)}))).toEqual([]);
@@ -32,5 +32,5 @@ for(const width of [390,1366])test(`reception pending preview, filter, direct pr
  for(let copy=0;copy<2;copy++){
   await page.locator('#detail-print').click();await expect.poll(()=>dispatches).toBe(copy+1);await expect(page.locator('#detail-print')).toHaveText('Reprint pass');await expect.poll(()=>page.frames().some(f=>f.url().endsWith('/reception/print'))).toBe(true);expect(page.context().pages()).toHaveLength(1);
  }
- expect(dispatches).toBe(2);expect(calls).toHaveLength(2);expect(calls[0].clientKey).not.toBe(calls[1].clientKey);await expect(page.locator('#stat-returns')).toHaveText('1');await expect(page.locator('#detail-print-count')).toHaveText('2');await expect(page.locator('.cell-card')).toHaveText('Printed');
+ expect(dispatches).toBe(2);expect(calls).toHaveLength(2);expect(calls[0].clientKey).not.toBe(calls[1].clientKey);await expect(page.locator('#stat-returns')).toHaveText('1');await expect(page.locator('#detail-print-count')).toHaveText('2');await expect(page.locator('.cell-card select option:checked')).toHaveText('Printed');
 });

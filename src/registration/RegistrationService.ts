@@ -1,3 +1,4 @@
+import {visitorDetails} from './VisitorDetails.ts';
 import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { prepareQrEnvelopes } from './QrCredentialEnvelope.ts';
@@ -140,7 +141,9 @@ export class RegistrationService {
     requireInput(Number.isInteger(data.locationId) && Number(data.locationId) > 0 && Number(data.locationId) <= 2147483647);
     requireInput(Array.isArray(data.people) && data.people.length > 0 && data.people.length <= 50);
     const people = (data.people as unknown[]).map(value => {
-      const person = object(value, ['clientPersonKey', 'photoAssetId', 'name', 'email', 'phone']);
+      const person = object(value, ['clientPersonKey', 'photoAssetId', 'name', 'email', 'phone', 'companyName', 'deviceTypes']);
+      let extras:ReturnType<typeof visitorDetails>;try{extras=visitorDetails(person.companyName,person.deviceTypes);}catch{throw new RegistrationError('INVALID_INPUT');}
+      if(requestType!=='EXTERNAL')requireInput(person.companyName===undefined&&person.deviceTypes===undefined);
       const name = string(person.name, 200, true); const email = string(person.email, 320, true); const phone = string(person.phone, 30, true);
       if (requestType !== 'EXTERNAL') requireInput(name === null && email === null && phone === null);
       else requireInput(name !== null && phone !== null);
@@ -150,7 +153,7 @@ export class RegistrationService {
         const parsed=parsePhoneNumberFromString(phone,{extract:false});
         requireInput(/^\+[1-9]\d{1,14}$/u.test(phone) && parsed?.isValid() === true && !parsed.ext);
       }
-      return { clientPersonKey: uuid(person.clientPersonKey), photoAssetId: uuid(person.photoAssetId), personName: name, personEmail: email, personPhone: phone };
+      return { clientPersonKey: uuid(person.clientPersonKey), photoAssetId: uuid(person.photoAssetId), personName: name, personEmail: email, personPhone: phone, ...extras };
     });
     requireInput(new Set(people.map(person => person.clientPersonKey)).size === people.length && new Set(people.map(person => person.photoAssetId)).size === people.length);
     if (requestType !== 'EXTERNAL') requireInput(people.length === 1);

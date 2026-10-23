@@ -2,6 +2,7 @@ import {createHash} from 'node:crypto';
 import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
 import type {Session} from '../transport/ApiHandler.ts';
 import {normalizeVisitRow} from '../visits/VisitReadService.ts';
+import {visitorDetails} from '../registration/VisitorDetails.ts';
 import {isUuid,isUtc} from '../visits/SqlVisitReadRepository.ts';
 import {token} from '../transport/ApiHandler.ts';
 import type {EmailLinkCodec} from './EmailLinkCodec.ts';
@@ -25,6 +26,7 @@ export class EmailWorkflowService{
  async linkParameters(value:unknown){let link;try{if(!this.#links)throw new Error();link=await this.#links.verify(value);}catch{throw new EmailWorkflowError('NOT_AUTHORIZED');}return{VisitRequestId:{type:'guid' as const,value:link.visit},RecipientEmailHash:{type:'binary' as const,value:Buffer.from(link.emailHash,'hex')},SnapshotHash:{type:'binary' as const,value:Buffer.from(link.snapshot,'hex')}};}
  async external(value:unknown){const d=body(value,['link']),parameters=await this.linkParameters(d.link);const r=await this.#call('gp.ReadEmailRequest',parameters);
   if(!isUtc(r.validFromUtc)||!isUtc(r.validUntilUtc)||!isUuid(r.visitRequestId)||r.visitRequestId.toLowerCase()!==parameters.VisitRequestId.value.toLowerCase()||!['PENDING','APPROVED','DENIED','CANCELLED'].includes(r.status)||!['PENDING','ACTIVE','DENIED','REVOKED'].includes(r.passStatus))throw new EmailWorkflowError('UNAVAILABLE');
-  const result:Record<string,unknown>={visitRequestId:r.visitRequestId.toLowerCase(),status:r.status,passStatus:r.passStatus};for(const [k,max] of Object.entries({personName:200,publicReference:40,locationName:150,projectName:200,hostName:200,reason:1000,validFromUtc:24,validUntilUtc:24})){if(typeof r[k]!=='string'||!r[k].length||r[k].length>max)throw new EmailWorkflowError('UNAVAILABLE');result[k]=r[k];}return result;
+  let extras:ReturnType<typeof visitorDetails>={};if(r.companyName!==undefined||r.deviceTypes!==undefined){try{extras=visitorDetails(r.companyName,r.deviceTypes);}catch{throw new EmailWorkflowError('UNAVAILABLE');}}
+  const result:Record<string,unknown>={...extras,visitRequestId:r.visitRequestId.toLowerCase(),status:r.status,passStatus:r.passStatus};for(const [k,max] of Object.entries({personName:200,publicReference:40,locationName:150,projectName:200,hostName:200,reason:1000,validFromUtc:24,validUntilUtc:24})){if(typeof r[k]!=='string'||!r[k].length||r[k].length>max)throw new EmailWorkflowError('UNAVAILABLE');result[k]=r[k];}return result;
  }
 }

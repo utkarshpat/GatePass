@@ -6,12 +6,12 @@ if($env:CI -ne 'true' -or $env:NODE_ENV -ne 'test' -or $env:GATEPASS_TEST_SQL_SE
 }
 $taskRoot=Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location -LiteralPath $taskRoot
-$taskSuites=@('Test-TransactionCore.ps1','Test-Registration.ps1','Test-GuardDuties.ps1','Test-PresenceReadModels.ps1','Test-AdministrationReads.ps1','Test-AdminConsole.ps1','Test-PassPrinting.ps1','Test-PassReturns.ps1','Test-EmailWorkflow.ps1','Test-HostReminders.ps1','Test-OutlookActions.ps1','Test-PublicRegistration.ps1','Test-ReceptionManual.ps1')
+$taskSuites=@('Test-TransactionCore.ps1','Test-Registration.ps1','Test-GuardDuties.ps1','Test-PresenceReadModels.ps1','Test-AdministrationReads.ps1','Test-AdminConsole.ps1','Test-LocalStaffOnboarding.ps1','Test-AdminRegister.ps1','Test-ReceptionLookupCorrection.ps1','Test-PassPrinting.ps1','Test-PassReturns.ps1','Test-EmailWorkflow.ps1','Test-HostReminders.ps1','Test-OutlookActions.ps1','Test-PublicRegistration.ps1','Test-ReceptionManual.ps1')
 $taskResults=[Collections.Generic.List[object]]::new()
 foreach($taskSuite in $taskSuites){
  $taskWatch=[Diagnostics.Stopwatch]::StartNew()
  try{
-  if($taskSuite -in @('Test-TransactionCore.ps1','Test-Registration.ps1','Test-GuardDuties.ps1','Test-PresenceReadModels.ps1','Test-AdministrationReads.ps1','Test-AdminConsole.ps1','Test-PassPrinting.ps1','Test-PassReturns.ps1','Test-EmailWorkflow.ps1','Test-HostReminders.ps1','Test-OutlookActions.ps1')){& (Join-Path $taskRoot "database/tests/$taskSuite") -TrustLocalServerCertificate}
+  if($taskSuite -in @('Test-TransactionCore.ps1','Test-Registration.ps1','Test-GuardDuties.ps1','Test-PresenceReadModels.ps1','Test-AdministrationReads.ps1','Test-AdminConsole.ps1','Test-LocalStaffOnboarding.ps1','Test-AdminRegister.ps1','Test-ReceptionLookupCorrection.ps1','Test-PassPrinting.ps1','Test-PassReturns.ps1','Test-EmailWorkflow.ps1','Test-HostReminders.ps1','Test-OutlookActions.ps1')){& (Join-Path $taskRoot "database/tests/$taskSuite") -TrustLocalServerCertificate}
   else{& (Join-Path $taskRoot "database/tests/$taskSuite")}
   $taskResults.Add(@{name=$taskSuite;time=$taskWatch.Elapsed.TotalSeconds;passed=$true})
  }catch{

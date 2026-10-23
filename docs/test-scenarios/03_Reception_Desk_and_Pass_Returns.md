@@ -1,9 +1,11 @@
 # 03. Reception Desk & Printed Pass Returns
 
+> 23 October presentation run: [current evidence and retained demo data](../55_Presentation_Rehearsal_23_October_2026.md). Earlier execution counts/cleanup statements in this catalog describe their dated runs; this presentation dataset is retained.
+
 ## Surface
 - **Routes**: `/reception`, `/reception/print`, `/reception/register/<office-code>`
-- **APIs**: `/api/reception/me`, `/api/reception/list`, `/api/reception/detail`, `/api/reception/photo`, `/api/reception/preview`, `/api/reception/print/request`, `/api/reception/print/status`, `/api/reception/print/render`, `/api/reception/remind-host`, `/api/reception/return`, `/api/reception/manual/*`
-- **SQL Procedures**: `gp.GetReceptionContext`, `gp.ListReceptionVisits`, `gp.GetVisitDetail`, `gp.GetReceptionEmployeeTimeline`, `gp.GetReceptionCardSource`, `gp.RequestPassPrint`, `gp.GetPassPrintJob`, `gp.BeginPassRender`, `gp.FinishPassRender`, `gp.DispatchPassPrint`, `gp.RemindVisitHost`, `gp.ReturnReceptionPass`, `gp.AuditReceptionRegistration`
+- **APIs**: `/api/reception/me`, `/api/reception/list`, `/api/reception/lookup`, `/api/reception/detail`, `/api/reception/photo`, `/api/reception/preview`, `/api/reception/print/request`, `/api/reception/print/status`, `/api/reception/print/render`, `/api/reception/remind-host`, `/api/reception/return`, `/api/reception/correct-return`, `/api/reception/manual/*`
+- **SQL Procedures**: `gp.GetReceptionContext`, `gp.ListReceptionVisits`, `gp.LookupReceptionVisits`, `gp.GetVisitDetail`, `gp.GetReceptionEmployeeTimeline`, `gp.GetReceptionCardSource`, `gp.RequestPassPrint`, `gp.GetPassPrintJob`, `gp.BeginPassRender`, `gp.FinishPassRender`, `gp.DispatchPassPrint`, `gp.RemindVisitHost`, `gp.ReturnReceptionPass`, `gp.CorrectReceptionReturn`, `gp.AuditReceptionRegistration`
 
 ---
 
@@ -31,11 +33,11 @@
 ### TC-REC-03: View Pass Details, Card Preview & Movement Timeline
 - **Steps**:
   1. Click a visitor/employee row or the eye icon button (`View pass for ...`).
-  2. Inspect `#visit-dialog`: Pass ID, Office, Project / Assigned projects, Host name & email, Purpose, Valid from/until, Print count, Card status, and Entry/exit timeline.
+  2. Inspect `#visit-dialog`: Pass ID, Company, Devices, Office, Project / Assigned projects, Host name & email, Purpose, Valid from/until, Print count, Card status, and Entry/exit timeline.
 - **Expected Result**:
   - Printable passes (`PENDING` or `APPROVED`, active/pending pass, unreturned, not expired, `canPrint: true`) render the high-res card preview image (`#reception-card img`) and enable `#detail-print`.
   - Non-printable passes (expired, denied, cancelled, revoked, returned, or view-only operator) render a read-only pass summary without QR credentials and hide `#detail-print`.
-  - Opening a stale row refreshes `status`, `isInside`, `passStatus`, `returnedAtUtc`, and `printCount` on the underlying table row.
+  - Opening a stale row refreshes `status`, `isInside`, `passStatus`, `returnedAtUtc`, `printCount`, `companyName`, and `deviceTypes` on the underlying table row.
 
 ### TC-REC-04: Direct Print & Intentional Reprint Handoff
 - **Steps**:
@@ -72,11 +74,32 @@
 - **Expected Result**:
   - History dialog paginates through all visits in the range without altering the main dashboard's `#reception-date`.
 
-### TC-REC-08: Final Printed Pass Return (`gp.ReturnReceptionPass`)
+### TC-REC-08: Final Printed Pass Return & Mandatory Device Verification (`gp.ReturnReceptionPass`, Migrations 076 & 080)
 - **Steps**:
-  1. Locate a row with `printCount > 0` and `returnedAtUtc === null`.
-  2. Verify that if `isInside === true`, the **Printed** button is disabled (`Project exit is required before return`).
-  3. When `isInside === false`, click the **Printed** (`Mark printed pass returned for ...`) button.
+  1. Locate a row with `printCount > 0` and `returnedAtUtc === null` (either in the daily table or inside `#visit-dialog`).
+  2. Verify that if `isInside === true`, the `Card status for ...` dropdown (`select.card-status-select`) is disabled (`Record every project exit before returning the pass`).
+  3. When `isInside === false`, select `Mark returned…` (`RETURN`) from the `Card status for ...` dropdown:
+     - **Without declared devices**: `#devices-return-dialog` opens with confirmation message and button `Confirm returned`.
+     - **With declared devices (`deviceTypes.length > 0`)**: `#devices-return-dialog` opens listing a required checkbox for every declared device (`Laptop`, `Tablet / iPad`, etc.) and button `Verify devices & mark returned`. Attempting to confirm before checking every box is blocked; checking all boxes submits `/api/reception/return` with `devicesVerified: true`.
+     - Verify that switching offices (`#reception-location`) or navigating away (`pagehide`) closes `#devices-return-dialog` and clears `deviceReturn`.
 - **Expected Result**:
-  - Calls `/api/reception/return` with `visitRequestId`, `expectedPassId`, and idempotent `clientKey`.
-  - Pass status becomes `REVOKED`, delivery links are revoked, in-flight print jobs/notifications are cancelled, badge changes to `Returned`, Print/Reprint buttons hide, and **Pending return** KPI decrements.
+  - SQL `gp.ReturnReceptionPass` independently enforces `@DevicesVerified = 1` whenever `DeviceTypesJson <> N'[]'` (`54503`) and persists `PassReturns.DevicesVerified`.
+  - Pass status becomes `REVOKED`, delivery links are revoked, in-flight print jobs/notifications are cancelled, card status dropdown updates to `Returned`, Print/Reprint buttons hide, and **Pending return** KPI decrements.
+
+### TC-REC-09: All-Date Scoped Reception Lookup & QR Pass Scan (`gp.LookupReceptionVisits`, Migration 080)
+- **Steps**:
+  1. Type a 2+ character query (name, employee ID, mobile, email, request reference, or pass number) into `#lookup-search` in the Reception header.
+  2. Verify live dropdown results (`#lookup-panel`, 20 rows per batch with `More matches` pagination) across all retained dates in the current office.
+  3. Press `Enter` when a single match exists (or click a match button) to open `#visit-dialog` directly.
+  4. Click the floating QR scanner button (`#lookup-scan`), scan a current printed pass QR (including an already-returned pass QR), and verify `#lookup-scanner` closes, stops camera tracks, hashes the credential at the service boundary, and opens `#visit-dialog`.
+- **Expected Result**:
+  - Lookup is strictly read-only (`RECEPTION_LOOKUP` audit event without logging raw QR/search text) and never records movement or discloses foreign-office/purged visits.
+
+### TC-REC-10: Audited Mistaken-Return Correction (`gp.CorrectReceptionReturn`, Migration 080)
+- **Steps**:
+  1. On a returned pass (`returnedAtUtc !== null`, `isInside === false`), select `Correct mistaken return…` (`CORRECT`) from the `Card status for ...` dropdown (in the table row or `#detail-card-control` inside `#visit-dialog`).
+  2. In `#correct-return-dialog`, verify submitting with fewer than 5 characters is blocked, then enter a reason (5–300 chars) in `#correct-return-reason` and click **Correct return**.
+- **Expected Result**:
+  - Calls `/api/reception/correct-return` with `visitRequestId`, `expectedPassId`, `expectedReturnedAtUtc`, `reason`, and idempotent `clientKey`.
+  - Copies the original return receipt and correction metadata into `gp.PassReturnCorrections`, deletes the active `gp.PassReturns` marker, restores `AccessPasses.Status` (`ACTIVE` for approved, `PENDING` for pending), re-queues a fresh `HOST_APPROVAL_REQUEST` outbox notice if still pending before deadline, and records `PASS_RETURN_CORRECTED` in `gp.SecurityAuditEvents`.
+  - Replaying the original return `clientKey` after correction is rejected with `54503` (`CONFLICT`), and correction is blocked if the person is inside a project (`54504`) or a newer overlapping request exists in the office (`54503`).

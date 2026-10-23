@@ -119,8 +119,16 @@ INSERT gp.VisitPresence(VisitRequestId) VALUES(@visit);
  Case 'Scoped admin creates and assigns common areas with idempotency and revocation' {
   $p=Auth 'ADMIN';$p.ClientKey=[guid]::NewGuid();$p.LocationId=$taskLocation;$p.Action='CREATE_AREA';$p.AreaName=$taskFixture.prefix+' Managed';$p.Reason='Owned test';$r=Call 'ManageCommonDuty' $p;Assert ((Call 'ManageCommonDuty' $p).areaId -eq $r.areaId) 'Create retry duplicated area.';$p.Reason='Changed';Expect {Call 'ManageCommonDuty' $p} 52003
   $script:taskManagedArea=[long]$r.areaId;$p=Auth 'ADMIN';$p.ClientKey=[guid]::NewGuid();$p.LocationId=$taskLocation;$p.Action='ASSIGN';$p.AreaId=$taskManagedArea;$p.GuardUserId=[guid]$taskActors.NOCAP.UserId;$p.Reason='Owned shift';$r=Call 'ManageCommonDuty' $p
-  Assert (Read-Duty 'COMMON' $taskManagedArea 'NOCAP').visit.commonAccessAllowed 'Common-only guard could not verify ID.'
+  Expect {Read-Duty 'COMMON' $taskManagedArea 'NOCAP'} 52001
+  $version=Invoke-GatePassScalar $taskAdmin 'SELECT AuthorizationVersion FROM gp.Users WHERE UserId=@u;' @{u=[guid]$taskActors.NOCAP.UserId}
+  Assert ($version -eq 2) 'Common assignment did not invalidate the old session exactly once.'
+  $null=Call 'ManageCommonDuty' $p
+  Assert ((Invoke-GatePassScalar $taskAdmin 'SELECT AuthorizationVersion FROM gp.Users WHERE UserId=@u;' @{u=[guid]$taskActors.NOCAP.UserId}) -eq $version) 'Assignment retry invalidated sessions twice.'
+  # Simulate re-authentication only for this owned fixture session after proving the old binding is denied.
+  Invoke-GatePassNonQuery $taskAdmin 'UPDATE s SET AuthorizationVersionAtIssue=u.AuthorizationVersion FROM gp.Sessions s JOIN gp.Users u ON u.UserId=s.UserId WHERE s.SessionHash=@s AND u.UserId=@u;' @{s=[Convert]::FromHexString($taskActors.NOCAP.SessionHex);u=[guid]$taskActors.NOCAP.UserId}
+  Assert (Read-Duty 'COMMON' $taskManagedArea 'NOCAP').visit.commonAccessAllowed 'Common-only guard could not verify ID after re-authentication.'
   $p=Auth 'ADMIN';$p.ClientKey=[guid]::NewGuid();$p.LocationId=$taskLocation;$p.Action='REMOVE';$p.AssignmentId=[long]$r.assignmentId;$p.Reason='Shift ended';$null=Call 'ManageCommonDuty' $p;Expect {Read-Duty 'COMMON' $taskManagedArea 'NOCAP'} 52001
+  Assert ((Invoke-GatePassScalar $taskAdmin 'SELECT AuthorizationVersion FROM gp.Users WHERE UserId=@u;' @{u=[guid]$taskActors.NOCAP.UserId}) -eq ($version+1)) 'Common removal did not invalidate the re-authenticated session.'
  }
  Case 'Location admin cannot manage another office or assign its guard across offices' {
   $p=Auth 'ADMIN';$p.ClientKey=[guid]::NewGuid();$p.LocationId=[int]$taskFixture.otherLocationId;$p.Action='CREATE_AREA';$p.AreaName=$taskFixture.prefix+' Forbidden';$p.Reason='Owned test';Expect {Call 'ManageCommonDuty' $p} 52001

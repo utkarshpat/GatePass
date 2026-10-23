@@ -1,5 +1,9 @@
 # 07. Development setup and configuration
 
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+
+Apply missing forward migrations in order using `database/setup/Apply-LocalTransactionCore.ps1`; never rewrite/reapply an existing ledger version. The current local database includes 085. Before Node decoder tests, set `GATEPASS_SHARP_PATH` to the installed `node_modules/sharp` package and `GATEPASS_PWSH_PATH` to PowerShell 7. `npm.cmd run dev` serves port 8443. The opt-in retained browser rehearsal is documented separately and uses port 18448 by default. Run SQL fault/locking suites separately from browser rehearsals.
+
 ## Prerequisites
 Use pinned Node range >=26.8.0 and <27 (CI selects 26.8.2), locked npm dependencies, an approved dedicated SQL test instance and PowerShell 7 for the existing Windows SQL/storage adapters. Development is on Windows; planned Ubuntu deployment requires separate platform acceptance. Private SQL/media/key files stay outside source/OneDrive.
 
