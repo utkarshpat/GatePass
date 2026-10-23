@@ -1,5 +1,7 @@
 # Presentation login, roles and assignments — 23 October 2026
 
+Plain-text table version: [download/open the account list](59_Presentation_Account_Role_Assignment_List.txt).
+
 Live database snapshot: **23 October 2026, 11:53:49 AM IST**. This is a local synthetic demo account guide; later role/duty edits can change these mappings. No account, grant or visitor data was modified to build this list. Temporary GP02 regression identities are excluded.
 
 ## Fast presentation sequence

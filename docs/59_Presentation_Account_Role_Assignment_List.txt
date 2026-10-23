@@ -1,0 +1,254 @@
+PRESENTATION LOGIN, ROLES AND ASSIGNMENTS - 23 OCTOBER 2026
+===========================================================
+
+Live database snapshot: 23 October 2026, 11:53:49 AM IST. This is a local synthetic demo account guide; later role/duty edits can change these
+mappings. No account, grant or visitor data was modified to build this list. Temporary GP02 regression identities are excluded.
+
+FAST PRESENTATION SEQUENCE
+--------------------------
+
++------+----------------------------+-----------------------------------------+---------------------------------------------------+
+| Step | Login ID                   | Office / project                        | What to demonstrate                               |
++------+----------------------------+-----------------------------------------+---------------------------------------------------+
+| 1    | admin2@example.com         | Noida / Project 1                       | 10 retained presentation visits; Overview, Users  |
+|      |                            |                                         | & permissions, Projects & areas, Guard            |
+|      |                            |                                         | assignments, Visit register, Excel, history,      |
+|      |                            |                                         | Audit                                             |
++------+----------------------------+-----------------------------------------+---------------------------------------------------+
+| 2    | reception1@example.com     | Noida (whole office)                    | Reception-assisted registration, visitor lookup,  |
+|      |                            |                                         | print/reprint and returned-pass workflow          |
++------+----------------------------+-----------------------------------------+---------------------------------------------------+
+| 3    | employee19@example.com     | Project 1 lead; hosts in Noida Projects | Individual host approval/decline and scoped       |
+|      |                            | 1 and 2                                 | project administration                            |
++------+----------------------------+-----------------------------------------+---------------------------------------------------+
+| 4    | gaurd1@example.com         | Noida Projects 1, 2; Cafeteria, Lobby   | Expected/inside queues, verification, project     |
+|      |                            |                                         | entry/exit; common duties are verification only   |
++------+----------------------------+-----------------------------------------+---------------------------------------------------+
+| 5    | employee2@example.com      | Primary Noida; Projects 1, 2            | Employee Digital ID and own visits                |
++------+----------------------------+-----------------------------------------+---------------------------------------------------+
+| 6    | admin3@example.com         | Bengaluru                               | Show that a location admin manages only its own   |
+|      |                            |                                         | office                                            |
++------+----------------------------+-----------------------------------------+---------------------------------------------------+
+| 7    | platformadmin1@example.com | All offices / platform                  | Platform-level role delegation, only if needed    |
++------+----------------------------+-----------------------------------------+---------------------------------------------------+
+
+Open http://localhost:8443/. Use separate browser profiles/private windows for admin, reception, host and guard. The seed demo accounts use the
+documented local fixture password Sopra@123. The two retained demo-noida accounts have their own passwords recorded in the rehearsal guide
+(55_Presentation_Rehearsal_23_October_2026.md); their passwords were not read or changed here.
+
+Spelling: the existing guard login prefix is gaurd, not guard.
+
+ADMIN ACCOUNTS
+--------------
+
++----------------------------+----------------+-----------------------------+-------------------------------------------------+
+| Login ID                   | Role           | Authorized location / scope | Project access                                  |
++----------------------------+----------------+-----------------------------+-------------------------------------------------+
+| admin1@example.com         | India admin    | India / all four offices    | All active projects within authorized office(s) |
++----------------------------+----------------+-----------------------------+-------------------------------------------------+
+| admin2@example.com         | Location admin | Noida                       | All active projects within authorized office(s) |
++----------------------------+----------------+-----------------------------+-------------------------------------------------+
+| admin3@example.com         | Location admin | Bengaluru                   | All active projects within authorized office(s) |
++----------------------------+----------------+-----------------------------+-------------------------------------------------+
+| admin4@example.com         | Location admin | Chennai                     | All active projects within authorized office(s) |
++----------------------------+----------------+-----------------------------+-------------------------------------------------+
+| admin5@example.com         | Location admin | Pune                        | All active projects within authorized office(s) |
++----------------------------+----------------+-----------------------------+-------------------------------------------------+
+| platformadmin1@example.com | Platform admin | Platform / all offices      | All active projects within authorized office(s) |
++----------------------------+----------------+-----------------------------+-------------------------------------------------+
+
+Office-wide project/area creation requires its current management capability. Add user creates only permitted reception/admin roles. Guard
+creation is on Guard assignments.
+
+PROJECT LEAD ACCOUNTS
+---------------------
+
++------------------------+-------------------------------------+--------------------------------------+--------------------+
+| Login ID               | Admin project / offices             | Employee host assignments            | Other current role |
++------------------------+-------------------------------------+--------------------------------------+--------------------+
+| employee19@example.com | Project 1 @ Bengaluru, Chennai,     | Project 1 @ Noida; Project 2 @ Noida | -                  |
+|                        | Noida, Pune                         |                                      |                    |
++------------------------+-------------------------------------+--------------------------------------+--------------------+
+| employee20@example.com | Project 3 @ Chennai, Noida          | Project 3 @ Noida                    | -                  |
++------------------------+-------------------------------------+--------------------------------------+--------------------+
+| employee21@example.com | Project 4 @ Bengaluru               | Project 4 @ Bengaluru                | Reception @ Noida  |
++------------------------+-------------------------------------+--------------------------------------+--------------------+
+| employee22@example.com | Project 5 @ Chennai, Pune           | Project 5 @ Pune                     | -                  |
++------------------------+-------------------------------------+--------------------------------------+--------------------+
+| employee23@example.com | Project 6 @ Noida, Pune             | Project 1 @ Noida; Project 6 @ Noida | -                  |
++------------------------+-------------------------------------+--------------------------------------+--------------------+
+| employee24@example.com | Project 2 @ Bengaluru, Noida, Pune  | Project 2 @ Bengaluru                | -                  |
++------------------------+-------------------------------------+--------------------------------------+--------------------+
+
+Project-lead administration scope is separate from employee host eligibility. For example Employee 19 administers Project 1 wherever it is
+available, while its employee host assignments are Noida Projects 1 and 2. Employee 20 has primary office Bengaluru but a verified employee
+assignment to Project 3 at Noida. Employee 21 currently also has a Noida Reception grant; use a dedicated reception account for the cleanest
+role-by-role demo.
+
+GUARD DUTY ASSIGNMENTS
+----------------------
+
++---------------------+--------------+-----------+----------------------+--------------------+
+| Login ID            | Name         | Office    | Project duties       | Common-area duties |
++---------------------+--------------+-----------+----------------------+--------------------+
+| demo-noida-security | Rakesh Kumar | Noida     | Project 1            | -                  |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd1@example.com  | Guard 1      | Noida     | Project 1, Project 2 | Cafeteria, Lobby   |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd2@example.com  | Guard 2      | Bengaluru | Project 2            | Lobby              |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd3@example.com  | Guard 3      | Chennai   | Project 1            | Cafeteria          |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd4@example.com  | Guard 4      | Pune      | Project 1, Project 2 | Cafeteria, Lobby   |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd5@example.com  | Guard 5      | Noida     | Project 1, Project 3 | -                  |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd6@example.com  | Guard 6      | Noida     | Project 6            | -                  |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd7@example.com  | Guard 7      | Bengaluru | Project 1, Project 4 | -                  |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd8@example.com  | Guard 8      | Bengaluru | Project 2, Project 4 | -                  |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd9@example.com  | Guard 9      | Chennai   | Project 1, Project 3 | -                  |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd10@example.com | Guard 10     | Chennai   | Project 5            | -                  |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd11@example.com | Guard 11     | Pune      | Project 2, Project 5 | -                  |
++---------------------+--------------+-----------+----------------------+--------------------+
+| gaurd12@example.com | Guard 12     | Pune      | Project 5, Project 6 | -                  |
++---------------------+--------------+-----------+----------------------+--------------------+
+
+Project duties allow project entry/exit subject to current pass/approval and eligibility. Common-area duties allow verification only. The same
+guard may hold both duty types.
+
+RECEPTION ACCOUNTS
+------------------
+
++------------------------+-------------+-----------+------------------------------------------+
+| Login ID               | Name        | Office    | Projects covered                         |
++------------------------+-------------+-----------+------------------------------------------+
+| demo-noida-reception   | Pooja Singh | Noida     | Reception workflow for authorized office |
++------------------------+-------------+-----------+------------------------------------------+
+| employee21@example.com | Employee 21 | Noida     | Reception workflow for authorized office |
++------------------------+-------------+-----------+------------------------------------------+
+| reception1@example.com | Reception 1 | Noida     | Reception workflow for authorized office |
++------------------------+-------------+-----------+------------------------------------------+
+| reception2@example.com | Reception 2 | Bengaluru | Reception workflow for authorized office |
++------------------------+-------------+-----------+------------------------------------------+
+| reception3@example.com | Reception 3 | Chennai   | Reception workflow for authorized office |
++------------------------+-------------+-----------+------------------------------------------+
+| reception4@example.com | Reception 4 | Pune      | Reception workflow for authorized office |
++------------------------+-------------+-----------+------------------------------------------+
+
+ALL EMPLOYEE IDENTITIES AND EXACT PROJECT-OFFICE MEMBERSHIP
+-----------------------------------------------------------
+
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| Login ID               | Employee ID | Office(s)               | Project-office assignments           | Additional admin/staff | Status            |
+|                        |             |                         |                                      | role                   |                   |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee1@example.com  | EMP001      | Noida (primary)         | Project 1 @ Noida                    | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee2@example.com  | EMP002      | Noida (primary)         | Project 1 @ Noida; Project 2 @ Noida | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee3@example.com  | EMP003      | Bengaluru (primary)     | Project 2 @ Bengaluru                | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee4@example.com  | EMP004      | Noida (primary)         | Project 1 @ Noida; Project 3 @ Noida | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee5@example.com  | EMP005      | Bengaluru (primary)     | Project 2 @ Bengaluru; Project 4 @   | -                      | Active            |
+|                        |             |                         | Bengaluru                            |                        |                   |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee6@example.com  | EMP006      | Pune (primary)          | Project 1 @ Pune; Project 2 @ Pune   | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee7@example.com  | EMP007      | Chennai (primary)       | Project 3 @ Chennai                  | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee8@example.com  | EMP008      | Bengaluru (primary)     | Project 4 @ Bengaluru                | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee9@example.com  | EMP009      | Chennai (primary)       | Project 1 @ Chennai                  | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee10@example.com | EMP010      | Pune (primary)          | Project 5 @ Pune                     | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee11@example.com | EMP011      | Bengaluru (primary)     | Project 1 @ Bengaluru                | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee12@example.com | EMP012      | Chennai (primary)       | Project 5 @ Chennai                  | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee13@example.com | EMP013      | Pune (primary)          | Project 6 @ Pune                     | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee14@example.com | EMP014      | Noida (primary)         | Project 1 @ Noida; Project 6 @ Noida | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee15@example.com | EMP015      | -                       | -                                    | -                      | Inactive - do not |
+|                        |             |                         |                                      |                        | use for normal    |
+|                        |             |                         |                                      |                        | demo              |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee16@example.com | EMP016      | Pune (primary)          | Project 5 @ Pune                     | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee17@example.com | EMP017      | Bengaluru (primary)     | Project 4 @ Bengaluru                | -                      | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee18@example.com | EMP018      | Noida (primary)         | Project 1 @ Noida; Project 2 @       | -                      | Active            |
+|                        |             |                         | Noida; Project 3 @ Noida; Project 6  |                        |                   |
+|                        |             |                         | @ Noida                              |                        |                   |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee19@example.com | EMP019      | Noida (primary)         | Project 1 @ Noida; Project 2 @ Noida | Project lead           | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee20@example.com | EMP020      | Bengaluru (primary),    | Project 3 @ Noida                    | Project lead           | Active            |
+|                        |             | Noida                   |                                      |                        |                   |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee21@example.com | EMP021      | Bengaluru (primary)     | Project 4 @ Bengaluru                | Project lead,          | Active            |
+|                        |             |                         |                                      | Reception              |                   |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee22@example.com | EMP022      | Pune (primary)          | Project 5 @ Pune                     | Project lead           | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee23@example.com | EMP023      | Noida (primary)         | Project 1 @ Noida; Project 6 @ Noida | Project lead           | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+| employee24@example.com | EMP024      | Bengaluru (primary)     | Project 2 @ Bengaluru                | Project lead           | Active            |
++------------------------+-------------+-------------------------+--------------------------------------+------------------------+-------------------+
+
+PROJECT AVAILABILITY BY OFFICE
+------------------------------
+
+- Digital Workplace Transformation (DWT-NOI): Noida. Local project created through Add; no lead, employee membership or guard duty is implicitly
+granted.
+- Project 1 (DEMO-PRJ-001): Bengaluru, Chennai, Noida, Pune.
+- Project 2 (DEMO-PRJ-002): Bengaluru, Noida, Pune.
+- Project 3 (DEMO-PRJ-003): Chennai, Noida.
+- Project 4 (DEMO-PRJ-004): Bengaluru.
+- Project 5 (DEMO-PRJ-005): Chennai, Pune.
+- Project 6 (DEMO-PRJ-006): Noida, Pune.
+
+INACTIVE IDS - AVOID DURING THE PRESENTATION
+--------------------------------------------
+
++------------------------+--------------------------------+
+| Login ID               | Status                         |
++------------------------+--------------------------------+
+| admin6@example.com     | Disabled / no active demo role |
++------------------------+--------------------------------+
+| admin7@example.com     | Disabled / no active demo role |
++------------------------+--------------------------------+
+| admin8@example.com     | Disabled / no active demo role |
++------------------------+--------------------------------+
+| admin9@example.com     | Disabled / no active demo role |
++------------------------+--------------------------------+
+| admin10@example.com    | Disabled / no active demo role |
++------------------------+--------------------------------+
+| admin11@example.com    | Disabled / no active demo role |
++------------------------+--------------------------------+
+| employee15@example.com | Disabled / no active demo role |
++------------------------+--------------------------------+
+
+SCOPE REMINDER
+--------------
+
+- Platform/India administrators: select the office before demonstrating its records.
+- Location administrators: work within their assigned office.
+- Project administrators: manage assigned projects/leads and existing guard duties; cannot create sibling projects, office common areas or new
+local guard accounts.
+- Guard duty, employee membership, project administration and reception scope are separate assignments. A project-wide lead grant does not
+automatically give employee host membership in every office.
+- Presentation records are retained: Noida / Project 1 has Aarav, Meera, Rohan, Ananya, Kabir, Priya, Sana, Dev, Ishita and Aditya. DWT-NOI is a
+newly created catalogue project; choose Project 1 when showing populated visitor history.
+
+
+FORMAT NOTE: Open this file using a monospaced font such as Consolas in Notepad.
+Source: docs/59_Presentation_Account_Role_Assignment_List.md
+Account snapshot: 23 October 2026, 11:53:49 AM IST. This is a format export, not a fresh account audit.
