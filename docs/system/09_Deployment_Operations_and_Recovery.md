@@ -1,6 +1,6 @@
 # 09. Deployment, operations and recovery
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
 
 ## Target and boundary
 Agreed target: private Ubuntu Server 24.04 LTS x86-64 VM for UI/API, worker, SQL Server Express and private media, with protected off-VM backups. This is intended topology, not deployed evidence or a fresh vendor compatibility/licensing assessment. Windows DPAPI-protected files cannot simply be copied to Linux and assumed operational.

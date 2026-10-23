@@ -1,6 +1,6 @@
 # 05. HTTP and API reference
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
 
 Current additions: `POST /api/admin/register` applies authorized date ranges, field filters, sorting and pagination in SQL; the UI exports the complete selected result as an Excel workbook. `POST /api/admin/create-staff` and `/reset-staff-setup` provide scoped local account/setup issuance. `POST /api/staff/setup` inspects/completes the one-time password setup capability. Reception's `POST /api/reception/lookup` searches authorized records across dates, while `/correct-return` requires the current pass/return receipt and a reason. All staff operations retain session/CSRF and current SQL authorization checks; no browser-supplied identity or scope becomes authority.
 

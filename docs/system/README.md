@@ -1,6 +1,6 @@
 # GatePass System Documentation
 
-> Latest local implementation and evidence: [23 October retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md), through migration 085. The 22 October handbook/export and hash snapshot below remain a dated baseline. Current increments include visitor company/devices, admin register/Excel/timelines, reception lookup/return correction and local staff onboarding.
+> Latest local implementation and evidence: [23 October retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md), through migration 087. The 22 October handbook/export and hash snapshot below remain a dated baseline. Current increments include visitor company/devices, admin register/Excel/timelines, reception lookup/return correction local staff onboarding and office-scoped project creation.
 
 Current implementation handbook | 22 October 2026 | Documentation baseline 1.0
 

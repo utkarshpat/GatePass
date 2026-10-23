@@ -2,13 +2,13 @@
 
 ## Current system documentation
 
-For the 23 October 2026 presentation, use the [retained-data walkthrough and fresh verification](docs/55_Presentation_Rehearsal_23_October_2026.md). Current source/database migrations are 001–085; the consolidated 22 October export below is a historical baseline.
+For the 23 October 2026 presentation, use the [retained-data walkthrough and fresh verification](docs/55_Presentation_Rehearsal_23_October_2026.md). Current source/database migrations are 001–087; the consolidated 22 October export below is a historical baseline.
 
 Start with the [consolidated system handbook](docs/system/README.md), dated 22 October 2026. It covers current flows, role/scope rules, architecture, migrations 001-062, APIs, UI/PWA, setup, email, operations, CI and rollout gaps. Earlier phase notes and counts below are historical and must not be read as current readiness claims.
 
 Unified visitor and temporary identity management for Noida, Bengaluru, Chennai and Pune.
 
-**Approach:** DB-first with responsive UX and server-enforced scoped access. Source migrations 001–085 cover the current local implementation. Corporate SSO/directory remain development adapters; business workflows use local SQL and protected media. The 22 October [reception audit](docs/37_Reception_Audit.md) records 376 unit, 55 SQL printing, 23 HTTP/SQL and 12 browser/accessibility cases passed; these are prior local results, not production certification. Organization identity/mail onboarding, full production composition, Linux storage/key adaptation and physical printer acceptance remain pending. See the [current system handbook](docs/system/README.md).
+**Approach:** DB-first with responsive UX and server-enforced scoped access. Source migrations 001–087 cover the current local implementation. Corporate SSO/directory remain development adapters; business workflows use local SQL and protected media. The 22 October [reception audit](docs/37_Reception_Audit.md) records 376 unit, 55 SQL printing, 23 HTTP/SQL and 12 browser/accessibility cases passed; these are prior local results, not production certification. Organization identity/mail onboarding, full production composition, Linux storage/key adaptation and physical printer acceptance remain pending. See the [current system handbook](docs/system/README.md).
 
 **Deployment/budget:** one Ubuntu Server 24.04 LTS x86-64 private VM runs the frontend, API, worker, SQL Server 2025 Express (CU1 or later) and private photo storage. Ubuntu Server and Express do not require a paid runtime licence; application components will avoid mandatory paid services. VM hosting, optional commercial support and existing corporate identity/mail/gateway entitlements are organizational dependencies. Backups/audit export also require protected off-VM organization storage. Windows is not a runtime requirement.
 
@@ -60,7 +60,7 @@ No floors, zones, checkpoint inventory, face recognition, extra identity-proofin
 
 | Path | Contents |
 |---|---|
-| `database/migrations` | SQL baseline, reference seeds, transaction/worker/auth and registration migrations 001–085 |
+| `database/migrations` | SQL baseline, reference seeds, transaction/worker/auth and registration migrations 001–087 |
 | `database/tests` | Rollback constraints and restricted-user/concurrent transaction tests with owned fixture cleanup |
 | `database/validation` | Static/parser checks, actual engine/constraint results, live catalog and scoped comparison evidence |
 | `database/setup` | Local Express schema/constraint validation helper; optional private LocalDB setup |
@@ -117,3 +117,5 @@ Reception now uses independent local staff accounts `reception1@example.com` (No
 
 Local guard test IDs are `gaurd1@example.com` through `gaurd12@example.com`. Run `tools/seed-development-guard-logins.ts` only with explicit development/mock flags after migration 028. It enrolls only the existing synthetic guards with unique random Argon2id passwords, saved under the current user’s protected `%USERPROFILE%\.gatepass\development-logins\guards.json`, outside this source folder. Reruns do not reset passwords, re-enable disabled credentials or restore grants. Guards authenticate through the common staff entry and open `/guard` for assigned projects, QR verification, exact pass/request ID lookup, protected photos, entry/exit and recent scans. See `docs/database/30_Guard_Workspace.md` for SQL boundaries and pending physical camera/reconciliation acceptance. For the current user-authorised manual test run, all active local fixture passwords are `Sopra@123`; the protected inventory reflects this override. Employee fixture emails use `employeeN@example.com`; employee dummy password remains `Sopra@123`. External admin/reception accounts use the separate local staff inventory.
 
+
+Scoped project creation: [Add project and office authorization](docs/56_Scoped_Project_Creation.md), migrations 086–087.

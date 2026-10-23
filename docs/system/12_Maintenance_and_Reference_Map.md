@@ -1,6 +1,6 @@
 # 12. Maintenance and reference map
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
 
 ## Precedence
 This handbook is the consolidated local baseline dated 22 October 2026. Earlier numbered documents are historical increments. Resolve conflict using latest approved requirements, executable source/migrations and applicable current evidence; update the handbook when behavior changes. Historical reports are not current environment attestations.

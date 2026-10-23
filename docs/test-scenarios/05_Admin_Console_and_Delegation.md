@@ -5,7 +5,7 @@
 ## Surface
 - **Routes**: `/admin`
 - **APIs**: `/api/admin/context`, `/api/admin/scope`, `/api/admin/projects`, `/api/admin/leads`, `/api/admin/candidates`, `/api/admin/grant`, `/api/admin/revoke`, `/api/admin/common-duties`, `/api/admin/common-duty`, `/api/admin/assignments`, `/api/admin/guards`, `/api/admin/allocate`, `/api/admin/deallocate`, `/api/admin/subjects`, `/api/admin/roles`, `/api/admin/summary`, `/api/admin/register`, `/api/admin/visits`, `/api/admin/visit-detail`, `/api/admin/audit`, `/api/admin/office-qr`
-- **SQL Procedures**: `gp.GetAdminWorkspaceContext`, `gp.GetAdminConsoleScope`, `gp.ListLeadProjects`, `gp.ListProjectHeads`, `gp.SearchProjectLeadCandidates`, `gp.GrantStaffRole`, `gp.RevokeStaffRole`, `gp.GetCommonDutyAdministration`, `gp.ManageCommonDuty`, `gp.ListAdminGuardAssignments`, `gp.ListAdminGuards`, `gp.AllocateGuard`, `gp.DeallocateGuard`, `gp.SearchStaffSubjects`, `gp.ListStaffRoles`, `gp.GetOperationalSummary`, `gp.ReadAdminVisitRegister`, `gp.ListVisits`, `gp.GetVisitDetail`, `gp.ListScopedAuditEvents`
+- **SQL Procedures**: `gp.GetAdminWorkspaceContext`, `gp.CreateScopedProject`, `gp.GetAdminConsoleScope`, `gp.ListLeadProjects`, `gp.ListProjectHeads`, `gp.SearchProjectLeadCandidates`, `gp.GrantStaffRole`, `gp.RevokeStaffRole`, `gp.GetCommonDutyAdministration`, `gp.ManageCommonDuty`, `gp.ListAdminGuardAssignments`, `gp.ListAdminGuards`, `gp.AllocateGuard`, `gp.DeallocateGuard`, `gp.SearchStaffSubjects`, `gp.ListStaffRoles`, `gp.GetOperationalSummary`, `gp.ReadAdminVisitRegister`, `gp.ListVisits`, `gp.GetVisitDetail`, `gp.ListScopedAuditEvents`
 
 ---
 
@@ -89,3 +89,7 @@
   2. Filter by date range and click **Filter log**; narrow the loaded events with **Result** (Success / Denied / Error) and the search box.
 - **Expected Result**:
   - Lists redacted audit events as log lines grouped by day: IST time, result level, action, actor, target and reason, within the admin's permitted scope without leaking raw `MetadataJson` or session material.
+
+### TC-ADM-10: Add project within the authorized office
+
+Open **Projects & leads → Add project** as a location admin. Confirm the fixed office, enter a realistic name/code/reason and create. Verify the card and project selectors refresh, reload persists it and lead/guard assignment works. A duplicate code must conflict; a failed transport retry must reuse its key. A forged foreign-office request and a project admin must receive 403; permission loss must close the modal and clear its data. See [implementation and tests](../56_Scoped_Project_Creation.md).

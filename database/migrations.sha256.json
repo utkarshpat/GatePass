@@ -83,5 +83,7 @@
   "082_local_account_authority.sql": "e473934f8e9856e59b2211857bca5a43c1eb528b6cc2471c739a636b6362972d",
   "083_staff_login_hyphens.sql": "c66e9656ac7baf73d3d45150bddb1dffcad7e59ceb1c84e9686cc0020f58bd67",
   "084_bounded_device_canonicalization.sql": "4eab8817baa68e0e5054735bcad1f5a0c43d3a0f5951d6b72f70ea7d0d241486",
-  "085_audit_window_overflow_guard.sql": "eba2c630e7879678c49c8b77817fdea17f3f542e5bf9a1bba5d356ed2f9abfcb"
+  "085_audit_window_overflow_guard.sql": "eba2c630e7879678c49c8b77817fdea17f3f542e5bf9a1bba5d356ed2f9abfcb",
+  "086_scoped_project_creation.sql": "2c6097ac67a9f13f50b71c427bfeb342cb4b280f11691d1779ddbc1d6f9a1888",
+  "087_project_code_hyphens.sql": "33065ba31a627c1a9f9b1992cff9f7e0adc06af6f976e507c7fea51c1c0fa6db"
 }

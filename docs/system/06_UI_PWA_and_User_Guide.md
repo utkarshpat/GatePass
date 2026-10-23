@@ -1,6 +1,6 @@
 # 06. UI, PWA and user guide
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
 
 Current administration has seven modules, project lead previews, guard/project roster grouping, a separate allocation dialog, date/field-filtered visit register with Excel export and visit timelines, office QR standees and filterable audit events. Local staff can be created and receive a one-use password setup link. Reception offers all-date lookup/QR search, device confirmation on final pass return and a reasoned correction for mistaken returns. Visitor company and devices remain optional and per person. See the dated walkthrough for retained names and the 23 October presentation sequence.
 

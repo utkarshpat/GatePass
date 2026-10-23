@@ -168,6 +168,7 @@
           <p id="projects-summary" class="hint"></p>
         </div>
         <div class="page-head-actions">
+          <button type="button" class="primary" id="add-project-open" hidden>Add project</button>
           <div id="common-actions" class="page-head-group" hidden>
             <button type="button" class="secondary" id="common-duties-open">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -718,6 +719,18 @@
 </dialog>
 
 <dialog id="add-staff-dialog" class="app-dialog" aria-labelledby="add-staff-title"><div class="dialog-heading"><h2 id="add-staff-title">Add staff</h2><button id="close-add-staff" class="quiet dialog-close-btn" type="button" aria-label="Close account creation">×</button></div><div class="dialog-body"><form id="add-staff-form"><p class="hint">Create an external/local account. Corporate employees use their existing SSO identity under Find staff.</p><div class="admin-form-grid"><div class="field"><label for="new-staff-name">Full name</label><input id="new-staff-name" maxlength="200" required autocomplete="off"></div><div class="field"><label for="new-staff-login">Login / Staff ID</label><input id="new-staff-login" minlength="3" maxlength="64" required autocomplete="off" autocapitalize="none" placeholder="sec-noi-001"></div><div class="field"><label for="new-staff-role">Role</label><select id="new-staff-role" required></select></div></div><p id="new-staff-scope" class="hint"></p><fieldset id="new-staff-capabilities" class="capabilities-fieldset"><legend>Permissions</legend></fieldset><label id="new-guard-project-label" hidden><input id="new-guard-project" type="checkbox"> Assign to the selected project now</label><div class="field"><label for="new-staff-reason">Reason for adding this account</label><input id="new-staff-reason" maxlength="300" required></div><button id="new-staff-submit" type="submit" class="primary">Create account</button></form><form id="staff-reset-form" hidden><p id="reset-staff-copy"></p><div class="field"><label for="staff-reset-reason">Reason for password reset</label><input id="staff-reset-reason" maxlength="300" required></div><button id="staff-reset-submit" type="submit" class="primary">Generate new setup link</button></form><p id="new-staff-status" role="status"></p><section id="new-staff-result" hidden><h3>Account ready for password setup</h3><p id="new-staff-summary"></p><p id="new-staff-expiry" class="hint"></p><label for="new-staff-link">One-time password setup link</label><input id="new-staff-link" readonly autocomplete="off"><button id="copy-staff-setup" class="secondary" type="button">Copy setup link</button><p class="hint">Share this link directly with the staff member. It can be used once, within 15 minutes. They choose their own password; no email is sent automatically.</p></section></div></dialog>
+<dialog id="add-project-dialog" class="app-dialog" aria-labelledby="add-project-title">
+  <div class="dialog-heading"><h2 id="add-project-title">Add project</h2><button id="close-add-project" class="quiet dialog-close-btn" type="button" aria-label="Close project creation">×</button></div>
+  <div class="dialog-body"><form id="add-project-form">
+    <p id="new-project-office" class="hint"></p>
+    <div class="field"><label for="new-project-name">Project name</label><input id="new-project-name" maxlength="200" required autocomplete="off" placeholder="Digital Workplace Transformation"></div>
+    <div class="field"><label for="new-project-code">Project code</label><input id="new-project-code" minlength="3" maxlength="64" pattern="[A-Z0-9][A-Z0-9._\-]{2,63}" required autocomplete="off" autocapitalize="characters" aria-describedby="new-project-code-help" placeholder="DWT-NOI"><p id="new-project-code-help" class="hint">Use a unique code with uppercase letters, numbers, dots, hyphens or underscores.</p></div>
+    <div class="field"><label for="new-project-reason">Reason for adding this project</label><input id="new-project-reason" maxlength="300" required autocomplete="off"></div>
+    <p class="hint">After creating the project, assign its project leads and guard duties. Employee host eligibility continues to follow verified directory assignments.</p>
+    <p id="new-project-status" role="status"></p>
+    <button id="new-project-submit" type="submit" class="primary">Create project</button>
+  </form></div>
+</dialog>
 <script nonce="__NONCE__">__SCRIPT__</script>
 </body>
 </html>

@@ -16,7 +16,7 @@ INSERT gp.GuardCredentials(UserId,LoginId,EncodedPasswordHash,MustChangePassword
 SELECT @id,@login,EncodedPasswordHash,0,SYSUTCDATETIME() FROM gp.GuardCredentials WHERE LoginId='admin2@example.com';
 COMMIT;
 '@ @{id=[guid]$admin.UserId;grant=[long]$admin.GrantId;code=$f.prefix;login=$login}
-  @{login=$login;pair=[string]$f.projectLocationId;project=[string]$f.projectId;prefix=$f.prefix;host=$f.actors.Where({$_.Label -eq 'OTHERHOST'})[0].UserId;guard=$f.actors.Where({$_.Label -eq 'GUARD2'})[0].UserId}|ConvertTo-Json -Compress
+  @{login=$login;otherLocationId=$f.otherLocationId;pair=[string]$f.projectLocationId;project=[string]$f.projectId;prefix=$f.prefix;host=$f.actors.Where({$_.Label -eq 'OTHERHOST'})[0].UserId;guard=$f.actors.Where({$_.Label -eq 'GUARD2'})[0].UserId}|ConvertTo-Json -Compress
  }else{
   Invoke-GatePassNonQuery $db @'
 DECLARE @prefix varchar(30)='GP02-'+LEFT(REPLACE(CONVERT(varchar(36),@run),'-',''),20);

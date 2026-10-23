@@ -18,6 +18,10 @@ Run `npm.cmd run dev` and open `http://localhost:8443`. The live rehearsal uses 
 
 These are synthetic development credentials. Use separate browser profiles/private windows for each role. Do not replace a role's cookies in the middle of a workflow.
 
+## Add a project in the authorized office
+
+In **Projects & leads**, use **Add project** to create a project in the selected authorized office. The retained Noida project is **Digital Workplace Transformation · DWT-NOI**. Location admins cannot create projects in another office; project admins cannot create sibling projects. See [scoped project creation](56_Scoped_Project_Creation.md) for the permission boundary, migrations 086–087 and regression coverage.
+
 ## Retained presentation dataset
 
 Names, companies, phone numbers and `example.com` addresses are fictional demonstration data. Camera frames are synthetic; real camera hardware and physical printing are separate acceptance checks.

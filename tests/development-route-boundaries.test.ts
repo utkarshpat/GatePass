@@ -25,7 +25,7 @@ function fixture() {
  const staff = { session: (...args: any[]) => { calls.push({ name: 'session', args }); return session; }, verify: async () => state.valid };
  const sso = { verify: async () => state.valid };
  const visit = { visitRequestId: id, accessPassId: 'pass-one', requestType: 'DIGITAL_ID' };
- const reads = { read: record('admin-read', { ok: true }), detail: record('read-detail', visit), workContexts: record('contexts', []) };
+ const reads = { createProject: record('create-project', {}), read: record('admin-read', { ok: true }), detail: record('read-detail', visit), workContexts: record('contexts', []) };
  const duties = { administration: record('administration', []), manage: record('manage', { ok: true }), duties: record('duties', []), visitors: record('visitors', []), movement: record('movement', { ok: true }), detail: async (...args: any[]) => { calls.push({ name: 'duty-detail', args }); detailCalls++; return { visit: state.visit ? { ...visit, accessPassId: state.changed && detailCalls > 1 ? 'replacement-pass' : visit.accessPassId } : null }; } };
  const workspace = { read: record('workspace', {}), lookup: record('lookup', id) };
  const photos = { read: record('photo', { mimeType: 'image/jpeg', bytes: photo }) };
@@ -53,7 +53,7 @@ for (const kind of ['admin', 'guard'] as const) {
 }
 test('admin dispatch preserves authenticated identity and limits grant roles/scopes', async () => {
  const f = fixture();
- for (const [action, name] of [['context', 'admin-read'], ['projects', 'admin-read'], ['leads', 'admin-read'], ['candidates', 'admin-read'], ['common-duties', 'administration'], ['common-duty', 'manage'], ['revoke', 'revoke'], ['grant', 'grant']]) {
+ for (const [action, name] of [['create-project', 'create-project'], ['context', 'admin-read'], ['projects', 'admin-read'], ['leads', 'admin-read'], ['candidates', 'admin-read'], ['common-duties', 'administration'], ['common-duty', 'manage'], ['revoke', 'revoke'], ['grant', 'grant']]) {
   const body = action === 'grant' ? { roleCode: 'PROJECT_ADMIN', scopeType: 'PROJECT_LOCATION' } : { locationId: 1 };
   await f.admin.handle(request('/api/admin/' + action, body), response);
   const call = f.calls.findLast(c => c.name === name)!;

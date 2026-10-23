@@ -1,6 +1,6 @@
 # 02. Identity, roles and access
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–085. The original 22 October export and snapshot remain historical.
+> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
 
 Local staff onboarding requires both permitted role delegation and staff credential-management authority. Project administrators cannot create local password accounts; internal project leads remain directory employees. New local accounts use a one-use, 15-minute setup link and the existing 15–128 character password policy. Reset revokes prior credentials/sessions/setup links. Admin audit metadata displays safe actor/target/role/scope/reason fields and excludes password/setup-token material. See [the onboarding contract](../54_Local_Staff_Onboarding_And_Audit.md).
 

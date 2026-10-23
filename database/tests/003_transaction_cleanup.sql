@@ -35,7 +35,7 @@ DELETE FROM gp.AccessPasses WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE FROM gp.TemporaryIdSlots WHERE VisitRequestId IN(SELECT Id FROM @visits);
 DELETE gp.SecurityAuditEvents WHERE TargetType='NOTIFICATION' AND TargetReference IN(SELECT CONVERT(varchar(100),Id) FROM @notifications);
 DELETE FROM gp.SecurityAuditEvents WHERE ActorUserId IN(SELECT Id FROM @users)
-    OR ProjectLocationId IN(SELECT pl.ProjectLocationId FROM gp.ProjectLocations pl JOIN gp.Projects p ON p.ProjectId=pl.ProjectId WHERE p.ExternalProjectCode IN(@prefix+'-A',@prefix+'-B'))
+    OR ProjectLocationId IN(SELECT pl.ProjectLocationId FROM gp.ProjectLocations pl JOIN gp.Projects p ON p.ProjectId=pl.ProjectId WHERE p.ExternalProjectCode IN(@prefix+'-A',@prefix+'-B',@prefix+'-C'))
     OR TargetReference IN(SELECT CONVERT(varchar(36),Id) FROM @visits)
     OR (ActionCode IN('GUARD_DEALLOCATED','GUARD_DEALLOCATION_FAILED')
         AND TargetReference IN(SELECT CONVERT(varchar(100),Id) FROM @assignments));
@@ -54,8 +54,8 @@ DELETE FROM gp.EmployeeProjectMemberships WHERE EmployeeId IN(SELECT EmployeeId 
 DELETE FROM gp.Employees WHERE UserId IN(SELECT Id FROM @users);
 DELETE FROM gp.Sessions WHERE UserId IN(SELECT Id FROM @users);
 DELETE FROM gp.Users WHERE UserId IN(SELECT Id FROM @users);
-DELETE FROM gp.ProjectLocations WHERE ProjectId IN(SELECT ProjectId FROM gp.Projects WHERE ExternalProjectCode IN(@prefix+'-A',@prefix+'-B'));
-DELETE FROM gp.Projects WHERE ExternalProjectCode IN(@prefix+'-A',@prefix+'-B');
+DELETE FROM gp.ProjectLocations WHERE ProjectId IN(SELECT ProjectId FROM gp.Projects WHERE ExternalProjectCode IN(@prefix+'-A',@prefix+'-B',@prefix+'-C'));
+DELETE FROM gp.Projects WHERE ExternalProjectCode IN(@prefix+'-A',@prefix+'-B',@prefix+'-C');
 IF EXISTS(SELECT 1 FROM gp.Users WHERE UserId IN(SELECT Id FROM @users))
  OR EXISTS(SELECT 1 FROM gp.VisitRequests WHERE VisitRequestId IN(SELECT Id FROM @visits))
  OR EXISTS(SELECT 1 FROM gp.SecurityAuditEvents WHERE ActorUserId IN(SELECT Id FROM @users)
