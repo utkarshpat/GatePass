@@ -17,14 +17,14 @@ for(const width of [390,1366])test(`project creation is bound to authorized offi
   }
   return reply({leads:[],cursor:null});
  });
- await page.goto('/admin');await page.getByRole('button',{name:'Add project',exact:true}).click();await expect(page.locator('#new-project-office')).toHaveText('Location: Noida · Your authorized office scope');await expect(page.locator('#add-project-dialog select')).toHaveCount(0);
+ await page.goto('/admin');await page.getByRole('button',{name:'Add',exact:true}).click();await expect(page.locator('#new-project-office')).toHaveText('Location: Noida · Your authorized office scope');await expect(page.locator('#add-project-dialog select')).toHaveCount(1);
  await page.getByLabel('Project name',{exact:true}).fill('Digital Workplace Transformation');await page.getByLabel('Project code',{exact:true}).fill('dwt-noi');await page.getByLabel('Reason for adding this project',{exact:true}).fill('New workplace modernisation programme');
  expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await page.getByRole('button',{name:'Create project',exact:true}).click();await expect(page.locator('#new-project-status')).toContainText('Unable to complete');await page.getByRole('button',{name:'Create project',exact:true}).click();await expect(page.locator('#add-project-dialog')).toBeHidden();await expect(page.locator('#projects')).toContainText('Digital Workplace Transformation');await expect(page.locator('#console-project option[value="14"]')).toHaveCount(1);
  expect(writes).toHaveLength(2);expect(writes[0]).toEqual(writes[1]);expect(writes[0]).toMatchObject({locationId:1,projectCode:'DWT-NOI'});expect(Object.keys(writes[0]).sort()).toEqual(['clientKey','locationId','projectCode','projectName','reason']);
  await page.screenshot({path:`output/add-project-${width}.png`});
  // Permission revocation must remove the modal and clear all previously authorized data.
- await page.getByRole('button',{name:'Add project',exact:true}).click();deny=true;await page.getByLabel('Project name',{exact:true}).fill('Denied project');await page.getByLabel('Project code',{exact:true}).fill('DENIED-NOI');await page.getByLabel('Reason for adding this project',{exact:true}).fill('Scope changed');await page.getByRole('button',{name:'Create project',exact:true}).click();await expect(page.locator('#add-project-dialog')).toBeHidden();await expect(page.locator('#add-project-open')).toBeHidden();await expect(page.locator('#projects')).toBeEmpty();
+ await page.getByRole('button',{name:'Add',exact:true}).click();deny=true;await page.getByLabel('Project name',{exact:true}).fill('Denied project');await page.getByLabel('Project code',{exact:true}).fill('DENIED-NOI');await page.getByLabel('Reason for adding this project',{exact:true}).fill('Scope changed');await page.getByRole('button',{name:'Create project',exact:true}).click();await expect(page.locator('#add-project-dialog')).toBeHidden();await expect(page.locator('#add-project-open')).toBeHidden();await expect(page.locator('#projects')).toBeEmpty();
 });
 
 test('project-scoped admin cannot open sibling project creation',async({page,context})=>{

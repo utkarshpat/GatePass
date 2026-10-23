@@ -119,3 +119,7 @@ Local guard test IDs are `gaurd1@example.com` through `gaurd12@example.com`. Run
 
 
 Scoped project creation: [Add project and office authorization](docs/56_Scoped_Project_Creation.md), migrations 086–087.
+
+Unified admin creation and assignment cards: [Projects and common areas](docs/57_Unified_Projects_And_Common_Areas.md).
+
+Visit register loading/sorting and platform scrollbar theme: [behaviour and verification](docs/58_Visit_Register_Loading_And_Theme_Scrollbars.md).

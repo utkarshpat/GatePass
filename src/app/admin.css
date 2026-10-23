@@ -1430,14 +1430,10 @@
       border-bottom: var(--gp-border-width) solid var(--gp-border);
       padding: var(--gp-space-2) var(--gp-space-3);
       gap: var(--gp-space-2);
-      scrollbar-width: none;
       position: sticky;
       top: 0;
       z-index: 15;
       background: var(--gp-surface);
-    }
-    .admin-nav::-webkit-scrollbar {
-      display: none;
     }
     .admin-nav-group {
       flex: 0 0 auto;
@@ -1831,3 +1827,8 @@
 #new-staff-result{padding:16px;border:1px solid var(--border,#d8dfeb);border-radius:12px;overflow-wrap:anywhere}
 #new-staff-link{width:100%;box-sizing:border-box;margin:8px 0 16px}
 #add-staff-dialog .field input,#add-staff-dialog .field select{width:100%;box-sizing:border-box}
+
+.workspace-kind { display: block; margin-bottom: .35rem; color: var(--gp-text-muted); font-size: var(--gp-text-xs); font-weight: var(--gp-weight-semibold); }
+.area-card .project-leads-strip .lead-names { white-space: normal; overflow-wrap: anywhere; }
+
+.register-notice { padding: var(--gp-space-8) var(--gp-space-4); text-align: center; color: var(--gp-text-muted); white-space: normal; }

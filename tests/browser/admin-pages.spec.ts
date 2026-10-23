@@ -25,7 +25,7 @@ test('admin pages show scope controls only where they apply, roster, visit timel
 
  await page.locator('[data-admin-view="projects"]').click();
  await expect(page.locator('#console-scope')).toBeHidden();await expect(page.locator('#admin-projects #refresh')).toBeVisible();
- await expect(page.locator('#common-duties-open')).toBeVisible();await expect(page.locator('#common-area-new')).toBeVisible();
+ await expect(page.locator('#add-project-open')).toBeVisible();
  await expect(page.locator('#projects .project-card').filter({hasText:'Project Alpha'})).toContainText('Lead One');
  await expect(page.locator('#projects .project-card').filter({hasText:'Project Beta'})).toContainText('No project lead assigned');
  await page.locator('#project-search').fill('beta');await expect(page.locator('#projects .project-card')).toHaveCount(1);await page.locator('#project-search').fill('');

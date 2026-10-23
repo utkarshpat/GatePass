@@ -63,7 +63,7 @@
       </button>
       <button type="button" hidden data-admin-view="projects">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 7h18v14H3zM8 7V3h8v4"/></svg>
-        <span>Projects & leads</span>
+        <span>Projects & areas</span>
       </button>
       <button type="button" hidden data-admin-view="staff">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M20 8v6M17 11h6"/></svg>
@@ -161,34 +161,25 @@
     </section>
 
     <!-- 2. Projects & Leads Section -->
-    <section id="admin-projects" aria-label="Projects and leads" hidden>
+    <section id="admin-projects" aria-label="Projects and common areas" hidden>
       <div class="page-head">
         <div class="page-head-copy">
-          <h2>Projects &amp; leads</h2>
+          <h2>Projects &amp; areas</h2>
           <p id="projects-summary" class="hint"></p>
         </div>
         <div class="page-head-actions">
-          <button type="button" class="primary" id="add-project-open" hidden>Add project</button>
-          <div id="common-actions" class="page-head-group" hidden>
-            <button type="button" class="secondary" id="common-duties-open">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              <span>Common areas</span>
-            </button>
-            <button type="button" class="primary" id="common-area-new">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-              <span>Add common area</span>
-            </button>
-          </div>
+          <button type="button" class="primary" id="add-project-open" hidden><span aria-hidden="true">+</span> Add</button>
           <div class="refresh-slot" data-refresh-slot></div>
         </div>
       </div>
       <div class="list-toolbar">
         <div class="search-box">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <label class="sr-only" for="project-search">Search projects</label>
-          <input id="project-search" type="search" maxlength="80" autocomplete="off" placeholder="Search projects by name or code">
+          <label class="sr-only" for="project-search">Search projects and areas</label>
+          <input id="project-search" type="search" maxlength="80" autocomplete="off" placeholder="Search projects and areas by name or code">
         </div>
       </div>
+      <p id="common-catalog-status" class="hint" role="status"></p>
       <div id="projects" class="project-grid"></div>
       <button type="button" class="secondary load-more-btn" id="more-projects" hidden>Load more projects</button>
     </section>
@@ -577,7 +568,7 @@
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 21h18M6 21V3h12v18M9 7h6M9 11h6M10 21v-5h4v5"/></svg>
       <div>
         <h2 id="common-title">Common areas</h2>
-        <span class="subtext-muted">Manage common areas and duty allocations</span>
+        <span class="subtext-muted">Manage guards assigned to this common area</span>
       </div>
     </div>
     <button id="common-close" type="button" class="quiet dialog-close-btn" aria-label="Close common areas">✕</button>
@@ -588,8 +579,7 @@
     <!-- Segmented nav inside modal -->
     <div class="dialog-segmented-nav" role="tablist" aria-label="Common Area Views">
       <button type="button" class="dialog-tab-btn active" data-common-tab="duties" role="tab" aria-selected="true">Assigned Guards</button>
-      <button type="button" class="dialog-tab-btn" data-common-tab="assign" role="tab" aria-selected="false">Assign Duty</button>
-      <button type="button" class="dialog-tab-btn" data-common-tab="create" role="tab" aria-selected="false">New Area</button>
+      <button type="button" class="dialog-tab-btn" data-common-tab="assign" role="tab" aria-selected="false">Assign guard</button>
     </div>
 
     <!-- Tab 1: Assigned guards -->
@@ -616,23 +606,7 @@
         <input id="common-assign-reason" maxlength="300" placeholder="e.g. Reception patrol or gate duty" required>
       </div>
       <div class="dialog-actions">
-        <button id="common-assign-button" type="submit" class="primary" disabled>Assign duty</button>
-      </div>
-    </form>
-
-    <!-- Tab 3: New common area -->
-    <form id="common-create" class="common-tab-content" hidden>
-      <h3>Create new common area</h3>
-      <div class="field">
-        <label for="common-name">Area name</label>
-        <input id="common-name" maxlength="100" placeholder="e.g. Main Lobby, Cafeteria, North Gate" required>
-      </div>
-      <div class="field">
-        <label for="common-create-reason">Reason</label>
-        <input id="common-create-reason" maxlength="300" placeholder="e.g. Facility security zoning" required>
-      </div>
-      <div class="dialog-actions">
-        <button type="submit" class="primary">Create area</button>
+        <button id="common-assign-button" type="submit" class="primary" disabled>Assign guard</button>
       </div>
     </form>
 
@@ -720,13 +694,14 @@
 
 <dialog id="add-staff-dialog" class="app-dialog" aria-labelledby="add-staff-title"><div class="dialog-heading"><h2 id="add-staff-title">Add staff</h2><button id="close-add-staff" class="quiet dialog-close-btn" type="button" aria-label="Close account creation">×</button></div><div class="dialog-body"><form id="add-staff-form"><p class="hint">Create an external/local account. Corporate employees use their existing SSO identity under Find staff.</p><div class="admin-form-grid"><div class="field"><label for="new-staff-name">Full name</label><input id="new-staff-name" maxlength="200" required autocomplete="off"></div><div class="field"><label for="new-staff-login">Login / Staff ID</label><input id="new-staff-login" minlength="3" maxlength="64" required autocomplete="off" autocapitalize="none" placeholder="sec-noi-001"></div><div class="field"><label for="new-staff-role">Role</label><select id="new-staff-role" required></select></div></div><p id="new-staff-scope" class="hint"></p><fieldset id="new-staff-capabilities" class="capabilities-fieldset"><legend>Permissions</legend></fieldset><label id="new-guard-project-label" hidden><input id="new-guard-project" type="checkbox"> Assign to the selected project now</label><div class="field"><label for="new-staff-reason">Reason for adding this account</label><input id="new-staff-reason" maxlength="300" required></div><button id="new-staff-submit" type="submit" class="primary">Create account</button></form><form id="staff-reset-form" hidden><p id="reset-staff-copy"></p><div class="field"><label for="staff-reset-reason">Reason for password reset</label><input id="staff-reset-reason" maxlength="300" required></div><button id="staff-reset-submit" type="submit" class="primary">Generate new setup link</button></form><p id="new-staff-status" role="status"></p><section id="new-staff-result" hidden><h3>Account ready for password setup</h3><p id="new-staff-summary"></p><p id="new-staff-expiry" class="hint"></p><label for="new-staff-link">One-time password setup link</label><input id="new-staff-link" readonly autocomplete="off"><button id="copy-staff-setup" class="secondary" type="button">Copy setup link</button><p class="hint">Share this link directly with the staff member. It can be used once, within 15 minutes. They choose their own password; no email is sent automatically.</p></section></div></dialog>
 <dialog id="add-project-dialog" class="app-dialog" aria-labelledby="add-project-title">
-  <div class="dialog-heading"><h2 id="add-project-title">Add project</h2><button id="close-add-project" class="quiet dialog-close-btn" type="button" aria-label="Close project creation">×</button></div>
+  <div class="dialog-heading"><h2 id="add-project-title">Add project or common area</h2><button id="close-add-project" class="quiet dialog-close-btn" type="button" aria-label="Close creation">×</button></div>
   <div class="dialog-body"><form id="add-project-form">
     <p id="new-project-office" class="hint"></p>
+    <div class="field"><label for="new-workspace-type">Type</label><select id="new-workspace-type" required></select></div>
     <div class="field"><label for="new-project-name">Project name</label><input id="new-project-name" maxlength="200" required autocomplete="off" placeholder="Digital Workplace Transformation"></div>
-    <div class="field"><label for="new-project-code">Project code</label><input id="new-project-code" minlength="3" maxlength="64" pattern="[A-Z0-9][A-Z0-9._\-]{2,63}" required autocomplete="off" autocapitalize="characters" aria-describedby="new-project-code-help" placeholder="DWT-NOI"><p id="new-project-code-help" class="hint">Use a unique code with uppercase letters, numbers, dots, hyphens or underscores.</p></div>
+    <div id="new-project-code-field" class="field"><label for="new-project-code">Project code</label><input id="new-project-code" minlength="3" maxlength="64" pattern="[A-Z0-9][A-Z0-9._\-]{2,63}" required autocomplete="off" autocapitalize="characters" aria-describedby="new-project-code-help" placeholder="DWT-NOI"><p id="new-project-code-help" class="hint">Use a unique code with uppercase letters, numbers, dots, hyphens or underscores.</p></div>
     <div class="field"><label for="new-project-reason">Reason for adding this project</label><input id="new-project-reason" maxlength="300" required autocomplete="off"></div>
-    <p class="hint">After creating the project, assign its project leads and guard duties. Employee host eligibility continues to follow verified directory assignments.</p>
+    <p id="new-project-help" class="hint"></p>
     <p id="new-project-status" role="status"></p>
     <button id="new-project-submit" type="submit" class="primary">Create project</button>
   </form></div>

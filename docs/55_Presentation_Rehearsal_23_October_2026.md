@@ -20,7 +20,7 @@ These are synthetic development credentials. Use separate browser profiles/priva
 
 ## Add a project in the authorized office
 
-In **Projects & leads**, use **Add project** to create a project in the selected authorized office. The retained Noida project is **Digital Workplace Transformation · DWT-NOI**. Location admins cannot create projects in another office; project admins cannot create sibling projects. See [scoped project creation](56_Scoped_Project_Creation.md) for the permission boundary, migrations 086–087 and regression coverage.
+In **Projects & areas**, use **Add → Project** to create a project in the selected authorized office. The retained Noida project is **Digital Workplace Transformation · DWT-NOI**. Location admins cannot create projects in another office; project admins cannot create sibling projects. See [scoped project creation](56_Scoped_Project_Creation.md) for the permission boundary, migrations 086–087 and regression coverage.
 
 ## Retained presentation dataset
 
@@ -99,3 +99,7 @@ Fresh local results on 23 October:
 | Static/security gates | TypeScript, ESLint, 85 migration hashes, dependency audit (0 vulnerabilities), redacted secret scan and whitespace checks |
 
 The final full browser rerun passed all 65 tests after the roster deadlock-read retry correction. Earlier documents' counts remain dated historical evidence. Corporate SSO/MFA/directory, actual organization mailbox delivery, Outlook provider onboarding, physical cameras/printers and production deployment are outside the local browser result. No real messages are sent by the retained runner.
+
+The current shared Add flow and area/guard cards are documented in [Unified projects and common areas](57_Unified_Projects_And_Common_Areas.md).
+
+For register data, choose **Noida → Project 1**, then **Visit register**. The status shows the selected scope and active sort. See [register loading and shared scrollbars](58_Visit_Register_Loading_And_Theme_Scrollbars.md).

@@ -15,14 +15,14 @@
 - **Steps**:
   1. Sign in at `/` with `admin1@example.com` / `Sopra@123`.
   2. Verify `/admin` loads **Overview**; the header shows no "Admin Console" tag and the active office sits beside the profile icon as a circular pill (static for a single office, dropdown for several). There is no empty band above the first block.
-  3. In the scope bar, pick the Project scope (the selector is hidden when only one project is authorized) and a date range (`#overview-from` / `#overview-to`, max 31 days, or the Today / 7 days / 30 days chips). Changes apply automatically — there is no Apply button. The scope bar appears only on Overview, Staff & access, Visit register and Audit log; Projects & leads, Guard assignments and Offices & QR do not depend on it, and **Refresh** moves into their page header.
+  3. In the scope bar, pick the Project scope (the selector is hidden when only one project is authorized) and a date range (`#overview-from` / `#overview-to`, max 31 days, or the Today / 7 days / 30 days chips). Changes apply automatically — there is no Apply button. The scope bar appears only on Overview, Staff & access, Visit register and Audit log; Projects & areas, Guard assignments and Offices & QR do not depend on it, and **Refresh** moves into their page header.
   4. Inspect the KPI cards (`Registered`, `Pending`, `Approved`, `Denied`; cancelled visits are not shown, so Registered = Pending + Approved + Denied), the Approval status donut, the Daily registrations column chart (single-day ranges show a status comparison bar chart) and the Current recorded presence cards.
 - **Expected Result**:
   - KPIs, charts and presence update for the selected project scope and date range; presence always reflects the latest recorded state.
 
 ### TC-ADM-02: Projects & Leads Delegation (`#admin-projects`)
 - **Steps**:
-  1. Navigate to **Projects & leads** (`[data-admin-view="projects"]`); each project is a card with its current leads (or a "No project lead assigned" warning). Use the search box to filter by name or code.
+  1. Navigate to **Projects & areas** (`[data-admin-view="projects"]`); each project is a card with its current leads (or a "No project lead assigned" warning). Use the search box to filter by name or code.
   2. Click **Project leads** (manage) or **Add lead** (opens the dialog with the search focused) on `Project 1`.
   3. Search for an employee (`Employee 18` / `EMP018`), select them from `#employee-results`, choose Access Scope (`Noida only` or `All offices in this project`), enter Assignment Reason, and click **Assign Lead**.
   4. Click **Remove** on the newly assigned lead, enter Revocation Reason, and click **Confirm Removal**.
@@ -50,13 +50,12 @@
 
 ### TC-ADM-05: Common Area Creation & Duty Allocation (`#common-dialog`)
 - **Steps**:
-  1. Click **Common areas** (`#common-duties-open`) or **Add common area** (opens the **New Area** tab) in the **Projects & leads** page header.
-  2. In Tab 1 (**Assigned Guards**), view existing common area assignments.
-  3. Switch to Tab 2 (**Assign Duty**), select a Common area (`Lobby` / `Cafeteria`), search for a guard (`Guard`), select the guard, enter reason, and click **Assign guard**.
-  4. Switch to Tab 3 (**New Area**), enter a unique Area name and Creation reason, and click **Create area**.
-  5. Remove the test duty assignment from Tab 1.
-- **Expected Result**:
-  - Common areas and guard duties are managed within the office scope; self-assignment and non-guard role conflicts are blocked by Migration 074.
+  1. Open **Projects & areas → Add**, select **Common area**, enter a unique name and reason, and click **Create area**.
+  2. Confirm the new common-area card appears beside project cards and can be found through the shared search.
+  3. On that card, click **Assign guard**. Confirm its area is fixed and only that area's guards appear under **Assigned Guards**.
+  4. Search an authorized office guard, select it, give a reason and assign. Verify the guard appears in both the dialog and area card.
+  5. Remove the duty with a reason; both views must refresh. Other areas' duties must remain unchanged.
+  6. Check one Add button, type choices restricted by permission, project-only admins cannot see areas, pagination includes later-page assignments, and fresh 403 closes the dialog and clears cards.
 
 ### TC-ADM-06: Offices & Registration QR Standee Poster (`#admin-offices`, `#qr-dialog`)
 - **Steps**:
@@ -92,4 +91,4 @@
 
 ### TC-ADM-10: Add project within the authorized office
 
-Open **Projects & leads → Add project** as a location admin. Confirm the fixed office, enter a realistic name/code/reason and create. Verify the card and project selectors refresh, reload persists it and lead/guard assignment works. A duplicate code must conflict; a failed transport retry must reuse its key. A forged foreign-office request and a project admin must receive 403; permission loss must close the modal and clear its data. See [implementation and tests](../56_Scoped_Project_Creation.md).
+Open **Projects & areas → Add → Project** as a location admin. Confirm the fixed office, enter a realistic name/code/reason and create. Verify the card and project selectors refresh, reload persists it and lead/guard assignment works. A duplicate code must conflict; a failed transport retry must reuse its key. A forged foreign-office request and a project admin must receive 403; permission loss must close the modal and clear its data. See [implementation and tests](../56_Scoped_Project_Creation.md).

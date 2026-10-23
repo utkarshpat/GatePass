@@ -1,6 +1,6 @@
 # Scoped project creation
 
-In **Administration → Projects & leads**, **Add project** creates a project in the selected authorized office. Enter its name, unique uppercase code (3–64 letters/numbers/dots/underscores/hyphens), and reason. The modal displays the office without an editable location selector. Successful creation refreshes the project cards and selectors; project leads and guard duties can then be assigned through their existing workflows.
+In **Administration → Projects & areas**, **Add → Project** creates a project in the selected authorized office. Enter its name, unique uppercase code (3–64 letters/numbers/dots/underscores/hyphens), and reason. The modal displays the office without an editable location selector. Successful creation refreshes the project cards and selectors; project leads and guard duties can then be assigned through their existing workflows.
 
 ## Permission boundary
 
@@ -28,3 +28,5 @@ Presentation records are retained separately from disposable regression fixtures
 Follow-up verification on 23 October: 463 Node tests passed (one platform skip); 11 focused admin browser tests passed; six SQL suites passed, including 38 administration-read, 57 registration, 55 printing and 19 guard-duty cases. TypeScript, ESLint and all 87 migration hashes passed. The retained DWT-NOI project was created through the actual Noida location-admin browser session and has exactly one office link and one creation audit.
 
 The live guard follow-up also caught an existing timing issue: opening Assign guard while the office roster was still loading left the dropdown empty. Roster completion now refreshes an already-open assignment dialog while preserving its selected guard. The real project-creation test exercises this immediate transition before assigning the new project’s guard.
+
+The current shared Add flow and area/guard cards are documented in [Unified projects and common areas](57_Unified_Projects_And_Common_Areas.md).

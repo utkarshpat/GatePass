@@ -119,6 +119,22 @@
 }
 
 @layer base {
+  /* Shared by page, table, sidebar and dialog scroll containers. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--gp-brand) var(--gp-surface-subtle);
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: var(--gp-surface-subtle); }
+  ::-webkit-scrollbar-thumb {
+    background: var(--gp-brand);
+    border: 2px solid var(--gp-surface-subtle);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gp-brand-hover); }
+  @supports selector(::-webkit-scrollbar) {
+    * { scrollbar-width: auto; scrollbar-color: auto; }
+  }
   body {
     min-width: 20rem;
     background: var(--gp-canvas);
@@ -515,6 +531,11 @@
 }
 
 @media (forced-colors: active) {
+  @layer base {
+    * { scrollbar-color: auto; }
+    ::-webkit-scrollbar-thumb { background: ButtonText; border-color: Canvas; }
+    ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: Canvas; }
+  }
   @layer components {
     .primary, .secondary, .quiet, .status-pill { border-color: ButtonText; }
   }
