@@ -304,4 +304,4 @@ $('correct-return-form').addEventListener('submit',async event=>{
 
 document.addEventListener('visibilitychange',()=>{if(document.hidden)closeLookupScanner();});
 
-const liveRefresh=new LiveRefresh(()=>loadVisits(false,true),()=>!!state.context&&!state.listBusy&&!state.calendarBusy&&!state.printBusy&&!state.returnBusy&&!state.accessDenied&&workspaceIdle());
+const liveRefresh=new LiveRefresh(()=>loadVisits(false,true),()=>!!state.context&&!state.listBusy&&!state.calendarBusy&&!state.printBusy&&!state.returnBusy&&!state.accessDenied&&workspaceIdle(),20000,()=>state.context&&state.location&&!state.accessDenied&&cookie('gp-staff-csrf')?{workspace:'RECEPTION',locationId:state.location.locationId}:null);

@@ -8,6 +8,7 @@ type RpcWorker={child:ReturnType<typeof spawn>;busy:boolean;dead:boolean;buffer:
 export class LocalDevelopmentApiClient {
  #workers:RpcWorker[]=[];
  #closed=false;#spawn:()=>ReturnType<typeof spawn>;
+ onSuccess?: (name:string,parameters:Record<string,SqlParameter>,result:Record<string,unknown>)=>void;
  constructor(spawnWorker=()=>spawn(resolvePowerShell(),['-NoProfile','-File',fileURLToPath(new URL('../../tools/GatePass.DevelopmentApiBridge.ps1',import.meta.url)),'-Persistent'],{windowsHide:true,stdio:['pipe','pipe','pipe']})){this.#spawn=spawnWorker;}
  #waiting=new Set<()=>void>();
  #wake(){for(const ready of this.#waiting)ready();this.#waiting.clear();}
@@ -50,7 +51,9 @@ export class LocalDevelopmentApiClient {
    selected.child.stdin!.write(JSON.stringify({procedure:name,parameters:Object.fromEntries(Object.entries(parameters).map(([key,p])=>[key,{type:p.type,value:Buffer.isBuffer(p.value)?p.value.toString('base64'):p.value}]))})+'\n');
   });
   let result;try{result=JSON.parse(output);}catch{throw new Error('DEVELOPMENT_RPC_UNAVAILABLE');}
-  if(result.bridgeError){if(process.env.NODE_ENV==='test')process.stderr.write('GP_RPC_FAILURE '+name+' SQL_'+Number(result.number)+' '+String(result.errorKind??'').replace(/[^A-Za-z.]/gu,'')+'\n');throw Object.assign(new Error('SQL_OPERATION_REJECTED'),{number:result.number});}return output;
+  if(result.bridgeError){if(process.env.NODE_ENV==='test')process.stderr.write('GP_RPC_FAILURE '+name+' SQL_'+Number(result.number)+' '+String(result.errorKind??'').replace(/[^A-Za-z.]/gu,'')+'\n');throw Object.assign(new Error('SQL_OPERATION_REJECTED'),{number:result.number});}
+  // A notification failure cannot turn a committed write into an apparent failed operation.
+  try{this.onSuccess?.(name,parameters,result);}catch{/* Reconnect/periodic refresh repairs missed invalidations. */}return output;
  }
  close(){this.#closed=true;for(const worker of [...this.#workers])this.#destroy(worker);this.#wake();}
 }

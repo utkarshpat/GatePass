@@ -16,8 +16,9 @@ export function createLoopbackHttpHandler(origin: string, routes: AdditionalHttp
         || ['cross-site','same-site'].includes(String(req.headers['sec-fetch-site']))) throw new HttpFailure(403);
       if(req.method!=='POST'){res.setHeader('Allow','POST');throw new HttpFailure(405);}
       if(!routes.handles(req.url??''))throw new HttpFailure(404);
-      const result=await routes.handle(req,res);res.statusCode=200;res.end(JSON.stringify(result));
+      const result=await routes.handle(req,res);if(res.headersSent)return;res.statusCode=200;res.end(JSON.stringify(result));
     } catch(error) {
+      if(res.headersSent){res.destroy();return;}
       req.resume();const code=(error as {code?:string})?.code;const status=error instanceof HttpFailure?error.status:code==='INVALID_INPUT'?400:code==='NOT_AUTHORIZED'?403:code==='CONFLICT'?409:503;res.statusCode=status;
       res.end(JSON.stringify({error:({400:'INVALID_INPUT',401:'NOT_AUTHENTICATED',403:'NOT_AUTHORIZED',404:'NOT_FOUND',405:'METHOD_NOT_ALLOWED',409:'CONFLICT',413:'BODY_TOO_LARGE',415:'UNSUPPORTED_MEDIA_TYPE',429:'RATE_LIMITED'} as Record<number,string>)[status]??'UNAVAILABLE'}));
     }

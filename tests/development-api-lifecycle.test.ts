@@ -14,6 +14,13 @@ function fixture(t:TestContext){
  const reply=(index:number,result:unknown={ok:true})=>calls[index].child.stdout.write(JSON.stringify({result:JSON.stringify(result)})+'\n');
  return{client,children,calls,reply};
 }
+
+test('committed success is observed once, SQL failure is not observed and observer failure never replays a write',async t=>{
+ const f=fixture(t),observed:string[]=[];f.client.onSuccess=(name)=>{observed.push(name);throw Error('Notification unavailable');};
+ const first=f.client.callProcedure('gp.SubmitRegistration',{});await Promise.resolve();f.reply(0,{status:'SUBMITTED'});assert.equal(JSON.parse(await first).status,'SUBMITTED');
+ const failed=assert.rejects(f.client.callProcedure('gp.SubmitRegistration',{}),(e:any)=>e.number===52001);await Promise.resolve();f.reply(1,{bridgeError:true,number:52001});await failed;
+ assert.deepEqual(observed,['gp.SubmitRegistration']);assert.equal(f.calls.length,2);
+});
 test('one helper survives a browsing pause, then retires after its renewed 90-second idle deadline',async t=>{
  t.mock.timers.enable({apis:['setTimeout']});const f=fixture(t);
  const first=f.client.callProcedure('gp.GetOwnDigitalIdCard',{});await Promise.resolve();f.reply(0);await first;

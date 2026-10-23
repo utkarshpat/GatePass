@@ -12,6 +12,8 @@ From repository root, run npm.cmd ci, then npm.cmd run storage:init, then npm.cm
 
 Open http://localhost:8443/ for staff, or /office/noida for public intake. Despite port 8443, this runner uses HTTP. HTTPS against it produces SSL protocol errors. Stop its owning process cleanly and restart after asset/source changes; do not terminate unrelated listeners by guessed process/port. Ordinary startup must not reset passwords or reinstate revoked grants.
 
+The local UI host includes [cost-aware SSE invalidations](../Performance_Optimization_Phase_8.md) for visible staff workspaces. Four total streams/two per session share the existing sixteen-connection budget; excess viewers use polling. No broker, dependency or migration is required. The production API entry point does not automatically host this development stream. Reconnect/fresh safety reads cover process-local delivery gaps; review the documented limits before configuring multiple instances or a proxy.
+
 ## Fresh development database
 
 For an existing synthetic `GatePass_DesignTest`, run `./database/setup/Optimize-LocalTestDatabase.ps1 -TrustLocalServerCertificate` from the repository root to verify/set `AUTO_CLOSE OFF`. Omit the certificate switch when the local certificate is trusted. This explicit local maintenance command preserves all records; ordinary server startup does not change database options. Fresh development/CI setup also sets this option. See [the measured performance result](../Performance_Optimization_Phase_3.md).

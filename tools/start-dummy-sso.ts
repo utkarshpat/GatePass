@@ -44,6 +44,9 @@ import { VisitReadService,VisitPhotoService } from '../src/visits/VisitReadServi
 import { SqlVisitReadRepository } from '../src/visits/SqlVisitReadRepository.ts';
 import { openLocalPrivateStorage } from '../src/storage/LocalPrivateStorage.ts';
 import {OfficeEntryContext,officeNames} from '../src/development/OfficeEntryContext.ts';
+import {WorkspaceChanges} from '../src/development/WorkspaceChanges.ts';
+import {WorkspaceEventRoutes} from '../src/development/WorkspaceEventRoutes.ts';
+import {HttpFailure} from '../src/transport/ApiHandler.ts';
 
 // Explicit alternative entry point. Production start-api never imports this module.
 try {
@@ -91,6 +94,7 @@ try {
   const require = createRequire(import.meta.url);
   const sharp = require(process.env.GATEPASS_SHARP_PATH ?? join(homedir(),'.cache','codex-runtimes','codex-primary-runtime','dependencies','node','node_modules','sharp'));
   const client = new LocalDevelopmentApiClient();
+  const changes=new WorkspaceChanges();client.onSuccess=(name,parameters,result)=>changes.observe(name,parameters,result);
   const registration = new RegistrationService(new SqlRegistrationRepository(client),storage.keys,new SharpPhotoNormalizer(sharp),storage.photos);
   const [organisationLogoPng,applicationLogoPng,organisationIconPng]=await Promise.all(['sopra-steria-logo.png','gatepass-logo.png','sopra-steria-icon.png'].map(name=>readFile(new URL('../assets/brand/'+name,import.meta.url))));
   const cardRenderer=new PassCardRenderer(new NodeQrMatrixEncoder(),{organisationLogoPng,applicationLogoPng,organisationIconPng});
@@ -107,7 +111,28 @@ try {
   const manualRegistration=new ReceptionRegistrationRoutes(staffEntry,new ReceptionService(client),registration,randomBytes(32),client);
   // Explicit opt-in only: public Input Tools is an experimental display aid.
   const nameReadings=await localNameReadings(storage.root);
-  const routes = [manualRegistration,new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,new GuardDutyService(client),new HostReminderService(client),nameReadings),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),new GuardDutyService(client),new AdministrationReadService(new SqlAdministrationReadRepository(client)),new AdminConsoleService(client),receptionReads,organisationIconPng,sharp),reception,new DummySsoRoutes(sso,{localHttp:true}),
+  const adminConsole=new AdminConsoleService(client),duties=new GuardDutyService(client),receptionWorkspace=new ReceptionService(client);
+  const events=new WorkspaceEventRoutes(staffEntry,changes,async(session,input)=>{
+    const location=input.locationId,topics=new Set<string>();
+    if(input.workspace==='ADMIN'){
+      // A successful office-only read is the authority for office-wide invalidations.
+      // The role list can contain grants from other offices and must not widen this subscription.
+      await adminConsole.read(session,'scope',{locationId:location,...(input.projectLocationId?{projectLocationId:input.projectLocationId}:{})});
+      if(input.projectLocationId){topics.add('p:'+location+':'+input.projectLocationId);topics.add('d:'+location);topics.add('s:'+location+':'+input.projectLocationId);}
+      else topics.add('o:'+location);
+    }else if(input.workspace==='GUARD'){
+      const scope=await duties.duties(session,{locationId:location});
+      topics.add('s:'+location);
+      for(const duty of scope.duties)if(duty.kind==='COMMON')topics.add('c:'+location);else topics.add('p:'+location+':'+duty.dutyId);
+      topics.add('d:'+location);
+    }else{
+      const scope=await receptionWorkspace.context(session);
+      if(!scope.locations.some((l:{locationId:number})=>l.locationId===location))throw new HttpFailure(403);
+      topics.add('o:'+location);
+    }
+    return topics;
+  });
+  const routes = [events,manualRegistration,new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,duties,new HostReminderService(client),nameReadings),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),duties,new AdministrationReadService(new SqlAdministrationReadRepository(client)),adminConsole,receptionReads,organisationIconPng,sharp),reception,new DummySsoRoutes(sso,{localHttp:true}),
     new RegistrationHttpRoutes(registration,randomBytes(32),sso,{localHttp:true,allowedTypes:['DIGITAL_ID','EXTERNAL','EMPLOYEE_PROJECT'],office:req=>officeContext.read(req)}),
     new EmployeeDigitalIdRoutes(sso,new VisitReadService(new SqlVisitReadRepository(client,'api')),ownCards)];
   const api = createLoopbackHttpHandler(origin,{handles:path=>routes.some(route=>route.handles(path)),handle:(req,res)=>{
@@ -155,8 +180,8 @@ try {
   });
   server.requestTimeout=15000;server.headersTimeout=10000;server.keepAliveTimeout=5000;server.maxConnections=16;server.maxRequestsPerSocket=100;
   const refresh = setInterval(() => { void repository.execute('refresh',null,null,null).then(result=>{if(result.ok!==true)console.error('DUMMY_DIRECTORY_REFRESH_FAILED');}).catch(()=>console.error('DUMMY_DIRECTORY_REFRESH_FAILED')); },60000);refresh.unref();
-  const stop = () => { clearInterval(refresh);server.close(async () => { storage.keys.clearCache();await sso.close();client.close(); process.exitCode=0; });server.closeIdleConnections(); };
-  server.on('error', async () => { clearInterval(refresh);storage.keys.clearCache();console.error('DUMMY_SSO_LISTENER_UNAVAILABLE');await sso.close();client.close();process.exitCode=1; });
+  const stop = () => { clearInterval(refresh);changes.close();server.close(async () => { storage.keys.clearCache();await sso.close();client.close(); process.exitCode=0; });server.closeIdleConnections(); };
+  server.on('error', async () => { clearInterval(refresh);changes.close();storage.keys.clearCache();console.error('DUMMY_SSO_LISTENER_UNAVAILABLE');await sso.close();client.close();process.exitCode=1; });
   process.once('SIGINT',stop);process.once('SIGTERM',stop);
   server.listen(port,'127.0.0.1',()=>{
     console.log(`GatePass employee portal: ${origin} (local HTTP; temporary employee sign-in adapter)`);

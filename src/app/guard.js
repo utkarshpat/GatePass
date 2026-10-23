@@ -125,6 +125,6 @@ const liveRefresh=new LiveRefresh(async()=>{
   }
   await recent(false,true);
  }catch(error){if(version===state.contextVersion&&error.status===403){state.liveDenied=true;state.recentRows=[];state.duties=[];state.duty=null;clearHistoryPhotos();renderRecent();$('scan-fab').disabled=true;$('retry-context').hidden=false;closePass();}}
-},()=>!!state.office&&!$('guard-dashboard').hidden&&!state.busy&&!state.liveDenied&&$('recent-scans').getAttribute('aria-busy')!=='true'&&workspaceIdle());
+},()=>!!state.office&&!$('guard-dashboard').hidden&&!state.busy&&!state.liveDenied&&$('recent-scans').getAttribute('aria-busy')!=='true'&&workspaceIdle(),20000,()=>state.office&&!state.liveDenied&&!$('guard-dashboard').hidden?{workspace:'GUARD',locationId:state.office.locationId}:null);
 
 window.addEventListener('pageshow',event=>{if(event.persisted)void initialize();});

@@ -37,3 +37,5 @@ Realistic rehearsal areas, guard assignments and their audit events were retaine
 ## Next option: event-driven browser refresh
 
 The user asked whether webhooks could make entry submission real-time. Webhooks deliver events to a server; [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) provide a server-to-browser stream. A suitable next design is: commit the entry and durable change event, deliver a scoped SSE invalidation, then make a fresh authorized list read. Reconnect recovery, event coalescing, revocation and polling fallback must be covered. This is a proposal; **SSE/webhooks are not implemented in this release**. Current automatic updates remain 20-second polling.
+
+Subsequent work implements [cost-aware SSE invalidations in phase 8](Performance_Optimization_Phase_8.md). That later local-host implementation deliberately uses bounded in-process signals and safety reads instead of adding a durable event table/broker. The statement above describes the `9bbe9b9` release, not the subsequent SSE version.

@@ -2,6 +2,8 @@
 
 Implemented on **24 October 2026**, following [phase 6](Performance_Optimization_Phase_6.md).
 
+The list rendering limits below remain current. The polling-only refresh described in this phase is subsequently extended by [cost-aware SSE invalidations](Performance_Optimization_Phase_8.md), with 60-second connected safety reads and 20-second polling fallback.
+
 ## Pagination and deferred work
 
 - Guard Expected/Inside cards render 24 at a time. Load more adds 24 and shows the displayed/full count. Changing search, allocation or queue resets the display depth. Quiet refresh retains the current depth. Photos use the viewport plus a 100-pixel margin; regional names retain their existing near-viewport batching.

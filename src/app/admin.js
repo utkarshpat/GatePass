@@ -671,6 +671,6 @@ async function refreshVisibleAdmin(){
  else if(view==='assignments')await loadAssignments();
  else if(view==='audit')await loadAudit();
 }
-const liveRefresh=new LiveRefresh(refreshVisibleAdmin,()=>!!consoleState.scope&&!$('console-project').disabled&&$('overview-range').getAttribute('aria-busy')!=='true'&&!consoleState.writing&&!state.busy&&!commonState.busy&&!registerState.loading&&!registerState.exporting&&consoleState.view!=='staff'&&workspaceIdle());
+const liveRefresh=new LiveRefresh(refreshVisibleAdmin,()=>!!consoleState.scope&&!$('console-project').disabled&&$('overview-range').getAttribute('aria-busy')!=='true'&&!consoleState.writing&&!state.busy&&!commonState.busy&&!registerState.loading&&!registerState.exporting&&consoleState.view!=='staff'&&workspaceIdle(),20000,()=>consoleState.scope&&state.office&&consoleState.view!=='staff'?{workspace:'ADMIN',...scopeBody()}:null);
 
 window.addEventListener('pageshow',event=>{if(event.persisted)void initialize();});

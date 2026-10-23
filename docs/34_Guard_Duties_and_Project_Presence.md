@@ -16,7 +16,7 @@ All allocations, allocation types and the choice dialog support English with Hin
 
 Optional regional person/host readings, spoken-label choices, free-provider limitations and local opt-in are documented in [Regional name readings](Guard_Name_Readings.md). They are display aids and never replace the original identity or duty authorization.
 
-The guard roster renders 24 cards per display page and defers photos/name readings near the viewport. Visible, idle workspaces recheck duties and refresh the selected roster every 20 seconds and on focus. This is polling; open dialogs and editing pause it. Complete server-page chains still supply totals and combined-allocation deduplication. See [list rendering and refresh](Performance_Optimization_Phase_7.md).
+The guard roster renders 24 cards per display page and defers photos/name readings near the viewport. Visible workspaces receive bounded SSE invalidations and refresh through the normal freshly authorized APIs. Connected safety reads run every 60 seconds; polling fallback runs every 20 seconds, with focus refresh. Open dialogs/editing defer reads; hidden tabs disconnect. Complete server-page chains still supply totals and combined-allocation deduplication. See [list rendering](Performance_Optimization_Phase_7.md) and [cost-aware live updates](Performance_Optimization_Phase_8.md) for scope, capacity and delivery limits.
 
 | Duty | Verification | Movement |
 | --- | --- | --- |
