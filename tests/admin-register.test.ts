@@ -5,6 +5,13 @@ const input={locationId:1,from:'2026-10-01',to:'2026-10-31'};
 const row={visitRequestId:randomUUID(),personName:'Synthetic Visitor',localVisitDate:'2026-10-22',submittedAtUtc:'2026-10-22T00:00:00.000Z',validFromUtc:'2026-10-22T00:00:00.000Z',validUntilUtc:'2026-10-23T00:00:00.000Z',status:'APPROVED',passStatus:'ACTIVE',presence:'OUTSIDE',printStatus:'NOT_PRINTED',requestType:'EXTERNAL'};
 const response={rows:[row],total:1,page:1,pageSize:50,checkedAtUtc:'2026-10-22T00:00:00.000Z'};
 function fixture(value:any=response){const calls:any[]=[];return{calls,client:{async callProcedure(name:string,p:any){calls.push({name,p});return JSON.stringify(value);}}};}
+test('export requires a bounded result and a database dataset fingerprint',async()=>{
+ const f=fixture({...response,datasetVersion:'a'.repeat(64)});const result=await readAdminRegister(f.client,session,{...input,export:true});assert.equal(result.datasetVersion,'a'.repeat(64));assert.equal(f.calls[0].p.ForExport.value,true);
+ const normal=fixture();await readAdminRegister(normal.client,session,input);assert.equal(normal.calls[0].p.ForExport.value,false);
+ for(const datasetVersion of [undefined,null,'','A'.repeat(64),'x'.repeat(64)])await assert.rejects(readAdminRegister(fixture({...response,datasetVersion}).client,session,{...input,export:true}),{code:'UNAVAILABLE'});
+ await assert.rejects(readAdminRegister(fixture({...response,total:10001,datasetVersion:'a'.repeat(64)}).client,session,{...input,export:true}),{code:'UNAVAILABLE'});
+ for(const value of ['true',1,null])await assert.rejects(readAdminRegister(f.client,session,{...input,export:value}),{code:'INVALID_INPUT'});
+});
 test('register binds identity, passes field filters and projects only public business fields',async()=>{
  const f=fixture({...response,rows:[{...row,sessionHash:'DROP',password:'DROP'}]});const r=await readAdminRegister(f.client,session,{...input,projectLocationId:'2',sort:'personName',direction:'ASC',page:1,filters:{personName:'Visitor',status:'APPROVED',deviceTypes:'LAPTOP'}});
  assert.equal(f.calls[0].name,'gp.ReadAdminVisitRegister');assert.equal(f.calls[0].p.SessionHash.value.length,32);assert.equal(f.calls[0].p.ProjectLocationId.value,'2');assert.equal(f.calls[0].p.Sort.value,'personName');assert.deepEqual(JSON.parse(f.calls[0].p.FiltersJson.value),{personName:'Visitor',status:'APPROVED',deviceTypes:'LAPTOP'});assert.deepEqual(Object.keys(r.rows[0]),['visitRequestId',...registerFields]);assert.equal(r.rows[0].companyName,null);

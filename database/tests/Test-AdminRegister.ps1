@@ -24,6 +24,13 @@ try{
  $p.Page=1;$p.Direction='DESC';$descending=Read $p;Assert ($descending.rows[0].personName -ge $first.rows[0].personName) 'Descending sort failed'
  foreach($sort in @('localVisitDate','personEmail','deviceTypes','hostName','status','printStatus','returnedAtUtc','validUntilUtc')){$p.Sort=$sort;$null=Read $p}
  Write-Output 'PASS: execute-only identity, true range filtering, stable sorting and 50-row pagination'
+ $p=Params;$p.ForExport=$true;$export=Read $p;Assert ($export.datasetVersion -cmatch '^[a-f0-9]{64}$') 'Export fingerprint missing'
+ $p.Page=2;$exportNext=Read $p;Assert ($export.datasetVersion -ceq $exportNext.datasetVersion) 'Unchanged pages produced different fingerprints'
+ $changed=[guid]$first.rows[0].visitRequestId
+ Invoke-GatePassNonQuery $db 'UPDATE gp.VisitRequests SET Reason=Reason+N'' export test'' WHERE VisitRequestId=@id;' @{id=$changed}
+ $p.Page=1;$afterChange=Read $p;Assert ($afterChange.total -eq $export.total -and $afterChange.datasetVersion -cne $export.datasetVersion) 'Same-count content change was not detected'
+ $p.Sort='validUntilUtc';Assert ((Read $p).datasetVersion -ceq $afterChange.datasetVersion) 'Fingerprint depends on pagination sort'
+ Write-Output 'PASS: export fingerprint is stable across pages and detects same-count content changes'
  $p=Params;$p.FiltersJson=(@{companyName=$marker;status='PENDING';deviceTypes='PEN_DRIVE';hostName='Synthetic HOST'}|ConvertTo-Json -Compress);$r=Read $p;Assert ($r.total -gt 0 -and @($r.rows|Where-Object{$_.status -ne 'PENDING' -or $_.hostName -ne 'Synthetic HOST'}).Count -eq 0) 'Combined filters incorrect'
  $p.FiltersJson=(@{companyName=$marker;printStatus='PRINTED'}|ConvertTo-Json -Compress);Assert ((Read $p).total -eq 0) 'PRINTED incorrectly matched NOT_PRINTED'
  $p.FiltersJson='{"personName":"%"}';Assert ((Read $p).total -eq 0) 'Wildcard was interpreted instead of matched literally'

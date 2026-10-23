@@ -28,7 +28,7 @@ UPDATE gp.StaffRoleGrants SET RoleCode='RECEPTION' WHERE UserId IN(@wrong,@nocap
 INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT g.RoleGrantId,c.Code FROM gp.StaffRoleGrants g CROSS JOIN (VALUES('PASS_PRINT'),('PASS_REISSUE')) c(Code)
 WHERE g.UserId IN(@reception,@admin,@guard,@wrong);
 INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT RoleGrantId,CASE WHEN LocationId=@location THEN 'PASS_PRINT' ELSE 'PASS_REISSUE' END FROM gp.StaffRoleGrants WHERE UserId=@split;
-INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT RoleGrantId,'VISITS_READ' FROM gp.StaffRoleGrants WHERE UserId IN(@guard,@recon);
+INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT g.RoleGrantId,'VISITS_READ' FROM gp.StaffRoleGrants g WHERE UserId IN(@guard,@recon) AND NOT EXISTS(SELECT 1 FROM gp.GrantCapabilities c WHERE c.RoleGrantId=g.RoleGrantId AND c.CapabilityCode='VISITS_READ');
 INSERT gp.StaffRoleGrants(UserId,RoleCode,ScopeType,LocationId,GrantedByUserId,ValidFromUtc) VALUES(@other,'RECEPTION','LOCATION',@location,@other,DATEADD(hour,-1,SYSUTCDATETIME()));
 INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) VALUES(SCOPE_IDENTITY(),'PASS_PRINT');
 '@ @{prefix=$taskFixture.prefix;wrong=[guid]$taskActors.WRONGLOCATION.UserId;nocap=[guid]$taskActors.NOCAP.UserId;split=[guid]$taskActors.SPLIT.UserId;
@@ -93,14 +93,16 @@ try {
     Case 'Rendered artifact cannot dispatch after cancellation' {$taskJ=Request;$taskC=Start-Render $taskJ;$taskP=Finish $taskC;$null=Cancel 'MOVEMENT';Expect {Call $taskRender 'gp.DispatchPassPrint' $taskP} 53105}
     Case 'Dispatched history remains while reprint and reissue stop' {$taskJ=Request;$taskC=Start-Render $taskJ;$taskP=Finish $taskC;$null=Call $taskRender 'gp.DispatchPassPrint' $taskP;$null=Cancel 'MOVEMENT';Assert ((Live $taskJ).status -eq 'DISPATCHED');Expect {Request} 53105;Expect {Call $taskApi 'gp.ReissuePass' (Reissue-Parameters)} 53105}
     Case 'Revoked delivery links and cancelled claimed notifications fence old worker' {
+        $taskClaim=[guid]::NewGuid()
         Invoke-GatePassNonQuery $taskAdmin @'
 INSERT gp.PassDeliveryLinks(AccessPassId,VisitRequestId,TokenHash,TokenCiphertext,Nonce,AuthenticationTag,KeyVersion,RecipientEmail,ExpiresAtUtc)
 VALUES(@pass,@visit,CRYPT_GEN_RANDOM(32),CRYPT_GEN_RANDOM(32),CRYPT_GEN_RANDOM(12),CRYPT_GEN_RANDOM(16),'fixture',N'test@example.invalid',DATEADD(hour,1,SYSUTCDATETIME()));
-INSERT gp.NotificationOutbox(VisitRequestId,RecipientKind,RecipientEmail,TemplateCode,PayloadJson,DedupeHash) VALUES(@visit,'EMAIL',N'test@example.invalid','VISIT_DECIDED',N'{}',CRYPT_GEN_RANDOM(32));
-'@ @{pass=[guid]$taskVisits.PENDING.PassId;visit=[guid]$taskVisits.PENDING.VisitId}
-        $taskClaims=Call $taskWorker 'gp.ClaimNotifications' @{BatchSize=1;LeaseSeconds=60};$null=Cancel
+INSERT gp.NotificationOutbox(VisitRequestId,RecipientKind,RecipientEmail,TemplateCode,PayloadJson,DedupeHash,Status,LockedBy,LockedUntilUtc) VALUES(@visit,'EMAIL',N'test@example.invalid','VISIT_DECIDED',N'{}',CRYPT_GEN_RANDOM(32),'PROCESSING',@claim,DATEADD(minute,1,SYSUTCDATETIME()));
+'@ @{pass=[guid]$taskVisits.PENDING.PassId;visit=[guid]$taskVisits.PENDING.VisitId;claim=$taskClaim}
+        # A fixture-owned claim must never drain another presentation request from the global queue.
+        $taskNotification=[long](Invoke-GatePassScalar $taskAdmin 'SELECT NotificationId FROM gp.NotificationOutbox WHERE VisitRequestId=@visit AND LockedBy=@claim;' @{visit=[guid]$taskVisits.PENDING.VisitId;claim=$taskClaim});$null=Cancel
         Assert ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.PassDeliveryLinks WHERE VisitRequestId=@visit AND RevokedAtUtc IS NULL;' @{visit=[guid]$taskVisits.PENDING.VisitId}) -eq 0)
-        Expect {Call $taskWorker 'gp.GetNotificationDispatch' @{NotificationId=[long]$taskClaims[0].notificationId;ClaimToken=[guid]$taskClaims[0].claimToken}} 52003
+        Expect {Call $taskWorker 'gp.GetNotificationDispatch' @{NotificationId=$taskNotification;ClaimToken=$taskClaim}} 52003
     }
     Case 'Inside presence persists until explicit authorized reconciled exit' {
         $taskEntry=Inside;Assert ((Cancel 'MOVEMENT').wasInsideAtCancellation)

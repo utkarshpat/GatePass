@@ -86,5 +86,7 @@
   "085_audit_window_overflow_guard.sql": "eba2c630e7879678c49c8b77817fdea17f3f542e5bf9a1bba5d356ed2f9abfcb",
   "086_scoped_project_creation.sql": "2c6097ac67a9f13f50b71c427bfeb342cb4b280f11691d1779ddbc1d6f9a1888",
   "087_project_code_hyphens.sql": "33065ba31a627c1a9f9b1992cff9f7e0adc06af6f976e507c7fea51c1c0fa6db",
-  "088_notification_person_photos.sql": "49625ca8dfa7ffb97b685772ebaff263caeeeafc60c696e808096fbfc5ddcd64"
+  "088_notification_person_photos.sql": "49625ca8dfa7ffb97b685772ebaff263caeeeafc60c696e808096fbfc5ddcd64",
+  "089_consistent_register_exports.sql": "b13fa231e3b4bbfaeaca65309dd766907b266b0af986617dbd6d7b7e7077d4e3",
+  "090_email_holder_revocation.sql": "e210aa4aabe5638bfd1f62190b907841b4757f42f7ce8aa227cdc10137fea4d3"
 }

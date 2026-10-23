@@ -41,6 +41,7 @@ test('Outlook card has bound direct POST decisions, expected actor, provider ID 
  assert.deepEqual((card.body[1] as any).facts.slice(1,3),[{title:'Company',value:'Acme Corp'},{title:'Devices',value:'Laptop'}]);
  const decisions=[];for(const a of card.actions.slice(0,2) as any[]){assert.equal(a.type,'Action.Http');assert.equal(a.method,'POST');assert.equal(a.url,cardConfig.origin+'/api/outlook/decision');decisions.push((await codec.verify(JSON.parse(a.body).capability)).decision);}
  assert.deepEqual(decisions,['APPROVED','DENIED']);const html=outlookCardScript(card);assert.equal((html.match(/<\/script>/gu)??[]).length,1);assert(!html.includes('<script>evil'));
+ assert.equal(card.hideOriginalBody,true);assert.equal((await new OutlookApprovalCard(cardConfig,codec).render(j,'host@example.com',true)).hideOriginalBody,false);
  for(const origin of ['http://localhost:8443','https://localhost','https://127.0.0.1','https://example.com/path'])assert.throws(()=>new OutlookApprovalCard({...cardConfig,origin},codec));
  await assert.rejects(new OutlookApprovalCard(cardConfig,codec).render({...job(),recipientKind:'EMAIL'},'host@example.com'));
  await assert.rejects(new OutlookApprovalCard(cardConfig,codec).render({...job(),details:{...job().details,deviceTypes:['BAD']}},'host@example.com'));
@@ -50,6 +51,7 @@ test('host approval worker embeds the optional Outlook card; other templates and
  const worker=new NotificationEmailWorker(sql,directory,transport,links,cardConfig.origin,undefined,new OutlookApprovalCard(cardConfig,codec));
  assert((await worker.render(job())).html.includes('application/adaptivecard+json'));assert(!(await worker.render({...job(),templateCode:'TEMP_ID_MANAGER_NOTICE'})).html.includes('application/adaptivecard+json'));
  assert(!(await new NotificationEmailWorker(sql,directory,transport,links,cardConfig.origin).render(job())).html.includes('application/adaptivecard+json'));
+ const photoMessage=await worker.render(job(),{mimeType:'image/png',bytes:Buffer.from('89504e470d0a1a0a','hex')});const card=JSON.parse(/<script type="application\/adaptivecard\+json">(.*?)<\/script>/su.exec(photoMessage.html)![1]);assert.equal(card.hideOriginalBody,false);assert.match(photoMessage.html,/cid:gatepass-person-photo/u);assert(photoMessage.personPhoto);
 });
 test('Outlook decision passes only verified tid/oid and signed binding to isolated SQL and preserves key replay',async()=>{
  const calls:any[]=[];const sql={async callProcedure(name:string,p:any){calls.push({name,p});return JSON.stringify({operationId:randomUUID(),visitRequestId:visit,decision:'APPROVED'});}};

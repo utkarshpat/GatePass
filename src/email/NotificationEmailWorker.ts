@@ -32,14 +32,19 @@ export class NotificationEmailWorker{
    if(!/^[a-f0-9]{64}$/iu.test(d.recipientEmailHash)||!/^[a-f0-9]{64}$/iu.test(d.snapshotHash))throw new MailFailure('RENDER_FAILED');
    href=this.#origin+'/request/'+job.visitRequestId.toLowerCase()+'#link='+await this.#links.issue({v:1,visit:job.visitRequestId.toLowerCase(),emailHash:d.recipientEmailHash.toLowerCase(),snapshot:d.snapshotHash.toLowerCase(),expires:Date.parse(d.validUntilUtc)+86400000});
   }
-  const title=approval?'Approval requested':job.templateCode==='TEMP_ID_MANAGER_NOTICE'?'Digital ID issued':job.templateCode==='VISIT_DECIDED'?(d.visitStatus==='APPROVED'?'Visit approved':'Visit declined'):job.templateCode==='PASS_REISSUED'?'Pass replaced':job.templateCode==='PASS_DELIVERY'?'Your visitor pass':['TEMP_ID','DIGITAL_ID'].includes(d.requestType)?'Your Digital ID':'Visit request received';
+  const digitalId=['TEMP_ID','DIGITAL_ID'].includes(d.requestType),receipt=job.templateCode==='REQUEST_RECEIVED';
+  let revokeHref:string|undefined;
+  if(!approval&&!notice&&['REQUEST_RECEIVED','VISIT_DECIDED','PASS_DELIVERY'].includes(job.templateCode)&&['PENDING','APPROVED'].includes(d.visitStatus)&&Date.parse(d.validUntilUtc)>Date.now()){
+   revokeHref=job.recipientKind==='EMAIL'?href+'&revoke='+await this.#links.issueRevoke({v:1,visit:job.visitRequestId.toLowerCase(),emailHash:d.recipientEmailHash.toLowerCase(),snapshot:d.snapshotHash.toLowerCase(),expires:Date.parse(d.validUntilUtc)+86400000}):href+'#revoke=confirm';
+  }
+  const title=approval?'Approval requested':job.templateCode==='TEMP_ID_MANAGER_NOTICE'?'Digital ID issued':job.templateCode==='VISIT_DECIDED'?(d.visitStatus==='APPROVED'?'Visit approved':'Visit declined'):job.templateCode==='PASS_REISSUED'?'Pass replaced':job.templateCode==='PASS_DELIVERY'?'Your visitor pass':digitalId?'Your Digital ID request':d.requestType==='EMPLOYEE_PROJECT'?'Project visit request received':'Visitor request received';
   let personPhoto:MailMessage['personPhoto'];
   if(photo&&photoTemplates.includes(job.templateCode)){
    if(!Buffer.isBuffer(photo.bytes)||!photo.bytes.length||photo.bytes.length>5242880||!['image/jpeg','image/png','image/webp'].includes(photo.mimeType))throw new MailFailure('RENDER_FAILED');
    personPhoto={mimeType:photo.mimeType,contentBytes:photo.bytes.toString('base64')};
   }
-  const html=notificationEmailLayout({title,approval,manager:job.templateCode==='TEMP_ID_MANAGER_NOTICE',notice,status:d.visitStatus,personName:d.personName,companyName:extras.companyName,devices:extras.deviceTypes?.length?extras.deviceTypes.map(code=>deviceLabels[code]).join(', '):undefined,publicReference:d.publicReference,locationName:d.locationName,projectName:d.projectName,hostName:d.hostName,purpose:d.purpose,validFromUtc:d.validFromUtc,validUntilUtc:d.validUntilUtc,href,logo:!!this.#logo,photo:!!personPhoto});
-  const card=approval&&this.#outlook?outlookCardScript(await this.#outlook.render(job,to)):'';
+  const html=notificationEmailLayout({title,approval,manager:job.templateCode==='TEMP_ID_MANAGER_NOTICE',notice,digitalId,receipt,employee:digitalId||d.requestType==='EMPLOYEE_PROJECT'||job.templateCode==='TEMP_ID_MANAGER_NOTICE',status:d.visitStatus,personName:d.personName,companyName:extras.companyName,devices:extras.deviceTypes?.length?extras.deviceTypes.map(code=>deviceLabels[code]).join(', '):undefined,publicReference:d.publicReference,locationName:d.locationName,projectName:d.projectName,hostName:d.hostName,purpose:d.purpose,validFromUtc:d.validFromUtc,validUntilUtc:d.validUntilUtc,href,revokeHref,logo:!!this.#logo,photo:!!personPhoto});
+  const card=approval&&this.#outlook?outlookCardScript(await this.#outlook.render(job,to,!!personPhoto)):'';
   const content=card?html.replace('</head>',card+'</head>'):html;
   return{notificationId:String(job.notificationId),to,subject:title+' · '+d.personName.replace(/[\r\n\x00-\x1f\x7f]/gu,' ').slice(0,80)+(d.locationName?' · '+String(d.locationName).replace(/[\r\n\x00-\x1f\x7f]/gu,' ').slice(0,80):''),html:content,...(this.#logo?{inlineLogo:this.#logo}:{}),...(personPhoto?{personPhoto}:{})};
  }

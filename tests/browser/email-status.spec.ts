@@ -2,6 +2,19 @@ import {test,expect} from '@playwright/test';
 const visit='11111111-1111-4111-8111-111111111111';
 const png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aQ1cAAAAASUVORK5CYII=';
 const row=()=>({visitRequestId:visit,status:'PENDING',passStatus:'PENDING',personName:'Visitor 1',companyName:'Acme Corp',deviceTypes:['LAPTOP','TABLET'],publicReference:'V-test',locationName:'Noida',projectName:'Project 1',hostName:'Employee 19',reason:'Meeting',validFromUtc:new Date(Date.now()-3600000).toISOString(),validUntilUtc:new Date(Date.now()+3600000).toISOString()});
+for(const phase of ['headers','body'])test('approval detail timeout recovers after stalled '+phase,async({page})=>{
+ await page.clock.install();await page.addInitScript(phase=>{
+  const original=window.fetch.bind(window);let first=true;
+  window.fetch=async(input,init)=>{if(first&&String(input).endsWith('/host/detail')){first=false;const wait=()=>new Promise<never>((_,reject)=>init!.signal!.addEventListener('abort',()=>reject(new DOMException('Aborted','AbortError')),{once:true}));if(phase==='headers')return wait();return{ok:true,json:wait} as unknown as Response;}return original(input,init);};
+ },phase);
+ await page.route('**/api/email/host/detail',route=>route.fulfill({json:{...row(),canDecide:true,photoAvailable:false,snapshotVersion:1,snapshotHash:'a'.repeat(64)}}));
+ await page.goto('/approval/'+visit);await expect(page.locator('#refresh')).toBeDisabled();await page.clock.fastForward(30001);await expect(page.locator('#message')).toContainText('Request timed out');await expect(page.locator('#refresh')).toBeEnabled();await page.locator('#refresh').click();await expect(page.locator('#approve')).toBeEnabled();
+});
+test('timed-out decision releases controls and retains the same retry key after refresh',async({page})=>{
+ await page.clock.install();await page.addInitScript(()=>{const original=window.fetch.bind(window);let first=true;(window as any).decisionKeys=[];window.fetch=async(input,init)=>{if(String(input).endsWith('/host/decide')){(window as any).decisionKeys.push(JSON.parse(String(init!.body)).clientKey);if(first){first=false;return new Promise<never>((_,reject)=>init!.signal!.addEventListener('abort',()=>reject(new DOMException('Aborted','AbortError')),{once:true}));}}return original(input,init);};});
+ let approved=false;await page.route('**/api/email/host/**',route=>{if(route.request().url().endsWith('/decide')){approved=true;return route.fulfill({json:{visitRequestId:visit,decision:'APPROVED'}});}return route.fulfill({json:{...row(),status:approved?'APPROVED':'PENDING',passStatus:approved?'ACTIVE':'PENDING',canDecide:!approved,photoAvailable:false,snapshotVersion:1,snapshotHash:'a'.repeat(64)}});});
+ await page.goto('/approval/'+visit);await page.locator('#approve').click();await page.clock.fastForward(30001);await expect(page.locator('#message')).toContainText('Request timed out');await expect(page.locator('#refresh')).toBeEnabled();await page.locator('#refresh').click();await page.locator('#approve').click();await expect(page.locator('#message')).toHaveText('Approved');const keys=await page.evaluate(()=>(window as any).decisionKeys);expect(keys).toHaveLength(2);expect(keys[0]).toBe(keys[1]);
+});
 test('host approval waits for login detail and photo loading before accepting one click',async({page})=>{
  let signedIn=false,approved=false,decisions=0,release:()=>void=()=>{};const photo=new Promise<void>(resolve=>release=resolve);
  await page.route('**/api/dev/sso/login',route=>{signedIn=true;return route.fulfill({json:{ok:true}});});
@@ -55,6 +68,13 @@ test('open approved status removes its card when validity expires',async({page})
  await page.clock.install();const current={...row(),status:'APPROVED',passStatus:'ACTIVE',validUntilUtc:new Date(Date.now()+60000).toISOString()};
  await page.route('**/api/email/**',route=>{const path=new URL(route.request().url()).pathname;return route.fulfill({json:path.endsWith('/session')?{visitRequestId:visit}:path.endsWith('/detail')?current:{mimeType:'image/png',imageBase64:png}});});
  await page.goto('/request/'+visit+'#link=synthetic');await expect(page.locator('#card')).toBeVisible();await page.clock.fastForward(61000);await expect(page.locator('#message')).toHaveText('Expired');await expect(page.locator('#card')).toBeHidden();await expect(page.locator('#download')).toBeHidden();
+});
+
+test('an open approved status notices remote revocation without waiting for pass expiry',async({page})=>{
+ await page.clock.install();let revoked=false,reads=0;
+ await page.route('**/api/email/**',route=>{const path=new URL(route.request().url()).pathname;if(path.endsWith('/session'))return route.fulfill({json:{visitRequestId:visit}});if(path.endsWith('/detail')){reads++;return route.fulfill({json:{...row(),status:revoked?'CANCELLED':'APPROVED',passStatus:revoked?'REVOKED':'ACTIVE'}});}return route.fulfill({json:{mimeType:'image/png',imageBase64:png}});});
+ await page.goto('/request/'+visit+'#link=synthetic');await expect(page.locator('#card')).toBeVisible();expect(reads).toBe(1);revoked=true;
+ await page.clock.fastForward(30001);await expect(page.locator('#message')).toHaveText('Revoked');await expect(page.locator('#card')).toBeHidden();await expect(page.locator('#download')).toBeHidden();expect(reads).toBe(2);
 });
 test('two holder tabs remain isolated and uppercase/trailing-slash links use canonical cookie paths',async({page,context})=>{
  const other='abcdefab-cdef-4abc-8def-abcdefabcdef';

@@ -285,12 +285,13 @@ try {
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.IdempotencyRequests WHERE ClientKey=@key;' @{key=$taskParams.ClientKey}) -eq 0) 'Preflight persisted idempotency state.'
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT Status FROM gp.RegistrationIntakes WHERE IntakeId=@id;' @{id=$taskParams.IntakeId}) -eq 'DRAFT') 'Preflight consumed intake.'
     }
-    Test-Case 'Digital ID is auto-approved with one active pass presence and manager-only notification' {
+    Test-Case 'Digital ID is auto-approved with one active pass presence, manager notice and employee receipt' {
         $taskParams=New-Submission;$taskResult=Submit $taskParams;$taskVisit=$taskResult.visits[0]
         Assert-Condition ($taskVisit.status -eq 'APPROVED' -and -not $taskVisit.reused) 'Digital ID not approved.'
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.AccessPasses p JOIN gp.PassSecrets s ON s.AccessPassId=p.AccessPassId JOIN gp.VisitPresence v ON v.VisitRequestId=p.VisitRequestId WHERE p.AccessPassId=@id AND p.Status=''ACTIVE'' AND v.IsInside=0;' @{id=[guid]$taskVisit.accessPassId}) -eq 1) 'Initial pass/secret/presence missing.'
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin "SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId=@id AND TemplateCode='TEMP_ID_MANAGER_NOTICE' AND RecipientKind='MANAGER' AND RecipientEmployeeId=@employee AND RecipientEmail IS NULL;" @{id=[guid]$taskVisit.visitRequestId;employee=$taskFixture.hostEmployeeId}) -eq 1) 'Incorrect initial manager notice.'
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.ApprovalDecisions WHERE VisitRequestId=@id;' @{id=[guid]$taskVisit.visitRequestId}) -eq 0) 'Manager approval was introduced.'
+        Assert-Condition ((Invoke-GatePassScalar $taskAdmin "SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId=@id AND TemplateCode='REQUEST_RECEIVED' AND RecipientKind='EMPLOYEE' AND RecipientEmployeeId=@employee AND RecipientEmail=(SELECT OfficialEmail FROM gp.Employees WHERE EmployeeId=@employee);" @{id=[guid]$taskVisit.visitRequestId;employee=$taskFixture.hostEmployeeId}) -eq 1) 'Employee self receipt missing or misaddressed.'
     }
     foreach($taskReturnedType in @('TEMP_ID','EMPLOYEE_PROJECT')){
     Test-Case ("A returned "+$taskReturnedType+" permits a fresh request without reopening or reusing the returned pass") {
@@ -330,6 +331,7 @@ try {
         $taskFirst=Submit (New-Submission);$taskSecond=Submit (New-Submission)
         Assert-Condition ($taskFirst.visits[0].accessPassId -eq $taskSecond.visits[0].accessPassId -and $taskSecond.visits[0].reused) 'Daily credential was duplicated.'
         Assert-Condition ((New-VisitCount) -eq 1) 'Parallel daily visits created.'
+        Assert-Condition ((Invoke-GatePassScalar $taskAdmin "SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId=@id AND TemplateCode='REQUEST_RECEIVED';" @{id=[guid]$taskFirst.visits[0].visitRequestId}) -eq 1) 'Duplicate employee self receipt.'
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId=@id AND TemplateCode=''TEMP_ID_MANAGER_NOTICE'';' @{id=[guid]$taskFirst.visits[0].visitRequestId}) -eq 1) 'Duplicate manager notice.'
     }
     Test-Case 'An inside usable Digital ID is reused without creating another occupancy record' {
@@ -367,6 +369,12 @@ try {
         Assert-Condition ($taskResult.visits.Count -eq 3 -and @($taskResult.visits | Where-Object {$_.status -ne 'PENDING'}).Count -eq 0) 'Individual pending visits missing.'
         Assert-Condition ((New-VisitCount) -eq 3) 'Incorrect final visit count.'
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId IN(SELECT visitRequestId FROM OPENJSON(@j,''$.visits'') WITH(visitRequestId uniqueidentifier)) AND TemplateCode=''HOST_APPROVAL_REQUEST'';' @{j=($taskResult | ConvertTo-Json -Depth 6 -Compress)}) -eq 3) 'Individual notices missing.'
+    }
+    Test-Case 'Visitor email queues its own receipt and assigned-host approval exactly once on replay' {
+        $taskP=New-Submission 'EXTERNAL';$taskPeople=@($taskP.PeopleJson|ConvertFrom-Json);$taskPeople[0].personEmail='visitor@example.invalid';$taskP.PeopleJson=ConvertTo-Json -InputObject $taskPeople -Compress
+        $taskResult=Submit $taskP;$null=Submit $taskP;$taskVisit=$taskResult.visits[0]
+        Assert-Condition ((Invoke-GatePassScalar $taskAdmin "SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId=@id AND TemplateCode='REQUEST_RECEIVED' AND RecipientKind='EMAIL' AND RecipientEmail='visitor@example.invalid';" @{id=[guid]$taskVisit.visitRequestId}) -eq 1) 'Visitor receipt missing, duplicated or misaddressed.'
+        Assert-Condition ((Invoke-GatePassScalar $taskAdmin "SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId=@id AND TemplateCode='HOST_APPROVAL_REQUEST' AND RecipientKind='EMPLOYEE' AND RecipientEmployeeId=@host;" @{id=[guid]$taskVisit.visitRequestId;host=$taskP.HostEmployeeId}) -eq 1) 'Host notice missing, duplicated or misaddressed.'
     }
     Test-Case 'Independent host decisions do not approve or move other people from the same form' {
         $taskResult=Submit (New-Submission 'EXTERNAL' 3);$taskIndex=0

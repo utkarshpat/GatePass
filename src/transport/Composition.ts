@@ -91,6 +91,7 @@ export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): 
     actions.set('/api/email/host/detail',(session,body)=>email.detail(session,body,'HOST'));
     actions.set('/api/email/host/decide',(session,body)=>email.decide(session,body));
     actions.set('/api/email/request/detail',(session,body)=>email.detail(session,body,'OWN'));
+    actions.set('/api/email/request/revoke',(session,body)=>email.revoke(session,body));
     actions.set('/api/email/external/detail',(_session,body)=>email.external(body));
     actions.set('/api/visits/cancel', (session, body) => cancellation.cancel(session, body));
     for (const method of ['projects', 'guards', 'subjects', 'roles', 'summary', 'audit'] as const)
