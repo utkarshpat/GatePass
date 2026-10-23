@@ -31,6 +31,6 @@ Pre-push focused verification: **26 browser cases passed**, covering guard names
 
 Two installed, visible browsers (Chrome and Edge), with independent staff sessions and real local SQL, verified a newly created Noida common area appearing in the second administrator's catalogue without reload after **19,537 ms**. Audit history was visible in that second session. Earlier assignment checks confirmed SQL migration 075 invalidates the target guard's existing session; protected rows cleared on the next poll. A fresh guard sign-in then listed and authorized the new duty. These checks retained the realistic rehearsal areas and assignments. Ignored count/flag evidence: `output/live-pagination/two-browsers.json`; no real email worker was started.
 
-The complete browser suite is run after publishing this batch, with final results recorded in the release validation note.
+After the feature push, the complete browser run passed 114 cases with one opt-in skip. Enabling that retained presentation case separately passed as well: **115 distinct browser cases verified, zero failures**. See [release validation](64_Release_Validation_24_October_2026.md) for run boundaries, evidence and the historical-date test adjustment.
 
 No production latency percentage is inferred from mocked timing. Retained presentation records/photos/history are preserved.
