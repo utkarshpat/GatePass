@@ -103,3 +103,5 @@ The final full browser rerun passed all 65 tests after the roster deadlock-read 
 The current shared Add flow and area/guard cards are documented in [Unified projects and common areas](57_Unified_Projects_And_Common_Areas.md).
 
 For register data, choose **Noida → Project 1**, then **Visit register**. The status shows the selected scope and active sort. See [register loading and shared scrollbars](58_Visit_Register_Loading_And_Theme_Scrollbars.md).
+
+Presentation account lookup: [current login IDs, roles, locations and project/duty assignments](59_Presentation_Account_Role_Assignment_List.md), snapshotted from local SQL on 23 October.
