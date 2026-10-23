@@ -1,0 +1,20 @@
+import {test,expect} from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+const userId='11111111-1111-4111-8111-111111111111';
+for(const width of [390,1366])test(`Users & permissions excludes guard creation and retains guard onboarding separately at ${width}px`,async({page,context})=>{
+ await page.setViewportSize({width,height:844});await context.addCookies(['gp-staff-session','gp-staff-csrf'].map(name=>({name,value:'synthetic',url:'http://localhost:18447'})));
+ await page.route('**/api/admin/**',async route=>{const action=route.request().url().split('/').at(-1),reply=(json:any)=>route.fulfill({json});
+  if(action==='context')return reply({displayName:'Noida Admin',locations:[{locationId:1,locationName:'Noida',locationCode:'NOIDA'}]});
+  if(action==='projects')return reply({projects:[],cursor:null});
+  if(action==='scope')return reply({userId,currentDate:'2026-10-23',canReport:false,canReadVisits:false,canAudit:false,canAssignGuards:true,canManageRoles:true,canResetLocalStaff:true,roles:[],delegations:[],provisionableRoles:['GUARD','RECEPTION','LOCATION_ADMIN'].map(roleCode=>({roleCode}))});
+  return reply({areas:[],assignments:[],hasMore:false});
+ });
+ await page.goto('/admin');await page.getByRole('button',{name:'Users & permissions',exact:true}).click();await expect(page.locator('#admin-title')).toHaveText('Users & permissions');await page.getByRole('button',{name:'Add user',exact:true}).click();await expect(page.locator('#add-staff-title')).toHaveText('Add user');await expect(page.locator('#new-staff-role option')).toHaveCount(2);await expect(page.locator('#new-staff-role option[value=GUARD]')).toHaveCount(0);await expect(page.locator('#new-staff-role')).toHaveValue('RECEPTION');await page.locator('#new-staff-role').selectOption('LOCATION_ADMIN');await expect(page.locator('#new-staff-scope')).toHaveText('Scope: Noida');await expect(page.locator('#new-guard-project-label')).toBeHidden();
+ expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);await page.screenshot({path:`output/users-permissions-${width}.png`});await page.locator('#close-add-staff').click();
+ await page.getByRole('button',{name:'Guard assignments',exact:true}).click();await page.getByRole('button',{name:'Add guard',exact:true}).click();await expect(page.locator('#add-staff-title')).toHaveText('Add guard');await expect(page.locator('#new-staff-role option')).toHaveCount(1);await expect(page.locator('#new-staff-role')).toHaveValue('GUARD');await page.locator('#close-add-staff').click();await page.getByRole('button',{name:'Users & permissions',exact:true}).click();await page.getByRole('button',{name:'Add user',exact:true}).click();await expect(page.locator('#new-staff-role option[value=GUARD]')).toHaveCount(0);
+});
+test('guard-only provisioning does not expose Add user',async({page,context})=>{
+ await context.addCookies(['gp-staff-session','gp-staff-csrf'].map(name=>({name,value:'synthetic',url:'http://localhost:18447'})));
+ await page.route('**/api/admin/**',async route=>{const action=route.request().url().split('/').at(-1);return route.fulfill({json:action==='context'?{displayName:'Scoped Admin',locations:[{locationId:1,locationName:'Noida',locationCode:'NOIDA'}]}:action==='projects'?{projects:[],cursor:null}:action==='scope'?{userId,currentDate:'2026-10-23',canReport:false,canReadVisits:false,canAudit:false,canAssignGuards:true,canManageRoles:true,roles:[],delegations:[],provisionableRoles:[{roleCode:'GUARD'}]}:{areas:[],assignments:[],hasMore:false}});});
+ await page.goto('/admin');await page.getByRole('button',{name:'Users & permissions',exact:true}).click();await expect(page.getByRole('button',{name:'Add user',exact:true})).toBeHidden();await page.getByRole('button',{name:'Guard assignments',exact:true}).click();await expect(page.getByRole('button',{name:'Add guard',exact:true})).toBeVisible();
+});

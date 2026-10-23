@@ -4,7 +4,7 @@ Implemented in the local application on 23 October 2026. Current presentation ve
 
 ## Creating an account
 
-- **Staff & access → Add staff** creates an external/local identity. A corporate email or employee number is not required. Login IDs may be a unique Staff ID, such as `sec-noi-001`, or a valid email address.
+- **Users & permissions → Add user** creates a reception or permitted administrator account. Guard accounts are created from **Guard assignments → Add guard**. A corporate email or employee number is not required. Login IDs may be a unique Staff ID, such as `sec-noi-001`, or a valid email address.
 - **Guard assignments → Add guard** uses the same account flow, with an option to allocate the selected project immediately. Without a selected project, assign duty afterward.
 - Available roles are supplied by the server. Account creation requires both role delegation and staff credential authority. Location administrators may create guards/reception accounts in their own office. India/platform administrators remain bounded by the existing delegation rules. Project administrators cannot create local accounts.
 - Internal employees continue through directory/SSO discovery and role assignment. Project leads must be internal employees; the local account form cannot create a project lead.
@@ -38,3 +38,9 @@ Migrations 081–083 add the procedures, scoped UI context, safe audit snapshots
 Tests cover actual SQL creation/setup/reset and idempotency, denied superior roles and foreign offices, reception/guard assignment separation, safe audit metadata, password setup and sign-in through the UI, password reset, and phone/laptop rendering. Disposable fixtures are removed by their unique run ID.
 
 Organization deployment still requires the existing production identity, directory, database, HTTPS and secret-provider configuration. This adds no separate HR provisioning integration or automatic delivery of credentials.
+
+## Users and guard workflow separation
+
+The page is labelled **Users & permissions** in navigation and headings. **Add user** excludes Guard and appears only when the server permits at least one other role. **Guard assignments → Add guard** offers only Guard. Existing user search, role/permission grants and revocations, and password setup/reset remain available under their existing scope checks, including managing an existing guard identity. Both onboarding entry points use the existing audited backend; this UI change adds no migration or permission grant. Browser checks cover both routes, guard-only capabilities, mobile/desktop accessibility and real guard/reception setup, sign-in and reset.
+
+Validation for this separation on 23 October: 11/11 affected Chromium tests passed, including 390px/1366px accessibility, separate role pickers, guard-only provisioning, existing role/scope flows and actual guard/reception setup, login and reset. TypeScript, ESLint and all 87 migration hashes passed.

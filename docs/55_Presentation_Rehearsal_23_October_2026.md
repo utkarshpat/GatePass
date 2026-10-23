@@ -57,7 +57,7 @@ Signed external holder pages were exercised for Ananya (Pending), Rohan (Approve
 4. Open the pass preview and Print/Reprint. These create audited browser handoffs. They do not establish that paper was physically printed.
 5. Sign in as guard; choose **Project 1 · Project**. Meera appears in **Inside**. Rohan is ready for a live check-in; check him out afterward to leave a complete timeline. Common-area duties verify identity without project movement.
 6. For an outside printed visitor, reception's card-status control requires confirmation of every declared device before final return. Priya demonstrates a correction with a mandatory reason and retained audit history. Do not return Meera while she is still inside.
-7. Open all seven admin modules: Overview, Projects & leads, Staff & access, Guard assignments, Offices & QR, Visit register and Audit log. In the register, choose 23 October, filter by a retained name, change columns/sort, open the visit timeline and download the Excel register. Show project/office-scoped controls, guard roster grouping and the QR standee.
+7. Open all seven admin modules: Overview, Projects & areas, Users & permissions, Guard assignments, Offices & QR, Visit register and Audit log. In the register, choose 23 October, filter by a retained name, change columns/sort, open the visit timeline and download the Excel register. Show project/office-scoped controls, guard roster grouping and the QR standee.
 8. Use the four office landing URLs to show office-specific entry. Use employee self-service for a new Digital ID or additional/cross-office project request, then the matching host approval page.
 
 ## Reproduce the retained browser rehearsal

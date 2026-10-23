@@ -15,7 +15,7 @@
 - **Steps**:
   1. Sign in at `/` with `admin1@example.com` / `Sopra@123`.
   2. Verify `/admin` loads **Overview**; the header shows no "Admin Console" tag and the active office sits beside the profile icon as a circular pill (static for a single office, dropdown for several). There is no empty band above the first block.
-  3. In the scope bar, pick the Project scope (the selector is hidden when only one project is authorized) and a date range (`#overview-from` / `#overview-to`, max 31 days, or the Today / 7 days / 30 days chips). Changes apply automatically — there is no Apply button. The scope bar appears only on Overview, Staff & access, Visit register and Audit log; Projects & areas, Guard assignments and Offices & QR do not depend on it, and **Refresh** moves into their page header.
+  3. In the scope bar, pick the Project scope (the selector is hidden when only one project is authorized) and a date range (`#overview-from` / `#overview-to`, max 31 days, or the Today / 7 days / 30 days chips). Changes apply automatically — there is no Apply button. The scope bar appears only on Overview, Users & permissions, Visit register and Audit log; Projects & areas, Guard assignments and Offices & QR do not depend on it, and **Refresh** moves into their page header.
   4. Inspect the KPI cards (`Registered`, `Pending`, `Approved`, `Denied`; cancelled visits are not shown, so Registered = Pending + Approved + Denied), the Approval status donut, the Daily registrations column chart (single-day ranges show a status comparison bar chart) and the Current recorded presence cards.
 - **Expected Result**:
   - KPIs, charts and presence update for the selected project scope and date range; presence always reflects the latest recorded state.
@@ -29,9 +29,9 @@
 - **Expected Result**:
   - `PROJECT_ADMIN` role grant is created and then revoked with idempotent `clientKey` and audit logging; target user's `AuthorizationVersion` increments.
 
-### TC-ADM-03: Staff & Access Role Management (`#admin-staff`)
+### TC-ADM-03: Users & Permissions Role Management (`#admin-staff`)
 - **Steps**:
-  1. Navigate to **Staff & access** (`[data-admin-view="staff"]`).
+  1. Navigate to **Users & permissions** (`[data-admin-view="staff"]`).
   2. Search for a staff/employee name (e.g., `Employee` or `Guard`) and click **Manage access**.
   3. Toggle Role history between `Current active roles` and `All roles history`.
   4. Select a role/scope in `#staff-role`, select workspace capabilities, enter justification in `#staff-reason`, and click **Assign role**.
