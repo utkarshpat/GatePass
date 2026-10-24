@@ -1,6 +1,10 @@
+Latest pre-push audit: [bug fixes and complete E2E verification](../69_Pre_Push_Audit_And_E2E_24_October_2026.md).
+
+> Latest local improvements: [Workspace optimization, Action centre and full size images](../68_Workspace_Optimization_And_Action_Centre.md), through migrations **001–096**. Earlier exports and run reports below are historical snapshots.
+
 # GatePass System Documentation
 
-> Current 24 October evidence and presentation instructions: [final browser verification](../67_Final_Browser_Verification_And_Presentation.md), [count reconciliation and edge cases](../66_Final_E2E_Counts_And_Edge_Cases_24_October_2026.md), and [browser exposure fixes](../65_Browser_Data_Exposure_Audit_24_October_2026.md). Current source migrations are **001–090**. The handbook/export below is a dated baseline; use the newer reports for current validation results.
+> Current 24 October evidence and presentation instructions: [final browser verification](../67_Final_Browser_Verification_And_Presentation.md), [count reconciliation and edge cases](../66_Final_E2E_Counts_And_Edge_Cases_24_October_2026.md), and [browser exposure fixes](../65_Browser_Data_Exposure_Audit_24_October_2026.md). Current source migrations are **001–096**. The handbook/export below is a dated baseline; use the newer reports for current validation results.
 
 > Latest local implementation and evidence: [23 October retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md), through migration 088. The 22 October handbook/export and hash snapshot below remain a dated baseline. Current increments include visitor company/devices, admin register/Excel/timelines, reception lookup/return correction local staff onboarding and office-scoped project creation.
 

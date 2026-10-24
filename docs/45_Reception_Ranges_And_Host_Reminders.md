@@ -1,5 +1,7 @@
 # Reception ranges and scoped host reminders
 
+Current inline notification behavior is documented in [the 24 October pre-push audit](69_Pre_Push_Audit_And_E2E_24_October_2026.md). Migration 096 adds a separate Action centre reminder operation for current project/common-area guard duties and authorized reception/admin scopes. The legacy detail-dialog reminder restrictions described below remain unchanged.
+
 Reception now places its title below the navigation, uses a compact Project column and icon-only View pass, and opens a pass when the row or keyboard-focused row is activated. Printing remains a separate action. Table cells retain their table display role on desktop; action buttons cannot overlap the card badge. Phone layout remains stacked.
 
 History accepts inclusive From/To dates within the existing office calendar bounds. It reads every day and cursor in the selected range, with cancellation/version checks; the current-day main list is unchanged. Invalid inverted ranges are rejected. A refresh retains the visible rows until a new response arrives; a failed initial context request has a visible recoverable error instead of silently clearing the page. Office switches clear previous office rows. Private visit data is not stored in browser persistence.

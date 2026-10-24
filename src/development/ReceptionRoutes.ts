@@ -11,7 +11,7 @@ import type {VisitReadService,VisitPhotoService} from '../visits/VisitReadServic
 import type {OwnDigitalIdCardService} from '../printing/OwnDigitalIdCardService.ts';
 import {OwnCardError} from '../printing/OwnDigitalIdCardService.ts';
 import type {PassPrintService,PassRenderService} from '../printing/PassPrintService.ts';
-const paths=['login','me','logout','list','detail','photo','preview','print/request','print/status','print/render','remind-host','return','lookup','correct-return'].map(p=>'/api/reception/'+p);
+const paths=['login','me','logout','list','detail','photo','preview','print/request','print/status','print/render','remind-host','return','lookup','correct-return','queue'].map(p=>'/api/reception/'+p);
 export class ReceptionRoutes implements AdditionalHttpRoutes{
  private reminders?:HostReminderService;
  #sso:DummyEmployeeSso;#workspace:ReceptionService;#reads:VisitReadService;#photos:VisitPhotoService;#cards:OwnDigitalIdCardService;#printing:PassPrintService;#render:PassRenderService;#rendering=0;#staff?:{verify(session:{sessionToken:string;csrfToken:string}):Promise<boolean>};
@@ -39,6 +39,7 @@ export class ReceptionRoutes implements AdditionalHttpRoutes{
   if(path==='/api/reception/correct-return'){try{return await this.#workspace.correctReturn(session,input);}catch(error){if((error as {code?:string})?.code==='INSIDE_PROJECT')throw new HttpFailure(409);throw error;}}
   if(path==='/api/reception/return'){try{return await this.#workspace.returnPass(session,input);}catch(error){if((error as {code?:string})?.code==='INSIDE_PROJECT')throw new HttpFailure(409);throw error;}}
   if(path==='/api/reception/remind-host'){if(!this.reminders)throw new HttpFailure(503);return this.reminders.run(session,input,'RECEPTION');}
+  if(path==='/api/reception/queue')return this.#workspace.queue(session,input);
   if(path===paths[3])return this.#workspace.list(session,input);
   if(path===paths[7])return this.#printing.request(session,input);
   const key=path===paths[8]||path===paths[9]?'printJobId':'visitRequestId';if(Object.keys(input).length!==1||!Object.hasOwn(input,key))throw new HttpFailure(400);

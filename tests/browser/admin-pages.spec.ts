@@ -1,3 +1,4 @@
+import{summaryRange}from'./summary-fixture.ts';
 import {test,expect} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 const adminId='11111111-1111-4111-8111-111111111111',guardA='22222222-2222-4222-8222-222222222222',guardB='33333333-3333-4333-8333-333333333333';
@@ -10,7 +11,7 @@ test('admin pages show scope controls only where they apply, roster, visit timel
   if(action==='context')return reply({displayName:'Scoped Admin',locations:[{locationId:1,locationCode:'NOIDA',locationName:'Noida',canManageCommonAreas:true}]});
   if(action==='projects')return reply({projects:['1','2'].map(n=>({projectLocationId:n,projectId:n,projectName:n==='1'?'Project Alpha':'Project Beta',projectCode:n==='1'?'ALPHA':'BETA',directoryCurrent:true,canAssignLocation:true,canAssignProject:false})),cursor:null});
   if(action==='scope')return reply({userId:adminId,currentDate:'2026-10-22',canReport:true,canReadVisits:true,canAudit:true,canManageRoles:true,canAssignGuards:true,roles:[{roleCode:'LOCATION_ADMIN',scopeType:'LOCATION'}],delegations:[]});
-  if(action==='summary')return reply({visits:{total:'0',pending:'0',approved:'0',denied:'0',cancelled:'0'},recordedPresence:{projectVisitsInside:'0',digitalIdsInside:'0'}});
+  if(action==='summary-range')return reply(summaryRange(d,{visits:{total:'0',pending:'0',approved:'0',denied:'0',cancelled:'0'},recordedPresence:{projectVisitsInside:'0',digitalIdsInside:'0'}}));
   if(action==='leads')return reply({leads:d.projectLocationId==='1'?[{roleGrantId:'1',displayName:'Lead One',employeeId:'E1',email:'lead@example.invalid',scopeType:'PROJECT_LOCATION',canRemove:false}]:[],cursor:null});
   if(action==='guards')return reply({guards:[{userId:guardA,displayName:'Guard A',overlappingAssignment:false,canAllocate:true},{userId:guardB,displayName:'Guard B',overlappingAssignment:false,canAllocate:true}],hasMore:false,afterUserId:null});
   if(action==='assignments')return reply({assignments:d.projectLocationId==='1'?[{assignmentId:'7',userId:guardA,guardName:'Guard A',validFromUtc:'2026-10-21T00:00:00.000Z',validUntilUtc:null}]:[],cursor:null});

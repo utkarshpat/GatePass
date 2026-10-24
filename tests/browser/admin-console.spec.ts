@@ -1,3 +1,4 @@
+import{summaryRange}from'./summary-fixture.ts';
 import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 const id='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222';
@@ -8,7 +9,7 @@ for(const width of [390,1366])test(`admin modules preserve scope and support rol
  if(action==='context')return reply({displayName:'Scoped Admin',locations:[{locationId:1,locationCode:'NOIDA',locationName:'Noida',canManageCommonAreas:true}]});
  if(action==='projects')return reply({projects:[{projectLocationId:'1',projectId:'1',projectName:'Project Alpha',projectCode:'ALPHA',directoryCurrent:true,canAssignLocation:true,canAssignProject:false}],cursor:null});
  if(action==='scope')return reply({userId:id,currentDate:'2026-10-22',canReport:true,canReadVisits:true,canAudit:true,canManageRoles:true,canAssignGuards:true,roles:[{roleCode:'LOCATION_ADMIN',scopeType:'LOCATION'}],delegations:[{roleCode:'GUARD',scopeType:'LOCATION'},{roleCode:'RECEPTION',scopeType:'LOCATION'},...(d.projectLocationId?[{roleCode:'PROJECT_ADMIN',scopeType:'PROJECT_LOCATION'}]:[])]});
- if(action==='summary')return reply({visits:{total:'4',pending:'1',approved:'2',denied:'1',cancelled:'0'},recordedPresence:{projectVisitsInside:'1',digitalIdsInside:'0'}});
+ if(action==='summary-range')return reply(summaryRange(d,{visits:{total:'4',pending:'1',approved:'2',denied:'1',cancelled:'0'},recordedPresence:{projectVisitsInside:'1',digitalIdsInside:'0'}}));
  if(action==='subjects')return reply({users:[{userId:other,displayName:'Staff Member',active:true}],hasMore:false,afterUserId:null});
  if(action==='roles')return reply({grants:revoked?[]:[{roleGrantId:'5',userId:other,roleCode:'GUARD',scopeType:'LOCATION',locationId:1,projectId:null,projectLocationId:null,validFromUtc:'2026-10-21T00:00:00.000Z',validUntilUtc:null,revoked:false,capabilities:['VISITS_READ','PROJECT_MOVEMENT']}],hasMore:false});
  if(['grant','revoke','allocate','deallocate'].includes(action!)){writes.push({action,...d});if(action==='revoke')revoked=true;if(action==='allocate')allocated=true;return reply({ok:true});}
@@ -42,9 +43,9 @@ test('project admin falls back to its assigned project and cannot see office-wid
  if(action==='projects')return route.fulfill({json:{projects:[{projectLocationId:'10',projectId:'2',projectName:'Scoped Project',projectCode:'SCOPE',directoryCurrent:true,canAssignLocation:true,canAssignProject:false}],cursor:null}});
  if(action==='scope'&&!d.projectLocationId)return route.fulfill({status:403,json:{error:'NOT_AUTHORIZED'}});
  if(action==='scope')return route.fulfill({json:{userId:id,currentDate:'2026-10-22',canReport:true,canReadVisits:true,canAudit:false,canAssignGuards:true,canManageRoles:true,roles:[{roleCode:'PROJECT_ADMIN',scopeType:'PROJECT_LOCATION'}],delegations:[{roleCode:'PROJECT_ADMIN',scopeType:'PROJECT_LOCATION'}]}});
- if(action==='summary')return route.fulfill({json:{visits:{total:'1',pending:'1',approved:'0',denied:'0',cancelled:'0'},recordedPresence:{projectVisitsInside:'0',digitalIdsInside:'0'}}});
+ if(action==='summary-range')return route.fulfill({json:summaryRange(d,{visits:{total:'1',pending:'1',approved:'0',denied:'0',cancelled:'0'},recordedPresence:{projectVisitsInside:'0',digitalIdsInside:'0'}})});
  return route.fulfill({json:{users:[],grants:[],hasMore:false}});});
- await page.goto('/admin');await expect(page.locator('#summary-cards')).toContainText('Registered');await expect(page.locator('#console-project')).toHaveValue('10');await expect(page.locator('[data-admin-view="audit"]')).toBeHidden();await expect(page.locator('.area-card')).toHaveCount(0);expect(requests.find(x=>x.action==='summary')).toMatchObject({locationId:1,projectLocationId:'10'});
+ await page.goto('/admin');await expect(page.locator('#summary-cards')).toContainText('Registered');await expect(page.locator('#console-project')).toHaveValue('10');await expect(page.locator('[data-admin-view="audit"]')).toBeHidden();await expect(page.locator('.area-card')).toHaveCount(0);expect(requests.find(x=>x.action==='summary-range')).toMatchObject({locationId:1,projectLocationId:'10'});
  await page.locator('[data-admin-view="staff"]').click();await expect(page.locator('#staff-role option')).toHaveCount(1);await expect(page.locator('#staff-role')).toContainText('Project admin');
  await expect(page.locator('#add-staff-open')).toBeHidden();await expect(page.locator('#add-guard-open')).toBeHidden();await expect(page.locator('#reset-staff-setup')).toBeHidden();await expect(page.locator('#console-project option[value=""]')).toHaveCount(0);await page.locator('#refresh').click();await expect(page.locator('#admin-staff')).toBeVisible();await expect(page.locator('#console-project')).toHaveValue('10');
 });

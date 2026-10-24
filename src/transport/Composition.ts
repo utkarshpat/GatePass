@@ -1,3 +1,5 @@
+import {ReceptionService} from '../reception/ReceptionService.ts';
+import {ActionCentreService} from '../operations/ActionCentreService.ts';
 import {EmailPublicRoutes} from './EmailPublicRoutes.ts';
 import {createOutlookActionHandler} from './OutlookActionHandler.ts';
 import {OutlookDecisionService} from '../email/OutlookDecisionService.ts';
@@ -57,7 +59,12 @@ export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): 
     const cancellation = new VisitCancellationService(new SqlVisitCancellationRepository(api));
     const staff = new StaffAdministrationService(new SqlStaffAdministrationRepository(api));
     const admin = new AdministrationReadService(new SqlAdministrationReadRepository(api));
+    const reception=new ReceptionService(api);
+    const actionCentre=new ActionCentreService(api);
     const actions = new Map<string, ApiAction>();
+    actions.set('/api/reception/queue',(session,body)=>reception.queue(session,body as Record<string,unknown>));
+    actions.set('/api/operations/actions',(session,body)=>actionCentre.read(session,body as Record<string,unknown>));
+    actions.set('/api/operations/remind',(session,body)=>actionCentre.remind(session,body as Record<string,unknown>));
     for (const view of ['OWN', 'HOST', 'GUARD', 'RECEPTION', 'ADMIN'] as const) {
       const prefix = '/api/' + view.toLowerCase();
       actions.set(prefix + '/visits/list', (session, body) => reads.list({ ...session, view }, body));
@@ -78,6 +85,7 @@ export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): 
       return reads.workContexts({ ...session, view: 'GUARD' }, data.locationId);
     });
     actions.set('/api/guard/duties',(session,body)=>duty.duties(session,body));
+    actions.set('/api/guard/queue',(session,body)=>duty.queue(session,body));
     actions.set('/api/guard/visitors',(session,body)=>duty.visitors(session,body));
     actions.set('/api/admin/common-duties',(session,body)=>duty.administration(session,body));
     actions.set('/api/admin/common-duty',(session,body)=>duty.manage(session,body));
@@ -96,6 +104,7 @@ export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): 
     actions.set('/api/visits/cancel', (session, body) => cancellation.cancel(session, body));
     for (const method of ['projects', 'guards', 'subjects', 'roles', 'summary', 'audit'] as const)
       actions.set('/api/admin/' + method, (session, body) => admin[method](session, body));
+    actions.set('/api/admin/summary-range',(session,body)=>admin.summaryRange(session,body));
     for (const method of ['allocate', 'deallocate', 'grant', 'revoke'] as const)
       actions.set('/api/admin/staff/' + method, (session, body) => staff[method](session, body));
     return actions;

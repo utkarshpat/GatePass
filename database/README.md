@@ -1,6 +1,8 @@
+Latest pre-push audit: [bug fixes and complete E2E verification](../docs/69_Pre_Push_Audit_And_E2E_24_October_2026.md).
+
 # GatePass database — current local implementation
 
-> Current source: migrations 001–085. See [23 October browser rehearsal and migration notes](../docs/55_Presentation_Rehearsal_23_October_2026.md). Migration 084 bounds device canonicalization to avoid oversized SQL memory grants. This guide retains historical staged setup examples; the baseline helper alone does not install the complete current application. Start with [the consolidated handbook](../docs/system/README.md) and inspect the actual runner/source ledger before applying missing migrations.
+> Current source: migrations 001–096. See [workspace optimization and Action centre](../docs/68_Workspace_Optimization_And_Action_Centre.md) for forward migrations 091–096. See [23 October browser rehearsal and migration notes](../docs/55_Presentation_Rehearsal_23_October_2026.md). Migration 084 bounds device canonicalization to avoid oversized SQL memory grants. This guide retains historical staged setup examples; the baseline helper alone does not install the complete current application. Start with [the consolidated handbook](../docs/system/README.md) and inspect the actual runner/source ledger before applying missing migrations.
 
 
 Start with [the numbered design guide](../docs/database/00_READ_ME_FIRST.md).

@@ -88,5 +88,11 @@
   "087_project_code_hyphens.sql": "33065ba31a627c1a9f9b1992cff9f7e0adc06af6f976e507c7fea51c1c0fa6db",
   "088_notification_person_photos.sql": "49625ca8dfa7ffb97b685772ebaff263caeeeafc60c696e808096fbfc5ddcd64",
   "089_consistent_register_exports.sql": "b13fa231e3b4bbfaeaca65309dd766907b266b0af986617dbd6d7b7e7077d4e3",
-  "090_email_holder_revocation.sql": "e210aa4aabe5638bfd1f62190b907841b4757f42f7ce8aa227cdc10137fea4d3"
+  "090_email_holder_revocation.sql": "e210aa4aabe5638bfd1f62190b907841b4757f42f7ce8aa227cdc10137fea4d3",
+  "091_operational_summary_range.sql": "1462d6f259b467dea65e5fec9ee66597d7e3fd9bb609e85bdb189e3cf36a1b6b",
+  "092_workspace_queue_paging.sql": "bffe70c97c1f79eb1b013b27a1c79a5710543e6981739e57bebcb897c383a6df",
+  "093_action_centre.sql": "1a64436a921d1b688cedfd3a2e0cf8c91ecc14eb95c8d457ab38dd5f30710b24",
+  "094_action_read_fencing.sql": "fde8bbdce1d05af1b5a70486a9359d72a7153a7967270a1bf9ac439f1fd5b165",
+  "095_reception_owned_return_followups.sql": "f4bae57bb56322924e168c52ab3fb6d564da4dc2471e438cd64b730506d08dcd",
+  "096_action_centre_reminders.sql": "1ff451401b7a63ba42abc09621957a411f8fe043e9135e58eaec60659c30a6c3"
 }

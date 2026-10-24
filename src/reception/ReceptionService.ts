@@ -44,7 +44,7 @@ export class ReceptionService{
  async context(session:{sessionToken:string;csrfToken:string}){
   const row=await this.#call('gp.GetReceptionContext',receptionIdentity(session));requireOutput(text(row.displayName,200)&&isDate(row.currentDate)&&Array.isArray(row.locations)&&row.locations.length>0&&row.locations.length<=50);
   const locations=row.locations.map((l:any)=>{requireOutput(int(l.locationId)&&text(l.locationName,150)&&text(l.locationCode,16)&&typeof l.canPrint==='boolean');return {locationId:l.locationId,locationName:l.locationName,locationCode:l.locationCode,canPrint:l.canPrint};});
-  requireOutput(new Set(locations.map((l:any)=>l.locationId)).size===locations.length);return {displayName:row.displayName,currentDate:row.currentDate,locations};
+  requireOutput(new Set(locations.map((l:any)=>l.locationId)).size===locations.length);return {queuePaging:true,displayName:row.displayName,currentDate:row.currentDate,locations};
  }
  async timeline(session:{sessionToken:string;csrfToken:string},visitRequestId:unknown){
   requireInput(isUuid(visitRequestId));const row=await this.#call('gp.GetReceptionEmployeeTimeline',{...receptionIdentity(session),VisitRequestId:{type:'guid',value:String(visitRequestId).toLowerCase()}});
@@ -59,6 +59,9 @@ export class ReceptionService{
   const status=input.status??'ALL';requireInput(['ALL','PENDING','APPROVED','DENIED','CANCELLED'].includes(String(status)));
   const cursor=input.cursor as any;requireInput(cursor===undefined||cursor&&typeof cursor==='object'&&Object.keys(cursor).sort().join('|')==='submittedAtUtc|visitRequestId'&&isUtc(cursor.submittedAtUtc)&&isUuid(cursor.visitRequestId));
   const row=await this.#call('gp.ListReceptionVisits',{...receptionIdentity(session),PendingReturns:{type:'bit',value:input.pendingReturns===true},LocationId:{type:'int',value:Number(input.locationId)},LocalVisitDate:{type:'date',value:input.visitDate as string??null},Search:{type:'text',value:input.search as string??null},Status:{type:'text',value:String(status)},AfterSubmittedAtUtc:{type:'datetime',value:cursor?.submittedAtUtc??null},AfterVisitRequestId:{type:'guid',value:cursor?.visitRequestId??null}});
+  return this.#listRows(row,input);
+ }
+ #listRows(row:any,input:Record<string,unknown>){
   requireOutput(Array.isArray(row.visits)&&row.visits.length<=50&&typeof row.hasMore==='boolean'&&isDate(row.visitDate));
   const visits=row.visits.map((v:any)=>{
    requireOutput(isUuid(v.visitRequestId)&&isUuid(v.accessPassId)&&text(v.personName,200)&&text(v.publicReference,40)&&text(v.publicPassNumber,50)&&['DIGITAL_ID','EMPLOYEE_PROJECT','EXTERNAL'].includes(v.requestType)&&['PENDING','APPROVED','DENIED','CANCELLED'].includes(v.status)&&['PENDING','ACTIVE','DENIED','REVOKED'].includes(v.passStatus)&&typeof v.isInside==='boolean'&&isUtc(v.validFromUtc)&&isUtc(v.validUntilUtc)&&isUtc(v.submittedAtUtc)&&Number.isInteger(v.printCount)&&v.printCount>=0);
@@ -76,4 +79,15 @@ export class ReceptionService{
   requireOutput(row.pendingReturnCount===undefined||Number.isSafeInteger(row.pendingReturnCount)&&row.pendingReturnCount>=0);
   return {visits,visitDate:row.visitDate,pendingReturnCount:row.pendingReturnCount??null,cursor:row.hasMore?{submittedAtUtc:row.afterSubmittedAtUtc,visitRequestId:row.afterVisitRequestId.toLowerCase()}:null};
  }
+ async queue(session:{sessionToken:string;csrfToken:string},input:Record<string,unknown>){
+  requireInput(Object.keys(input).every(k=>['locationId','visitDate','search','status','cursor','pendingReturns','typeFilter','printFilter','insideOnly'].includes(k))&&int(input.locationId));
+  requireInput(input.visitDate===undefined||isDate(input.visitDate));requireInput(input.search===undefined||typeof input.search==='string'&&input.search.length<=100&&!/[\u0000-\u001f\u007f]/u.test(input.search));
+  requireInput((input.pendingReturns===undefined||typeof input.pendingReturns==='boolean')&&(input.insideOnly===undefined||typeof input.insideOnly==='boolean'));
+  const status=input.status??'ALL',type=input.typeFilter??'ALL',print=input.printFilter??'ALL';requireInput(['ALL','PENDING','APPROVED','DENIED','CANCELLED','REVOKED','EXPIRED'].includes(String(status))&&['ALL','EMPLOYEE','VISITOR'].includes(String(type))&&['ALL','PRINTED','UNPRINTED','PENDING_RETURN','RETURNED'].includes(String(print)));
+  const cursor=input.cursor as any;requireInput(cursor===undefined||cursor&&typeof cursor==='object'&&Object.keys(cursor).sort().join('|')==='submittedAtUtc|visitRequestId'&&isUtc(cursor.submittedAtUtc)&&isUuid(cursor.visitRequestId));
+  const row=await this.#call('gp.ReadReceptionQueue',{...receptionIdentity(session),PendingReturns:{type:'bit',value:input.pendingReturns===true},LocationId:{type:'int',value:Number(input.locationId)},LocalVisitDate:{type:'date',value:input.visitDate as string??null},Search:{type:'text',value:input.search as string??null},Status:{type:'text',value:String(status)},TypeFilter:{type:'text',value:String(type)},PrintFilter:{type:'text',value:String(print)},InsideOnly:{type:'bit',value:input.insideOnly===true},AfterSubmittedAtUtc:{type:'datetime',value:cursor?.submittedAtUtc??null},AfterVisitRequestId:{type:'guid',value:cursor?.visitRequestId??null}});
+  const page=this.#listRows(row,input),c=row.counts;requireOutput(c&&['total','pending','inside'].every(k=>Number.isSafeInteger(c[k])&&c[k]>=0)&&c.pending<=c.total&&c.inside<=c.total&&c.total>=page.visits.length);
+  return{...page,counts:{total:c.total,pending:c.pending,inside:c.inside}};
+ }
+
 }

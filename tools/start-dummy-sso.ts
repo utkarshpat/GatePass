@@ -1,3 +1,6 @@
+import {ActionCentreService} from '../src/operations/ActionCentreService.ts';
+import {ActionCentreRoutes} from '../src/development/ActionCentreRoutes.ts';
+import{PhotoThumbnails}from'../src/visits/PhotoThumbnails.ts';
 import {AdministrationReadService,SqlAdministrationReadRepository} from '../src/administration/AdministrationReadService.ts';
 import {AdminConsoleService} from '../src/administration/AdminConsoleService.ts';
 import {HostReminderService} from '../src/email/HostReminderService.ts';
@@ -27,7 +30,7 @@ import {NodeQrMatrixEncoder} from '../src/printing/NodeQrMatrixEncoder.ts';
 import { getCountries } from 'libphonenumber-js/max';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { randomBytes } from 'node:crypto';
+import { createHash,randomBytes } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -72,18 +75,24 @@ try {
   const cropScript=await readFile(new URL('../src/app/photo-crop.js',import.meta.url),'utf8');
   const html = markup.replace('__APP_STYLES__',()=>globalStyles+'\n'+styles).replace('__APP_SCRIPT__',()=>phoneLibrary+'\n'+visitorComponents+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+cropScript+'\n'+script);
   const liveRefreshScript=await readFile(new URL('../src/app/live-refresh.js',import.meta.url),'utf8');
+  const actionScript=await readFile(new URL('../src/app/action-centre.js',import.meta.url),'utf8');
+  const imageViewerScript=await readFile(new URL('../src/app/image-viewer.js',import.meta.url),'utf8');
+  const imageViewerStyles=await readFile(new URL('../src/app/image-viewer.css',import.meta.url),'utf8');
+  const actionStyles=await readFile(new URL('../src/app/action-centre.css',import.meta.url),'utf8');
   const workspaceShellStyles=await readFile(new URL('../src/app/workspace-shell.css',import.meta.url),'utf8');
   const [adminMarkup,adminStyles,adminScript]=await Promise.all(['admin.html','admin.css','admin.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')));
-  const adminHtml=adminMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+adminStyles).replace('__SCRIPT__',()=>toastScript+'\n'+selectScript+'\n'+liveRefreshScript+'\n'+adminScript);
+  const adminHtml=adminMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+adminStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>toastScript+'\n'+selectScript+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+adminScript+'\n'+imageViewerScript);
   const guardI18n=await readFile(new URL('../src/app/guard-i18n.js',import.meta.url),'utf8');
   const guardNames=await readFile(new URL('../src/app/guard-names.js',import.meta.url),'utf8');
   const [guardMarkup,guardStyles,guardScript,qrDecoder]=await Promise.all(['../src/app/guard.html','../src/app/guard.css','../src/app/guard.js','../node_modules/@zxing/library/umd/index.min.js'].map(name=>readFile(new URL(name,import.meta.url),'utf8')));
-  const guardHtml=guardMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+guardStyles).replace('__SCRIPT__',()=>qrDecoder+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+guardI18n+'\n'+guardNames+'\n'+liveRefreshScript+'\n'+guardScript);
+  const qrDecoderUrl='/assets/qr-decoder-'+createHash('sha256').update(qrDecoder).digest('hex').slice(0,16)+'.js';
+  const qrLoader=(await readFile(new URL('../src/app/qr-decoder.js',import.meta.url),'utf8')).replace('__QR_DECODER_URL__',qrDecoderUrl);
+  const guardHtml=guardMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+guardStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>qrLoader+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+guardI18n+'\n'+guardNames+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+guardScript+'\n'+imageViewerScript);
   const staffStyles=await readFile(new URL('../src/app/staff-entry.css',import.meta.url),'utf8');
   const staffBrand=(await readFile(new URL('../assets/brand/gatepass-logo.png',import.meta.url))).toString('base64');
   const staffHtml=staffMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+staffStyles).replace('__GATEPASS_LOGO__',staffBrand).replace('__SCRIPT__',()=>toastScript+'\n'+staffScript);
   const receptionPrintState=await readFile(new URL('../src/app/reception-print-state.js',import.meta.url),'utf8');
-  const receptionHtml=receptionMarkup.replace('__STYLES__',()=>globalStyles+'\n'+receptionStyles).replace('__SCRIPT__',()=>qrDecoder+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+receptionPrintState+'\n'+liveRefreshScript+'\n'+receptionScript);
+  const receptionHtml=receptionMarkup.replace('__STYLES__',()=>globalStyles+'\n'+receptionStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>qrLoader+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+receptionPrintState+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+receptionScript+'\n'+imageViewerScript);
   const companyLogo = (await readFile(new URL('../assets/brand/sopra-steria-logo.png', import.meta.url))).toString('base64');
   const [emailMarkup,emailScript]=await Promise.all(['email-request.html','email-request.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')));
   const emailHtml=emailMarkup.replace('__GLOBAL_STYLES__',()=>globalStyles).replace('__EMAIL_SCRIPT__',()=>emailScript);
@@ -97,6 +106,7 @@ try {
   const changes=new WorkspaceChanges();client.onSuccess=(name,parameters,result)=>changes.observe(name,parameters,result);
   const registration = new RegistrationService(new SqlRegistrationRepository(client),storage.keys,new SharpPhotoNormalizer(sharp),storage.photos);
   const [organisationLogoPng,applicationLogoPng,organisationIconPng]=await Promise.all(['sopra-steria-logo.png','gatepass-logo.png','sopra-steria-icon.png'].map(name=>readFile(new URL('../assets/brand/'+name,import.meta.url))));
+  const thumbnails=new PhotoThumbnails(sharp);
   const cardRenderer=new PassCardRenderer(new NodeQrMatrixEncoder(),{organisationLogoPng,applicationLogoPng,organisationIconPng});
   const ownCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,svg=>rasterizeCardPng(sharp,svg));
   const receptionReads=new VisitReadService(new SqlVisitReadRepository(client,'api'));
@@ -132,7 +142,7 @@ try {
     }
     return topics;
   });
-  const routes = [events,manualRegistration,new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,duties,new HostReminderService(client),nameReadings),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),duties,new AdministrationReadService(new SqlAdministrationReadRepository(client)),adminConsole,receptionReads,organisationIconPng,sharp),reception,new DummySsoRoutes(sso,{localHttp:true}),
+  const routes = [new ActionCentreRoutes(staffEntry,sso,new ActionCentreService(client)),events,manualRegistration,new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,duties,new HostReminderService(client),nameReadings,thumbnails),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),duties,new AdministrationReadService(new SqlAdministrationReadRepository(client)),adminConsole,receptionReads,organisationIconPng,sharp),reception,new DummySsoRoutes(sso,{localHttp:true}),
     new RegistrationHttpRoutes(registration,randomBytes(32),sso,{localHttp:true,allowedTypes:['DIGITAL_ID','EXTERNAL','EMPLOYEE_PROJECT'],office:req=>officeContext.read(req)}),
     new EmployeeDigitalIdRoutes(sso,new VisitReadService(new SqlVisitReadRepository(client,'api')),ownCards)];
   const api = createLoopbackHttpHandler(origin,{handles:path=>routes.some(route=>route.handles(path)),handle:(req,res)=>{
@@ -144,6 +154,7 @@ try {
     const publicPeer=['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress??'')&&req.headers.host===`localhost:${port}`;
     if(publicPeer&&pwaAssets(req,res))return;
     const pathname=(req.url??'').split('?')[0];
+    if(req.method==='GET'&&pathname===qrDecoderUrl&&publicPeer){res.setHeader('Content-Type','application/javascript; charset=utf-8');res.setHeader('Cache-Control','public, max-age=31536000, immutable');res.setHeader('X-Content-Type-Options','nosniff');res.end(qrDecoder);return;}
     if(req.method==='GET'&&pathname==='/assets/office-background.png'&&publicPeer){
       res.setHeader('Content-Type','image/png');res.setHeader('Cache-Control','public, max-age=86400');res.setHeader('X-Content-Type-Options','nosniff');res.end(officeImage);return;
     }
@@ -180,8 +191,8 @@ try {
   });
   server.requestTimeout=15000;server.headersTimeout=10000;server.keepAliveTimeout=5000;server.maxConnections=16;server.maxRequestsPerSocket=100;
   const refresh = setInterval(() => { void repository.execute('refresh',null,null,null).then(result=>{if(result.ok!==true)console.error('DUMMY_DIRECTORY_REFRESH_FAILED');}).catch(()=>console.error('DUMMY_DIRECTORY_REFRESH_FAILED')); },60000);refresh.unref();
-  const stop = () => { clearInterval(refresh);changes.close();server.close(async () => { storage.keys.clearCache();await sso.close();client.close(); process.exitCode=0; });server.closeIdleConnections(); };
-  server.on('error', async () => { clearInterval(refresh);changes.close();storage.keys.clearCache();console.error('DUMMY_SSO_LISTENER_UNAVAILABLE');await sso.close();client.close();process.exitCode=1; });
+  const stop = () => { clearInterval(refresh);changes.close();thumbnails.close();server.close(async () => { storage.keys.clearCache();await sso.close();client.close(); process.exitCode=0; });server.closeIdleConnections(); };
+  server.on('error', async () => { clearInterval(refresh);changes.close();thumbnails.close();storage.keys.clearCache();console.error('DUMMY_SSO_LISTENER_UNAVAILABLE');await sso.close();client.close();process.exitCode=1; });
   process.once('SIGINT',stop);process.once('SIGTERM',stop);
   server.listen(port,'127.0.0.1',()=>{
     console.log(`GatePass employee portal: ${origin} (local HTTP; temporary employee sign-in adapter)`);

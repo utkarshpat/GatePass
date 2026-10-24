@@ -10,7 +10,7 @@ $taskInput=[Console]::In.ReadToEnd() | ConvertFrom-Json
 Import-Module (Join-Path $taskRoot 'tools/GatePass.LocalSql.psm1') -Force
 $taskConnection=Open-GatePassLocalSql -Server $taskInput.server -TrustLocalServerCertificate:$taskInput.trustLocalCertificate
 try {
-        if ($taskInput.procedure -notin @('gp.ListAdminProjectLocations','gp.ListAdminGuards','gp.SearchStaffSubjects','gp.ListStaffRoles','gp.GetOperationalSummary','gp.ListScopedAuditEvents')) {throw 'Invalid test procedure.'}
+        if ($taskInput.procedure -notin @('gp.ListAdminProjectLocations','gp.ListAdminGuards','gp.SearchStaffSubjects','gp.ListStaffRoles','gp.GetOperationalSummary','gp.GetOperationalSummaryRange','gp.ListScopedAuditEvents')) {throw 'Invalid test procedure.'}
         $taskPrincipal='gp_aread_api_fixture'
         Invoke-GatePassNonQuery $taskConnection ("EXECUTE AS USER='"+$taskPrincipal+"';")
         $taskCommand=$taskConnection.CreateCommand()

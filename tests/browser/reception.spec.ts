@@ -11,7 +11,7 @@ for(const width of [390,1366])test(`reception pending preview, filter, direct pr
  await page.route('**/api/reception/**',async route=>{
   const path=new URL(route.request().url()).pathname,body=route.request().postDataJSON();
   const reply=(value:unknown)=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(value)});
-  if(path.endsWith('/list')){const match=(!body.search||base.personName.toLowerCase().includes(body.search.toLowerCase()))&&['ALL','PENDING'].includes(body.status??'ALL');return reply({visits:match?[{...base,printCount:dispatches}]:[],visitDate:body.visitDate,cursor:null});}
+  if(path.endsWith('/list')||path.endsWith('/queue')){const match=(!body.search||base.personName.toLowerCase().includes(body.search.toLowerCase()))&&['ALL','PENDING'].includes(body.status??'ALL');return reply({visits:match?[{...base,printCount:dispatches}]:[],visitDate:body.visitDate,cursor:null,pendingReturnCount:dispatches?1:0,counts:{total:match?1:0,pending:match?1:0,inside:0}});}
   if(path.endsWith('/detail'))return reply({...base,locationName:'Noida',reason:'Business meeting',photoAvailable:false,printCount:dispatches});
   if(path.endsWith('/preview'))return reply({mimeType:'image/png',imageBase64:png.toString('base64')});
   if(path.endsWith('/print/request')){calls.push(body);const id=crypto.randomUUID();const job={printJobId:id,visitRequestId:visit,accessPassId:pass,status:'REQUESTED',printReason:dispatches?'REPRINT':'FIRST'};jobs.set(id,job);return reply(job);}

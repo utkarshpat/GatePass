@@ -1,3 +1,4 @@
+import{summaryRange}from'./summary-fixture.ts';
 import{test,expect}from'@playwright/test';import type{Page,BrowserContext,Route}from'@playwright/test';
 const user='11111111-1111-4111-8111-111111111111';
 async function setup(page:Page,context:BrowserContext,options:{count?:number;offices?:boolean;onLead?:(route:Route,index:number)=>Promise<void>}={}){
@@ -8,7 +9,7 @@ async function setup(page:Page,context:BrowserContext,options:{count?:number;off
   if(action==='context')return reply({displayName:'Synthetic Admin',locations:[{locationId:1,locationCode:'NOIDA',locationName:'Noida',canManageCommonAreas:false},...(options.offices?[{locationId:2,locationCode:'CHENNAI',locationName:'Chennai',canManageCommonAreas:false}]:[])]});
   if(action==='projects'){location=d.locationId;return reply({projects:Array.from({length:options.count??60},(_,i)=>({projectLocationId:String(d.locationId*1000+i+1),projectId:String(i+1),projectName:'Project '+String(i+1).padStart(2,'0'),projectCode:'SYN-'+i,directoryCurrent:true,canAssignProject:false,canAssignLocation:false})),cursor:null});}
   if(action==='scope')return reply({userId:user,currentDate:'2026-10-24',canReport:true,canReadVisits:false,canAudit:false,canManageRoles:false,canAssignGuards:false,roles:[{roleCode:'LOCATION_ADMIN',scopeType:'LOCATION'}],delegations:[]});
-  if(action==='summary')return reply({visits:{total:'0',pending:'0',approved:'0',denied:'0',cancelled:'0'},recordedPresence:{projectVisitsInside:'0',digitalIdsInside:'0'}});
+  if(action==='summary-range')return reply(summaryRange(d,{visits:{total:'0',pending:'0',approved:'0',denied:'0',cancelled:'0'},recordedPresence:{projectVisitsInside:'0',digitalIdsInside:'0'}}));
   if(action==='leads'){calls.push({id:d.projectLocationId,location});if(options.onLead)return options.onLead(route,calls.length);return reply({leads:[{displayName:'Lead '+d.projectLocationId,employeeId:'EMP001',scopeType:'PROJECT_LOCATION',canRemove:false}],cursor:null});}
   return reply({});
  });

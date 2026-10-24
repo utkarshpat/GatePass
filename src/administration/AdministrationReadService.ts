@@ -13,6 +13,7 @@ const contracts: Record<string, Record<string, string>> = {
   'gp.SearchStaffSubjects': { ...identity, NamePrefix: 'text', PageSize: 'int', AfterUserId: 'guid' },
   'gp.ListStaffRoles': { ...identity, TargetUserId: 'guid', State: 'text', PageSize: 'int', AfterRoleGrantId: 'bigint' },
   'gp.GetOperationalSummary': { ...identity, LocationId: 'int', LocalVisitDate: 'date', ProjectLocationId: 'bigint' },
+  'gp.GetOperationalSummaryRange': { ...identity, LocationId: 'int', FromDate: 'date', ToDate: 'date', ProjectLocationId: 'bigint' },
   'gp.ListScopedAuditEvents': { ...identity, FromUtc: 'datetime', UntilUtc: 'datetime', LocationId: 'int', ProjectLocationId: 'bigint', PageSize: 'int', AfterAuditEventId: 'bigint' },
 };
 const big = (v: unknown): v is string => typeof v === 'string' && /^[1-9][0-9]{0,18}$/u.test(v) && BigInt(v) <= 9223372036854775807n;
@@ -27,7 +28,7 @@ const uuidOut = (v: unknown) => { output(isUuid(v)); return (v as string).toLowe
 const boolOut = (v: unknown) => { output(typeof v === 'boolean'); return v as boolean; };
 const stampOut = (v: unknown) => { output(isUtc(v)); return v as string; };
 const nullable = (name: string, key: string) => key.startsWith('After') || key === 'NamePrefix' && name === 'gp.ListAdminGuards' || ['ValidFromUtc', 'ValidUntilUtc'].includes(key)
-  || key === 'ProjectLocationId' && ['gp.GetOperationalSummary', 'gp.ListScopedAuditEvents'].includes(name) || key === 'LocationId' && name === 'gp.ListScopedAuditEvents';
+  || key === 'ProjectLocationId' && ['gp.GetOperationalSummary','gp.GetOperationalSummaryRange', 'gp.ListScopedAuditEvents'].includes(name) || key === 'LocationId' && name === 'gp.ListScopedAuditEvents';
 export class SqlAdministrationReadRepository implements AdministrationReadRepository {
   #client: ReadSqlClient;
   constructor(client: ReadSqlClient) { this.#client = client; }
@@ -122,6 +123,16 @@ export class AdministrationReadService {
     output(BigInt(visits.total) === BigInt(visits.pending) + BigInt(visits.approved) + BigInt(visits.denied) + BigInt(visits.cancelled));
     const presence = r.recordedPresence as Record<string, unknown>; output(count(presence.projectVisitsInside) && count(presence.digitalIdsInside));
     return { localVisitDate: r.localVisitDate as string, visits, recordedPresence: { projectVisitsInside: presence.projectVisitsInside as string, digitalIdsInside: presence.digitalIdsInside as string }, checkedAtUtc: stampOut(r.checkedAtUtc) };
+  }
+  async summaryRange(session:Session,value:unknown){
+    const d=this.#body(value,['locationId','from','to','projectLocationId']);input(isDate(d.from)&&isDate(d.to)&&String(d.from)<=String(d.to)&&Date.parse(String(d.to))-Date.parse(String(d.from))<=30*86400000);
+    const r=await this.#call(session,'gp.GetOperationalSummaryRange',{LocationId:p('int',int(d.locationId)),FromDate:p('date',d.from as string),ToDate:p('date',d.to as string),ProjectLocationId:p('bigint',optionalId(d.projectLocationId))});
+    const normalize=(raw:unknown)=>{output(!!raw&&typeof raw==='object'&&!Array.isArray(raw));const data=raw as Record<string,unknown>,result:Record<string,string>={};for(const key of ['total','pending','approved','denied','cancelled']){output(count(data[key]));result[key]=data[key] as string;}output(BigInt(result.total)===BigInt(result.pending)+BigInt(result.approved)+BigInt(result.denied)+BigInt(result.cancelled));return result;};
+    const length=(Date.parse(String(d.to))-Date.parse(String(d.from)))/86400000+1;output(r.from===d.from&&r.to===d.to&&Array.isArray(r.days)&&r.days.length===length);
+    const days=(r.days as Record<string,unknown>[]).map((day,i)=>{const expected=new Date(Date.parse(String(d.from))+i*86400000).toISOString().slice(0,10);output(day&&day.localVisitDate===expected);return{localVisitDate:expected,visits:normalize(day.visits)};});
+    const visits=normalize(r.visits);for(const key of Object.keys(visits))output(BigInt(visits[key])===days.reduce((sum,day)=>sum+BigInt(day.visits[key]),0n));
+    const presence=r.recordedPresence as Record<string,unknown>;output(presence&&count(presence.projectVisitsInside)&&count(presence.digitalIdsInside));
+    return{from:d.from as string,to:d.to as string,visits,days,recordedPresence:{projectVisitsInside:presence.projectVisitsInside as string,digitalIdsInside:presence.digitalIdsInside as string},checkedAtUtc:stampOut(r.checkedAtUtc)};
   }
   async audit(session: Session, value: unknown) {
     const d = this.#body(value, ['fromUtc', 'untilUtc', 'locationId', 'projectLocationId', 'pageSize', 'afterAuditEventId']); const from = utc(d.fromUtc); const until = utc(d.untilUtc); input(from < until && Date.parse(until) - Date.parse(from) <= 31 * 86400000);
