@@ -45,7 +45,7 @@ try {
     const asset=await call('/assets/office-background.png',{},'GET');assert.equal(asset.status,200);assert.equal(digest(asset.raw),digest(await readFile(new URL('../assets/locations/office-background.png',import.meta.url))));
   });
   let options:any,project:any,host:any;
-  await check('public visitor intake resolves office, current date and project options from SQL',async()=>{options=await start('EXTERNAL');assert.equal(options.locationCode,'NOIDA');assert.ok(options.projects.length);project=options.projects[0];});
+  await check('public visitor intake resolves office, current date and project options from SQL',async()=>{options=await start('EXTERNAL');assert.equal(options.locationCode,'NOIDA');assert.ok(options.projects.length);project=options.projects.find((row:any)=>row.projectCode==='DEMO-PRJ-001');assert.ok(project,'Use the seeded project with fixture host memberships, independently of locally created project ordering.');});
   await check('host name/email search is limited to requested project and office',async()=>{
     const result=await call('/api/registration/options',{projectLocationId:project.projectLocationId,search:'employee'});assert.equal(result.status,200,JSON.stringify(result.body));assert.ok(result.body.hosts.length);host=result.body.hosts[0];assert.ok(host.officialEmail.endsWith('@example.com'));
     assert.equal((await call('/api/registration/options',{projectLocationId:'999999999',search:'employee'})).status,403);
@@ -81,7 +81,7 @@ try {
   });
   let employee:any;
   await check('email sign-in resolves existing synthetic SSO identity and assigned projects',async()=>{
-    const accounts=await call('/api/dev/sso/employees');const account=accounts.body.employees.find((row:any)=>row.employeeId==='EMP014');assert.ok(account);
+    const directory=JSON.parse(await readFile(new URL('../database/development/directory-fixtures.json',import.meta.url),'utf8'));const account=directory.employees.find((row:any)=>row.employeeId==='EMP014');assert.ok(account);
     const result=await call('/api/dev/sso/login',{email:account.officialEmail,password:'Sopra@123'});assert.equal(result.status,200,JSON.stringify(result.body));employee=result.body.employee;assert.equal(employee.employeeId,'EMP014');assert.ok(employee.projects.length);
   });
   let digitalId:string;
@@ -111,7 +111,7 @@ try {
     assert.equal((await call('/api/employee/digital-id/image',{visitRequestId:visits[0]})).status,403);
   });
   await check('extra employee project request has an independent pending approval and keeps Digital ID approved',async()=>{
-    options=await start('EMPLOYEE_PROJECT');const own=new Set(employee.projects.map((row:any)=>row.projectCode));const extra=options.projects.find((row:any)=>!own.has(row.projectCode));assert.ok(extra);
+    options=await start('EMPLOYEE_PROJECT');const own=new Set(employee.projects.map((row:any)=>row.projectCode));const extra=options.projects.find((row:any)=>row.projectCode.startsWith('DEMO-PRJ-')&&!own.has(row.projectCode));assert.ok(extra,'Use an unassigned seeded project with fixture host memberships.');
     const lookup=await call('/api/registration/options',{projectLocationId:extra.projectLocationId,search:'employee'});assert.equal(lookup.status,200);assert.ok(lookup.body.hosts.length);
     const uploaded=await call('/api/registration/photo',image);assert.equal(uploaded.status,200);photos.add(uploaded.body.photoAssetId);
     const result=await submit({clientKey:randomUUID(),requestType:'EMPLOYEE_PROJECT',reason:'Project discussion',projectLocationId:extra.projectLocationId,hostEmployeeId:lookup.body.hosts[0].employeeId,people:[{clientPersonKey:randomUUID(),photoAssetId:uploaded.body.photoAssetId}]});assert.equal(result.status,200,JSON.stringify(result.body));assert.equal(result.body.visits[0].status,'PENDING');visits.push(result.body.visits[0].visitRequestId);

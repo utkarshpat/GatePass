@@ -1,5 +1,7 @@
 # GatePass End-to-End Test Scenarios & Audit Matrix
 
+> Latest 24 October execution and presentation guide: [final browser verification](../67_Final_Browser_Verification_And_Presentation.md). See [count definitions and concrete remaining scenarios](../66_Final_E2E_Counts_And_Edge_Cases_24_October_2026.md) and [closed browser exposure findings](../65_Browser_Data_Exposure_Audit_24_October_2026.md). Catalog case counts below describe scenarios, not the current executable Playwright test count. Retained demo records/history are preserved across runs.
+
 > 23 October presentation run: [current evidence and retained demo data](../55_Presentation_Rehearsal_23_October_2026.md). Earlier execution counts/cleanup statements in this catalog describe their dated runs; this presentation dataset is retained.
 
 This folder contains the complete, end-to-end test scenario catalog for Sopra Steria GatePass across all four operational surfaces (**Self-Service Portal**, **Reception Desk**, **Guard Workspace**, and **Admin Console**), email/approval links, and database/API security boundaries.

@@ -2,6 +2,8 @@
 
 ## Current system documentation
 
+For the latest 24 October browser run, final push and presentation walkthrough, start with [Final browser verification and retained presentation data](docs/67_Final_Browser_Verification_And_Presentation.md). The [count and edge-case report](docs/66_Final_E2E_Counts_And_Edge_Cases_24_October_2026.md) explains KPI/history definitions and remaining checks; the [browser exposure audit](docs/65_Browser_Data_Exposure_Audit_24_October_2026.md) records the security fixes. Use **23 October 2026** in History/Visit register for the original populated rehearsal, and **24 October 2026** for the newer workflows. Demo data, photos and timelines remain in local SQL/private storage and are not included in a source push.
+
 For the 23 October 2026 presentation, use the [retained-data walkthrough and fresh verification](docs/55_Presentation_Rehearsal_23_October_2026.md). See also the [local bug fixes and requester receipt mapping](docs/61_Local_Bug_Fixes_And_Request_Receipts.md). The [email holder revocation option](docs/62_Email_Not_Requested_Pass_Revocation.md) is also available locally. The [23 October pre-push audit](docs/63_Pre_Push_Audit_23_October_2026.md) records the latest review and validation. Current source/database migrations are 001–090; the consolidated 22 October export below is a historical baseline.
 
 Start with the [consolidated system handbook](docs/system/README.md), dated 22 October 2026. It covers current flows, role/scope rules, architecture, migrations 001-062, APIs, UI/PWA, setup, email, operations, CI and rollout gaps. Earlier phase notes and counts below are historical and must not be read as current readiness claims.

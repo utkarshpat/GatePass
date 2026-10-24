@@ -1,5 +1,7 @@
 # 10. Testing, CI and evidence
 
+> Latest execution: [24 October final browser verification and push](../67_Final_Browser_Verification_And_Presentation.md). The earlier 23 October counts below are historical. [Report 66](../66_Final_E2E_Counts_And_Edge_Cases_24_October_2026.md) distinguishes live SQL workflows from controlled UI fixtures, reconciles totals and lists remaining deployment/hardware/concurrency checks. Current migration integrity covers **90** files.
+
 > Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
 
 Fresh 23 October evidence: all 65 Chromium/Axe browser tests passed on the final full rerun. 458 unit tests passed with one skip; coverage is 95.42% lines / 88.87% branches / 94.12% functions. All 15 selected live SQL/HTTP suites pass, including registration (57), guard duty (19), admin reads (38), printing (55), public/employee HTTP/SQL (25) and manual reception HTTP/SQL (7). The retained browser runner separately persists realistic synthetic records and verifies decisions, movement/return/correction, real rendered QR decoding, new staff setup/login and Excel export. Signed holder-cookie exchange/reload and employee status/card checks use actual local SQL and signing keys without sending mail. See the linked report for final browser counts and artifact paths.

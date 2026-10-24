@@ -26,7 +26,6 @@ Names from source only. Variables can be optional, process-specific or test-only
 | /api/auth/setup | src/transport/ApiHandler.ts | 55 |
 | /api/auth/touch | src/transport/ApiHandler.ts | 44 |
 | /api/auth/touch | src/transport/ApiHandler.ts | 63 |
-| /api/dev/sso/employees | src/development/DummySsoRoutes.ts | 11 |
 | /api/dev/sso/login | src/development/DummySsoRoutes.ts | 11 |
 | /api/dev/sso/logout | src/development/DummySsoRoutes.ts | 11 |
 | /api/dev/sso/me | src/development/DummySsoRoutes.ts | 11 |

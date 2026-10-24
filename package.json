@@ -41,6 +41,9 @@
   "engines": {
     "node": ">=26.8.0 <27"
   },
+  "overrides": {
+    "@azure/msal-node": "$@azure/msal-node"
+  },
   "dependencies": {
     "@azure/msal-node": "7.1.0",
     "@zxing/library": "0.23.0",

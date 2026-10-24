@@ -2,6 +2,38 @@ import {test,expect} from '@playwright/test';
 const visit='11111111-1111-4111-8111-111111111111';
 const png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aQ1cAAAAASUVORK5CYII=';
 const row=()=>({visitRequestId:visit,status:'PENDING',passStatus:'PENDING',personName:'Visitor 1',companyName:'Acme Corp',deviceTypes:['LAPTOP','TABLET'],publicReference:'V-test',locationName:'Noida',projectName:'Project 1',hostName:'Employee 19',reason:'Meeting',validFromUtc:new Date(Date.now()-3600000).toISOString(),validUntilUtc:new Date(Date.now()+3600000).toISOString()});
+declare const fragment:URLSearchParams,bearer:string|null,revokeLink:string|null;
+
+test('successful holder exchange discards both parsed capability proofs',async({page})=>{
+ await page.route('**/api/email/**',route=>route.fulfill({json:route.request().url().endsWith('/session')?{visitRequestId:visit}:{...row(),status:'DENIED',passStatus:'DENIED'}}));
+ await page.goto('/request/'+visit+'#link=synthetic-status&revoke=synthetic-revoke');await expect(page.locator('#message')).toHaveText('Declined');
+ expect(await page.evaluate(()=>({hash:location.hash,parsedStatus:fragment.has('link'),parsedRevoke:fragment.has('revoke'),statusCleared:bearer===null,revokeCleared:revokeLink===null}))).toEqual({hash:'',parsedStatus:false,parsedRevoke:false,statusCleared:true,revokeCleared:true});
+});
+
+test('failed holder exchange retains retry proof only until page exit and restores retry from a failed-link history entry',async({page})=>{
+ let exchanges=0;await page.route('**/api/email/**',route=>{if(route.request().url().endsWith('/session')){exchanges++;return exchanges===1?route.fulfill({status:503,json:{error:'UNAVAILABLE'}}):route.fulfill({json:{visitRequestId:visit}});}return route.fulfill({json:{...row(),status:'DENIED',passStatus:'DENIED'}});});
+ await page.goto('/request/'+visit+'#link=synthetic-status&revoke=synthetic-revoke');await expect(page.locator('#message')).toContainText('unavailable');
+ expect(await page.evaluate(()=>({parsedStatus:fragment.has('link'),parsedRevoke:fragment.has('revoke'),retry:bearer!==null&&revokeLink!==null}))).toEqual({parsedStatus:false,parsedRevoke:false,retry:true});
+ await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
+ expect(await page.evaluate(()=>bearer===null&&revokeLink===null)).toBe(true);
+ await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));await expect(page.locator('#message')).toHaveText('Declined');expect(exchanges).toBe(2);await expect(page).toHaveURL('/request/'+visit);
+});
+
+for(const failure of [401,503,'network failure'] as const)test('email sign-in clears attempted password after '+failure,async({page})=>{
+ await page.route('**/api/email/host/detail',route=>route.fulfill({status:401,json:{error:'NOT_AUTHENTICATED'}}));
+ let attempted=false;await page.route('**/api/dev/sso/login',route=>{attempted=true;return typeof failure==='string'?route.abort('failed'):route.fulfill({status:failure,json:{error:'UNAVAILABLE'}});});
+ await page.goto('/approval/'+visit);await expect(page.locator('#login')).toBeVisible();await page.locator('#email').fill('employee19@example.com');await page.locator('#password').fill('synthetic-password');await page.locator('#sign-in').click();await expect.poll(()=>attempted).toBe(true);await expect(page.locator('#sign-in')).toBeEnabled();await expect(page.locator('#password')).toHaveValue('');
+ await page.locator('#password').fill('unsubmitted-password');await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));await expect(page.locator('#password')).toHaveValue('');
+});
+
+test('pending and timed-out email sign-in do not retain the password field',async({page})=>{
+ await page.clock.install();await page.addInitScript(()=>{const original=window.fetch.bind(window);window.fetch=async(input,init)=>String(input).endsWith('/api/dev/sso/login')?new Promise<never>((_,reject)=>init!.signal!.addEventListener('abort',()=>reject(new DOMException('Aborted','AbortError')),{once:true})):original(input,init);});
+ await page.route('**/api/email/host/detail',route=>route.fulfill({status:401,json:{error:'NOT_AUTHENTICATED'}}));await page.goto('/approval/'+visit);await expect(page.locator('#login')).toBeVisible();await page.locator('#email').fill('employee19@example.com');await page.locator('#password').fill('synthetic-password');await page.locator('#sign-in').click();await expect(page.locator('#sign-in')).toBeDisabled();await expect(page.locator('#password')).toHaveValue('');await page.clock.fastForward(30001);await expect(page.locator('#message')).toContainText('Request timed out');await expect(page.locator('#sign-in')).toBeEnabled();await expect(page.locator('#password')).toHaveValue('');
+});
+
+test('full dummy directory is unavailable anonymously and after an employee signs in',async({page})=>{
+ await page.goto('/');const statuses=await page.evaluate(async()=>{const post=async(path:string,body:unknown={})=>fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const anonymous=await post('/api/dev/sso/employees'),login=await post('/api/dev/sso/login',{employeeId:'EMP001',password:'Sopra@123'});try{const signedIn=await post('/api/dev/sso/employees');return[anonymous.status,login.status,signedIn.status];}finally{const csrf=document.cookie.split('; ').find(c=>c.startsWith('gp-dev-csrf='))?.split('=')[1];await fetch('/api/dev/sso/logout',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf??''},body:'{}'});}});expect(statuses).toEqual([404,200,404]);
+});
 for(const phase of ['headers','body'])test('approval detail timeout recovers after stalled '+phase,async({page})=>{
  await page.clock.install();await page.addInitScript(phase=>{
   const original=window.fetch.bind(window);let first=true;

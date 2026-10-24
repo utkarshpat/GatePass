@@ -51,6 +51,17 @@ test('logout during a shared inspection cannot revive the local session',async()
 });
 test('touch and logout use SQL; logout removes dummy provenance',async()=>{const f=fixture();const s=await f.sso.signIn('EMP001');assert.equal((await f.sso.sessionAction('touch',s)).ok,true);assert.equal((await f.sso.sessionAction('logout',s)).ok,true);assert.equal(await f.sso.verify(s),false);assert.deepEqual(f.calls.map(c=>c.action),['create','touch','logout']);});
 test('HTTP login sets secure opaque cookie and excludes raw session from response JSON',async()=>{const f=fixture();let jar:string[]=[];const result=await new DummySsoRoutes(f.sso).handle(req('login',{employeeId:'EMP001',password:'Sopra@123'}),{setHeader(_k:string,v:string[]){jar=v;}} as any);assert.equal(jar.length,2);assert.match(jar[0],/HttpOnly/u);assert.ok(jar.every(c=>c.includes('Secure')&&c.includes('SameSite=Strict')));assert.equal(Object.hasOwn(result,'sessionToken'),false);assert.equal((result as any).employee.manager.officialEmail,'employee19@example.com');});
+
+test('full dummy employee directory is not an HTTP surface, including for a signed-in employee',async()=>{
+ const f=fixture(),routes=new DummySsoRoutes(f.sso);let jar:string[]=[];
+ assert.equal(routes.handles('/api/dev/sso/employees'),false);
+ await assert.rejects(routes.handle(req('employees'),{} as any),(e:any)=>e.status===404);
+ assert.equal(f.calls.length,0);
+ await routes.handle(req('login',{employeeId:'EMP001',password:'Sopra@123'}),{setHeader(_k:string,v:string[]){jar=v;}} as any);
+ const before=f.calls.length,cookie=jar.map(c=>c.split(';')[0]).join('; '),csrf=jar[1].split(';')[0].split('=')[1];
+ await assert.rejects(routes.handle(req('employees',{}, {cookie,'x-csrf-token':csrf}),{} as any),(e:any)=>e.status===404);
+ assert.equal(f.calls.length,before);
+});
 test('HTTP login succeeds even if browser sends a stale or invalid session cookie',async()=>{const f=fixture();let jar:string[]=[];const result=await new DummySsoRoutes(f.sso).handle(req('login',{employeeId:'EMP001',password:'Sopra@123'},{cookie:'__Host-gp-session=stale_or_invalid_session_token'}),{setHeader(_k:string,v:string[]){jar=v;}} as any);assert.equal(jar.length,2);assert.equal((result as any).employee.employeeId,'EMP001');});
 test('dummy HTTP endpoints reject non-loopback clients and client identity claims',async()=>{const f=fixture();const routes=new DummySsoRoutes(f.sso);await assert.rejects(routes.handle(req('login',{employeeId:'EMP001',password:'Sopra@123'},{},'10.0.0.1'),{} as any));await assert.rejects(routes.handle(req('login',{employeeId:'EMP001',password:'Sopra@123',managerEmployeeId:'EMP020'}),{} as any));assert.equal(f.calls.length,0);});
 test('closing local provider revokes only sessions this process issued',async()=>{const f=fixture();await f.sso.signIn('EMP001');await f.sso.close();assert.deepEqual(f.calls.map(x=>x.action),['create','logout']);});

@@ -1,5 +1,7 @@
 # GatePass System Documentation
 
+> Current 24 October evidence and presentation instructions: [final browser verification](../67_Final_Browser_Verification_And_Presentation.md), [count reconciliation and edge cases](../66_Final_E2E_Counts_And_Edge_Cases_24_October_2026.md), and [browser exposure fixes](../65_Browser_Data_Exposure_Audit_24_October_2026.md). Current source migrations are **001–090**. The handbook/export below is a dated baseline; use the newer reports for current validation results.
+
 > Latest local implementation and evidence: [23 October retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md), through migration 088. The 22 October handbook/export and hash snapshot below remain a dated baseline. Current increments include visitor company/devices, admin register/Excel/timelines, reception lookup/return correction local staff onboarding and office-scoped project creation.
 
 Current implementation handbook | 22 October 2026 | Documentation baseline 1.0

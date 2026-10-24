@@ -42,18 +42,19 @@ Local endpoints, all POST JSON through exact HTTP localhost Origin/Host checks:
 
 | Endpoint | Purpose |
 |---|---|
-| `/api/dev/sso/employees` | List current active synthetic profiles |
-| `/api/dev/sso/login` | Select `{employeeId: "EMP001"}` and issue a local session |
+| `/api/dev/sso/login` | Authenticate a synthetic employee using employee ID or email plus the development password and issue a local session |
 | `/api/dev/sso/me` | Current session/profile |
 | `/api/dev/sso/touch` | Refresh idle lifetime |
 | `/api/dev/sso/logout` | Revoke and clear session cookies |
+
+The former `/api/dev/sso/employees` full-directory route was removed on 24 October 2026 following the browser exposure audit. It returns 404 even for a signed-in employee. Internal server-side login resolution and the office/project-scoped visitor host picker remain available; tests read their synthetic fixtures directly rather than publishing a full directory.
 
 HTTP development uses separate host-only `gp-dev-session` (HttpOnly, SameSite=Strict) and `gp-dev-csrf` (SameSite=Strict) cookies, with the existing `X-CSRF-Token` proof. They do not use the Secure attribute or the production `__Host-` cookie names; production cookies remain Secure. Remote peers are rejected even if forwarded headers claim localhost. Secrets never appear in JSON, URLs or logs. Switching a signed-in employee requires the current session CSRF proof. Manager/project DTOs are projected and validated; extra database fields are not exposed.
 
 ## Evidence and next work
 
 - **200/200 Node unit tests**, including 15 new dummy-auth cases.
-- **10 actual local HTTP/SQL integration cases**: active employee picker, protected original-brand page/script syntax, session issuance/profile/touch/logout, inactive employee rejection, actual SSO-gate checks, manager mapping agreement and opening a Digital ID intake through the restricted API SQL role.
+- **10 original local HTTP/SQL integration cases**: active employee picker, protected original-brand page/script syntax, session issuance/profile/touch/logout, inactive employee rejection, actual SSO-gate checks, manager mapping agreement and opening a Digital ID intake through the restricted API SQL role. The picker test now verifies HTTP removal and checks profile mapping through the internal provider.
 - Test-owned sessions, intake, audit entries and temporary principal are removed. No employees/managers/guards or role assignments are deleted.
 
 Run `npm run test:dummy-sso` for units and `./database/tests/Test-DummySso.ps1` for local integration. Do not overlap SQL fixture suites. The current integration uses ordinary loopback HTTP with no TLS-verification override; production TLS verification is unchanged. It uses the development integrated/.NET path, not production TDS. Browser interaction/rendering, real SSO and actual mail delivery are not claimed.

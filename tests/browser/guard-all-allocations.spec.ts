@@ -4,7 +4,7 @@ const duties=[{kind:'PROJECT',dutyId:'1',name:'Project Alpha'},{kind:'PROJECT',d
 const until=new Date(Date.now()+86400000).toISOString();
 function visit(id:string,name:string,projectName:string,type='EXTERNAL'){return{visitRequestId:id,personName:name,projectName,requestType:type,hostName:type==='EXTERNAL'?'Meera Singh':null,publicReference:'V-'+name.replaceAll(' ',''),publicPassNumber:'GP-'+id.slice(-6),status:'APPROVED',passStatus:'ACTIVE',isInside:false,validFromUtc:new Date(Date.now()-3600000).toISOString(),validUntilUtc:until,photoAvailable:false,employeeProjects:type==='DIGITAL_ID'?{available:true,total:2,items:[{name:'Project Alpha'},{name:'Project Beta'}]}:undefined};}
 const people=[visit(shared,'Arjun Rao','Project Alpha','DIGITAL_ID'),visit(asha,'Asha Mehta','Project Alpha'),visit(nikhil,'Nikhil Shah','Project Beta'),visit(lobby,'Saima Khan','Project Gamma')];
-async function setup(page:Page,context:BrowserContext,options:{commonOnly?:boolean;delayed?:boolean}={}){
+async function setup(page:Page,context:BrowserContext,options:{commonOnly?:boolean;delayed?:boolean;overlap?:boolean}={}){
  await context.addCookies(['gp-staff-session','gp-staff-csrf'].map(name=>({name,value:'synthetic',url:'http://localhost:18447'})));
  const calls:{action:string;body:any}[]=[];let denied=false,release:()=>void=()=>{};const gate=new Promise<void>(resolve=>{release=resolve;});
  await page.route('**/api/guard/**',async route=>{
@@ -20,7 +20,7 @@ async function setup(page:Page,context:BrowserContext,options:{commonOnly?:boole
    if(body.queue==='INSIDE'){expect(body.dutyKind).toBe('PROJECT');rows=body.dutyId==='1'?[people[0]]:[people[2]];rows=rows.map(v=>({...v,isInside:true}));}
    if(body.search)rows=rows.filter(v=>v.personName.toLowerCase().includes(body.search.toLowerCase()));
    const paged=body.dutyKind==='PROJECT'&&body.dutyId==='1',size=paged?1:50;
-   return reply({visitors:rows.slice(body.offset,body.offset+size),hasMore:rows.length>body.offset+size});
+   return reply({visitors:options.overlap&&paged&&body.offset===1?[rows[0],rows[1]]:rows.slice(body.offset,body.offset+size),hasMore:rows.length>body.offset+size});
   }
   if(action==='detail'||action==='verify'){
    const row=people.find(v=>v.visitRequestId===body.visitRequestId)??people[0];return reply(action==='verify'?{outcome:'VALID',visit:{...row,accessPassId:'20000000-0000-4000-8000-000000000001',locationName:'Noida',dutyKind:body.dutyKind,dutyId:body.dutyId,canEnter:body.dutyKind==='PROJECT',canExit:false,canReconcileExit:false,movements:[]}}:{...row,accessPassId:'20000000-0000-4000-8000-000000000001',locationName:'Noida',dutyKind:body.dutyKind,dutyId:body.dutyId,canEnter:body.dutyKind==='PROJECT',canExit:false,canReconcileExit:false,movements:[]});
@@ -31,6 +31,9 @@ async function setup(page:Page,context:BrowserContext,options:{commonOnly?:boole
  return{calls,release,deny:()=>{denied=true;}};
 }
 async function all(page:Page){await page.locator('#project-filter-trigger').click();await page.getByRole('option',{name:'All allocations',exact:true}).click();}
+test('overlapping pages do not duplicate cards or assignment choices in all allocations',async({page,context})=>{
+ await setup(page,context,{overlap:true});await all(page);await expect(page.locator('.guard-id-card')).toHaveCount(4);await expect(page.locator('#recent-status')).toHaveText('4');await page.locator('.guard-id-card').filter({has:page.locator('strong',{hasText:'Asha Mehta'})}).click();await expect(page.locator('#allocation-dialog')).toBeVisible();await expect(page.locator('#allocation-select option:not([value=""])')).toHaveCount(2);
+});
 for(const width of [390,1366])test(`all allocations combines authorized paged results and binds detail to a chosen allocation at ${width}px`,async({page,context})=>{
  await page.setViewportSize({width,height:900});const fixture=await setup(page,context);await all(page);await expect(page.locator('.guard-id-card')).toHaveCount(4);
  await expect(page.locator('.guard-card-person strong')).toHaveText(['Arjun Rao','Asha Mehta','Nikhil Shah','Saima Khan']);

@@ -3,6 +3,8 @@ const $=id=>document.getElementById(id),host=location.pathname.startsWith('/appr
 const fragment=new URLSearchParams(location.hash.slice(1));
 let bearer=host?null:fragment.get('link'),external=!host&&(history.state?.gatepassExternal===visit||(()=>{try{return sessionStorage.getItem('gp-ext-'+visit)==='1';}catch{return false;}})());
 let revokeLink=!host&&bearer?fragment.get('revoke'):null,revokeIntent=!host&&fragment.has('revoke');
+// Keep only the pending exchange variables, not a second parsed copy of either proof.
+fragment.delete('link');fragment.delete('revoke');
 let current=null,busy=false,image=null,version=0,poll=null;
 const keys=new Map();
 // Raw proof is exchanged for a path-scoped HttpOnly cookie; history stores only a non-secret view hint.
@@ -48,7 +50,7 @@ async function refresh(){
  await load();
 }
 $('refresh').addEventListener('click',()=>void refresh());
-$('login').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;$('sign-in').disabled=true;try{await api('/api/dev/sso/login',{email:$('email').value.trim(),password:$('password').value});$('password').value='';await load();}catch(e){if(e.timedOut)error(e);else state(e.status===401?'Email or password is incorrect.':'Sign-in unavailable. Please try again.');}finally{busy=false;$('sign-in').disabled=$('approve').disabled=$('reject').disabled=$('revoke').disabled=false;}});
+$('login').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;$('sign-in').disabled=true;try{const request=api('/api/dev/sso/login',{email:$('email').value.trim(),password:$('password').value});$('password').value='';await request;await load();}catch(e){if(e.timedOut)error(e);else state(e.status===401?'Email or password is incorrect.':'Sign-in unavailable. Please try again.');}finally{$('password').value='';busy=false;$('sign-in').disabled=$('approve').disabled=$('reject').disabled=$('revoke').disabled=false;}});
 async function decide(decision){if(busy||!current?.canDecide)return;busy=true;$('approve').disabled=$('reject').disabled=$('refresh').disabled=true;const binding=current.snapshotHash+'|'+decision;if(!keys.has(binding))keys.set(binding,crypto.randomUUID());state('Saving…');try{await api('/api/email/host/decide',{visitRequestId:visit,clientKey:keys.get(binding),snapshotVersion:current.snapshotVersion,snapshotHash:current.snapshotHash,decision});await load();}catch(e){error(e);}finally{busy=false;$('approve').disabled=$('reject').disabled=$('refresh').disabled=false;}}
 $('approve').addEventListener('click',()=>void decide('APPROVED'));$('reject').addEventListener('click',()=>void decide('DENIED'));
 $('download').addEventListener('click',()=>void showPass(true));
@@ -59,8 +61,8 @@ $('revoke').addEventListener('click',async()=>{
  try{await api(path('revoke'),{...payload(),clientKey:keys.get(binding),expectedPassId:pass,confirm:true});await load();}catch(e){error(e);}finally{busy=false;$('refresh').disabled=$('revoke').disabled=false;}
 });
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy)void refresh();});
-window.addEventListener('pagehide',()=>{version++;clearTimeout(poll);invalidate();});
-window.addEventListener('pageshow',e=>{if(e.persisted)void refresh();});
+window.addEventListener('pagehide',()=>{version++;clearTimeout(poll);bearer=revokeLink=null;$('password').value='';invalidate();});
+window.addEventListener('pageshow',e=>{if(e.persisted){if(!host&&!external&&location.hash){location.reload();return;}void refresh();}});
 // An email may open in a tab already showing this request. Re-exchange its new fragment capabilities.
 window.addEventListener('hashchange',()=>{if(!host){const next=new URLSearchParams(location.hash.slice(1));if(next.has('link')||next.get('revoke')==='confirm')location.reload();}});
 void refresh();

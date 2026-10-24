@@ -233,7 +233,7 @@ async function showAdminView(view){if(!consoleState.scope||!consoleState.allowed
 async function refreshConsole(){if(!consoleState.scope)return initialize();const v=consoleState.view;await prepareConsole();if(v==='staff'&&consoleState.subject)await loadRoles();}
 function stat(root,label,value,tone=''){const card=node('article','','admin-stat');card.dataset.tone=tone;card.append(node('strong',value),node('span',label));$(root).append(card);}
 const SVG_NS='http://www.w3.org/2000/svg';
-const statusMeta=[['approved','Approved'],['pending','Pending'],['denied','Denied']];
+const statusMeta=[['approved','Approved'],['pending','Pending'],['denied','Denied'],['cancelled','Cancelled']];
 const dayLabel=d=>new Intl.DateTimeFormat('en-IN',{timeZone:'UTC',day:'numeric',month:'short'}).format(new Date(d+'T12:00:00Z'));
 const rangeLabel=(from,to)=>from===to?dayLabel(from)+' '+from.slice(0,4):dayLabel(from)+' – '+dayLabel(to)+' '+to.slice(0,4);
 const spanDays=(from,to)=>Math.round((Date.parse(to+'T12:00:00Z')-Date.parse(from+'T12:00:00Z'))/86400000);
@@ -243,7 +243,7 @@ function svgText(content,attrs){const t=svgNode('text',attrs);t.textContent=cont
 function shares(totals){const sum=statusMeta.reduce((a,[k])=>a+totals[k],0),out={};if(!sum)return out;let left=100;const rows=statusMeta.map(([k])=>{const exact=totals[k]*100/sum,whole=Math.floor(exact);left-=whole;out[k]=whole;return [k,exact-whole];}).sort((a,b)=>b[1]-a[1]);for(const [k] of rows){if(left<=0)break;if(totals[k]>0){out[k]++;left--;}}return out;}
 function legend(items,totals){const list=node('ul','','chart-legend'),pct=totals?shares(totals):{};for(const [k,label] of items){const li=node('li',''),dot=node('span','','legend-dot tone-'+k);dot.setAttribute('aria-hidden','true');li.append(dot,node('span',label,'legend-label'));if(totals)li.append(node('strong',String(totals[k])),node('span',k in pct?pct[k]+'%':'—','legend-share'));list.append(li);}return list;}
 function renderDonut(root,t){
- const total=t.approved+t.pending+t.denied,R=46,C=2*Math.PI*R;
+ const total=statusMeta.reduce((sum,[key])=>sum+t[key],0),R=46,C=2*Math.PI*R;
  const chart=svgNode('svg',{viewBox:'0 0 140 140',class:'chart-donut',role:'img','aria-label':'Approval status: '+statusMeta.map(([k,l])=>t[k]+' '+l.toLowerCase()).join(', ')});
  chart.append(svgNode('circle',{cx:70,cy:70,r:R,fill:'none','stroke-width':18,class:'donut-track'}));
  let used=0;if(total)for(const [k] of statusMeta){if(!t[k])continue;const len=C*t[k]/total;chart.append(svgNode('circle',{cx:70,cy:70,r:R,fill:'none','stroke-width':18,class:'donut-segment tone-'+k,'stroke-dasharray':len.toFixed(2)+' '+(C-len).toFixed(2),'stroke-dashoffset':(-used).toFixed(2),transform:'rotate(-90 70 70)'}));used+=len;}
@@ -251,18 +251,18 @@ function renderDonut(root,t){
  root.replaceChildren(chart,legend(statusMeta,t));
 }
 function renderColumns(root,days){
- const W=640,H=220,L=34,B=26,T=10,n=days.length,band=(W-L)/n,bw=Math.min(36,band*0.64),max=Math.max(1,...days.map(d=>d.approved+d.pending+d.denied)),plot=H-B-T,y=v=>T+plot-plot*v/max;
+ const W=640,H=220,L=34,B=26,T=10,n=days.length,band=(W-L)/n,bw=Math.min(36,band*0.64),max=Math.max(1,...days.map(d=>d.total)),plot=H-B-T,y=v=>T+plot-plot*v/max;
  const chart=svgNode('svg',{viewBox:'0 0 '+W+' '+H,class:'chart-columns',role:'img','aria-label':'Daily registrations from '+dayLabel(days[0].day)+' to '+dayLabel(days[n-1].day)+', highest day '+max});
  for(const tick of new Set([0,Math.ceil(max/2),max]))chart.append(svgNode('line',{x1:L,x2:W,y1:y(tick).toFixed(2),y2:y(tick).toFixed(2),class:'chart-grid'}),svgText(String(tick),{x:L-6,y:(y(tick)+3).toFixed(2),class:'chart-axis','text-anchor':'end'}));
  const step=Math.ceil(n/8);
- days.forEach((d,i)=>{const cx=L+band*i+band/2,tip=svgNode('title'),group=svgNode('g',{},tip);let base=T+plot;tip.textContent=dayLabel(d.day)+': '+d.approved+' approved, '+d.pending+' pending, '+d.denied+' denied';
+ days.forEach((d,i)=>{const cx=L+band*i+band/2,tip=svgNode('title'),group=svgNode('g',{},tip);let base=T+plot;tip.textContent=dayLabel(d.day)+': '+statusMeta.map(([k,label])=>d[k]+' '+label.toLowerCase()).join(', ');
   for(const [k] of statusMeta){if(!d[k])continue;const h=plot*d[k]/max;base-=h;group.append(svgNode('rect',{x:(cx-bw/2).toFixed(2),y:base.toFixed(2),width:bw.toFixed(2),height:h.toFixed(2),class:'column tone-'+k}));}
   chart.append(group);if(i%step===0)chart.append(svgText(dayLabel(d.day),{x:cx.toFixed(2),y:H-8,class:'chart-axis','text-anchor':'middle'}));});
  root.replaceChildren(chart,legend(statusMeta));
 }
 function renderBars(root,t){
- const row=46,W=420,max=Math.max(1,t.approved,t.pending,t.denied);
- const chart=svgNode('svg',{viewBox:'0 0 '+W+' '+row*3,class:'chart-bars',role:'img','aria-label':'Status comparison: '+statusMeta.map(([k,l])=>t[k]+' '+l.toLowerCase()).join(', ')});
+ const row=46,W=420,max=Math.max(1,...statusMeta.map(([k])=>t[k]));
+ const chart=svgNode('svg',{viewBox:'0 0 '+W+' '+row*statusMeta.length,class:'chart-bars',role:'img','aria-label':'Status comparison: '+statusMeta.map(([k,l])=>t[k]+' '+l.toLowerCase()).join(', ')});
  statusMeta.forEach(([k,label],i)=>{const y=i*row;chart.append(svgText(label,{x:0,y:y+14,class:'bar-label'}),svgText(String(t[k]),{x:W,y:y+14,class:'bar-value','text-anchor':'end'}),svgNode('rect',{x:0,y:y+22,width:W,height:12,rx:6,class:'bar-track'}));if(t[k])chart.append(svgNode('rect',{x:0,y:y+22,width:Math.max(12,W*t[k]/max).toFixed(2),height:12,rx:6,class:'bar-fill tone-'+k}));});
  root.replaceChildren(chart);
 }
@@ -275,9 +275,9 @@ async function loadSummary(){
  try{
   const days=[];for(let d=from;d<=to;d=dayAfter(d))days.push(d);
   const results=[];for(let i=0;i<days.length;i+=4){const batch=await Promise.all(days.slice(i,i+4).map(day=>api('summary',{...scopeBody(),localVisitDate:day})));if(!current())return;results.push(...batch);}
-  const series=results.map((r,i)=>({day:days[i],approved:Number(r.visits.approved),pending:Number(r.visits.pending),denied:Number(r.visits.denied)}));
-  const totals=series.reduce((a,d)=>({approved:a.approved+d.approved,pending:a.pending+d.pending,denied:a.denied+d.denied}),{approved:0,pending:0,denied:0});
-  $('summary-cards').replaceChildren();stat('summary-cards','Registered',String(totals.approved+totals.pending+totals.denied),'total');for(const [k,label] of [['pending','Pending'],['approved','Approved'],['denied','Denied']])stat('summary-cards',label,String(totals[k]),k);
+  const series=results.map((r,i)=>({day:days[i],total:Number(r.visits.total),approved:Number(r.visits.approved),pending:Number(r.visits.pending),denied:Number(r.visits.denied),cancelled:Number(r.visits.cancelled)}));
+  const totals=series.reduce((a,d)=>({total:a.total+d.total,approved:a.approved+d.approved,pending:a.pending+d.pending,denied:a.denied+d.denied,cancelled:a.cancelled+d.cancelled}),{total:0,approved:0,pending:0,denied:0,cancelled:0});
+  $('summary-cards').replaceChildren();stat('summary-cards','Registered',String(totals.total),'total');for(const [k,label] of [['pending','Pending'],['approved','Approved'],['denied','Denied']])stat('summary-cards',label,String(totals[k]),k);
   renderDonut($('chart-status'),totals);
   if(series.length>1){$('chart-trend-title').textContent='Daily registrations';renderColumns($('chart-trend'),series);}else{$('chart-trend-title').textContent='Status comparison';renderBars($('chart-trend'),totals);}
   const presence=results[results.length-1].recordedPresence;$('presence-cards').replaceChildren();stat('presence-cards','Project visits inside',presence.projectVisitsInside);stat('presence-cards','Employee project presence',presence.digitalIdsInside);$('page-status').textContent='';

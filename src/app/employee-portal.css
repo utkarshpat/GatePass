@@ -147,6 +147,8 @@
   .field { min-width: 0; margin-bottom: var(--gp-space-4); }
   .fields-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gp-space-4); }
   .flow-actions { display: flex; justify-content: space-between; gap: var(--gp-space-3); margin-top: auto; padding-top: var(--gp-space-4); border-top: var(--gp-border-width) solid var(--gp-border); }
+  /* Re-enabled controls need readable text immediately, without disabled-color interpolation. */
+  .flow-actions button { transition-property: transform, box-shadow, border-color; }
   .meta { color: var(--gp-text-muted); font-size: var(--gp-text-xs); overflow-wrap: anywhere; }
   
   .employee-summary { padding: var(--gp-space-4); margin-bottom: var(--gp-space-5); border: var(--gp-border-width) solid var(--gp-border); border-radius: var(--gp-radius-control); background: var(--gp-surface-subtle); }

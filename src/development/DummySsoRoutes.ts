@@ -8,7 +8,7 @@ export function dummyPasswordValid(password:unknown){
  requireDummySso();if(typeof password!=='string'||password.length>128)return false;
  return timingSafeEqual(createHash('sha256').update(password).digest(),createHash('sha256').update('Sopra@123').digest());
 }
-const paths = ['/api/dev/sso/employees', '/api/dev/sso/login', '/api/dev/sso/me', '/api/dev/sso/touch', '/api/dev/sso/logout'];
+const paths = ['/api/dev/sso/login', '/api/dev/sso/me', '/api/dev/sso/touch', '/api/dev/sso/logout'];
 export class DummySsoRoutes implements AdditionalHttpRoutes {
   #sso: DummyEmployeeSso;
   #localHttp: boolean;
@@ -30,7 +30,7 @@ export class DummySsoRoutes implements AdditionalHttpRoutes {
     if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress ?? '')) throw new HttpFailure(403);
     const path = req.url ?? ''; if (!this.handles(path)) throw new HttpFailure(404);
     const input = await readJsonBody(req);
-    if (path === paths[1]) {
+    if (path === paths[0]) {
       // Shared credential belongs exclusively to the explicitly gated local dummy provider.
       if(!dummyPasswordValid(input.password))throw new HttpFailure(401);
       delete input.password;
@@ -48,11 +48,10 @@ export class DummySsoRoutes implements AdditionalHttpRoutes {
       return { developmentOnly: true, employee: result.employee, csrfToken: result.csrfToken, idleExpiresAtUtc: result.idleExpiresAtUtc, absoluteExpiresAtUtc: result.absoluteExpiresAtUtc };
     }
     if (Object.keys(input).length) throw new HttpFailure(400);
-    if (path === paths[0]) return { developmentOnly: true, employees: await this.#sso.list() };
     const session = this.#session(req);
-    if (path === paths[2]) { const employee = await this.#sso.current(session); if (!employee) throw new HttpFailure(401); return { developmentOnly: true, employee }; }
-    const result = await this.#sso.sessionAction(path === paths[3] ? 'touch' : 'logout', session);
-    if (path === paths[4]) res.setHeader('Set-Cookie', this.#cookies('','',true));
+    if (path === paths[1]) { const employee = await this.#sso.current(session); if (!employee) throw new HttpFailure(401); return { developmentOnly: true, employee }; }
+    const result = await this.#sso.sessionAction(path === paths[2] ? 'touch' : 'logout', session);
+    if (path === paths[3]) res.setHeader('Set-Cookie', this.#cookies('','',true));
     if (!result.ok) throw new HttpFailure(401);
     return { developmentOnly: true, ok: true };
   }

@@ -1,5 +1,7 @@
 # Presentation rehearsal — 23 October 2026
 
+> For the next presentation, follow the [24 October current verification and walkthrough](67_Final_Browser_Verification_And_Presentation.md). This page records the original **23 October** rehearsal. Choose that date explicitly for its populated history; Today follows the server's current India date and does not renew expired historical passes.
+
 The presentation is **today, 23 October**, using the local SQL-backed application. Demo business records are intentionally retained. The additive browser runner never deletes visits, photos, decisions, print jobs, returns or movements. Disposable security-regression fixtures remain separate from this retained dataset.
 
 ## Open the application
