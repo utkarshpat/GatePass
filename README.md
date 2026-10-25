@@ -1,3 +1,5 @@
+Latest local fixes: [priority bug fixes — 25 October 2026](docs/70_Priority_Bug_Fixes_25_October_2026.md).
+
 Latest pre-push audit: [bug fixes and complete E2E verification](docs/69_Pre_Push_Audit_And_E2E_24_October_2026.md).
 
 # GatePass

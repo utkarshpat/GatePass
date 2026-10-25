@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {randomBytes,randomUUID} from 'node:crypto';
 import {AdminConsoleService} from '../src/administration/AdminConsoleService.ts';
 const session={sessionToken:randomBytes(32).toString('base64url'),csrfToken:randomBytes(32).toString('base64url')};
-const scope={userId:randomUUID(),currentDate:'2026-10-22',canReport:true,canReadVisits:true,canAudit:false,canAssignGuards:true,canManageRoles:false,roles:[{roleCode:'PROJECT_ADMIN',scopeType:'PROJECT_LOCATION'}],delegations:[]};
+const scope={userId:randomUUID(),currentDate:'2026-10-22',canReport:true,canReadVisits:true,canExport:true,canAudit:false,canAssignGuards:true,canManageRoles:false,roles:[{roleCode:'PROJECT_ADMIN',scopeType:'PROJECT_LOCATION'}],delegations:[]};
 test('admin scope binds identity and projects safe capabilities, not raw source data',async()=>{const service=new AdminConsoleService({async callProcedure(name,p){assert.equal(name,'gp.GetAdminConsoleScope');assert.equal(p.LocationId.value,1);assert.equal(p.ProjectLocationId.value,'2');assert.equal((p.SessionHash.value as Buffer).length,32);return JSON.stringify({...scope,privateData:'drop'});}});assert.deepEqual(await service.read(session,'scope',{locationId:1,projectLocationId:'2'}),scope);});
 test('admin console rejects forged actors unknown filters and malformed scopes before SQL',async()=>{let calls=0;const service=new AdminConsoleService({async callProcedure(){calls++;return '{}';}});for(const input of [{locationId:1,actorUserId:randomUUID()},{locationId:0},{locationId:1,projectLocationId:'0'}])await assert.rejects(service.read(session,'scope',input),{code:'INVALID_INPUT'});assert.equal(calls,0);});
 test('assignment pages reject duplicates inconsistent cursors and exposed internals',async()=>{const a={assignmentId:'1',userId:randomUUID(),guardName:'Guard',validFromUtc:'2026-10-22T00:00:00.000Z'},service=new AdminConsoleService({async callProcedure(){return JSON.stringify({assignments:[{...a,password:'drop'}],hasMore:false});}});assert.deepEqual(await service.read(session,'assignments',{projectLocationId:'2'}),{assignments:[{...a,validUntilUtc:null}],cursor:null});const invalid=new AdminConsoleService({async callProcedure(){return JSON.stringify({assignments:[a,a],hasMore:false});}});await assert.rejects(invalid.read(session,'assignments',{projectLocationId:'2'}),{code:'UNAVAILABLE'});});
@@ -12,4 +12,15 @@ test('admin reads retry one SQL deadlock with the same scope and session, then r
  const service=new AdminConsoleService({async callProcedure(name,p){calls.push({name,p});if(calls.length===1)throw {number:1205};return JSON.stringify({assignments:[],hasMore:false});}});
  assert.deepEqual(await service.read(session,'assignments',{projectLocationId:'2'}),{assignments:[],cursor:null});assert.equal(calls.length,2);assert.equal(calls[0].name,'gp.ListAdminGuardAssignments');assert.deepEqual(calls[1],calls[0]);
  for(const number of [1205,52001]){let attempts=0;const denied=new AdminConsoleService({async callProcedure(){attempts++;throw {number};}});await assert.rejects(denied.read(session,'scope',{locationId:1}),{code:number===52001?'NOT_AUTHORIZED':'UNAVAILABLE'});assert.equal(attempts,number===1205?2:1);}
+});
+
+test('export capability is projected explicitly and missing or malformed values cannot enable export',async()=>{
+ for(const canExport of [true,false,undefined]){
+  const s=new AdminConsoleService({async callProcedure(){return JSON.stringify({...scope,canExport});}});
+  assert.equal((await s.read(session,'scope',{locationId:1})).canExport,canExport===true);
+ }
+ for(const canExport of ['true',1,null]){
+  const s=new AdminConsoleService({async callProcedure(){return JSON.stringify({...scope,canExport});}});
+  await assert.rejects(s.read(session,'scope',{locationId:1}),{code:'UNAVAILABLE'});
+ }
 });

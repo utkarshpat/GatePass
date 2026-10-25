@@ -543,7 +543,8 @@
           <button type="button" class="choice-chip" data-until="custom" aria-pressed="false">Pick date</button>
         </div>
         <label class="sr-only" for="allocation-until">Valid until</label>
-        <input id="allocation-until" type="datetime-local" hidden>
+        <input id="allocation-until" type="datetime-local" aria-describedby="allocation-timezone" hidden>
+        <p id="allocation-timezone" class="hint">Duty dates and times use India Standard Time (IST).</p>
       </div>
       <div class="field">
         <label for="allocation-reason">Reason</label>

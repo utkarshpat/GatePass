@@ -142,6 +142,7 @@ test('common duty hides movement queues and scoped admin can open guard assignme
  await noHorizontalOverflow(page);await accessible(page);
  await page.locator('#account-toggle').click();await page.locator('#staff-logout').click();await expect(page).toHaveURL(/\/$/u);
  await staffLogin(page,'admin1@example.com');
+ await expect(page.locator('#summary-cards')).toContainText('Registered');
  await page.locator('#admin-office-trigger').click();await page.getByRole('option',{name:'Noida',exact:true}).click();await expect(page.locator('#office-name')).toHaveText('Noida');
  await page.locator('[data-admin-view="projects"]').click();
  const area=page.locator('.area-card').filter({has:page.getByRole('heading',{name:'Lobby',exact:true})});await expect(area).toBeVisible();

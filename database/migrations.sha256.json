@@ -94,5 +94,8 @@
   "093_action_centre.sql": "1a64436a921d1b688cedfd3a2e0cf8c91ecc14eb95c8d457ab38dd5f30710b24",
   "094_action_read_fencing.sql": "fde8bbdce1d05af1b5a70486a9359d72a7153a7967270a1bf9ac439f1fd5b165",
   "095_reception_owned_return_followups.sql": "f4bae57bb56322924e168c52ab3fb6d564da4dc2471e438cd64b730506d08dcd",
-  "096_action_centre_reminders.sql": "1ff451401b7a63ba42abc09621957a411f8fe043e9135e58eaec60659c30a6c3"
+  "096_action_centre_reminders.sql": "1ff451401b7a63ba42abc09621957a411f8fe043e9135e58eaec60659c30a6c3",
+  "097_admin_digital_id_detail_presence.sql": "0fe5ea7962a9b02e06eb8901f237043c9de9c9cd5e64d020b931cdf566d314d3",
+  "098_digital_id_presence_followups.sql": "2072a905488b8c262239337d9397fd0495ec8b6a48f083e8f80ad3b68f05b997",
+  "099_employee_presence_and_export_authority.sql": "1edcc8a3af34dfe21a32d3d4dd27f1cdfc022a5581a63226d96e969cd815d33e"
 }

@@ -48,8 +48,8 @@ export class NotificationEmailWorker{
   const content=card?html.replace('</head>',card+'</head>'):html;
   return{notificationId:String(job.notificationId),to,subject:title+' · '+d.personName.replace(/[\r\n\x00-\x1f\x7f]/gu,' ').slice(0,80)+(d.locationName?' · '+String(d.locationName).replace(/[\r\n\x00-\x1f\x7f]/gu,' ').slice(0,80):''),html:content,...(this.#logo?{inlineLogo:this.#logo}:{}),...(personPhoto?{personPhoto}:{})};
  }
- async runOnce(){const jobs=await this.#rpc('gp.ClaimNotifications',{BatchSize:{type:'int',value:5},LeaseSeconds:{type:'int',value:120}});if(!Array.isArray(jobs)||jobs.length>5)throw new MailFailure('INTERNAL_ERROR');const results=[];
-  for(const claim of jobs){if(!validId(claim.notificationId)||!isUuid(claim.claimToken))throw new MailFailure('INTERNAL_ERROR');results.push(await this.deliver(claim));}return results;
+ async runOnce(){const jobs=await this.#rpc('gp.ClaimNotifications',{BatchSize:{type:'int',value:5},LeaseSeconds:{type:'int',value:120}});if(!Array.isArray(jobs)||jobs.length>5||jobs.some(claim=>!claim||!validId(claim.notificationId)||!isUuid(claim.claimToken)))throw new MailFailure('INTERNAL_ERROR');const results=[];
+  for(const claim of jobs)results.push(await this.deliver(claim));return results;
  }
  async deliver(claim:{notificationId:number;claimToken:string}){
   if(!validId(claim.notificationId)||!isUuid(claim.claimToken))throw new MailFailure('INTERNAL_ERROR');const p={NotificationId:{type:'bigint' as const,value:String(claim.notificationId)},ClaimToken:{type:'guid' as const,value:claim.claimToken}};
@@ -62,8 +62,8 @@ export class NotificationEmailWorker{
    return await this.#rpc('gp.CompleteNotification',{...p,Outcome:{type:'text',value:'SENT'},ProviderMessageId:{type:'text',value:accepted.providerMessageId??null}});
   }catch(e){const code=e instanceof MailFailure&&['DIRECTORY_UNAVAILABLE','PROVIDER_TIMEOUT','PROVIDER_UNAVAILABLE','PROVIDER_REJECTED','RENDER_FAILED','INVALID_RECIPIENT','INTERNAL_ERROR'].includes(e.code)?e.code:Number((e as any)?.number)===52004?'DIRECTORY_UNAVAILABLE':'INTERNAL_ERROR';
    // A stale lease cannot acknowledge or overwrite a recovered job. Failure codes never include provider data.
-   if(Number((e as any)?.number)===52003)throw new MailFailure('LEASE_UNAVAILABLE');
-   try{return await this.#rpc('gp.CompleteNotification',{...p,Outcome:{type:'text',value:'FAILED'},ErrorCode:{type:'text',value:code}});}catch{throw new MailFailure('LEASE_UNAVAILABLE');}
+   if(Number((e as any)?.number)===52003)return{notificationId:claim.notificationId,status:'LEASE_UNAVAILABLE'};
+   try{return await this.#rpc('gp.CompleteNotification',{...p,Outcome:{type:'text',value:'FAILED'},ErrorCode:{type:'text',value:code}});}catch{return{notificationId:claim.notificationId,status:'LEASE_UNAVAILABLE'};}
   }
  }
 }

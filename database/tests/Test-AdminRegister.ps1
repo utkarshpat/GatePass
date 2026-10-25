@@ -14,7 +14,7 @@ try{
  foreach($i in 1..3){$run=[guid]::NewGuid();$runs+=,$run;$f=(Invoke-GatePassScalar $db (Get-Content (Join-Path $PSScriptRoot '002_transaction_fixtures.sql') -Raw) @{RunId=$run})|ConvertFrom-Json;$fixtures+=,$f
  Invoke-GatePassNonQuery $db 'UPDATE gp.VisitRequests SET CompanyName=@marker,DeviceTypesJson=N''["LAPTOP","PEN_DRIVE"]'' WHERE PublicReference LIKE @prefix+''-%'';' @{marker=$marker;prefix=$f.prefix}}
  $admin=$fixtures[0].actors.Where({$_.Label -eq 'ADMIN'})[0]
- Invoke-GatePassNonQuery $db "INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) VALUES(@grant,'VISITS_READ');CREATE USER [$principal] WITHOUT LOGIN;ALTER ROLE gp_api_runtime ADD MEMBER [$principal];" @{grant=[long]$admin.GrantId};$created=$true
+ Invoke-GatePassNonQuery $db "INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) VALUES(@grant,'VISITS_READ'),(@grant,'REPORTS_EXPORT');CREATE USER [$principal] WITHOUT LOGIN;ALTER ROLE gp_api_runtime ADD MEMBER [$principal];" @{grant=[long]$admin.GrantId};$created=$true
  $api=Open-GatePassLocalSql -TrustLocalServerCertificate:$TrustLocalServerCertificate;Invoke-GatePassNonQuery $api "EXECUTE AS USER='$principal';"
  $p=Params;$first=Read $p;Assert ($first.rows.Count -eq 50 -and $first.total -gt 50) 'First register page/count incorrect'
  $again=Read $p;Assert (($first.rows.visitRequestId -join ',') -eq ($again.rows.visitRequestId -join ',')) 'Tied names did not have stable ordering'

@@ -3,6 +3,7 @@ import {pathToFileURL} from 'node:url';
 import {isAbsolute} from 'node:path';
 import {connectSql} from '../src/transport/SqlProcedureClient.ts';
 import {NotificationEmailWorker} from '../src/email/NotificationEmailWorker.ts';
+import {runNotificationWorker} from '../src/email/NotificationWorkerLoop.ts';
 import {GraphMailTransport,graphClientCredentials} from '../src/email/GraphMailTransport.ts';
 import {openPersonalOutlook} from '../src/email/PersonalOutlookConnection.ts';
 import {loadOutlookActions} from '../src/email/OutlookConfiguration.ts';
@@ -25,5 +26,5 @@ try{
  const outlook=await loadOutlookActions(process.env,origin);
  const photos=new NotificationPhotoService(sql,new FilePhotoStore(await PrivateDirectory.create(required('GATEPASS_MAIL_PHOTOS_ROOT'),[process.cwd()])));
  const worker=new NotificationEmailWorker(sql,directory,transport,links,origin,await readFile(new URL('../assets/brand/sopra-steria-logo.png',import.meta.url)),outlook?.card,photos);process.once('SIGINT',()=>{stopping=true;});process.once('SIGTERM',()=>{stopping=true;});
- do{const results=await worker.runOnce();console.log(JSON.stringify({batch:results}));if(process.argv.includes('--once'))break;for(let i=0;i<10&&!stopping;i++)await new Promise(r=>setTimeout(r,1000));}while(!stopping);
+ await runNotificationWorker(worker,{once:process.argv.includes('--once'),stopping:()=>stopping,onBatch:results=>console.log(JSON.stringify({batch:results})),onRetry:()=>console.error('EMAIL_WORKER_RETRY: batch unavailable; retrying with bounded backoff.')});
 }catch{console.error('EMAIL_WORKER_UNAVAILABLE: verify Graph mailbox/app, approved directory/link-key adapters, protected mail-photo root and dedicated worker SQL identity.');process.exitCode=1;}finally{await sql?.close();}

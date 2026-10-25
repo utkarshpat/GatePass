@@ -41,14 +41,16 @@ async function send(path,body={},binary=false) {
   if(manualReception){if(!path.startsWith('/api/registration/'))throw new Error('Employee authentication must use self-service.');path=path.replace('/api/registration/','/api/reception/manual/');headers['X-Reception-Office']=document.querySelector('meta[name="gp-office"]').content;headers['X-CSRF-Token']=cookie('gp-staff-csrf');headers['X-Intake-CSRF-Token']=cookie('gp-reception-intake-csrf');}
   if(!manualReception&&cookie('gp-dev-csrf')) headers['X-CSRF-Token']=cookie('gp-dev-csrf');
   if(!manualReception&&cookie('gp-dev-intake-csrf')) headers['X-Intake-CSRF-Token']=cookie('gp-dev-intake-csrf');
-  let response;
-  try { response=await fetch(path,{method:'POST',credentials:'same-origin',headers,body:binary?body:JSON.stringify(body)}); }
-  catch { throw new Error('Connection lost. Please retry.'); }
-  if(!response.ok) {
-    const messages={400:'Check the details and photo.',401:'Session expired. Sign in again.',403:'Request expired or access denied. Start again.',409:'Request changed. Start again.',429:'Too many attempts. Please wait.'};
-    throw Object.assign(new Error(messages[response.status]??'Unable to complete the request. Please retry.'),{status:response.status});
-  }
-  return response.json();
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
+  try {
+    const response=await fetch(path,{method:'POST',credentials:'same-origin',headers,signal:controller.signal,body:binary?body:JSON.stringify(body)});
+    if(!response.ok) {
+      const messages={400:'Check the details and photo.',401:'Session expired. Sign in again.',403:'Request expired or access denied. Start again.',409:'Request changed. Start again.',429:'Too many attempts. Please wait.'};
+      throw Object.assign(new Error(messages[response.status]??'Unable to complete the request. Please retry.'),{status:response.status});
+    }
+    return await response.json();
+  }catch(error){if(error.status)throw error;throw Object.assign(new Error(controller.signal.aborted?'Request timed out. Retry to check the same request.':'Connection lost. Please retry.'),{timedOut:controller.signal.aborted});}
+  finally{clearTimeout(timer);}
 }
 const auth=(action,body={})=>send('/api/dev/sso/'+action,body);
 
@@ -312,7 +314,7 @@ async function searchHosts() {
     result.hosts.forEach((host,index)=>{
       const button=document.createElement('button'),name=document.createElement('strong'),email=document.createElement('span');
       button.type='button';button.id='host-option-'+index;button.setAttribute('role','option');button.setAttribute('aria-selected','false');name.textContent=host.displayName;email.textContent=host.officialEmail;button.append(name,email);
-      button.addEventListener('click',()=>{button.setAttribute('aria-selected','true');state.host=host;$('host-search').value=host.displayName;$('host-results').hidden=true;$('host-search').setAttribute('aria-expanded','false');$('host-feedback').textContent=host.officialEmail;});
+      button.addEventListener('click',()=>{if(state.busy||state.jobs||version!==state.searchVersion||projectId!==$('project').value||query!==$('host-search').value.trim())return;clearTimeout(searchTimer);state.searchVersion++;button.setAttribute('aria-selected','true');state.host=host;$('host-search').value=host.displayName;$('host-results').hidden=true;$('host-search').setAttribute('aria-expanded','false');$('host-feedback').textContent=host.officialEmail;});
       $('host-results').append(button);
     });
     $('host-results').hidden=!result.hosts.length;$('host-search').setAttribute('aria-expanded',String(!!result.hosts.length));
@@ -558,7 +560,7 @@ $('purpose').addEventListener('change',()=>{$('purpose-details').required=$('pur
 $('toggle-access').addEventListener('click',editAccess);
 $('add-project-access').addEventListener('click',()=>{if(state.busy||!validateVisit())return;const project=projectSelection();state.extras.push({...project,host:{...state.host},reason:purpose()});renderExtras();closeAccessDialog();notify('Project added.','success');});
 $('project').addEventListener('change',()=>{clearTimeout(searchTimer);state.searchVersion++;state.host=null;$('host-search').value='';$('host-search').disabled=!$('project').value;$('host-results').hidden=true;$('host-search').setAttribute('aria-expanded','false');$('host-feedback').textContent='';});
-$('host-search').addEventListener('input',()=>{state.host=null;clearTimeout(searchTimer);state.searchVersion++;searchTimer=setTimeout(searchHosts,350);});
+$('host-search').addEventListener('input',()=>{state.host=null;state.hosts=[];clearTimeout(searchTimer);state.searchVersion++;$('host-results').replaceChildren();$('host-results').hidden=true;$('host-search').setAttribute('aria-expanded','false');$('host-feedback').textContent='';searchTimer=setTimeout(searchHosts,350);});
 $('host-search').addEventListener('keydown',event=>{if(event.key==='Escape'){$('host-results').hidden=true;$('host-search').setAttribute('aria-expanded','false');}if(event.key==='ArrowDown'&&!$('host-results').hidden){event.preventDefault();$('host-results').firstElementChild?.focus();}});
 $('host-results').addEventListener('keydown',event=>{if(event.key==='Escape'){$('host-results').hidden=true;$('host-search').setAttribute('aria-expanded','false');$('host-search').focus();}if(['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();const next=event.key==='ArrowDown'?event.target.nextElementSibling:event.target.previousElementSibling;next?.focus();}});
 $('open-camera').addEventListener('click',openCamera);$('capture-photo').addEventListener('click',capture);
