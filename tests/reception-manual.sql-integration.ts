@@ -43,7 +43,7 @@ try {
  await check('manual intake uses isolated capability cookies and resolves scoped host names/emails',async()=>{
   const page=await call('/reception/register/noida',{},'GET');assert.equal(page.status,200);assert.ok(page.body.includes('data-reception-manual="true"'));assert.match(page.headers['content-security-policy'],/frame-ancestors 'self'/);
   assert.equal((await call('/api/reception/manual/start',{requestType:'EXTERNAL'})).status,200);assert.ok(jar.has('gp-reception-intake'));assert.ok(!jar.has('gp-dev-intake'));
-  options=(await call('/api/reception/manual/options')).body;assert.equal(options.locationCode,'NOIDA');project=options.projects[0];
+  options=(await call('/api/reception/manual/options')).body;assert.equal(options.locationCode,'NOIDA');project=options.projects.find((p:any)=>p.projectCode==='DEMO-PRJ-001');assert.ok(project,'Use the seeded project with scoped fixture hosts, independently of local project ordering.');
   host=(await call('/api/reception/manual/options',{projectLocationId:project.projectLocationId,search:'Employee'})).body.hosts[0];assert.ok(host?.officialEmail);
  });
  await check('manual photo upload uses actual normalization and private storage',async()=>{

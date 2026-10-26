@@ -3,6 +3,7 @@
 class LiveRefresh {
  constructor(refresh,ready,intervalMs=20000,scope=()=>null){
   this.refresh=refresh;this.ready=ready;this.scope=scope;this.intervalMs=intervalMs;
+  this.pollInterval=()=>this.intervalMs*(0.9+Math.random()*0.1);this.pollDelay=this.pollInterval();
   this.running=false;this.closed=false;this.suspended=false;this.last=Date.now();this.dirty=false;
   this.stream=null;this.online=false;this.key=null;this.blocked=null;this.failures=0;this.nextConnect=0;
   this.wake=()=>{if(document.hidden)this.disconnect();clearTimeout(this.focusTimer);this.focusTimer=setTimeout(()=>{if(!document.hidden&&Date.now()-this.last>=2000){this.dirty=true;this.tick();}},300);};
@@ -18,7 +19,7 @@ class LiveRefresh {
   const scope=this.scope(),key=scope?JSON.stringify(scope):null;
   if(key!==this.key){this.disconnect();this.key=key;this.blocked=null;this.failures=0;this.nextConnect=0;}
   if(key&&!this.stream&&this.blocked!==key&&Date.now()>=this.nextConnect&&this.ready())void this.connect(key,scope);
-  if(this.dirty&&Date.now()-this.last>=1000||Date.now()-this.last>=(this.online?60000:this.intervalMs))void this.run();
+  if(this.dirty&&Date.now()-this.last>=1000||Date.now()-this.last>=(this.online?60000:this.pollDelay))void this.run();
  }
  async connect(key,scope){
   const ticket={controller:new AbortController()};this.stream=ticket;
@@ -50,7 +51,7 @@ class LiveRefresh {
  }
  async run(){
   if(this.closed||this.suspended||this.running||document.hidden||!this.ready())return;
-  this.running=true;this.last=Date.now();this.dirty=false;
+  this.running=true;this.last=Date.now();this.pollDelay=this.pollInterval();this.dirty=false;
   try{await this.refresh();}catch{/* Existing views own their read/error state. */}finally{this.running=false;}
  }
  close(){if(this.closed)return;this.closed=true;this.hide();document.removeEventListener('visibilitychange',this.wake);window.removeEventListener('focus',this.wake);window.removeEventListener('pagehide',this.hide);window.removeEventListener('pageshow',this.show);}

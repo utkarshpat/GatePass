@@ -154,7 +154,7 @@ async function loadQueue(more=false,quiet=false){
  const signature=JSON.stringify(filter),same=state.pageFilter===signature,target=quiet&&same?Math.max(50,state.rows.length):50,rows=more&&same?[...state.rows]:[];let cursor=more&&same?state.cursor:null,counts,pendingReturnCount;
  state.listBusy=true;state.listFailed=false;state.accessDenied=false;$('refresh').disabled=$('load-more').disabled=true;$('visit-rows').setAttribute('aria-busy','true');
  if(!same){state.rows=[];state.pageCounts=null;state.cursor=null;state.listComplete=false;renderRows();}$('list-status').textContent='Updating visits…';
- try{const cursors=new Set();do{const result=await api('queue',{...filter,...(cursor?{cursor}:{})},()=>version===state.listVersion);if(version!==state.listVersion)return;
+ try{const cursors=new Set();do{const result=await api('queue',{...filter,...(cursor?{cursor}:{}),...(quiet?{limit:Math.min(500,Math.max(50,target-rows.length))}:{})},()=>version===state.listVersion);if(version!==state.listVersion)return;
   const known=new Set(rows.map(r=>r.visitRequestId));for(const row of result.visits)if(!known.has(row.visitRequestId)){known.add(row.visitRequestId);rows.push(row);}
   cursor=result.cursor;counts=result.counts;pendingReturnCount=result.pendingReturnCount;
   if(cursor){const key=JSON.stringify(cursor);if(cursors.has(key))throw new Error('List changed. Refresh to retry.');cursors.add(key);}

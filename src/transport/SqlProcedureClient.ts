@@ -1,5 +1,6 @@
 import sql from 'mssql';
 import { readFile } from 'node:fs/promises';
+import {isCanonicalSqlDate, isCanonicalSqlTimestamp} from './SqlDateValidation.ts';
 
 export type SqlParameter = { type: 'binary' | 'text' | 'bit' | 'guid' | 'int' | 'bigint' | 'datetime' | 'date'; value: Buffer | string | boolean | number | null };
 export type DatabaseIdentity = { server: string; port: number; database: string; user: string; password: string };
@@ -9,8 +10,8 @@ export const procedureRoles = {
   staffAuth: ['ResolveStaffLoginIdentity','BeginStaffLogin','CompleteStaffLogin','InspectStaffSetup','CompleteStaffSetup','TouchStaffSession','RevokeStaffSession'],
   worker: ['ClaimNotifications','GetNotificationDispatch','GetNotificationEmail','ResolveNotificationPhoto','RenewNotificationLease','CompleteNotification'],
   render: ['GetOwnDigitalIdCard','GetEmployeeRequestCard','GetEmailRequestCard','GetReceptionCardSource','BeginPassRender','FinishPassRender','DispatchPassPrint','FailPassPrint'],
-  media: ['ResolveVisitPhoto'],
-  api: ['ReadEmailRequest','RevokeEmailRequest','ListGuardDuties','ReadGuardDutyPass','ListGuardDutyVisitors','RecordGuardDutyMovement','GetCommonDutyAdministration','ManageCommonDuty','FindGuardPass','GetGuardWorkspaceContext','ListGuardVisitors','ListGuardRecentScans','ReadAdminVisitRegister','GetAdminConsoleScope','ListAdminGuardAssignments','CreateScopedProject','GetAdminWorkspaceContext','ListLeadProjects','SearchProjectLeadCandidates','ListProjectHeads','ManageStaffCredential','DecideVisit', 'RecordMovement', 'DeallocateGuard', 'ManageGuardCredential', 'CreateRegistrationIntake', 'RecordRegistrationPhoto', 'SubmitRegistration', 'ListRegistrationLocations', 'GetRegistrationOptions',
+  media: ['ResolveVisitPhoto','ReadGuardPhotoSource'],
+  api: ['GetAdminProjectGroups','ManageProjectGroup','ManageProjectGroupGuard','ReadEmailRequest','RevokeEmailRequest','ListGuardDuties','ReadGuardDutyPass','ListGuardDutyVisitors','RecordGuardDutyMovement','GetCommonDutyAdministration','ManageCommonDuty','FindGuardPass','GetGuardWorkspaceContext','ListGuardVisitors','ListGuardRecentScans','ReadAdminVisitRegister','GetAdminConsoleScope','ListAdminGuardAssignments','CreateScopedProject','GetAdminWorkspaceContext','ListLeadProjects','SearchProjectLeadCandidates','ListProjectHeads','ManageStaffCredential','DecideVisit', 'RecordMovement', 'DeallocateGuard', 'ManageGuardCredential', 'CreateRegistrationIntake', 'RecordRegistrationPhoto', 'SubmitRegistration', 'ListRegistrationLocations', 'GetRegistrationOptions',
     'GetStaffAccessContext', 'LookupReceptionVisits','CorrectReceptionReturn','CreateLocalStaffAccount','ReissueLocalStaffSetup','ReturnReceptionPass', 'GetReceptionContext', 'RemindVisitHost', 'GetReceptionEmployeeTimeline', 'AuditReceptionRegistration', 'ListReceptionVisits', 'ListVisits', 'GetVisitDetail', 'VerifyGuardPass', 'ReissuePass', 'RequestPassPrint', 'GetPassPrintJob', 'ListGuardWorkContexts', 'CancelVisit',
     'AllocateGuard', 'GrantStaffRole', 'RevokeStaffRole', 'ListAdminProjectLocations', 'ListAdminGuards', 'SearchStaffSubjects', 'ListStaffRoles', 'GetOperationalSummary','GetOperationalSummaryRange','ReadGuardQueue','ReadReceptionQueue','ReadActionCentre','RemindPendingApproval', 'ListScopedAuditEvents'],
 } as const;
@@ -35,8 +36,8 @@ export class SqlProcedureClient {
         || p.type === 'bit' && typeof v !== 'boolean' || p.type === 'int' && (!Number.isInteger(v) || Number(v) < -2147483648 || Number(v) > 2147483647)
         || p.type === 'guid' && (typeof v !== 'string' || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu.test(v))
         || p.type === 'bigint' && (typeof v !== 'string' || !/^-?(0|[1-9][0-9]{0,18})$/u.test(v) || BigInt(v) < -9223372036854775808n || BigInt(v) > 9223372036854775807n)
-        || p.type === 'datetime' && (typeof v !== 'string' || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/u.test(v) || new Date(v).toISOString() !== v)
-        || p.type === 'date' && (typeof v !== 'string' || !/^\d{4}-\d\d-\d\d$/u.test(v) || new Date(v + 'T00:00:00.000Z').toISOString().slice(0, 10) !== v))) throw new Error('INVALID_SQL_PARAMETER');
+        || p.type === 'datetime' && !isCanonicalSqlTimestamp(v)
+        || p.type === 'date' && !isCanonicalSqlDate(v))) throw new Error('INVALID_SQL_PARAMETER');
       request.input(key, types[p.type], v !== null && ['date', 'datetime'].includes(p.type) ? new Date(String(v)) : v);
     }
     const result = await request.execute(name);

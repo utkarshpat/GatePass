@@ -8,6 +8,21 @@ test('guard keyset queue returns full-filter count and concrete allocations, str
  const rows=Array.from({length:24},visitor);let calls=0;const service=new GuardDutyService({async callProcedure(name,p){calls++;assert.equal(name,'gp.ReadGuardQueue');assert.equal(p.DutyKind.value,'ALL');assert.equal(p.DutyId.value,null);assert.equal((p.SessionHash.value as Buffer).length,32);return JSON.stringify({visitors:rows.map(v=>({...v,credential:'secret'})),total:100,hasMore:true,afterVisitRequestId:rows.at(-1)!.visitRequestId,afterSubmittedAtUtc:time});}});
  const page=await service.queue(session,guardInput);assert.equal(page.visitors.length,24);assert.equal(page.total,100);assert.deepEqual(page.cursor,{submittedAtUtc:time,visitRequestId:rows.at(-1)!.visitRequestId});assert.deepEqual(page.visitors[0].allocations,[allocation]);assert.ok(!JSON.stringify(page).includes('secret'));assert.equal(calls,1);
 });
+test('bounded guard refresh validates the requested window and its last-row cursor',async()=>{
+ const rows=Array.from({length:48},visitor),calls:any[]=[];
+ const service=new GuardDutyService({async callProcedure(_name,p){calls.push(p);return JSON.stringify({visitors:rows,total:100,hasMore:true,afterVisitRequestId:rows.at(-1)!.visitRequestId,afterSubmittedAtUtc:time});}});
+ const result=await service.queue(session,{...guardInput,limit:48});assert.equal(result.visitors.length,48);assert.equal(calls[0].Take.value,48);assert.equal(result.cursor?.visitRequestId,rows.at(-1)!.visitRequestId);
+ await assert.rejects(service.queue(session,guardInput),{code:'UNAVAILABLE'});
+ for(const limit of [null,'48',23,241,48.5])await assert.rejects(service.queue(session,{...guardInput,limit}),{code:'INVALID_INPUT'});assert.equal(calls.length,2);
+});
+test('bounded reception refresh keeps aggregate counts and enforces a full-window continuation cursor',async()=>{
+ const rows=Array.from({length:100},()=>({...visitor(),accessPassId:randomUUID(),validFromUtc:time,printCount:0})),calls:any[]=[];
+ const packet={visits:rows,visitDate:'2026-10-24',hasMore:true,afterSubmittedAtUtc:time,afterVisitRequestId:rows.at(-1)!.visitRequestId,counts:{total:1000,pending:1000,inside:0},pendingReturnCount:17};
+ const service=new ReceptionService({async callProcedure(_n,p){calls.push(p);return JSON.stringify(packet);}});
+ const result=await service.queue(session,{locationId:1,limit:100});assert.equal(result.visits.length,100);assert.equal(result.counts.total,1000);assert.equal(result.pendingReturnCount,17);assert.equal(calls[0].Take.value,100);
+ await assert.rejects(service.queue(session,{locationId:1}),{code:'UNAVAILABLE'});
+ for(const limit of [null,'100',49,501,100.1])await assert.rejects(service.queue(session,{locationId:1,limit}),{code:'INVALID_INPUT'});assert.equal(calls.length,2);
+});
 test('guard queue rejects injected actors, ALL movement scope, malformed cursors and mismatched allocations',async()=>{
  let calls=0;const client={async callProcedure(){calls++;return JSON.stringify({visitors:[visitor()],total:1,hasMore:false});}},service=new GuardDutyService(client);
  for(const patch of [{actorUserId:randomUUID()},{dutyId:'1'},{dutyKind:'PROJECT',dutyId:'0'},{cursor:{submittedAtUtc:time}},{queue:'inside'},{search:'x'.repeat(101)}])await assert.rejects(service.queue(session,{...guardInput,...patch}),{code:'INVALID_INPUT'});assert.equal(calls,0);
@@ -35,6 +50,14 @@ test('action centre projects dated bounded rows, only scoped typed RPC, and no c
 });
 test('action centre rejects forged identity, invalid workspace and ALL before reaching SQL',async()=>{
  let calls=0;const service=new ActionCentreService({async callProcedure(){calls++;return'{}';}});for(const patch of [{workspace:'OWN'},{actor:randomUUID()},{dutyKind:'ALL'},{dutyId:0},{category:'MAIL'},{cursor:{submittedAtUtc:time}},{workspace:'GUARD',dutyKind:'PROJECT',dutyId:'9223372036854775808'}])await assert.rejects(service.read(session,{...actionInput,...patch}),{code:'INVALID_INPUT'});assert.equal(calls,0);
+});
+test('action refresh window is bounded and cannot accept a partial continuation as complete',async()=>{
+ const items=Array.from({length:48},()=>({...actionPacket.items[0],visitRequestId:randomUUID()}));let calls=0;
+ const packet={...actionPacket,items,counts:{pending:0,expiredInside:0,unreturned:100},hasMore:true,afterVisitRequestId:items.at(-1)!.visitRequestId,afterSubmittedAtUtc:items.at(-1)!.submittedAtUtc};
+ const service=new ActionCentreService({async callProcedure(_n,p){calls++;assert.equal(p.Take.value,48);return JSON.stringify(packet);}});
+ const r=await service.read(session,{...actionInput,limit:48});assert.equal(r.items.length,48);assert.equal(r.counts.unreturned,100);
+ for(const limit of [null,'48',23,241,48.5])await assert.rejects(service.read(session,{...actionInput,limit}),{code:'INVALID_INPUT'});assert.equal(calls,1);
+ await assert.rejects(new ActionCentreService({callProcedure:async()=>JSON.stringify({...packet,items:items.slice(0,24)})}).read(session,{...actionInput,limit:48}),{code:'UNAVAILABLE'});
 });
 test('action centre fails closed for duplicate rows, corrupt totals, invalid dates or cursor mismatches',async()=>{
  for(const patch of [{items:[...actionPacket.items,...actionPacket.items]},{counts:{pending:0,expiredInside:0,unreturned:0}},{items:[{...actionPacket.items[0],visitDate:'2026-02-30'}]},{hasMore:true,afterSubmittedAtUtc:time,afterVisitRequestId:randomUUID()}])await assert.rejects(new ActionCentreService({callProcedure:async()=>JSON.stringify({...actionPacket,...patch})}).read(session,actionInput),{code:'UNAVAILABLE'});

@@ -25,12 +25,14 @@ function Reset {
     $script:taskReady=$true;foreach($taskA in $taskFixture.actors){$taskActors[$taskA.Label]=$taskA};foreach($taskV in $taskFixture.visits){$taskVisits[$taskV.Label]=$taskV}
     Invoke-GatePassNonQuery $taskAdmin @'
 DECLARE @now datetime2(3)=SYSUTCDATETIME();
+-- This suite verifies legacy project-only boundaries, without a common-area duty.
+DELETE gp.GuardCommonAreaAssignments WHERE GuardUserId=@guard;
 INSERT gp.Projects(ExternalProjectCode,ProjectName,LastSyncedAtUtc) VALUES(@prefix+'-C',N'Context project C',@now),(@prefix+'-D',N'Context project D',@now);
 INSERT gp.ProjectLocations(ProjectId,LocationId) SELECT ProjectId,@location FROM gp.Projects WHERE ExternalProjectCode IN(@prefix+'-C',@prefix+'-D');
 INSERT gp.GuardAssignments(GuardUserId,ProjectLocationId,AssignedByUserId,ValidFromUtc)
 SELECT @guard,pl.ProjectLocationId,@host,DATEADD(hour,-1,@now) FROM gp.ProjectLocations pl JOIN gp.Projects p ON p.ProjectId=pl.ProjectId
 WHERE pl.LocationId=@location AND p.ExternalProjectCode IN(@prefix+'-B',@prefix+'-C',@prefix+'-D');
-INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT RoleGrantId,'VISITS_READ' FROM gp.StaffRoleGrants WHERE UserId=@guard;
+INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT g.RoleGrantId,'VISITS_READ' FROM gp.StaffRoleGrants g WHERE g.UserId=@guard AND NOT EXISTS(SELECT 1 FROM gp.GrantCapabilities c WHERE c.RoleGrantId=g.RoleGrantId AND c.CapabilityCode='VISITS_READ');
 '@ @{prefix=$taskFixture.prefix;location=[int]$taskFixture.locationId;guard=[guid]$taskActors.GUARD.UserId;host=[guid]$taskActors.HOST.UserId}
     $script:taskPairA=[long]$taskFixture.projectLocationId
     $script:taskPairB=[long](Invoke-GatePassScalar $taskAdmin 'SELECT ProjectLocationId FROM gp.VisitRequests WHERE VisitRequestId=@id;' @{id=[guid]$taskVisits.OTHER_PAIR.VisitId})
@@ -56,7 +58,7 @@ try {
     Case 'Separate A and B admissions succeed for their own individual approved visits' {$taskA=Invoke-Movement (Movement);$taskB=Invoke-Movement (Movement 'OTHER_PAIR');Assert ($taskA.projectLocationId -eq [string]$taskPairA -and $taskB.projectLocationId -eq [string]$taskPairB -and (EventCount) -eq 2)}
     Case 'An identical movement retry returns one event and a changed target conflicts' {$taskP=Movement;$taskOne=Invoke-Movement $taskP;$taskTwo=Invoke-Movement $taskP;Assert ($taskOne.accessEventId -eq $taskTwo.accessEventId -and (EventCount) -eq 1);$taskP.SelectedProjectLocationId=$taskPairB;Expect {Invoke-Movement $taskP} 52003}
     Case 'Exit cannot silently change the project represented by inside presence' {$null=Invoke-Movement (Movement);$taskP=Movement 'MOVEMENT' 'EXIT';$taskP.SelectedProjectLocationId=$taskPairB;Expect {Invoke-Movement $taskP};$taskP.SelectedProjectLocationId=$taskPairA;Assert (-not (Invoke-Movement $taskP).isInside)}
-    Case 'Digital ID remains location-only and cannot be used as a project entitlement' {$taskP=Movement 'TEMP';$taskP.SelectedProjectLocationId=$taskPairA;Expect {Invoke-Movement $taskP};$taskP.SelectedProjectLocationId=$null;Assert ((Invoke-Movement $taskP).isInside)}
+    Case 'Digital ID legacy movement rejects both implicit and substituted project entry' {$taskP=Movement 'TEMP';$taskP.SelectedProjectLocationId=$taskPairA;Expect {Invoke-Movement $taskP};$taskP.SelectedProjectLocationId=$null;Expect {Invoke-Movement $taskP};Assert ((EventCount) -eq 0)}
     Case 'Current deallocation removes a project from both scan and movement authority' {Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.GuardAssignments SET DeallocatedAtUtc=SYSUTCDATETIME(),DeallocatedByUserId=@host WHERE GuardUserId=@guard AND ProjectLocationId=@pair;' @{guard=[guid]$taskActors.GUARD.UserId;pair=$taskPairB;host=[guid]$taskActors.HOST.UserId};Assert ((Contexts).projects.Count -eq 3 -and (Scan 'OTHER_PAIR').outcome -eq 'NOT_AVAILABLE');Expect {Invoke-Movement (Movement 'OTHER_PAIR')}}
     Case 'Inactive projects are excluded from current work choices' {Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.ProjectLocations SET IsActive=0 WHERE ProjectLocationId=@id;' @{id=$taskPairB};Assert ((Contexts).projects.Count -eq 3);Expect {Invoke-Movement (Movement 'OTHER_PAIR')} 52005}
     Case 'Expired assignments are excluded and cannot authorize movement' {Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.GuardAssignments SET ValidUntilUtc=DATEADD(second,-1,SYSUTCDATETIME()) WHERE GuardUserId=@guard AND ProjectLocationId=@pair;' @{guard=[guid]$taskActors.GUARD.UserId;pair=$taskPairB};Assert ((Contexts).projects.Count -eq 3);Expect {Invoke-Movement (Movement 'OTHER_PAIR')}}

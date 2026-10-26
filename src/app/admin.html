@@ -172,6 +172,11 @@
           <div class="refresh-slot" data-refresh-slot></div>
         </div>
       </div>
+      <div id="projects-tabs" class="chip-row projects-tabs" role="group" aria-label="Projects and areas views" hidden>
+        <button type="button" class="choice-chip" data-project-tab="catalogue" aria-pressed="true">Projects &amp; areas</button>
+        <button type="button" class="choice-chip" data-project-tab="groups" aria-pressed="false">Project groups</button>
+      </div>
+      <div id="project-catalogue-panel">
       <div class="list-toolbar">
         <div class="search-box">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -182,6 +187,15 @@
       <p id="common-catalog-status" class="hint" role="status"></p>
       <div id="projects" class="project-grid"></div>
       <button type="button" class="secondary load-more-btn" id="more-projects" hidden>Load more projects and areas</button>
+      </div>
+      <section id="project-groups-panel" aria-label="Project groups" hidden>
+        <div class="page-head">
+          <div class="page-head-copy"><h3>Project groups</h3><p class="hint">Group projects by floor or entry. Project changes automatically update linked guards.</p></div>
+          <div class="page-head-actions"><button id="create-project-group" type="button" class="secondary">Create group</button></div>
+        </div>
+        <p id="project-groups-status" class="hint" role="status" aria-live="polite"></p>
+        <div id="project-group-list" class="roster-grid"></div>
+      </section>
     </section>
 
     <!-- 3. Users & Permissions Section -->
@@ -273,6 +287,7 @@
         </div>
       </div>
 
+      <div id="project-assignments-panel">
       <div id="guard-stats" class="admin-stat-grid guard-stats"></div>
 
       <div class="list-toolbar roster-toolbar">
@@ -295,6 +310,7 @@
 
       <div id="assignment-list" class="roster-list"></div>
       <div id="project-duty-list" class="roster-grid" hidden></div>
+      </div>
     </section>
 
     <!-- 5. Offices & QR Codes Section -->
@@ -524,7 +540,16 @@
   </div>
   <form id="allocation-form">
     <div class="dialog-body">
-      <div class="field">
+      <div id="allocation-kind-field" class="field" hidden>
+        <label for="allocation-kind">Assign using</label>
+        <select id="allocation-kind"><option value="project">Individual project</option><option value="group">Project group</option></select>
+      </div>
+      <div id="allocation-group-field" class="field" hidden>
+        <label for="allocation-group">Project group</label>
+        <select id="allocation-group"></select>
+        <p id="allocation-group-preview" class="hint"></p>
+      </div>
+      <div id="allocation-project-field" class="field">
         <label for="allocation-project">Project</label>
         <select id="allocation-project" required></select>
       </div>
@@ -560,6 +585,19 @@
       <button type="button" class="secondary" data-close="assign-dialog">Cancel</button>
       <button id="allocate-button" class="primary" type="submit">Assign guard</button>
     </div>
+  </form>
+</dialog>
+
+<dialog id="project-group-dialog" class="app-dialog" aria-labelledby="project-group-title">
+  <div class="dialog-heading"><h2 id="project-group-title">Create project group</h2><button type="button" class="quiet dialog-close-btn" data-close="project-group-dialog" aria-label="Close project group">✕</button></div>
+  <form id="project-group-form">
+    <div class="dialog-body">
+      <div class="field"><label for="project-group-name">Group name</label><input id="project-group-name" required maxlength="100" placeholder="e.g. Floor 11 — Main Entry"></div>
+      <fieldset><legend>Projects in this office</legend><p class="hint">Select 1–50 projects. Existing individual assignments remain available.</p><div id="project-group-members" class="group-project-options"></div></fieldset>
+      <p id="project-group-impact" class="hint" role="status"></p>
+      <div class="field"><label for="project-group-reason">Reason</label><input id="project-group-reason" required maxlength="300" placeholder="e.g. Floor entry coverage"></div>
+    </div>
+    <div class="dialog-actions dialog-actions-padded"><button type="button" class="secondary" data-close="project-group-dialog">Cancel</button><button id="project-group-save" type="submit" class="primary">Create group</button></div>
   </form>
 </dialog>
 

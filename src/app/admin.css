@@ -1833,3 +1833,24 @@
 .area-card .project-leads-strip .lead-names { white-space: normal; overflow-wrap: anywhere; }
 
 .register-notice { padding: var(--gp-space-8) var(--gp-space-4); text-align: center; color: var(--gp-text-muted); white-space: normal; }
+
+/* Office project groups use the existing roster and assignment dialogs. */
+#project-groups-panel{margin-bottom:1.5rem}
+#project-group-dialog{width:min(42rem,calc(100vw - 2rem));box-sizing:border-box}
+.group-project-options{max-height:18rem;overflow:auto;display:grid;gap:.65rem}
+.group-project-option{display:flex;gap:.6rem;align-items:flex-start;min-width:0}
+.group-project-option input{flex:0 0 auto;margin-top:.2rem}
+.group-project-option span{min-width:0;overflow-wrap:anywhere}
+#project-group-dialog .field input{width:100%;box-sizing:border-box}
+#project-group-list .roster-project-head> .status-chip{margin-left:auto;text-align:right;white-space:pre-line;line-height:1.25;overflow-wrap:anywhere;max-width:40%;flex-shrink:0}
+#project-group-list h3,#allocation-group-preview,#project-group-impact{overflow-wrap:anywhere}
+@media(max-width:760px){#project-group-dialog .dialog-actions{position:sticky;bottom:0;background:var(--gp-surface,#fff);padding-bottom:calc(1rem + env(safe-area-inset-bottom))}}
+
+.projects-tabs{margin-bottom:1rem}.projects-tabs button{flex:1;white-space:normal}
+#project-group-dialog[open]{display:flex;flex-direction:column}
+#project-group-dialog .dialog-heading{flex-shrink:0;gap:.75rem}
+#project-group-dialog h2{min-width:0;overflow-wrap:anywhere}
+#project-group-form{display:flex;flex-direction:column;min-height:0}
+#project-group-form .dialog-body{display:grid;gap:1rem;min-height:0;overflow-y:auto}
+#project-group-form .dialog-actions{flex-shrink:0}
+#project-group-form fieldset{min-width:0;margin:0;border:1px solid var(--gp-border);border-radius:var(--gp-radius-card);padding:.85rem}

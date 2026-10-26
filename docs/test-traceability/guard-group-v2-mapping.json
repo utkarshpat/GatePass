@@ -1,0 +1,2864 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-10-26",
+  "sourceArchiveSha256": "2e0b77f43ca06b002a8a6793d05068c653db62a0723d8073e013890da6cd6a17",
+  "sourceCatalogueSha256": "dcd5c195a8a59d238360e19ba047422be32ffe13273078aad20508951a665dee",
+  "summary": {
+    "scope": "GP-0574 through GP-0649 only; first 573 base cases not remapped",
+    "total": 76,
+    "priorities": {
+      "P0": 54,
+      "P1": 22
+    },
+    "mappingCounts": {
+      "PARTIAL": 36,
+      "POLICY_ALIGNMENT": 4,
+      "MAPPED": 20,
+      "GAP": 13,
+      "OUT_OF_SCOPE": 3
+    },
+    "p0MappingCounts": {
+      "PARTIAL": 29,
+      "MAPPED": 12,
+      "OUT_OF_SCOPE": 1,
+      "GAP": 10,
+      "POLICY_ALIGNMENT": 2
+    },
+    "freshApplicationTestExecutions": 0,
+    "databaseOrAppCodeChanged": false,
+    "databaseSeparationPerformed": false,
+    "refactorStarted": false,
+    "knownBroadSuiteResult": {
+      "passed": 317,
+      "failed": 1,
+      "failure": "Existing register/export SQL command timeout; isolated repeats passed; remains open."
+    },
+    "uiLocationFollowUp": {
+      "report": "docs/82_Project_Group_Management_Location_26_October_2026.md",
+      "browserPassed": 42,
+      "browserFailed": 0,
+      "unitPassed": 627,
+      "unitSkipped": 1,
+      "catalogueStatusesChanged": false,
+      "note": "Original mapping summary fields describe the earlier mapping-only operation. This follow-up relocates UI and refreshes browser evidence; catalogue cases remain Not Run."
+    }
+  },
+  "statusDefinitions": {
+    "MAPPED": "Expected core outcome has explicit existing assertions; fixture names may differ. This is not a fresh catalogue execution PASS.",
+    "PARTIAL": "Related assertions exist, but the listed exact group scenario, layer or boundary still needs coverage.",
+    "GAP": "No direct composed assertion mapped; implementation-only/baseline references are context, not coverage proof.",
+    "POLICY_ALIGNMENT": "Expected result needs alignment with the already chosen contract before execution.",
+    "OUT_OF_SCOPE": "Scenario assumes a capability not currently shipped; no implied approval to implement it."
+  },
+  "references": {
+    "U01": {
+      "kind": "unit",
+      "path": "tests/project-groups.test.ts",
+      "title": "group reads sanitize output and bind only the authenticated office",
+      "line": 13,
+      "assertionAnchors": [
+        {
+          "line": 13,
+          "anchor": "test('group reads sanitize output and bind only the authenticated office'"
+        }
+      ],
+      "sourceSha256": "e42bc4f4d1c19e01e32d1705c4a86364204d8b91a7174fee6cea87e51161b071",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/unit.xml",
+        "sha256": "3df0119ff03b9507458f8b315c62409a1536e308e3bdac933ad14959a8b7bc71",
+        "availability": "local-existing-artifact"
+      },
+      "historicalNativeTests": [
+        "group reads sanitize output and bind only the authenticated office"
+      ],
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "U02": {
+      "kind": "unit",
+      "path": "tests/project-groups.test.ts",
+      "title": "create and edit bind canonical members and revisions; results exclude raw SQL fields",
+      "line": 17,
+      "assertionAnchors": [
+        {
+          "line": 17,
+          "anchor": "test('create and edit bind canonical members and revisions; results exclude raw SQL fields'"
+        }
+      ],
+      "sourceSha256": "e42bc4f4d1c19e01e32d1705c4a86364204d8b91a7174fee6cea87e51161b071",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/unit.xml",
+        "sha256": "3df0119ff03b9507458f8b315c62409a1536e308e3bdac933ad14959a8b7bc71",
+        "availability": "local-existing-artifact"
+      },
+      "historicalNativeTests": [
+        "create and edit bind canonical members and revisions; results exclude raw SQL fields"
+      ],
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "U03": {
+      "kind": "unit",
+      "path": "tests/project-groups.test.ts",
+      "title": "archive and group assignment removal use explicit source identity",
+      "line": 23,
+      "assertionAnchors": [
+        {
+          "line": 23,
+          "anchor": "test('archive and group assignment removal use explicit source identity'"
+        }
+      ],
+      "sourceSha256": "e42bc4f4d1c19e01e32d1705c4a86364204d8b91a7174fee6cea87e51161b071",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/unit.xml",
+        "sha256": "3df0119ff03b9507458f8b315c62409a1536e308e3bdac933ad14959a8b7bc71",
+        "availability": "local-existing-artifact"
+      },
+      "historicalNativeTests": [
+        "archive and group assignment removal use explicit source identity"
+      ],
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "U04": {
+      "kind": "unit",
+      "path": "tests/project-groups.test.ts",
+      "title": "group assignments retain end dates and fresh identity bindings",
+      "line": 28,
+      "assertionAnchors": [
+        {
+          "line": 28,
+          "anchor": "test('group assignments retain end dates and fresh identity bindings'"
+        }
+      ],
+      "sourceSha256": "e42bc4f4d1c19e01e32d1705c4a86364204d8b91a7174fee6cea87e51161b071",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/unit.xml",
+        "sha256": "3df0119ff03b9507458f8b315c62409a1536e308e3bdac933ad14959a8b7bc71",
+        "availability": "local-existing-artifact"
+      },
+      "historicalNativeTests": [
+        "group assignments retain end dates and fresh identity bindings"
+      ],
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "U05": {
+      "kind": "unit",
+      "path": "tests/project-groups.test.ts",
+      "title": "forged identity, malformed IDs, duplicate or oversized members fail before SQL",
+      "line": 35,
+      "assertionAnchors": [
+        {
+          "line": 35,
+          "anchor": "test('forged identity, malformed IDs, duplicate or oversized members fail before SQL'"
+        }
+      ],
+      "sourceSha256": "e42bc4f4d1c19e01e32d1705c4a86364204d8b91a7174fee6cea87e51161b071",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/unit.xml",
+        "sha256": "3df0119ff03b9507458f8b315c62409a1536e308e3bdac933ad14959a8b7bc71",
+        "availability": "local-existing-artifact"
+      },
+      "historicalNativeTests": [
+        "forged identity, malformed IDs, duplicate or oversized members fail before SQL"
+      ],
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "U06": {
+      "kind": "unit",
+      "path": "tests/project-groups.test.ts",
+      "title": "malformed group projections never enable a partial or forged roster",
+      "line": 43,
+      "assertionAnchors": [
+        {
+          "line": 43,
+          "anchor": "test('malformed group projections never enable a partial or forged roster'"
+        }
+      ],
+      "sourceSha256": "e42bc4f4d1c19e01e32d1705c4a86364204d8b91a7174fee6cea87e51161b071",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/unit.xml",
+        "sha256": "3df0119ff03b9507458f8b315c62409a1536e308e3bdac933ad14959a8b7bc71",
+        "availability": "local-existing-artifact"
+      },
+      "historicalNativeTests": [
+        "malformed group projections never enable a partial or forged roster"
+      ],
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "U07": {
+      "kind": "unit",
+      "path": "tests/project-groups.test.ts",
+      "title": "mutation output must match requested group and operation before reporting success",
+      "line": 47,
+      "assertionAnchors": [
+        {
+          "line": 47,
+          "anchor": "test('mutation output must match requested group and operation before reporting success'"
+        }
+      ],
+      "sourceSha256": "e42bc4f4d1c19e01e32d1705c4a86364204d8b91a7174fee6cea87e51161b071",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/unit.xml",
+        "sha256": "3df0119ff03b9507458f8b315c62409a1536e308e3bdac933ad14959a8b7bc71",
+        "availability": "local-existing-artifact"
+      },
+      "historicalNativeTests": [
+        "mutation output must match requested group and operation before reporting success"
+      ],
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "U08": {
+      "kind": "unit",
+      "path": "tests/project-groups.test.ts",
+      "title": "denials and conflicts stay explicit; group mutations never automatically retry",
+      "line": 50,
+      "assertionAnchors": [
+        {
+          "line": 50,
+          "anchor": "test('denials and conflicts stay explicit; group mutations never automatically retry'"
+        }
+      ],
+      "sourceSha256": "e42bc4f4d1c19e01e32d1705c4a86364204d8b91a7174fee6cea87e51161b071",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/unit.xml",
+        "sha256": "3df0119ff03b9507458f8b315c62409a1536e308e3bdac933ad14959a8b7bc71",
+        "availability": "local-existing-artifact"
+      },
+      "historicalNativeTests": [
+        "denials and conflicts stay explicit; group mutations never automatically retry"
+      ],
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "U09": {
+      "kind": "unit",
+      "path": "tests/project-groups.test.ts",
+      "title": "admin assignment projection preserves group provenance without leaking private fields",
+      "line": 53,
+      "assertionAnchors": [
+        {
+          "line": 53,
+          "anchor": "test('admin assignment projection preserves group provenance without leaking private fields'"
+        }
+      ],
+      "sourceSha256": "e42bc4f4d1c19e01e32d1705c4a86364204d8b91a7174fee6cea87e51161b071",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/unit.xml",
+        "sha256": "3df0119ff03b9507458f8b315c62409a1536e308e3bdac933ad14959a8b7bc71",
+        "availability": "local-existing-artifact"
+      },
+      "historicalNativeTests": [
+        "admin assignment projection preserves group provenance without leaking private fields"
+      ],
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "U10": {
+      "kind": "unit",
+      "path": "tests/project-groups.test.ts",
+      "title": "production and development console paths route groups through the same service contract",
+      "line": 59,
+      "assertionAnchors": [
+        {
+          "line": 59,
+          "anchor": "test('production and development console paths route groups through the same service contract'"
+        }
+      ],
+      "sourceSha256": "e42bc4f4d1c19e01e32d1705c4a86364204d8b91a7174fee6cea87e51161b071",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/unit.xml",
+        "sha256": "3df0119ff03b9507458f8b315c62409a1536e308e3bdac933ad14959a8b7bc71",
+        "availability": "local-existing-artifact"
+      },
+      "historicalNativeTests": [
+        "production and development console paths route groups through the same service contract"
+      ],
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S01": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Create group and initial revision",
+      "line": 24,
+      "assertionAnchors": [
+        {
+          "line": 24,
+          "anchor": "'Create revision missing'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S02": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Create idempotent replay",
+      "line": 25,
+      "assertionAnchors": [
+        {
+          "line": 25,
+          "anchor": "'Create replay duplicated group'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S03": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Duplicate office group name",
+      "line": 26,
+      "assertionAnchors": [
+        {
+          "line": 26,
+          "anchor": "Expect {Call $save $g} 52003"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S04": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Reject foreign office group member",
+      "line": 27,
+      "assertionAnchors": [
+        {
+          "line": 27,
+          "anchor": "$bad.name=$f.prefix+' bad';"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S05": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Reject duplicate project members",
+      "line": 28,
+      "assertionAnchors": [
+        {
+          "line": 28,
+          "anchor": "Expect {Call $save $bad} 52002"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S06": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Read exactly one created office group",
+      "line": 29,
+      "assertionAnchors": [
+        {
+          "line": 29,
+          "anchor": "'Office group list missing'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S07": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Reject wrong-office guard",
+      "line": 32,
+      "assertionAnchors": [
+        {
+          "line": 32,
+          "anchor": "Expect {Call $assign $bad} 52004"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S08": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Assign, replay and fresh-key duplicate binding",
+      "line": 33,
+      "assertionAnchors": [
+        {
+          "line": 33,
+          "anchor": "'Assignment revision missing'"
+        },
+        {
+          "line": 34,
+          "anchor": "'Assign replay duplicated binding'"
+        },
+        {
+          "line": 35,
+          "anchor": "Expect {Call $assign $a} 52003"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S09": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Deduplicated direct/group duties in existing session",
+      "line": 38,
+      "assertionAnchors": [
+        {
+          "line": 38,
+          "anchor": "'Direct/group overlap duplicated project'"
+        },
+        {
+          "line": 39,
+          "anchor": "'Group project unavailable in current session'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S11": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Independent overlapping groups survive one-source removal",
+      "line": 50,
+      "assertionAnchors": [
+        {
+          "line": 50,
+          "anchor": "'Removing one source revoked another group'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S12": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Archive revokes next-call group duty",
+      "line": 53,
+      "assertionAnchors": [
+        {
+          "line": 53,
+          "anchor": "'Archived group left access active'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S13": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Replace members while preserving direct assignment",
+      "line": 56,
+      "assertionAnchors": [
+        {
+          "line": 56,
+          "anchor": "'Live add/remove lost direct access'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S14": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Reject stale group revision",
+      "line": 57,
+      "assertionAnchors": [
+        {
+          "line": 57,
+          "anchor": "Expect {Call $save $stale} 52003"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S15": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Independent direct source and removed group source",
+      "line": 62,
+      "assertionAnchors": [
+        {
+          "line": 62,
+          "anchor": "'Group blocked independent direct assignment'"
+        },
+        {
+          "line": 64,
+          "anchor": "'Group removal revoked direct assignment'"
+        },
+        {
+          "line": 65,
+          "anchor": "'Group removal left child assignments'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S16": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Persistent local project assignment policy",
+      "line": 75,
+      "assertionAnchors": [
+        {
+          "line": 75,
+          "anchor": "'Persistent local project was rejected by individual allocation'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S17": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Fan out membership to multiple guards and existing session",
+      "line": 82,
+      "assertionAnchors": [
+        {
+          "line": 82,
+          "anchor": "'Multiple guards did not receive all projects atomically'"
+        },
+        {
+          "line": 84,
+          "anchor": "'Second guard did not see new access in existing session'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S18": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Expired role denies and failed addition rolls back",
+      "line": 87,
+      "assertionAnchors": [
+        {
+          "line": 87,
+          "anchor": "Expect {Call $duties $guard2Args} 52001"
+        },
+        {
+          "line": 90,
+          "anchor": "'Failed eligibility check partially changed group'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "S19": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroups.ps1",
+      "title": "Guard/project-only/cross-office read denial and execute-only principal",
+      "line": 93,
+      "assertionAnchors": [
+        {
+          "line": 93,
+          "anchor": "Expect {Call $read $bad} 52001"
+        },
+        {
+          "line": 94,
+          "anchor": "Expect {Call $read $bad} 52001"
+        },
+        {
+          "line": 96,
+          "anchor": "Expect {Call $read $p} 52001"
+        },
+        {
+          "line": 97,
+          "anchor": "SELECT COUNT(*) FROM gp.ProjectGroups;'"
+        }
+      ],
+      "sourceSha256": "3ca394d486223bb2bbbc2596e60459102fa3a8240f7c8fbf0b970abf52b336f8",
+      "historicalSourceHashMatches": true,
+      "artifact": {
+        "path": "output/project-groups/Test-ProjectGroups.ps1.log",
+        "sha256": "5f88b05d3b1b394457857f2a61fa5a2dc3bfc9289ec2b48e10f6fab0a87e9792",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+    },
+    "B_CREATE": {
+      "kind": "browser",
+      "path": "tests/browser/project-groups.spec.ts",
+      "title": "Create group form",
+      "line": 25,
+      "assertionAnchors": [
+        {
+          "line": 25,
+          "anchor": ".fill('Floor 11 Main');"
+        }
+      ],
+      "sourceSha256": "8d55a23871238f7512b7f5d539a0343f552f8ea282c69289453674aad3f0c944",
+      "historicalSourceHashMatches": false,
+      "artifact": {
+        "path": "output/project-group-location/da733c371da54a4bb2618b2750935dda/browser-final.xml",
+        "sha256": "728e5c9d2e69cfcb00055f6c0884c46253a8bb08f357218f9e3abae7c6199afb",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_SCOPED_PASS_SOURCE_MATCH",
+      "priorEvidence": {
+        "sourceSha256": "cf0d80fa8acb8bf5d031f00421483e3fec62d5d25aac3418c912764776f13198",
+        "historicalSourceHashMatches": true,
+        "artifact": {
+          "path": "output/project-groups/browser-all-concurrent.xml",
+          "sha256": "4322fff2aea5d44c0d2c2c4d278d1ea7167f3b24240eb1ddceedcfc8c06dec1c",
+          "availability": "local-existing-artifact"
+        },
+        "historicalNativeTests": [
+          "assignment groups preserve individual flow and show dynamic access impact at 390px",
+          "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+        ],
+        "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+      },
+      "currentNativeTests": [
+        "assignment groups preserve individual flow and show dynamic access impact at 390px",
+        "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+      ],
+      "currentRunSourceHashMatches": true
+    },
+    "B_ASSIGN": {
+      "kind": "browser",
+      "path": "tests/browser/project-groups.spec.ts",
+      "title": "Assigned guard visible",
+      "line": 26,
+      "assertionAnchors": [
+        {
+          "line": 26,
+          "anchor": "toContainText('Assigned: Asha Guard')"
+        }
+      ],
+      "sourceSha256": "8d55a23871238f7512b7f5d539a0343f552f8ea282c69289453674aad3f0c944",
+      "historicalSourceHashMatches": false,
+      "artifact": {
+        "path": "output/project-group-location/da733c371da54a4bb2618b2750935dda/browser-final.xml",
+        "sha256": "728e5c9d2e69cfcb00055f6c0884c46253a8bb08f357218f9e3abae7c6199afb",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_SCOPED_PASS_SOURCE_MATCH",
+      "priorEvidence": {
+        "sourceSha256": "cf0d80fa8acb8bf5d031f00421483e3fec62d5d25aac3418c912764776f13198",
+        "historicalSourceHashMatches": true,
+        "artifact": {
+          "path": "output/project-groups/browser-all-concurrent.xml",
+          "sha256": "4322fff2aea5d44c0d2c2c4d278d1ea7167f3b24240eb1ddceedcfc8c06dec1c",
+          "availability": "local-existing-artifact"
+        },
+        "historicalNativeTests": [
+          "assignment groups preserve individual flow and show dynamic access impact at 390px",
+          "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+        ],
+        "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+      },
+      "currentNativeTests": [
+        "assignment groups preserve individual flow and show dynamic access impact at 390px",
+        "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+      ],
+      "currentRunSourceHashMatches": true
+    },
+    "B_IMPACT": {
+      "kind": "browser",
+      "path": "tests/browser/project-groups.spec.ts",
+      "title": "Added/removed project and affected guard preview",
+      "line": 27,
+      "assertionAnchors": [
+        {
+          "line": 27,
+          "anchor": "toContainText('Adding: Project 3')"
+        }
+      ],
+      "sourceSha256": "8d55a23871238f7512b7f5d539a0343f552f8ea282c69289453674aad3f0c944",
+      "historicalSourceHashMatches": false,
+      "artifact": {
+        "path": "output/project-group-location/da733c371da54a4bb2618b2750935dda/browser-final.xml",
+        "sha256": "728e5c9d2e69cfcb00055f6c0884c46253a8bb08f357218f9e3abae7c6199afb",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_SCOPED_PASS_SOURCE_MATCH",
+      "priorEvidence": {
+        "sourceSha256": "cf0d80fa8acb8bf5d031f00421483e3fec62d5d25aac3418c912764776f13198",
+        "historicalSourceHashMatches": true,
+        "artifact": {
+          "path": "output/project-groups/browser-all-concurrent.xml",
+          "sha256": "4322fff2aea5d44c0d2c2c4d278d1ea7167f3b24240eb1ddceedcfc8c06dec1c",
+          "availability": "local-existing-artifact"
+        },
+        "historicalNativeTests": [
+          "assignment groups preserve individual flow and show dynamic access impact at 390px",
+          "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+        ],
+        "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+      },
+      "currentNativeTests": [
+        "assignment groups preserve individual flow and show dynamic access impact at 390px",
+        "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+      ],
+      "currentRunSourceHashMatches": true
+    },
+    "B_AXE": {
+      "kind": "browser",
+      "path": "tests/browser/project-groups.spec.ts",
+      "title": "WCAG and viewport overflow checks",
+      "line": 28,
+      "assertionAnchors": [
+        {
+          "line": 28,
+          "anchor": "expect(axe.violations.map"
+        }
+      ],
+      "sourceSha256": "8d55a23871238f7512b7f5d539a0343f552f8ea282c69289453674aad3f0c944",
+      "historicalSourceHashMatches": false,
+      "artifact": {
+        "path": "output/project-group-location/da733c371da54a4bb2618b2750935dda/browser-final.xml",
+        "sha256": "728e5c9d2e69cfcb00055f6c0884c46253a8bb08f357218f9e3abae7c6199afb",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_SCOPED_PASS_SOURCE_MATCH",
+      "priorEvidence": {
+        "sourceSha256": "cf0d80fa8acb8bf5d031f00421483e3fec62d5d25aac3418c912764776f13198",
+        "historicalSourceHashMatches": true,
+        "artifact": {
+          "path": "output/project-groups/browser-all-concurrent.xml",
+          "sha256": "4322fff2aea5d44c0d2c2c4d278d1ea7167f3b24240eb1ddceedcfc8c06dec1c",
+          "availability": "local-existing-artifact"
+        },
+        "historicalNativeTests": [
+          "assignment groups preserve individual flow and show dynamic access impact at 390px",
+          "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+        ],
+        "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+      },
+      "currentNativeTests": [
+        "assignment groups preserve individual flow and show dynamic access impact at 390px",
+        "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+      ],
+      "currentRunSourceHashMatches": true
+    },
+    "B_STALE": {
+      "kind": "browser",
+      "path": "tests/browser/project-groups.spec.ts",
+      "title": "409 preserves group edit draft",
+      "line": 29,
+      "assertionAnchors": [
+        {
+          "line": 29,
+          "anchor": "denySave=true;"
+        }
+      ],
+      "sourceSha256": "8d55a23871238f7512b7f5d539a0343f552f8ea282c69289453674aad3f0c944",
+      "historicalSourceHashMatches": false,
+      "artifact": {
+        "path": "output/project-group-location/da733c371da54a4bb2618b2750935dda/browser-final.xml",
+        "sha256": "728e5c9d2e69cfcb00055f6c0884c46253a8bb08f357218f9e3abae7c6199afb",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_SCOPED_PASS_SOURCE_MATCH",
+      "priorEvidence": {
+        "sourceSha256": "cf0d80fa8acb8bf5d031f00421483e3fec62d5d25aac3418c912764776f13198",
+        "historicalSourceHashMatches": true,
+        "artifact": {
+          "path": "output/project-groups/browser-all-concurrent.xml",
+          "sha256": "4322fff2aea5d44c0d2c2c4d278d1ea7167f3b24240eb1ddceedcfc8c06dec1c",
+          "availability": "local-existing-artifact"
+        },
+        "historicalNativeTests": [
+          "assignment groups preserve individual flow and show dynamic access impact at 390px",
+          "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+        ],
+        "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+      },
+      "currentNativeTests": [
+        "assignment groups preserve individual flow and show dynamic access impact at 390px",
+        "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+      ],
+      "currentRunSourceHashMatches": true
+    },
+    "B_REMOVE": {
+      "kind": "browser",
+      "path": "tests/browser/project-groups.spec.ts",
+      "title": "Group removal and unassigned archive confirmation",
+      "line": 31,
+      "assertionAnchors": [
+        {
+          "line": 31,
+          "anchor": "fill('End group duty')"
+        }
+      ],
+      "sourceSha256": "8d55a23871238f7512b7f5d539a0343f552f8ea282c69289453674aad3f0c944",
+      "historicalSourceHashMatches": false,
+      "artifact": {
+        "path": "output/project-group-location/da733c371da54a4bb2618b2750935dda/browser-final.xml",
+        "sha256": "728e5c9d2e69cfcb00055f6c0884c46253a8bb08f357218f9e3abae7c6199afb",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_SCOPED_PASS_SOURCE_MATCH",
+      "priorEvidence": {
+        "sourceSha256": "cf0d80fa8acb8bf5d031f00421483e3fec62d5d25aac3418c912764776f13198",
+        "historicalSourceHashMatches": true,
+        "artifact": {
+          "path": "output/project-groups/browser-all-concurrent.xml",
+          "sha256": "4322fff2aea5d44c0d2c2c4d278d1ea7167f3b24240eb1ddceedcfc8c06dec1c",
+          "availability": "local-existing-artifact"
+        },
+        "historicalNativeTests": [
+          "assignment groups preserve individual flow and show dynamic access impact at 390px",
+          "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+        ],
+        "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+      },
+      "currentNativeTests": [
+        "assignment groups preserve individual flow and show dynamic access impact at 390px",
+        "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+      ],
+      "currentRunSourceHashMatches": true
+    },
+    "B_RESPONSIVE": {
+      "kind": "browser",
+      "path": "tests/browser/project-groups.spec.ts",
+      "title": "Phone and desktop workflows",
+      "line": 7,
+      "assertionAnchors": [
+        {
+          "line": 7,
+          "anchor": "for(const width of [390,1366])test("
+        }
+      ],
+      "sourceSha256": "8d55a23871238f7512b7f5d539a0343f552f8ea282c69289453674aad3f0c944",
+      "historicalSourceHashMatches": false,
+      "artifact": {
+        "path": "output/project-group-location/da733c371da54a4bb2618b2750935dda/browser-final.xml",
+        "sha256": "728e5c9d2e69cfcb00055f6c0884c46253a8bb08f357218f9e3abae7c6199afb",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_SCOPED_PASS_SOURCE_MATCH",
+      "priorEvidence": {
+        "sourceSha256": "cf0d80fa8acb8bf5d031f00421483e3fec62d5d25aac3418c912764776f13198",
+        "historicalSourceHashMatches": true,
+        "artifact": {
+          "path": "output/project-groups/browser-all-concurrent.xml",
+          "sha256": "4322fff2aea5d44c0d2c2c4d278d1ea7167f3b24240eb1ddceedcfc8c06dec1c",
+          "availability": "local-existing-artifact"
+        },
+        "historicalNativeTests": [
+          "assignment groups preserve individual flow and show dynamic access impact at 390px",
+          "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+        ],
+        "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+      },
+      "currentNativeTests": [
+        "assignment groups preserve individual flow and show dynamic access impact at 390px",
+        "assignment groups preserve individual flow and show dynamic access impact at 1366px"
+      ],
+      "currentRunSourceHashMatches": true
+    },
+    "B_REAL": {
+      "kind": "browser",
+      "path": "tests/browser/project-groups.spec.ts",
+      "title": "real SQL-backed admin creates, assigns, edits and archives an owned group through the browser",
+      "line": 36,
+      "assertionAnchors": [
+        {
+          "line": 36,
+          "anchor": "test('real SQL-backed admin creates, assigns, edits and archives an owned group through the browser'"
+        }
+      ],
+      "sourceSha256": "8d55a23871238f7512b7f5d539a0343f552f8ea282c69289453674aad3f0c944",
+      "historicalSourceHashMatches": false,
+      "artifact": {
+        "path": "output/project-group-location/da733c371da54a4bb2618b2750935dda/browser-final.xml",
+        "sha256": "728e5c9d2e69cfcb00055f6c0884c46253a8bb08f357218f9e3abae7c6199afb",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_SCOPED_PASS_SOURCE_MATCH",
+      "priorEvidence": {
+        "sourceSha256": "cf0d80fa8acb8bf5d031f00421483e3fec62d5d25aac3418c912764776f13198",
+        "historicalSourceHashMatches": true,
+        "artifact": {
+          "path": "output/project-groups/browser-all-concurrent.xml",
+          "sha256": "4322fff2aea5d44c0d2c2c4d278d1ea7167f3b24240eb1ddceedcfc8c06dec1c",
+          "availability": "local-existing-artifact"
+        },
+        "historicalNativeTests": [
+          "real SQL-backed admin creates, assigns, edits and archives an owned group through the browser"
+        ],
+        "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+      },
+      "currentNativeTests": [
+        "real SQL-backed admin creates, assigns, edits and archives an owned group through the browser"
+      ],
+      "currentRunSourceHashMatches": true
+    },
+    "B_REAL_READ": {
+      "kind": "browser",
+      "path": "tests/browser/project-groups.spec.ts",
+      "title": "Persisted members and group assignment count",
+      "line": 43,
+      "assertionAnchors": [
+        {
+          "line": 43,
+          "anchor": "expect(group.projects).toHaveLength(1)"
+        }
+      ],
+      "sourceSha256": "8d55a23871238f7512b7f5d539a0343f552f8ea282c69289453674aad3f0c944",
+      "historicalSourceHashMatches": false,
+      "artifact": {
+        "path": "output/project-group-location/da733c371da54a4bb2618b2750935dda/browser-final.xml",
+        "sha256": "728e5c9d2e69cfcb00055f6c0884c46253a8bb08f357218f9e3abae7c6199afb",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_SCOPED_PASS_SOURCE_MATCH",
+      "priorEvidence": {
+        "sourceSha256": "cf0d80fa8acb8bf5d031f00421483e3fec62d5d25aac3418c912764776f13198",
+        "historicalSourceHashMatches": true,
+        "artifact": {
+          "path": "output/project-groups/browser-all-concurrent.xml",
+          "sha256": "4322fff2aea5d44c0d2c2c4d278d1ea7167f3b24240eb1ddceedcfc8c06dec1c",
+          "availability": "local-existing-artifact"
+        },
+        "historicalNativeTests": [
+          "real SQL-backed admin creates, assigns, edits and archives an owned group through the browser"
+        ],
+        "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+      },
+      "currentNativeTests": [
+        "real SQL-backed admin creates, assigns, edits and archives an owned group through the browser"
+      ],
+      "currentRunSourceHashMatches": true
+    },
+    "B_REAL_DIRECT": {
+      "kind": "browser",
+      "path": "tests/browser/project-groups.spec.ts",
+      "title": "Direct source survives group membership removal",
+      "line": 44,
+      "assertionAnchors": [
+        {
+          "line": 44,
+          "anchor": "a.userId===f.guard&&!a.groupAssignmentId"
+        }
+      ],
+      "sourceSha256": "8d55a23871238f7512b7f5d539a0343f552f8ea282c69289453674aad3f0c944",
+      "historicalSourceHashMatches": false,
+      "artifact": {
+        "path": "output/project-group-location/da733c371da54a4bb2618b2750935dda/browser-final.xml",
+        "sha256": "728e5c9d2e69cfcb00055f6c0884c46253a8bb08f357218f9e3abae7c6199afb",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_SCOPED_PASS_SOURCE_MATCH",
+      "priorEvidence": {
+        "sourceSha256": "cf0d80fa8acb8bf5d031f00421483e3fec62d5d25aac3418c912764776f13198",
+        "historicalSourceHashMatches": true,
+        "artifact": {
+          "path": "output/project-groups/browser-all-concurrent.xml",
+          "sha256": "4322fff2aea5d44c0d2c2c4d278d1ea7167f3b24240eb1ddceedcfc8c06dec1c",
+          "availability": "local-existing-artifact"
+        },
+        "historicalNativeTests": [
+          "real SQL-backed admin creates, assigns, edits and archives an owned group through the browser"
+        ],
+        "evidenceStatus": "HISTORICAL_PASS_SOURCE_MATCH"
+      },
+      "currentNativeTests": [
+        "real SQL-backed admin creates, assigns, edits and archives an owned group through the browser"
+      ],
+      "currentRunSourceHashMatches": true
+    },
+    "G_PENDING": {
+      "kind": "sql",
+      "path": "database/tests/Test-GuardDuties.ps1",
+      "title": "Related baseline only: Pending visitors can be verified in common areas without gaining project movement",
+      "line": 36,
+      "assertionAnchors": [
+        {
+          "line": 36,
+          "anchor": "Case 'Pending visitors can be verified in common areas without gaining project movement'"
+        }
+      ],
+      "sourceSha256": "817b8d6e9cc4d44f8f6419796d4f2540b35073885c4ea4634ee19eb4b8ffbe15",
+      "historicalSourceHashMatches": null,
+      "artifact": {
+        "path": "output/project-groups/Test-GuardDuties.ps1.log",
+        "sha256": "e31078913d151bacc27cc007a31ff5f32470d1ce96de30d4bb0ad3ce58126aa2",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_HASH_NOT_RECORDED"
+    },
+    "G_QR": {
+      "kind": "sql",
+      "path": "database/tests/Test-GuardDuties.ps1",
+      "title": "Related baseline only: Unknown and out-of-duty QR reads return the same neutral result",
+      "line": 65,
+      "assertionAnchors": [
+        {
+          "line": 65,
+          "anchor": "Case 'Unknown and out-of-duty QR reads return the same neutral result'"
+        }
+      ],
+      "sourceSha256": "817b8d6e9cc4d44f8f6419796d4f2540b35073885c4ea4634ee19eb4b8ffbe15",
+      "historicalSourceHashMatches": null,
+      "artifact": {
+        "path": "output/project-groups/Test-GuardDuties.ps1.log",
+        "sha256": "e31078913d151bacc27cc007a31ff5f32470d1ce96de30d4bb0ad3ce58126aa2",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_HASH_NOT_RECORDED"
+    },
+    "G_MOVE": {
+      "kind": "sql",
+      "path": "database/tests/Test-GuardDuties.ps1",
+      "title": "Related baseline only: Common area duty cannot write an entry or exit event",
+      "line": 61,
+      "assertionAnchors": [
+        {
+          "line": 61,
+          "anchor": "Case 'Common area duty cannot write an entry or exit event'"
+        }
+      ],
+      "sourceSha256": "817b8d6e9cc4d44f8f6419796d4f2540b35073885c4ea4634ee19eb4b8ffbe15",
+      "historicalSourceHashMatches": null,
+      "artifact": {
+        "path": "output/project-groups/Test-GuardDuties.ps1.log",
+        "sha256": "e31078913d151bacc27cc007a31ff5f32470d1ce96de30d4bb0ad3ce58126aa2",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_HASH_NOT_RECORDED"
+    },
+    "G_RECON": {
+      "kind": "sql",
+      "path": "database/tests/Test-GuardDuties.ps1",
+      "title": "Related baseline only: Revoked credential requires explicit audited project exit reconciliation",
+      "line": 91,
+      "assertionAnchors": [
+        {
+          "line": 91,
+          "anchor": "Case 'Revoked credential requires explicit audited project exit reconciliation'"
+        }
+      ],
+      "sourceSha256": "817b8d6e9cc4d44f8f6419796d4f2540b35073885c4ea4634ee19eb4b8ffbe15",
+      "historicalSourceHashMatches": null,
+      "artifact": {
+        "path": "output/project-groups/Test-GuardDuties.ps1.log",
+        "sha256": "e31078913d151bacc27cc007a31ff5f32470d1ce96de30d4bb0ad3ce58126aa2",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_HASH_NOT_RECORDED"
+    },
+    "G_PRESENCE": {
+      "kind": "sql",
+      "path": "database/tests/Test-GuardDuties.ps1",
+      "title": "Related baseline only: Same Digital ID has independent presence in two explicitly assigned projects",
+      "line": 73,
+      "assertionAnchors": [
+        {
+          "line": 73,
+          "anchor": "Case 'Same Digital ID has independent presence in two explicitly assigned projects'"
+        }
+      ],
+      "sourceSha256": "817b8d6e9cc4d44f8f6419796d4f2540b35073885c4ea4634ee19eb4b8ffbe15",
+      "historicalSourceHashMatches": null,
+      "artifact": {
+        "path": "output/project-groups/Test-GuardDuties.ps1.log",
+        "sha256": "e31078913d151bacc27cc007a31ff5f32470d1ce96de30d4bb0ad3ce58126aa2",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_HASH_NOT_RECORDED"
+    },
+    "G_RACE": {
+      "kind": "sql",
+      "path": "database/tests/Test-GuardDuties.ps1",
+      "title": "Related baseline only: Two independent guards racing a Digital ID project entry commit exactly once",
+      "line": 141,
+      "assertionAnchors": [
+        {
+          "line": 141,
+          "anchor": "Case 'Two independent guards racing a Digital ID project entry commit exactly once'"
+        }
+      ],
+      "sourceSha256": "817b8d6e9cc4d44f8f6419796d4f2540b35073885c4ea4634ee19eb4b8ffbe15",
+      "historicalSourceHashMatches": null,
+      "artifact": {
+        "path": "output/project-groups/Test-GuardDuties.ps1.log",
+        "sha256": "e31078913d151bacc27cc007a31ff5f32470d1ce96de30d4bb0ad3ce58126aa2",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_HASH_NOT_RECORDED"
+    },
+    "H_AUTH": {
+      "kind": "unit",
+      "path": "tests/http-api.test.ts",
+      "title": "Shared HTTP unauthenticated session rejection",
+      "line": 50,
+      "assertionAnchors": [
+        {
+          "line": 50,
+          "anchor": "test('no session is unauthenticated'"
+        }
+      ],
+      "sourceSha256": "949bdd7150b0cce03e3a71be3845a9e8ed9ed12a425c99404a63f37df395d937",
+      "historicalSourceHashMatches": null,
+      "artifact": {
+        "path": "output/project-groups/unit.xml",
+        "sha256": "3df0119ff03b9507458f8b315c62409a1536e308e3bdac933ad14959a8b7bc71",
+        "availability": "local-existing-artifact"
+      },
+      "historicalNativeTests": [
+        "no session is unauthenticated"
+      ],
+      "evidenceStatus": "HISTORICAL_PASS_SOURCE_HASH_NOT_RECORDED"
+    },
+    "C_NAME": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Trim and office name uniqueness",
+      "line": 13,
+      "assertionAnchors": [
+        {
+          "line": 13,
+          "anchor": "CREATE UNIQUE INDEX UX_ProjectGroups_Name"
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_LIMITS": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Bounded group/member limits",
+      "line": 96,
+      "assertionAnchors": [
+        {
+          "line": 96,
+          "anchor": "Office group limit reached."
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_LIST": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Bounded fixed-sort catalogue",
+      "line": 54,
+      "assertionAnchors": [
+        {
+          "line": 54,
+          "anchor": "ORDER BY g.GroupName,g.ProjectGroupId"
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_ARCHIVE": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Archive is supported; no re-enable command",
+      "line": 66,
+      "assertionAnchors": [
+        {
+          "line": 66,
+          "anchor": "NOT IN('SAVE','ARCHIVE')"
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_CURRENT": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Active project mapping check",
+      "line": 93,
+      "assertionAnchors": [
+        {
+          "line": 93,
+          "anchor": "Active current projects in this office required."
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_ELIGIBLE": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Guard account and whole-interval eligibility",
+      "line": 27,
+      "assertionAnchors": [
+        {
+          "line": 27,
+          "anchor": "CREATE FUNCTION gp._ProjectGroupGuardEligible"
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_SELF": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Self assignment denied",
+      "line": 143,
+      "assertionAnchors": [
+        {
+          "line": 143,
+          "anchor": "Self assignment not authorized."
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_OFFICE": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Office GUARDS_MANAGE required",
+      "line": 45,
+      "assertionAnchors": [
+        {
+          "line": 45,
+          "anchor": "Office guard administration required."
+        },
+        {
+          "line": 81,
+          "anchor": "Office guard administration required."
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_MUTATION": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Independent materialized guard assignment sources",
+      "line": 17,
+      "assertionAnchors": [
+        {
+          "line": 17,
+          "anchor": "CREATE TABLE gp.ProjectGroupGuardAssignments"
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_AUDIT": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Current group mutation metadata",
+      "line": 119,
+      "assertionAnchors": [
+        {
+          "line": 119,
+          "anchor": "'PROJECT_GROUP_CHANGED'"
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_AUDIT_GUARD": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Current binding mutation audit",
+      "line": 164,
+      "assertionAnchors": [
+        {
+          "line": 164,
+          "anchor": "'PROJECT_GROUP_GUARD_CHANGED'"
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_AUDIT_FAIL": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Mutation failure audit call",
+      "line": 121,
+      "assertionAnchors": [
+        {
+          "line": 121,
+          "anchor": "'PROJECT_GROUP_CHANGE_FAILED'"
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "C_FK": {
+      "kind": "implementation",
+      "path": "database/migrations/110_project_groups_and_guard_assignments.sql",
+      "title": "Foreign key schema",
+      "line": 14,
+      "assertionAnchors": [
+        {
+          "line": 14,
+          "anchor": "CREATE TABLE gp.ProjectGroupMembers"
+        }
+      ],
+      "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
+      "historicalSourceHashMatches": true,
+      "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    }
+  },
+  "cases": [
+    {
+      "testId": "GP-0574",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A575:P575",
+      "priority": "P0",
+      "scenario": "Admin creates Floor 11 Main group in Bengaluru",
+      "feature": "Create group",
+      "expectedResult": "One active group in Bengaluru contains exactly X,B,Y,V; no existing direct assignments changed",
+      "requestedExecutionLevel": "E2E+API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "U02",
+        "S01",
+        "B_CREATE",
+        "B_REAL"
+      ],
+      "assertedNow": "Authorized create aur persisted members exercised.",
+      "remainingWork": "Bengaluru ke four named projects aur reload ka exact composed E2E assertion add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0575",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A576:P576",
+      "priority": "P1",
+      "scenario": "Group creation without name",
+      "feature": "Create group",
+      "expectedResult": "Field validation; no group row created",
+      "requestedExecutionLevel": "Unit+API+E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "U05",
+        "B_CREATE"
+      ],
+      "assertedNow": "Blank name service boundary par reject hota hai; SQL calls zero.",
+      "remainingWork": "Blank-name browser submit aur unchanged database count explicitly assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0576",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A577:P577",
+      "priority": "P1",
+      "scenario": "Group name trims and normalizes whitespace",
+      "feature": "Create group",
+      "expectedResult": "Persist normalized display name per contract; uniqueness uses normalized value",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "POLICY_ALIGNMENT",
+      "referenceIds": [
+        "C_NAME"
+      ],
+      "assertedNow": "Existing contract leading/trailing spaces trim karta hai.",
+      "remainingWork": "Repeated internal whitespace collapse/uniqueness policy define karo; current trim behavior se expected result align karo.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0577",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A578:P578",
+      "priority": "P1",
+      "scenario": "Duplicate group name in same office",
+      "feature": "Create group",
+      "expectedResult": "Duplicate rejected; exactly one matching group persisted",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S03",
+        "S06",
+        "U08"
+      ],
+      "assertedNow": "Duplicate active office name SQL52003 deta hai; list mein exactly one created group milta hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0578",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A579:P579",
+      "priority": "P1",
+      "scenario": "Same group name in different offices",
+      "feature": "Create group",
+      "expectedResult": "Independent groups allowed; distinct office-scoped IDs, project sets and assignments",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "C_NAME"
+      ],
+      "assertedNow": "Office/name unique key positive scenario ka implementation support deta hai.",
+      "remainingWork": "Same name ko two authorized offices mein create karke independent IDs/memberships assert karo.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0579",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A580:P580",
+      "priority": "P0",
+      "scenario": "Reject excessively long or unsafe group name",
+      "feature": "Create group",
+      "expectedResult": "Server enforces length and safe rendering; no injection/executable markup",
+      "requestedExecutionLevel": "API+E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "U05"
+      ],
+      "assertedNow": "Empty/control-character/overlong inputs validation aur zero SQL calls assert hain.",
+      "remainingWork": "Markup, unicode boundaries aur safe browser rendering/injection payload cases add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0580",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A581:P581",
+      "priority": "P1",
+      "scenario": "Group created with no selected projects",
+      "feature": "Create group",
+      "expectedResult": "Defined empty-group policy enforced; do not silently grant any project access",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "POLICY_ALIGNMENT",
+      "referenceIds": [
+        "U05",
+        "C_LIMITS"
+      ],
+      "assertedNow": "Empty member list rejected; current group minimum one project hai.",
+      "remainingWork": "Expected result ko explicit 1-50 projects contract par set karo; empty group ko supported feature mat assume karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0581",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A582:P582",
+      "priority": "P1",
+      "scenario": "Create two groups containing same project",
+      "feature": "Create group",
+      "expectedResult": "Project can belong to multiple office groups; no duplicate effective permission",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S11",
+        "S09"
+      ],
+      "assertedNow": "Same Beta project two groups mein hai; effective duty once dikhti hai aur one-source removal access preserve karta hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0582",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A583:P583",
+      "priority": "P1",
+      "scenario": "Admin lists groups with project and guard counts",
+      "feature": "Read/list groups",
+      "expectedResult": "Correct office-scoped group labels, membership counts and assigned guard counts",
+      "requestedExecutionLevel": "E2E+API",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "U01",
+        "S06",
+        "B_ASSIGN",
+        "B_REAL_READ"
+      ],
+      "assertedNow": "Office-scoped group projection, membership arrays aur linked guard presence checked hain.",
+      "remainingWork": "Multi-group project/guard count badges ko database counts se explicitly reconcile karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0583",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A584:P584",
+      "priority": "P1",
+      "scenario": "Admin searches and sorts group names",
+      "feature": "Read/list groups",
+      "expectedResult": "Matching groups shown without leaking other office metadata",
+      "requestedExecutionLevel": "E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "OUT_OF_SCOPE",
+      "referenceIds": [
+        "C_LIST"
+      ],
+      "assertedNow": "Current list fixed name/ID sorting aur bounded catalogue provide karti hai.",
+      "remainingWork": "Interactive group search/sort/pagination future scope hai; current acceptance ko supported bounded list par align karo.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0584",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A585:P585",
+      "priority": "P1",
+      "scenario": "Rename group without changing permissions",
+      "feature": "Edit group",
+      "expectedResult": "Display name updated; guard effective projects unchanged",
+      "requestedExecutionLevel": "E2E+API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "U02"
+      ],
+      "assertedNow": "Edit receipt aur expected revision binding tested hain.",
+      "remainingWork": "Real rename-only mutation ke before/after effective projects equality assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0585",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A586:P586",
+      "priority": "P0",
+      "scenario": "Add project Z to active group",
+      "feature": "Edit group",
+      "expectedResult": "All currently assigned guards gain Z after commit and next server-side permission check",
+      "requestedExecutionLevel": "API+DB+E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S17",
+        "S09"
+      ],
+      "assertedNow": "One edit do linked guards ke liye new project materialize karta hai; existing session next duty read mein access dekhti hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0586",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A587:P587",
+      "priority": "P0",
+      "scenario": "Remove project Y from assigned group",
+      "feature": "Edit group",
+      "expectedResult": "Y group-derived access revoked immediately; existing unrelated projects remain",
+      "requestedExecutionLevel": "API+DB+E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S12",
+        "S13"
+      ],
+      "assertedNow": "Removed last group source ka project next read se hat jata hai; independent direct access preserve rehta hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0587",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A588:P588",
+      "priority": "P0",
+      "scenario": "Replace multiple group projects atomically",
+      "feature": "Edit group",
+      "expectedResult": "Readers see previous or new complete set, never an intermediate partial set",
+      "requestedExecutionLevel": "Integration+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S17",
+        "S18"
+      ],
+      "assertedNow": "Complete fan-out aur rejected-add rollback ke final states asserted hain.",
+      "remainingWork": "Concurrent authorized reader ko edit ke saath race karke old-or-new complete sets assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0588",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A589:P589",
+      "priority": "P0",
+      "scenario": "Reject project from different office in group",
+      "feature": "Edit group",
+      "expectedResult": "Membership rejected server-side; no cross-office project access",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S04",
+        "U08"
+      ],
+      "assertedNow": "Foreign-office project membership SQL52004 se reject hoti hai; public error mapping bounded hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0589",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A590:P590",
+      "priority": "P0",
+      "scenario": "Reject deactivated/unmapped project",
+      "feature": "Edit group",
+      "expectedResult": "Rejected or excluded according to active-mapping policy, without granting permission",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S16",
+        "C_CURRENT"
+      ],
+      "assertedNow": "Current/local project policy positive regression tested hai.",
+      "remainingWork": "Deactivated project aur unmapped location ke negative group-save/assignment cases add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0590",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A591:P591",
+      "priority": "P1",
+      "scenario": "Prevent duplicate project memberships",
+      "feature": "Edit group",
+      "expectedResult": "Only one group-to-X membership persists; effective access deduplicated",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "U05",
+        "S05"
+      ],
+      "assertedNow": "Duplicate IDs boundary aur real SQL mutation par reject hote hain.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0591",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A592:P592",
+      "priority": "P0",
+      "scenario": "Disable group assigned to live guards",
+      "feature": "Disable/delete",
+      "expectedResult": "All group-derived permissions inactive immediately; direct grants unaffected",
+      "requestedExecutionLevel": "API+DB+E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S12",
+        "S13"
+      ],
+      "assertedNow": "Archive group sources revoke karta hai; next same-session duty read aur surviving direct source checked hain.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0592",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A593:P593",
+      "priority": "P0",
+      "scenario": "Re-enable group with current validated membership",
+      "feature": "Disable/delete",
+      "expectedResult": "Only currently valid member projects restored for assigned guards",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "OUT_OF_SCOPE",
+      "referenceIds": [
+        "C_ARCHIVE"
+      ],
+      "assertedNow": "Archive supported hai; revoke hui bindings permanently retained history hain.",
+      "remainingWork": "Re-enable/automatic binding restore current feature nahi hai; approved future requirement ya N/A rakho.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0593",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A594:P594",
+      "priority": "P1",
+      "scenario": "Delete group with no guard assignments",
+      "feature": "Disable/delete",
+      "expectedResult": "Group and membership relations removed/soft-deleted per policy; no orphan rows",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "B_REMOVE",
+        "C_ARCHIVE"
+      ],
+      "assertedNow": "Empty-assignment group ka archive UI flow exercised hai.",
+      "remainingWork": "Real SQL unassigned-group archive aur no-orphan/history assertions add karo; hard delete assume mat karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0594",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A595:P595",
+      "priority": "P0",
+      "scenario": "Delete/disable group with existing guard assignments",
+      "feature": "Disable/delete",
+      "expectedResult": "Require explicit impact confirmation and follow configured delete/disable policy; no silent stale grants",
+      "requestedExecutionLevel": "E2E+API",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "B_REMOVE",
+        "S12"
+      ],
+      "assertedNow": "Confirmation/reason-based archive aur assigned group revocation exercised hain.",
+      "remainingWork": "Confirmation ke affected guard/project counts aur exact source-preservation state explicitly assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0595",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A596:P596",
+      "priority": "P0",
+      "scenario": "Assign group to guard in same office",
+      "feature": "Guard assignment",
+      "expectedResult": "Guard A gets group projects X,B,Y,V, within Bengaluru only",
+      "requestedExecutionLevel": "E2E+API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S08",
+        "S09",
+        "B_REAL"
+      ],
+      "assertedNow": "Same-office binding, group member duties aur real browser assignment/read checked hain.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0596",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A597:P597",
+      "priority": "P0",
+      "scenario": "Assign multiple groups to one guard",
+      "feature": "Guard assignment",
+      "expectedResult": "Effective set equals X,B,Y with no duplicates",
+      "requestedExecutionLevel": "API+DB+E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S11",
+        "S09"
+      ],
+      "assertedNow": "Overlapping group sources same guard ko effective project once dete hain.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0597",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A598:P598",
+      "priority": "P1",
+      "scenario": "Assign same group to multiple guards",
+      "feature": "Guard assignment",
+      "expectedResult": "All guards receive matching scoped group-derived project permissions",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S17"
+      ],
+      "assertedNow": "Two guards receive all new member projects atomically in final DB state; second session live read verified hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0598",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A599:P599",
+      "priority": "P1",
+      "scenario": "Prevent duplicate guard-group row",
+      "feature": "Guard assignment",
+      "expectedResult": "Single logical assignment persists; API idempotent/clear duplicate response",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S08"
+      ],
+      "assertedNow": "Same client key same binding receipt deta hai; fresh duplicate assignment SQL52003 deta hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0599",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A600:P600",
+      "priority": "P0",
+      "scenario": "Remove group from guard",
+      "feature": "Guard assignment",
+      "expectedResult": "A loses only permissions sourced solely from group; B unchanged",
+      "requestedExecutionLevel": "API+DB+E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S15",
+        "B_REMOVE"
+      ],
+      "assertedNow": "Removing one binding uske child sources hataata hai aur direct assignment preserve karta hai.",
+      "remainingWork": "Same group ke second guard ki bindings/effective projects unchanged explicitly assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0600",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A601:P601",
+      "priority": "P0",
+      "scenario": "Block assignment to guard of different office",
+      "feature": "Guard assignment",
+      "expectedResult": "Server denies cross-office mismatch and persists no assignment",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S07",
+        "U08"
+      ],
+      "assertedNow": "Wrong-office guard assignment rejected; stable conflict mapping covered hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0601",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A602:P602",
+      "priority": "P0",
+      "scenario": "Block group assigned to inactive/unapproved guard",
+      "feature": "Guard assignment",
+      "expectedResult": "No usable effective access granted; assignment policy enforced",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S18",
+        "C_ELIGIBLE"
+      ],
+      "assertedNow": "Expired role denies subsequent duties aur membership addition revive nahi karti.",
+      "remainingWork": "Inactive user assignment test add karo; unapproved guard ka precise account/role policy define karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0602",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A603:P603",
+      "priority": "P0",
+      "scenario": "Guard assigned to two offices only sees valid group scope",
+      "feature": "Guard assignment",
+      "expectedResult": "Effective set computed per selected authenticated office; no cross-office leakage",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "S07",
+        "S19"
+      ],
+      "assertedNow": "Negative cross-office guard/group scope checks related support dete hain.",
+      "remainingWork": "One guard with two legitimate office roles/groups ka positive per-office effective-set scenario add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0603",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A604:P604",
+      "priority": "P1",
+      "scenario": "Guard group assignment change appears in admin list",
+      "feature": "Guard assignment",
+      "expectedResult": "Updated group membership, project count and effective grants shown",
+      "requestedExecutionLevel": "E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "B_ASSIGN",
+        "B_REAL_READ"
+      ],
+      "assertedNow": "Assignment admin list mein guard show karti hai; real API group members aur one linked guard counts assert hain.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0604",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A605:P605",
+      "priority": "P0",
+      "scenario": "Set union direct + group projects",
+      "feature": "Effective permissions",
+      "expectedResult": "Effective = {Alpha,X,B,Y,V}; no duplicates",
+      "requestedExecutionLevel": "Unit",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S11",
+        "S13",
+        "S15"
+      ],
+      "assertedNow": "Independent direct aur group sources ka union aur preserved provenance/effective duty set tested hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0605",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A606:P606",
+      "priority": "P0",
+      "scenario": "Direct project overlaps group member",
+      "feature": "Effective permissions",
+      "expectedResult": "B represented once with direct and group grant origins preserved",
+      "requestedExecutionLevel": "Unit",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S09",
+        "S15",
+        "U09"
+      ],
+      "assertedNow": "Guard effective duty deduplicates overlap; direct/group source IDs remain independent and projected.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0606",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A607:P607",
+      "priority": "P0",
+      "scenario": "Group member removed but direct permission exists",
+      "feature": "Effective permissions",
+      "expectedResult": "B remains authorized through direct assignment",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S13",
+        "B_REAL_DIRECT"
+      ],
+      "assertedNow": "Membership removal ke baad independent direct assignment retained hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0607",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A608:P608",
+      "priority": "P0",
+      "scenario": "Group member removed but other group retains it",
+      "feature": "Effective permissions",
+      "expectedResult": "B remains authorized through second group",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S11"
+      ],
+      "assertedNow": "One group se removal ke baad second group Beta access preserve karta hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0608",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A609:P609",
+      "priority": "P0",
+      "scenario": "Remove direct grant but group remains",
+      "feature": "Effective permissions",
+      "expectedResult": "B stays authorized from group; origin shown correctly",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S15"
+      ],
+      "assertedNow": "Direct/group source independence ka inverse removal path related support deta hai.",
+      "remainingWork": "Direct row deallocate karke still-active group se same project authorization assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0609",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A610:P610",
+      "priority": "P0",
+      "scenario": "Admin cannot use group to elevate own permission",
+      "feature": "Effective permissions",
+      "expectedResult": "Permission denied with server-side scope checks; no shadow grants",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "U05",
+        "S19",
+        "C_SELF"
+      ],
+      "assertedNow": "Forged actor rejected aur project-only admin group catalogue denied hai.",
+      "remainingWork": "Self group assignment aur unauthorized admin group mutation ke explicit denial/no-write tests add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0610",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A611:P611",
+      "priority": "P0",
+      "scenario": "Group label is never used as authorization entity",
+      "feature": "Effective permissions",
+      "expectedResult": "Authorization determined solely by office + project grants, never label text",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "B_CREATE",
+        "C_OFFICE"
+      ],
+      "assertedNow": "Floor label wala group actual member IDs ke saath created hai; authorization office/project based hai.",
+      "remainingWork": "Misleading floor/office names aur rename se privilege set unchanged test karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0611",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A612:P612",
+      "priority": "P0",
+      "scenario": "Pass scanning rechecks latest group membership",
+      "feature": "Effective permissions",
+      "expectedResult": "Scan uses current server-side group and direct permissions, not cached QR/UI state",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S09",
+        "S12",
+        "G_QR"
+      ],
+      "assertedNow": "Next-call duty changes aur baseline out-of-duty QR denials separately tested hain.",
+      "remainingWork": "Group membership revoke ke baad previously valid QR verification ka composed real SQL/API case add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0612",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A613:P613",
+      "priority": "P0",
+      "scenario": "Entry movement rechecks group after verification",
+      "feature": "Effective permissions",
+      "expectedResult": "Entry action forbidden; no movement persisted",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "S12",
+        "G_MOVE"
+      ],
+      "assertedNow": "Group revoke aur movement authorization baseline tests alag hain.",
+      "remainingWork": "Scan valid, group revoke commit, phir ENTRY deny aur zero movement event explicitly test karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0613",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A614:P614",
+      "priority": "P0",
+      "scenario": "Exit movement uses explicit exit exception policy",
+      "feature": "Effective permissions",
+      "expectedResult": "No unintended privileged exit; documented exception workflow requires authorized reason and audit",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "POLICY_ALIGNMENT",
+      "referenceIds": [
+        "G_RECON",
+        "G_MOVE"
+      ],
+      "assertedNow": "Existing credential/presence reconciliation reasons aur permissions tested hain.",
+      "remainingWork": "Group revocation ke context mein exact authorized exit/reconciliation policy choose karke test karo; bypass invent mat karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0614",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A615:P615",
+      "priority": "P0",
+      "scenario": "Assignments do not bypass visitor/employee approval",
+      "feature": "Effective permissions",
+      "expectedResult": "Approval-required pass still denied even when guard is entitled to X",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "G_PENDING",
+        "S09"
+      ],
+      "assertedNow": "Baseline approval/movement separation aur group duty grants separately tested hain.",
+      "remainingWork": "Group-assigned guard ke pending/denied pass movement attempts par no-entry assertions add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0615",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A616:P616",
+      "priority": "P0",
+      "scenario": "Group access does not grant unapproved project on person pass",
+      "feature": "Effective permissions",
+      "expectedResult": "Access to Y denied; person permission assessed separately from guard project scope",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "G_QR",
+        "G_PRESENCE",
+        "S11"
+      ],
+      "assertedNow": "Baseline person-project isolation aur overlapping guard group grants separately tested hain.",
+      "remainingWork": "Guard group includes Y, person pass lacks Y, verify/move denied composed scenario add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0616",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A617:P617",
+      "priority": "P0",
+      "scenario": "Guard group changes do not mutate employee projects",
+      "feature": "Effective permissions",
+      "expectedResult": "Only guard assignment effective set changes; employee/visitor access unchanged",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S17",
+        "C_MUTATION"
+      ],
+      "assertedNow": "Group mutation target tables guard assignment domain tak scoped hain.",
+      "remainingWork": "Employee/visitor permission rows ke before/after unchanged state explicitly assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0617",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A618:P618",
+      "priority": "P0",
+      "scenario": "Set-union commutativity and idempotence",
+      "feature": "Effective permissions",
+      "expectedResult": "Effective set independent of order and duplicates; identical across repeated evaluations",
+      "requestedExecutionLevel": "Property",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S09",
+        "S11"
+      ],
+      "assertedNow": "One overlap ordering aur idempotent mutation receipts covered hain.",
+      "remainingWork": "Property tests for permutation, repeated memberships aur union idempotence add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0618",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A619:P619",
+      "priority": "P0",
+      "scenario": "Removal never grants new permissions",
+      "feature": "Effective permissions",
+      "expectedResult": "Permissions after removal subset of before, except independently added grants",
+      "requestedExecutionLevel": "Property",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S11",
+        "S12",
+        "S13"
+      ],
+      "assertedNow": "Specific removals preserve independent grants aur last-source permission remove karte hain.",
+      "remainingWork": "Complete before/after effective-set subset property across generated combinations assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0619",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A620:P620",
+      "priority": "P0",
+      "scenario": "Office scoping precedes project union",
+      "feature": "Effective permissions",
+      "expectedResult": "Only office A grants returned; filtering not performed by client",
+      "requestedExecutionLevel": "Unit",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "U01",
+        "S04",
+        "S07",
+        "S19"
+      ],
+      "assertedNow": "Office binding aur negative foreign member/guard/catalogue checks covered hain.",
+      "remainingWork": "Multi-office grant union mein server filters correct office before returning projects explicitly assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0620",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A621:P621",
+      "priority": "P1",
+      "scenario": "Group CRUD validates request and response contracts",
+      "feature": "API & RBAC",
+      "expectedResult": "Documented statuses, stable IDs, versioning and no internal error leakage",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05",
+        "U06",
+        "U07",
+        "U08",
+        "U09",
+        "U10",
+        "S14",
+        "B_STALE"
+      ],
+      "assertedNow": "Typed inputs/outputs, projection sanitization, SQL error mapping, stable IDs aur revisions asserted hain.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0621",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A622:P622",
+      "priority": "P0",
+      "scenario": "Reception cannot create or assign guard groups",
+      "feature": "API & RBAC",
+      "expectedResult": "403; no DB mutation",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "C_OFFICE"
+      ],
+      "assertedNow": "Current office GUARDS_MANAGE requirement reception mutations ko disallow karti hai.",
+      "remainingWork": "Authenticated reception token se create/edit/archive/assign/remove 403 aur unchanged DB test karo.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0622",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A623:P623",
+      "priority": "P0",
+      "scenario": "Guard cannot edit groups via own token",
+      "feature": "API & RBAC",
+      "expectedResult": "403; no DB mutation",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S19"
+      ],
+      "assertedNow": "Guard token se group catalogue denial tested hai.",
+      "remainingWork": "Guard token ke all group mutation endpoints par 403 aur zero writes assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0623",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A624:P624",
+      "priority": "P0",
+      "scenario": "Unauthenticated caller cannot enumerate group metadata",
+      "feature": "API & RBAC",
+      "expectedResult": "401/appropriate auth response; no project/guard disclosure",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "H_AUTH"
+      ],
+      "assertedNow": "Shared HTTP unauthenticated session rejection tested hai.",
+      "remainingWork": "Named group endpoints par no-cookie/expired-cookie enumeration requests aur non-disclosure explicitly test karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0624",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A625:P625",
+      "priority": "P0",
+      "scenario": "IDOR across office group IDs",
+      "feature": "API & RBAC",
+      "expectedResult": "404/403; no foreign location details and no mutation",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S04",
+        "S19"
+      ],
+      "assertedNow": "Foreign-office members aur foreign-office catalogue denied hain.",
+      "remainingWork": "Own office body ke saath foreign group ID read/edit/archive/assign/remove IDOR matrix add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0625",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A626:P626",
+      "priority": "P0",
+      "scenario": "Mass assignment payload with forged office ID",
+      "feature": "API & RBAC",
+      "expectedResult": "Server derives/checks scope and rejects unsafe relations",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "U05",
+        "S04",
+        "S19"
+      ],
+      "assertedNow": "Forged actor/unknown body keys aur invalid/foreign scope cases fail closed hain.",
+      "remainingWork": "Forged positive foreign office ID plus valid own-office group/guard combination mutation test karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0626",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A627:P627",
+      "priority": "P0",
+      "scenario": "Injection/XSS in group name",
+      "feature": "API & RBAC",
+      "expectedResult": "Parameterized queries and HTML encoding; no script execution or query alteration",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "U05",
+        "C_NAME"
+      ],
+      "assertedNow": "Name length/control validation aur text-only rendering implementation present hai.",
+      "remainingWork": "SQL injection strings, markup aur event-handler payloads ke explicit API/DOM nonexecution assertions add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0627",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A628:P628",
+      "priority": "P0",
+      "scenario": "Concurrent stale update conflict",
+      "feature": "API & RBAC",
+      "expectedResult": "Optimistic locking or explicit conflict/reconciliation prevents silent lost update",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "S14",
+        "B_STALE"
+      ],
+      "assertedNow": "Stale revision SQL52003 aur UI409 preserve draft; silent overwrite prevented hai.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0628",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A629:P629",
+      "priority": "P0",
+      "scenario": "Audit group create/rename/project membership changes",
+      "feature": "API & RBAC",
+      "expectedResult": "Actor, office, group, before/after membership, time, correlation ID recorded",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "C_AUDIT"
+      ],
+      "assertedNow": "Audit writes current proposed members, actor/location/reason and operation/revision metadata.",
+      "remainingWork": "Explicit previous/new membership/name snapshots implement/map karo aur immutable audit assertions add karo.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0629",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A630:P630",
+      "priority": "P0",
+      "scenario": "Audit guard-to-group assignment and revocation",
+      "feature": "API & RBAC",
+      "expectedResult": "Guard identity, group identity, actor, timestamp, reason (if required) logged",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "C_AUDIT_GUARD"
+      ],
+      "assertedNow": "Guard binding audit insert implementation present hai.",
+      "remainingWork": "Assign/remove audit row mein actor/guard/group/time/reason/operation fields assert karo.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0630",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A631:P631",
+      "priority": "P1",
+      "scenario": "Group updates expose impacted guard count",
+      "feature": "API & RBAC",
+      "expectedResult": "UI/API impact correctly states three affected guards and affected projects",
+      "requestedExecutionLevel": "E2E+API",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "B_IMPACT",
+        "S17"
+      ],
+      "assertedNow": "UI one linked guard ka added/removed project impact aur SQL two-guard fan-out cover karte hain.",
+      "remainingWork": "Exactly three linked guards ke impact count/names/project deltas aur stale-preview conflict assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0631",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A632:P632",
+      "priority": "P0",
+      "scenario": "Failed group mutations audited appropriately",
+      "feature": "API & RBAC",
+      "expectedResult": "Security-relevant failures auditable with no sensitive token values",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "C_AUDIT_FAIL",
+        "U08"
+      ],
+      "assertedNow": "Failure auditing call aur redacted service errors present hain.",
+      "remainingWork": "Denied/conflicting group mutations ke audit rows aur absence of sensitive token fields explicitly assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0632",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A633:P633",
+      "priority": "P0",
+      "scenario": "Foreign keys prevent dangling group/guard/project references",
+      "feature": "Database",
+      "expectedResult": "Foreign-key or application transaction prevents orphan assignments",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S19",
+        "C_FK"
+      ],
+      "assertedNow": "Execute-only table denial aur FK definitions present hain.",
+      "remainingWork": "Owned rollback fixture mein dangling group/guard/project FK insert violations assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0633",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A634:P634",
+      "priority": "P0",
+      "scenario": "Office constrained unique group name and relationships",
+      "feature": "Database",
+      "expectedResult": "Unique constraints enforce intended office/key combinations",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S03",
+        "S05",
+        "S08",
+        "C_NAME"
+      ],
+      "assertedNow": "Office/name uniqueness, duplicate members aur duplicate live bindings checked hain.",
+      "remainingWork": "Same name different-office positive case aur relationship enforcement boundary clearly assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0634",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A635:P635",
+      "priority": "P0",
+      "scenario": "Group membership update transaction rolls back on error",
+      "feature": "Database",
+      "expectedResult": "Original membership preserved; no partial guard permission update",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S18"
+      ],
+      "assertedNow": "Rejected add old membership count preserve karta hai despite earlier transactional changes.",
+      "remainingWork": "Mid-materialization injected SQL failure ke baad members/children/revision/audit full rollback assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0635",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A636:P636",
+      "priority": "P0",
+      "scenario": "Group history retained after disable/delete",
+      "feature": "Database",
+      "expectedResult": "Historical audit and existing movement evidence retained; no cascade erasure",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S12",
+        "C_ARCHIVE"
+      ],
+      "assertedNow": "Archive logical group sources deactivate karta hai; implementation deletes historical audit/movement rows nahi karti.",
+      "remainingWork": "Before/after audit and movement history row IDs/counts immutable explicitly assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0636",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A637:P637",
+      "priority": "P0",
+      "scenario": "Previously valid project becomes unmapped from office",
+      "feature": "Database",
+      "expectedResult": "X no longer grants access; orphan or invalid group membership handled predictably",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "C_CURRENT"
+      ],
+      "assertedNow": "Active/current mapping checks implementation mein hain.",
+      "remainingWork": "Previously assigned group project deactivate/unmap karke subsequent verify/entry deny and policy-visible state assert karo.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0637",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A638:P638",
+      "priority": "P0",
+      "scenario": "Guard deallocation overrides any existing group",
+      "feature": "Database",
+      "expectedResult": "A has no usable Bengaluru project access without active guard-office authorization",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "POLICY_ALIGNMENT",
+      "referenceIds": [
+        "S18",
+        "G_MOVE"
+      ],
+      "assertedNow": "Expired guard-office role next duty request deny karti hai; independent grant semantics preserved hain.",
+      "remainingWork": "Deallocation ko office GUARD role revocation ke roop mein specify karo; single direct-source removal group access override nahi karega.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0638",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A639:P639",
+      "priority": "P0",
+      "scenario": "Two admins add same project simultaneously",
+      "feature": "Concurrency",
+      "expectedResult": "One logical membership; no duplicate join rows or inconsistent counts",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S05",
+        "S14"
+      ],
+      "assertedNow": "Duplicate input aur sequential stale-revision rejection covered hain.",
+      "remainingWork": "Two real admin sessions same project add race; one membership aur explicit conflict assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0639",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A640:P640",
+      "priority": "P0",
+      "scenario": "Revocation races with guard entry",
+      "feature": "Concurrency",
+      "expectedResult": "Transactionally defined policy prevents unauthorized entry after committed revoke",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "G_RACE",
+        "S12"
+      ],
+      "assertedNow": "Baseline two-entry race aur group revocation separately tested hain.",
+      "remainingWork": "Committed group revoke versus concurrent guard ENTRY under authorization lock ka exact race test add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0640",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A641:P641",
+      "priority": "P0",
+      "scenario": "Group edit races with deallocating guard",
+      "feature": "Concurrency",
+      "expectedResult": "No access remains for deallocated guard; consistent DB state",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "S17",
+        "S18"
+      ],
+      "assertedNow": "Multi-guard edit aur role eligibility rollback separately tested hain.",
+      "remainingWork": "Concurrent group edit versus guard-office revocation/binding removal ka no-restored-access test add karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0641",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A642:P642",
+      "priority": "P1",
+      "scenario": "Effective grant lookup under many groups",
+      "feature": "Performance",
+      "expectedResult": "No N+1 pattern or uncontrolled query growth; meets agreed guard scan latency budget",
+      "requestedExecutionLevel": "Load+SQL",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "C_LIMITS"
+      ],
+      "assertedNow": "Current caps known hain; group-specific benchmark evidence absent hai.",
+      "remainingWork": "Supported group sizes/overlaps aur numeric scan p95/p99 SLO define karke benchmark add karo.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0642",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A643:P643",
+      "priority": "P1",
+      "scenario": "High-volume group edits do not block scan service",
+      "feature": "Performance",
+      "expectedResult": "No deadlocks or sustained scan p95 regression outside agreed SLO",
+      "requestedExecutionLevel": "Load+SQL",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "C_LIMITS"
+      ],
+      "assertedNow": "Fan-out bounded hai; scan service ke saath group-edit pressure run mapped nahi hai.",
+      "remainingWork": "Agreed throughput/scan SLO aur same-time group mutation workload ke SQL waits/deadlocks capture karo.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0643",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A644:P644",
+      "priority": "P1",
+      "scenario": "Group list/pagination bounded",
+      "feature": "Performance",
+      "expectedResult": "Bounded server page size, stable sorting, no excessive memory use",
+      "requestedExecutionLevel": "Load",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "OUT_OF_SCOPE",
+      "referenceIds": [
+        "C_LIST",
+        "C_LIMITS"
+      ],
+      "assertedNow": "100 active groups per office bounded catalogue hai; cursor pagination supported nahi hai.",
+      "remainingWork": "Thousands active groups/page/filter expectation revise karo; cap rejection plus bounded active/history datasets test karo.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0644",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A645:P645",
+      "priority": "P0",
+      "scenario": "SQL outage during group assignment",
+      "feature": "Recovery",
+      "expectedResult": "No partial join rows; safe retry/idempotence; user gets explicit failure",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "U08",
+        "S02",
+        "S08"
+      ],
+      "assertedNow": "No automatic mutation retry aur same-key receipt replay covered hain.",
+      "remainingWork": "Actual SQL connection/outage during group transaction, rollback aur explicit recovery/idempotence execute karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0645",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A646:P646",
+      "priority": "P0",
+      "scenario": "Service restart after group edit",
+      "feature": "Recovery",
+      "expectedResult": "Current effective grants restored from persisted DB without stale in-memory permissions",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "GAP",
+      "referenceIds": [
+        "C_MUTATION"
+      ],
+      "assertedNow": "Effective sources persist in SQL tables; no mapped restart assertion hai.",
+      "remainingWork": "Owned assigned group retain karke service restart and fresh authorization read test add karo.",
+      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+    },
+    {
+      "testId": "GP-0646",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A647:P647",
+      "priority": "P0",
+      "scenario": "Cache invalidation after group removal",
+      "feature": "Recovery",
+      "expectedResult": "No stale access after revoke; fail-closed on cache uncertainty",
+      "requestedExecutionLevel": "API+DB",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S09",
+        "S12"
+      ],
+      "assertedNow": "Same existing session ka next duty read reflects group grant/revoke.",
+      "remainingWork": "Prime guard QR/thumbnail/context caches then revoke; every sensitive API fail-closed assert karo; UI 20s refresh separate rakho.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0647",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A648:P648",
+      "priority": "P1",
+      "scenario": "Group create/edit form keyboard operable",
+      "feature": "UI & Accessibility",
+      "expectedResult": "Controls labeled, focus visible, errors announced, no keyboard trap",
+      "requestedExecutionLevel": "Accessibility+E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "B_AXE"
+      ],
+      "assertedNow": "Axe WCAG checks pass on group edit dialog.",
+      "remainingWork": "Keyboard-only creation/selection/save/cancel, focus restoration aur validation error announcements explicitly test karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0648",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A649:P649",
+      "priority": "P1",
+      "scenario": "Compact group assignment usable on phone and desktop",
+      "feature": "UI & Accessibility",
+      "expectedResult": "Project list, impact preview and confirm remain readable and usable",
+      "requestedExecutionLevel": "E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "MAPPED",
+      "referenceIds": [
+        "B_RESPONSIVE",
+        "B_IMPACT"
+      ],
+      "assertedNow": "390px and 1366px group forms/impact/save workflows, overflow checks aur screenshots covered hain.",
+      "remainingWork": "",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    },
+    {
+      "testId": "GP-0649",
+      "sourceSheet": "Test Catalogue",
+      "sourceRange": "A650:P650",
+      "priority": "P1",
+      "scenario": "Guard sees effective project list without group administration controls",
+      "feature": "UI & Accessibility",
+      "expectedResult": "Effective projects shown; no group edit/delete actions surfaced",
+      "requestedExecutionLevel": "E2E",
+      "catalogueExecutionStatus": "Not Run",
+      "mappingStatus": "PARTIAL",
+      "referenceIds": [
+        "S09",
+        "B_REAL"
+      ],
+      "assertedNow": "Effective duty list and admin management routes separately verified hain.",
+      "remainingWork": "Group-assigned guard browser view mein effective projects aur absence of group admin controls assert karo.",
+      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    }
+  ]
+}

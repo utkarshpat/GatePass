@@ -10,11 +10,12 @@ import {requireDummySso} from './DummyEmployeeSso.ts';
 import {createHash} from 'node:crypto';
 import {NameReadings,NameReadingError} from '../visits/NameReadings.ts';
 import type{PhotoThumbnails}from'../visits/PhotoThumbnails.ts';
+import type {GuardThumbnailService} from '../visits/GuardThumbnailService.ts';
 export class GuardRoutes implements AdditionalHttpRoutes{
  private reminders?:HostReminderService;
  #staff:StaffEntryRoutes;#workspace:GuardWorkspaceService;#reads:VisitReadService;#photos:VisitPhotoService;#duties:GuardDutyService;
- #names:NameReadings;#nameRates=new Map<string,{count:number;until:number}>();#thumbnails?:PhotoThumbnails;
- constructor(staff:StaffEntryRoutes,workspace:GuardWorkspaceService,reads:VisitReadService,photos:VisitPhotoService,duties:GuardDutyService,reminders?:HostReminderService,names=new NameReadings(null),thumbnails?:PhotoThumbnails){this.reminders=reminders;this.#staff=staff;this.#workspace=workspace;this.#reads=reads;this.#photos=photos;this.#duties=duties;this.#names=names;this.#thumbnails=thumbnails;}
+ #names:NameReadings;#nameRates=new Map<string,{count:number;until:number}>();#thumbnails?:PhotoThumbnails;#guardThumbnails?:GuardThumbnailService;
+ constructor(staff:StaffEntryRoutes,workspace:GuardWorkspaceService,reads:VisitReadService,photos:VisitPhotoService,duties:GuardDutyService,reminders?:HostReminderService,names=new NameReadings(null),thumbnails?:PhotoThumbnails,guardThumbnails?:GuardThumbnailService){this.reminders=reminders;this.#staff=staff;this.#workspace=workspace;this.#reads=reads;this.#photos=photos;this.#duties=duties;this.#names=names;this.#thumbnails=thumbnails;this.#guardThumbnails=guardThumbnails;}
  handles(path:string){return /^\/api\/guard\/(context|queue|duties|projects|verify|lookup|detail|photo|recent|visitors|movement|remind-host|name-readings)$/u.test(path);}
  async handle(req:IncomingMessage,_res:ServerResponse){requireDummySso();if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress??''))throw new HttpFailure(403);if(!this.handles(req.url??''))throw new HttpFailure(404);const session=this.#staff.session(req);if(!await this.#staff.verify(session))throw new HttpFailure(401);const d=await readJsonBody(req),action=req.url!.split('/').at(-1)!,context={...session,view:'GUARD' as const};
   if(action==='remind-host'){if(!this.reminders)throw new HttpFailure(503);return this.reminders.run(session,d,'GUARD');}
@@ -39,6 +40,7 @@ export class GuardRoutes implements AdditionalHttpRoutes{
   if(action==='movement')return this.#duties.movement(session,d);
   if(action==='detail'){const result=await this.#duties.detail(session,d);if(!result.visit)throw new HttpFailure(403);return result.visit;}
   const thumbnail=d.thumbnail===true;if(Object.hasOwn(d,'thumbnail')){if(typeof d.thumbnail!=='boolean')throw new HttpFailure(400);delete d.thumbnail;}
+  if(thumbnail&&this.#guardThumbnails){try{return await this.#guardThumbnails.read(session,d);}catch(error){if((error as Error).message==='THUMBNAILS_BUSY')throw new HttpFailure(429);throw error;}}
   const before=await this.#duties.detail(session,d);if(!before.visit)throw new HttpFailure(403);
   const photo=await this.#photos.read(context,before.visit.visitRequestId);
   let small:Buffer|undefined;try{if(thumbnail){if(!this.#thumbnails)throw new HttpFailure(503);try{small=await this.#thumbnails.read(photo.bytes);}catch(error){throw new HttpFailure((error as Error).message==='THUMBNAILS_BUSY'?429:503);}}const after=await this.#duties.detail(session,d);if(!after.visit||after.visit.accessPassId!==before.visit.accessPassId)throw new HttpFailure(403);return{mimeType:thumbnail?'image/jpeg':photo.mimeType,imageBase64:(small??photo.bytes).toString('base64')};}finally{small?.fill(0);photo.bytes.fill(0);}

@@ -3,9 +3,17 @@ function nodes(){const all=new Map();return(id:string)=>{if(!all.has(id))all.set
 test('guard automatically loads every scoped server page and keeps filters unchanged across batches',async()=>{
  const source=readFileSync(new URL('../src/app/guard.js',import.meta.url),'utf8'),calls:any[]=[],state={office:{locationId:1},duty:{kind:'PROJECT',dutyId:'17'},queue:'EXPECTED',recentVersion:0,recentRows:[],hasMore:false},$=nodes();
  $('visitor-search').value='Visitor';$('project-filter').value='17';const context:any={state,$,dutyContext:()=>({locationId:1,dutyKind:'PROJECT',dutyId:'17'}),i18n:{t:(s:string)=>s},notify:(e:any)=>{throw e},renderRecent(){},async api(_action:string,p:any){calls.push(p);return calls.length===1?{visitors:[{visitRequestId:'a'}],hasMore:true}:{visitors:[{visitRequestId:'b'}],hasMore:false};}};
- vm.createContext(context);vm.runInContext(source.slice(source.indexOf('async function recent('),source.indexOf('\nlet searchTimer;'))+';globalThis.load=recent;',context);await context.load();
+ vm.createContext(context);vm.runInContext(source.slice(source.indexOf('let recentRunning='),source.indexOf('\nlet searchTimer;'))+';globalThis.load=recent;',context);await context.load();
  assert.equal(state.recentRows.length,2);assert.equal(calls.length,2);assert.deepEqual(calls.map(c=>c.offset),[0,1]);assert.ok(calls.every(c=>c.locationId===1&&c.dutyKind==='PROJECT'&&c.dutyId==='17'&&c.search==='Visitor'));assert.equal($('load-more').hidden,true);assert.equal($('refresh-recent').disabled,false);
 });
+test('guard queues only the latest pending search and never overlaps scoped queue reads',async()=>{
+ const source=readFileSync(new URL('../src/app/guard.js',import.meta.url),'utf8'),$=nodes(),calls:string[]=[],state={office:{locationId:1},duty:{kind:'PROJECT',dutyId:'17'},queuePaging:true,recentVersion:0};
+ let release:()=>void=()=>{};const gate=new Promise<void>(resolve=>release=resolve);
+ const context:any={state,$,async recentNow(){calls.push($('visitor-search').value);if(calls.length===1)await gate;}};
+ vm.createContext(context);const end=source.indexOf('async function recentNow(');vm.runInContext(source.slice(source.indexOf('let recentRunning='),end)+';globalThis.load=recent;',context);
+ $('visitor-search').value='first';const first=context.load();$('visitor-search').value='obsolete';const obsolete=context.load();$('visitor-search').value='latest';const latest=context.load();assert.equal(calls.length,1);release();await Promise.all([first,obsolete,latest]);assert.deepEqual(calls,['first','latest']);
+});
+
 test('reception completes its keyset chain before publishing complete-list counters',async()=>{
  const source=readFileSync(new URL('../src/app/reception.js',import.meta.url),'utf8'),calls:any[]=[],renders:any[]=[],state={context:{},location:{locationId:1},status:'ALL',listVersion:0,listBusy:false,rows:[],cursor:null},$=nodes();
  const context:any={state,$,toasts:{show:(message:string)=>{throw Error(message)}},renderRows(){renders.push({length:state.rows.length,busy:state.listBusy});},async api(_action:string,p:any){calls.push(p);return calls.length===1?{visits:[{visitRequestId:'a'}],cursor:{submittedAtUtc:'stamp',visitRequestId:'a'}}:{visits:[{visitRequestId:'b'}],cursor:null};}};

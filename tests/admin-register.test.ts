@@ -5,6 +5,16 @@ const input={locationId:1,from:'2026-10-01',to:'2026-10-31'};
 const row={visitRequestId:randomUUID(),personName:'Synthetic Visitor',localVisitDate:'2026-10-22',submittedAtUtc:'2026-10-22T00:00:00.000Z',validFromUtc:'2026-10-22T00:00:00.000Z',validUntilUtc:'2026-10-23T00:00:00.000Z',status:'APPROVED',passStatus:'ACTIVE',presence:'OUTSIDE',printStatus:'NOT_PRINTED',requestType:'EXTERNAL'};
 const response={rows:[row],total:1,page:1,pageSize:50,checkedAtUtc:'2026-10-22T00:00:00.000Z'};
 function fixture(value:any=response){const calls:any[]=[];return{calls,client:{async callProcedure(name:string,p:any){calls.push({name,p});return JSON.stringify(value);}}};}
+
+test('snapshot export binds protocol fields and refuses unvalidated completion or changed snapshot ids',async()=>{
+ const snapshotId=randomUUID(),packet={...response,datasetVersion:'a'.repeat(64),exportSnapshotId:snapshotId};
+ const f=fixture(packet);const first=await readAdminRegister(f.client,session,{...input,export:true,snapshot:true});assert.equal(first.exportSnapshotId,snapshotId);assert.equal(f.calls[0].p.CreateExportSnapshot.value,true);
+ const done=fixture({...packet,exportValidated:true});await readAdminRegister(done.client,session,{...input,export:true,snapshot:true,snapshotId,finishExport:true});assert.equal(done.calls[0].p.CreateExportSnapshot.value,false);assert.equal(done.calls[0].p.FinishExport.value,true);
+ await assert.rejects(readAdminRegister(f.client,session,{...input,export:true,snapshot:true,snapshotId,finishExport:true}),{code:'UNAVAILABLE'});
+ await assert.rejects(readAdminRegister(f.client,session,{...input,export:true,snapshot:true,snapshotId:randomUUID()}),{code:'UNAVAILABLE'});
+ for(const patch of [{snapshot:true},{snapshotId},{finishExport:true},{snapshot:'true'},{cancelExport:true}])await assert.rejects(readAdminRegister(f.client,session,{...input,...patch}),{code:'INVALID_INPUT'});
+ const cancelled=fixture({cancelled:true});assert.equal((await readAdminRegister(cancelled.client,session,{...input,export:true,snapshot:true,snapshotId,cancelExport:true})).cancelled,true);assert.equal(cancelled.calls[0].p.CancelExport.value,true);
+});
 test('export requires a bounded result and a database dataset fingerprint',async()=>{
  const f=fixture({...response,datasetVersion:'a'.repeat(64)});const result=await readAdminRegister(f.client,session,{...input,export:true});assert.equal(result.datasetVersion,'a'.repeat(64));assert.equal(f.calls[0].p.ForExport.value,true);
  const normal=fixture();await readAdminRegister(normal.client,session,input);assert.equal(normal.calls[0].p.ForExport.value,false);
@@ -12,13 +22,21 @@ test('export requires a bounded result and a database dataset fingerprint',async
  await assert.rejects(readAdminRegister(fixture({...response,total:10001,datasetVersion:'a'.repeat(64)}).client,session,{...input,export:true}),{code:'UNAVAILABLE'});
  for(const value of ['true',1,null])await assert.rejects(readAdminRegister(f.client,session,{...input,export:value}),{code:'INVALID_INPUT'});
 });
+test('export uses 200-row chunks while ordinary reads retain the 50-row authority boundary',async()=>{
+ const rows=Array.from({length:200},()=>({...row,visitRequestId:randomUUID()}));
+ const f=fixture({...response,rows,total:201,pageSize:200,datasetVersion:'a'.repeat(64)});
+ const result=await readAdminRegister(f.client,session,{...input,export:true});assert.equal(result.rows.length,200);assert.equal(result.pageSize,200);assert.equal(f.calls[0].p.PageSize.value,200);
+ await assert.rejects(readAdminRegister(f.client,session,input),{code:'UNAVAILABLE'});
+ for(const pageSize of [0,51,201,1000,'200'])await assert.rejects(readAdminRegister(fixture({...response,rows,total:201,pageSize,datasetVersion:'a'.repeat(64)}).client,session,{...input,export:true}),{code:'UNAVAILABLE'});
+ const last=fixture({...response,rows:[row],total:201,page:2,pageSize:200,datasetVersion:'a'.repeat(64)});assert.equal((await readAdminRegister(last.client,session,{...input,export:true,page:2})).rows.length,1);
+});
 test('register binds identity, passes field filters and projects only public business fields',async()=>{
  const f=fixture({...response,rows:[{...row,sessionHash:'DROP',password:'DROP'}]});const r=await readAdminRegister(f.client,session,{...input,projectLocationId:'2',sort:'personName',direction:'ASC',page:1,filters:{personName:'Visitor',status:'APPROVED',deviceTypes:'LAPTOP'}});
  assert.equal(f.calls[0].name,'gp.ReadAdminVisitRegister');assert.equal(f.calls[0].p.SessionHash.value.length,32);assert.equal(f.calls[0].p.ProjectLocationId.value,'2');assert.equal(f.calls[0].p.Sort.value,'personName');assert.deepEqual(JSON.parse(f.calls[0].p.FiltersJson.value),{personName:'Visitor',status:'APPROVED',deviceTypes:'LAPTOP'});assert.deepEqual(Object.keys(r.rows[0]),['visitRequestId',...registerFields]);assert.equal(r.rows[0].companyName,null);
  const defaults=fixture();await readAdminRegister(defaults.client,session,input);assert.equal(defaults.calls[0].p.Sort.value,'submittedAtUtc');assert.equal(defaults.calls[0].p.Direction.value,'DESC');assert.equal(defaults.calls[0].p.ProjectLocationId.value,null);
 });
 test('register rejects forged identity, invalid scopes, dates, fields and ordering before SQL',async()=>{
- const f=fixture();const invalid=[{actorUserId:randomUUID()},{locationId:0},{locationId:2147483648},{projectLocationId:'0'},{projectLocationId:'9223372036854775808'},{projectLocationId:2},{from:'2026-02-30'},{from:'2026-11-01'},{to:'2026-11-01'},{sort:'personName;DROP'},{direction:'desc'},{page:0},{page:1.1},{page:100001},{filters:[]},{filters:null},{filters:{password:'x'}},{filters:{personName:''}},{filters:{personName:' x'}},{filters:{personName:'x\n'}},{filters:{personName:'x'.repeat(201)}},{filters:{personName:'\ud800'}},{filters:{status:'APPROVED%'}},{filters:{deviceTypes:'MAKE_MODEL'}},{filters:{personName:2}}];
+ const f=fixture();const invalid=[{actorUserId:randomUUID()},{locationId:0},{locationId:2147483648},{projectLocationId:'0'},{projectLocationId:'9223372036854775808'},{projectLocationId:2},{from:'2026-02-30'},{from:'2026-11-01'},{to:'2026-11-01'},{from:'2026-10-01',to:'2026-11-05'},{sort:'personName;DROP'},{direction:'desc'},{page:0},{page:1.1},{page:100001},{filters:[]},{filters:null},{filters:{password:'x'}},{filters:{personName:''}},{filters:{personName:' x'}},{filters:{personName:'x\n'}},{filters:{personName:'x'.repeat(201)}},{filters:{personName:'\ud800'}},{filters:{status:'APPROVED%'}},{filters:{deviceTypes:'MAKE_MODEL'}},{filters:{personName:2}}];
  // null is deliberately rejected rather than silently widening the query.
  for(const patch of invalid)await assert.rejects(readAdminRegister(f.client,session,{...input,...patch}),{code:'INVALID_INPUT'});assert.equal(f.calls.length,0);
 });
@@ -28,4 +46,14 @@ test('register maps authorization failures and rejects malformed database projec
  for(const value of invalid)await assert.rejects(readAdminRegister(fixture(value).client,session,input),{code:'UNAVAILABLE'});
  assert.equal((await readAdminRegister(fixture({...response,rows:[],total:0}).client,session,input)).total,0);
  assert.equal((await readAdminRegister(fixture({...response,rows:[],page:3}).client,session,{...input,page:3})).rows.length,0);
+});
+test('explicit export false sends false to SQL and returns null datasetVersion',async()=>{
+ const f=fixture({...response,datasetVersion:'a'.repeat(64)});const r=await readAdminRegister(f.client,session,{...input,export:false});
+ assert.equal(r.datasetVersion,null);assert.equal(f.calls[0].p.ForExport.value,false);
+});
+test('register rejects malformed timestamp entries in result rows',async()=>{
+ for(const badTime of ['firstEntryAtUtc','lastEntryAtUtc','lastExitAtUtc','returnedAtUtc']){
+  const invalid=fixture({...response,rows:[{...row,[badTime]:'not-a-valid-utc-date'}]});
+  await assert.rejects(readAdminRegister(invalid.client,session,input),{code:'UNAVAILABLE'});
+ }
 });

@@ -4,7 +4,8 @@ import {readFile,mkdir} from 'node:fs/promises';
 import {NotificationEmailWorker} from '../../src/email/NotificationEmailWorker.ts';
 import {EmailLinkCodec} from '../../src/email/EmailLinkCodec.ts';
 const key=randomBytes(32),id='k_'+'b'.repeat(32),visit=randomUUID();
-const codec=new EmailLinkCodec({active:async()=>({id,key:Buffer.from(key)}),resolve:async()=>Buffer.from(key)});
+// Keep the rendering fixture's clock within its fixed booking dates.
+const codec=new EmailLinkCodec({active:async()=>({id,key:Buffer.from(key)}),resolve:async()=>Buffer.from(key)},()=>Date.parse('2026-10-23T06:00:00.000Z'));
 const fixture=(template:string,long=false)=>({notificationId:1,visitRequestId:visit,templateCode:template,recipientKind:template==='TEMP_ID_MANAGER_NOTICE'?'MANAGER':'EMPLOYEE',recipientEmployeeId:'EMP001',details:{visitRequestId:visit,publicReference:'V-'+visit.replaceAll('-',''),requestType:template==='TEMP_ID_MANAGER_NOTICE'?'TEMP_ID':'EXTERNAL',personName:long?'VeryLongVisitorName'.repeat(10):'Kunal Verma',companyName:'NovaWorks Technologies',deviceTypes:['LAPTOP'],purpose:'Project discussion and GatePass presentation demo',locationName:'Noida',projectName:long?'P'.repeat(200):'Project 1',hostName:'Employee 19',visitStatus:template==='TEMP_ID_MANAGER_NOTICE'?'APPROVED':'PENDING',validFromUtc:'2026-10-22T18:30:00.000Z',validUntilUtc:'2026-10-23T18:30:00.000Z'}});
 for(const width of [390,1366])test('email layout and inline person photos fit '+width+'px',async({page})=>{
  await page.setViewportSize({width,height:1100});

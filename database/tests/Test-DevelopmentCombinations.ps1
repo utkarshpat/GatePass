@@ -48,7 +48,8 @@ JSON_QUERY((SELECT RIGHT(u.IdentitySubject,6) guard,l.LocationCode location,c.ca
 JSON_QUERY((SELECT e.EmployeeId employee,p.ExternalProjectCode project,l.LocationCode location,
  CONVERT(bit,CASE WHEN e.IsActive=1 AND u.IsActive=1 AND e.LastSyncedAtUtc BETWEEN @cutoff AND @now
  AND p.IsActive=1 AND p.LastSyncedAtUtc BETWEEN @cutoff AND @now AND l.IsActive=1 AND pl.IsActive=1
- AND m.IsActive=1 AND m.VerifiedAtUtc BETWEEN @cutoff AND @now THEN 1 ELSE 0 END) allowed
+ AND m.IsActive=1 AND m.VerifiedAtUtc BETWEEN @cutoff AND @now
+ AND gp._EmployeeProjectLocationEligible(e.EmployeeId,pl.ProjectLocationId,@cutoff,@now)=1 THEN 1 ELSE 0 END) allowed
  FROM gp.Employees e JOIN gp.Users u ON u.UserId=e.UserId CROSS JOIN gp.Projects p CROSS JOIN gp.Locations l
  LEFT JOIN gp.ProjectLocations pl ON pl.ProjectId=p.ProjectId AND pl.LocationId=l.LocationId
  LEFT JOIN gp.EmployeeProjectMemberships m ON m.EmployeeId=e.EmployeeId AND m.ProjectId=p.ProjectId
@@ -88,7 +89,7 @@ foreach ($taskGuard in $taskStaff.guards) {
 foreach ($taskEmployee in $taskDirectory.employees) {
     foreach ($taskProject in $taskDirectory.projects) {
         foreach ($taskLocation in $taskLocations) {
-            $taskExpected=$taskEmployee.isActive -and $taskEmployee.projectCodes -contains $taskProject.projectCode -and $taskProject.locationCodes -contains $taskLocation
+            $taskExpected=$taskEmployee.isActive -and $taskProject.isActive -and $taskProject.locationCodes -contains $taskLocation -and @($taskEmployee.projectLocations|Where-Object{$_.projectCode -eq $taskProject.projectCode -and $_.locationCode -eq $taskLocation}).Count -eq 1
             $taskMatches=@($taskActual.hosts | Where-Object { $_.employee -eq $taskEmployee.employeeId -and $_.project -eq $taskProject.projectCode -and $_.location -eq $taskLocation })
             if ($taskMatches.Count -ne 1) { throw 'Host matrix has missing/duplicate rows.' }
             Record-Check 'HOST_ELIGIBILITY_SQL' $taskEmployee.employeeId $taskProject.projectCode $taskLocation $taskExpected ([bool]$taskMatches[0].allowed)

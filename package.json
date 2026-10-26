@@ -24,6 +24,7 @@
     "lint": "eslint .",
     "test:ci": "node tools/ci/run-tests.mjs",
     "test:browser": "playwright test",
+    "test:load": "node tools/run-load-stress-test.ts",
     "check:migrations": "node tools/ci/migrations.mjs",
     "scan:secrets": "node tools/ci/scan-secrets.mjs",
     "release:prepare": "node tools/ci/release.mjs",

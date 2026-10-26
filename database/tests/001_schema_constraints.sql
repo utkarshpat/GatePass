@@ -13,7 +13,7 @@ SET CONCAT_NULL_YIELDS_NULL ON;
 SET ARITHABORT ON;
 SET NUMERIC_ROUNDABORT OFF;
 
-IF DB_NAME() <> N'GatePass_DesignTest'
+IF DB_NAME() <> N'GatePass_DesignTest' AND NOT(DB_NAME() LIKE N'GatePass[_]Verification[_]%' AND EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'GatePass.DisposableVerification' AND CONVERT(nvarchar(100),value)=DB_NAME()))
     THROW 51100, 'Constraint fixtures are restricted to the dedicated GatePass_DesignTest database.', 1;
 IF NOT EXISTS (SELECT 1 FROM gp.SchemaMigrations WHERE Version='002')
     THROW 51101, 'Apply migrations 001 and 002 first.', 1;

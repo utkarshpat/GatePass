@@ -1,5 +1,6 @@
 import {ActionCentreService} from '../src/operations/ActionCentreService.ts';
 import {ActionCentreRoutes} from '../src/development/ActionCentreRoutes.ts';
+import {GuardThumbnailService} from '../src/visits/GuardThumbnailService.ts';
 import{PhotoThumbnails}from'../src/visits/PhotoThumbnails.ts';
 import {AdministrationReadService,SqlAdministrationReadRepository} from '../src/administration/AdministrationReadService.ts';
 import {AdminConsoleService} from '../src/administration/AdminConsoleService.ts';
@@ -50,6 +51,7 @@ import {OfficeEntryContext,officeNames} from '../src/development/OfficeEntryCont
 import {WorkspaceChanges} from '../src/development/WorkspaceChanges.ts';
 import {WorkspaceEventRoutes} from '../src/development/WorkspaceEventRoutes.ts';
 import {HttpFailure} from '../src/transport/ApiHandler.ts';
+import {LoadDiagnostics} from '../src/development/LoadDiagnostics.ts';
 
 // Explicit alternative entry point. Production start-api never imports this module.
 try {
@@ -81,7 +83,9 @@ try {
   const actionStyles=await readFile(new URL('../src/app/action-centre.css',import.meta.url),'utf8');
   const workspaceShellStyles=await readFile(new URL('../src/app/workspace-shell.css',import.meta.url),'utf8');
   const [adminMarkup,adminStyles,adminScript]=await Promise.all(['admin.html','admin.css','admin.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')));
-  const adminHtml=adminMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+adminStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>toastScript+'\n'+selectScript+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+adminScript+'\n'+imageViewerScript);
+  const exportWorker=await readFile(new URL('../src/app/register-export-worker.js',import.meta.url),'utf8');
+  const exportWorkerUrl='/assets/register-export-'+createHash('sha256').update(exportWorker).digest('hex').slice(0,16)+'.js';
+  const adminHtml=adminMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+adminStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>toastScript+'\n'+selectScript+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+adminScript.replace('__REGISTER_EXPORT_WORKER__',exportWorkerUrl)+'\n'+imageViewerScript);
   const guardI18n=await readFile(new URL('../src/app/guard-i18n.js',import.meta.url),'utf8');
   const guardNames=await readFile(new URL('../src/app/guard-names.js',import.meta.url),'utf8');
   const [guardMarkup,guardStyles,guardScript,qrDecoder]=await Promise.all(['../src/app/guard.html','../src/app/guard.css','../src/app/guard.js','../node_modules/@zxing/library/umd/index.min.js'].map(name=>readFile(new URL(name,import.meta.url),'utf8')));
@@ -104,6 +108,11 @@ try {
   const sharp = require(process.env.GATEPASS_SHARP_PATH ?? join(homedir(),'.cache','codex-runtimes','codex-primary-runtime','dependencies','node','node_modules','sharp'));
   const client = new LocalDevelopmentApiClient();
   const changes=new WorkspaceChanges();client.onSuccess=(name,parameters,result)=>changes.observe(name,parameters,result);
+  const diagnostics=process.env.NODE_ENV==='test'&&process.env.GATEPASS_LOAD_DIAGNOSTICS==='1'&&typeof process.send==='function'?new LoadDiagnostics():undefined;
+  if(diagnostics){
+    client.onTiming=row=>diagnostics.record(row);
+    process.on('message',(message:any)=>{if(message?.type==='gatepass-load-stop'){stop();return;}if(message?.type!=='gatepass-load-snapshot'||typeof message.id!=='string')return;if(message.gc===true)global.gc?.();process.send?.({type:'gatepass-load-snapshot',id:message.id,runId:process.env.GATEPASS_LOAD_RUN_ID,...diagnostics.snapshot(message.reset===true),streams:changes.connections});});
+  }
   const registration = new RegistrationService(new SqlRegistrationRepository(client),storage.keys,new SharpPhotoNormalizer(sharp),storage.photos);
   const [organisationLogoPng,applicationLogoPng,organisationIconPng]=await Promise.all(['sopra-steria-logo.png','gatepass-logo.png','sopra-steria-icon.png'].map(name=>readFile(new URL('../assets/brand/'+name,import.meta.url))));
   const thumbnails=new PhotoThumbnails(sharp);
@@ -142,7 +151,7 @@ try {
     }
     return topics;
   });
-  const routes = [new ActionCentreRoutes(staffEntry,sso,new ActionCentreService(client)),events,manualRegistration,new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,duties,new HostReminderService(client),nameReadings,thumbnails),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),duties,new AdministrationReadService(new SqlAdministrationReadRepository(client)),adminConsole,receptionReads,organisationIconPng,sharp),reception,new DummySsoRoutes(sso,{localHttp:true}),
+  const routes = [new ActionCentreRoutes(staffEntry,sso,new ActionCentreService(client)),events,manualRegistration,new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,duties,new HostReminderService(client),nameReadings,thumbnails,new GuardThumbnailService(client,storage.photos,thumbnails)),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),duties,new AdministrationReadService(new SqlAdministrationReadRepository(client)),adminConsole,receptionReads,organisationIconPng,sharp),reception,new DummySsoRoutes(sso,{localHttp:true}),
     new RegistrationHttpRoutes(registration,randomBytes(32),sso,{localHttp:true,allowedTypes:['DIGITAL_ID','EXTERNAL','EMPLOYEE_PROJECT'],office:req=>officeContext.read(req)}),
     new EmployeeDigitalIdRoutes(sso,new VisitReadService(new SqlVisitReadRepository(client,'api')),ownCards)];
   const api = createLoopbackHttpHandler(origin,{handles:path=>routes.some(route=>route.handles(path)),handle:(req,res)=>{
@@ -154,6 +163,7 @@ try {
     const publicPeer=['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress??'')&&req.headers.host===`localhost:${port}`;
     if(publicPeer&&pwaAssets(req,res))return;
     const pathname=(req.url??'').split('?')[0];
+    if(req.method==='GET'&&pathname===exportWorkerUrl&&publicPeer){res.setHeader('Content-Type','application/javascript; charset=utf-8');res.setHeader('Cache-Control','public, max-age=31536000, immutable');res.setHeader('X-Content-Type-Options','nosniff');res.end(exportWorker);return;}
     if(req.method==='GET'&&pathname===qrDecoderUrl&&publicPeer){res.setHeader('Content-Type','application/javascript; charset=utf-8');res.setHeader('Cache-Control','public, max-age=31536000, immutable');res.setHeader('X-Content-Type-Options','nosniff');res.end(qrDecoder);return;}
     if(req.method==='GET'&&pathname==='/assets/office-background.png'&&publicPeer){
       res.setHeader('Content-Type','image/png');res.setHeader('Cache-Control','public, max-age=86400');res.setHeader('X-Content-Type-Options','nosniff');res.end(officeImage);return;
@@ -191,10 +201,13 @@ try {
   });
   server.requestTimeout=15000;server.headersTimeout=10000;server.keepAliveTimeout=5000;server.maxConnections=16;server.maxRequestsPerSocket=100;
   const refresh = setInterval(() => { void repository.execute('refresh',null,null,null).then(result=>{if(result.ok!==true)console.error('DUMMY_DIRECTORY_REFRESH_FAILED');}).catch(()=>console.error('DUMMY_DIRECTORY_REFRESH_FAILED')); },60000);refresh.unref();
-  const stop = () => { clearInterval(refresh);changes.close();thumbnails.close();server.close(async () => { storage.keys.clearCache();await sso.close();client.close(); process.exitCode=0; });server.closeIdleConnections(); };
-  server.on('error', async () => { clearInterval(refresh);changes.close();thumbnails.close();storage.keys.clearCache();console.error('DUMMY_SSO_LISTENER_UNAVAILABLE');await sso.close();client.close();process.exitCode=1; });
+  const stop = () => { clearInterval(refresh);diagnostics?.close();changes.close();thumbnails.close();server.close(async () => { storage.keys.clearCache();await sso.close();await client.close(); process.exitCode=0;if(diagnostics)process.disconnect?.(); });server.closeIdleConnections(); };
+  server.on('error', async () => { clearInterval(refresh);changes.close();thumbnails.close();storage.keys.clearCache();console.error('DUMMY_SSO_LISTENER_UNAVAILABLE');await sso.close();await client.close();process.exitCode=1; });
   process.once('SIGINT',stop);process.once('SIGTERM',stop);
+  // Advertise HTTP readiness only after every configured helper acknowledges.
+  await client.warmUp();
   server.listen(port,'127.0.0.1',()=>{
     console.log(`GatePass employee portal: ${origin} (local HTTP; temporary employee sign-in adapter)`);
+    if(diagnostics)process.send?.({type:'gatepass-load-ready',runId:process.env.GATEPASS_LOAD_RUN_ID,pid:process.pid});
   });
 } catch { console.error('DUMMY_SSO_STARTUP_FAILED: requires development/test, GATEPASS_SSO_MODE=dummy, GATEPASS_DIRECTORY_MODE=mock, local SQL and PowerShell 7.');process.exitCode=1; }

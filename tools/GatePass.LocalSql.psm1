@@ -2,7 +2,9 @@
 Set-StrictMode -Version Latest
 
 function Open-GatePassLocalSql {
-    param([string]$Server='localhost\SQLEXPRESS',[switch]$TrustLocalServerCertificate)
+    param([string]$Server='localhost\SQLEXPRESS',[switch]$TrustLocalServerCertificate,[string]$Database='GatePass_DesignTest')
+    $taskDisposable=$Database -ne 'GatePass_DesignTest'
+    if($taskDisposable -and ($env:NODE_ENV -ne 'test' -or $Database -notmatch '^GatePass_Verification_[a-f0-9]{32}$')){throw 'Only an explicitly marked disposable test database can override the development catalogue.'}
     # CI can target only its newly-created private LocalDB instance. This never
     # enables remote SQL or changes the normal developer's SQLEXPRESS default.
     if ($env:GATEPASS_TEST_SQL_SERVER) {
@@ -21,7 +23,7 @@ function Open-GatePassLocalSql {
     Add-Type -AssemblyName System.Data.SqlClient
     $taskBuilder=[System.Data.SqlClient.SqlConnectionStringBuilder]::new()
     $taskBuilder['Data Source']=$Server
-    $taskBuilder['Initial Catalog']='GatePass_DesignTest'
+    $taskBuilder['Initial Catalog']=$Database
     $taskBuilder['Integrated Security']=$true
     $taskBuilder['Encrypt']=$true
     $taskBuilder['TrustServerCertificate']=[bool]$TrustLocalServerCertificate
@@ -31,7 +33,7 @@ function Open-GatePassLocalSql {
     # cannot be reset safely after their fixture principal is dropped (SQL 18059).
     $taskBuilder['Pooling']=$false
     $taskConnection=[System.Data.SqlClient.SqlConnection]::new($taskBuilder.ConnectionString)
-    try { $taskConnection.Open() }
+    try { $taskConnection.Open();if($taskDisposable){$taskCheck=$taskConnection.CreateCommand();try{$taskCheck.CommandText="SELECT COUNT(*) FROM sys.extended_properties WHERE class=0 AND name=N'GatePass.DisposableVerification' AND CONVERT(nvarchar(100),value)=DB_NAME();";if($taskCheck.ExecuteScalar() -ne 1){throw 'Disposable database ownership marker required.'}}finally{$taskCheck.Dispose()}} }
     catch { $taskConnection.Dispose(); throw }
     return $taskConnection
 }

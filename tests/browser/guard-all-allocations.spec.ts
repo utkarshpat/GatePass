@@ -60,7 +60,9 @@ test('combined view preserves search language and requires a concrete allocation
 });
 test('a late combined response cannot replace a new individual filter and a denied allocation clears the union',async({page,context})=>{
  const f=await setup(page,context,{delayed:true});await all(page);await expect.poll(()=>f.calls.some(c=>c.action==='visitors'&&c.body.dutyId==='2')).toBe(true);
- await page.locator('#project-filter-trigger').click();await page.getByRole('option',{name:'Project Alpha · Project',exact:true}).click();await expect(page.locator('.guard-id-card')).toHaveCount(2);f.release();await expect(page.locator('#project-filter-trigger')).toHaveText('Project Alpha · Project');
+ await page.locator('#project-filter-trigger').click();await page.getByRole('option',{name:'Project Alpha · Project',exact:true}).click();await expect(page.locator('#project-filter-trigger')).toHaveText('Project Alpha · Project');
+ // Reads are coalesced: release the obsolete request before the latest one dispatches.
+ f.release();await expect(page.locator('.guard-id-card')).toHaveCount(2);await expect(page.locator('#recent-scans')).not.toContainText('Nikhil Shah');
  f.deny();await all(page);await expect(page.locator('#recent-status')).toContainText('Visitors unavailable');await expect(page.locator('.guard-id-card')).toHaveCount(0);
 });
 test('a common-only guard can combine identities without movement queues or actions',async({page,context})=>{

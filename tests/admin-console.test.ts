@@ -24,3 +24,27 @@ test('export capability is projected explicitly and missing or malformed values 
   await assert.rejects(s.read(session,'scope',{locationId:1}),{code:'UNAVAILABLE'});
  }
 });
+
+test('assignment queries reject missing scope malformed ids and extra fields before SQL',async()=>{
+ let calls=0;const service=new AdminConsoleService({async callProcedure(){calls++;return'{}';}});
+ const invalid=[{},{projectLocationId:'0'},{projectLocationId:'abc'},{projectLocationId:'9223372036854775808'},{projectLocationId:'2',afterAssignmentId:'0'},{projectLocationId:'2',afterAssignmentId:'abc'},{projectLocationId:'2',locationId:1},{projectLocationId:'2',extraField:'bad'}];
+ for(const input of invalid)await assert.rejects(service.read(session,'assignments',input),{code:'INVALID_INPUT'});
+ assert.equal(calls,0);
+});
+
+test('assignment pagination rejects partial pages claiming continuation or mismatched cursor',async()=>{
+ const a={assignmentId:'1',userId:randomUUID(),guardName:'Guard',validFromUtc:'2026-10-22T00:00:00.000Z'};
+ const partialHasMore=new AdminConsoleService({async callProcedure(){return JSON.stringify({assignments:[a],hasMore:true,afterAssignmentId:'1'});}});
+ await assert.rejects(partialHasMore.read(session,'assignments',{projectLocationId:'2'}),{code:'UNAVAILABLE'});
+ const fullPage=Array.from({length:50},(_,i)=>({...a,assignmentId:String(i+1)}));
+ const mismatchedCursor=new AdminConsoleService({async callProcedure(){return JSON.stringify({assignments:fullPage,hasMore:true,afterAssignmentId:'999'});}});
+ await assert.rejects(mismatchedCursor.read(session,'assignments',{projectLocationId:'2'}),{code:'UNAVAILABLE'});
+ const validContinuation=new AdminConsoleService({async callProcedure(){return JSON.stringify({assignments:fullPage,hasMore:true,afterAssignmentId:'50'});}});
+ const result=await validContinuation.read(session,'assignments',{projectLocationId:'2'});
+ assert.equal(result.assignments.length,50);assert.equal(result.cursor,'50');
+});
+
+test('scope query rejects malformed date or identity in database response',async()=>{
+ for(const patch of [{currentDate:'bad-date'},{userId:'bad-uuid'}])
+  await assert.rejects(new AdminConsoleService({async callProcedure(){return JSON.stringify({...scope,...patch});}}).read(session,'scope',{locationId:1}),{code:'UNAVAILABLE'});
+});

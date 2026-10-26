@@ -18,18 +18,19 @@ export class ActionCentreService{
   return{outcome:r.outcome,mailStatus:r.mailStatus,eligible:r.eligible,lastQueuedAtUtc:r.lastQueuedAtUtc,nextReminderAtUtc:r.nextReminderAtUtc};
  }
  async read(session:Session,d:Record<string,unknown>){
-  input(Object.keys(d).every(k=>['workspace','locationId','dutyKind','dutyId','category','cursor'].includes(k))&&['GUARD','RECEPTION','ADMIN'].includes(String(d.workspace))&&Number.isInteger(d.locationId)&&Number(d.locationId)>0&&Number(d.locationId)<=2147483647);
+  input(Object.keys(d).every(k=>['workspace','locationId','dutyKind','dutyId','category','cursor','limit'].includes(k))&&['GUARD','RECEPTION','ADMIN'].includes(String(d.workspace))&&Number.isInteger(d.locationId)&&Number(d.locationId)>0&&Number(d.locationId)<=2147483647);
+  input(d.limit===undefined||Number.isInteger(d.limit)&&Number(d.limit)>=24&&Number(d.limit)<=240);const take=Number(d.limit??24);
   input(d.workspace==='GUARD'?['COMMON','PROJECT'].includes(String(d.dutyKind))&&typeof d.dutyId==='string'&&/^[1-9][0-9]{0,18}$/u.test(d.dutyId)&&BigInt(d.dutyId)<=9223372036854775807n:d.dutyKind==='OFFICE'&&d.dutyId==='0');
   const category=d.category??'PENDING';input(['PENDING','EXPIRED_INSIDE','UNRETURNED'].includes(String(category)));
   if(d.workspace==='GUARD'&&category==='UNRETURNED')throw new ActionCentreError('NOT_AUTHORIZED');
   const cursor=d.cursor as any;input(cursor===undefined||cursor&&typeof cursor==='object'&&Object.keys(cursor).sort().join('|')==='submittedAtUtc|visitRequestId'&&isUtc(cursor.submittedAtUtc)&&isUuid(cursor.visitRequestId));
-  let r:any;try{r=JSON.parse(await this.client.callProcedure('gp.ReadActionCentre',{...receptionIdentity(session),Workspace:{type:'text',value:String(d.workspace)},LocationId:{type:'int',value:Number(d.locationId)},DutyKind:{type:'text',value:String(d.dutyKind)},DutyId:{type:'bigint',value:String(d.dutyId)},Category:{type:'text',value:String(category)},AfterSubmittedAtUtc:{type:'datetime',value:cursor?.submittedAtUtc??null},AfterVisitRequestId:{type:'guid',value:cursor?.visitRequestId??null}}));}
+  let r:any;try{r=JSON.parse(await this.client.callProcedure('gp.ReadActionCentre',{...receptionIdentity(session),Workspace:{type:'text',value:String(d.workspace)},LocationId:{type:'int',value:Number(d.locationId)},DutyKind:{type:'text',value:String(d.dutyKind)},DutyId:{type:'bigint',value:String(d.dutyId)},Category:{type:'text',value:String(category)},AfterSubmittedAtUtc:{type:'datetime',value:cursor?.submittedAtUtc??null},AfterVisitRequestId:{type:'guid',value:cursor?.visitRequestId??null},Take:{type:'int',value:take}}));}
   catch(error){if(error instanceof ActionCentreError)throw error;throw new ActionCentreError([52001,53501].includes(Number((error as any)?.number))?'NOT_AUTHORIZED':Number((error as any)?.number)===52002?'INVALID_INPUT':'UNAVAILABLE');}
-  output(r&&r.category===category&&isUtc(r.checkedAtUtc)&&r.counts&&['pending','expiredInside','unreturned'].every(k=>Number.isSafeInteger(r.counts[k])&&r.counts[k]>=0)&&Array.isArray(r.items)&&r.items.length<=24&&typeof r.hasMore==='boolean');
+  output(r&&r.category===category&&isUtc(r.checkedAtUtc)&&r.counts&&['pending','expiredInside','unreturned'].every(k=>Number.isSafeInteger(r.counts[k])&&r.counts[k]>=0)&&Array.isArray(r.items)&&r.items.length<=take&&typeof r.hasMore==='boolean');
   output(d.workspace!=='GUARD'||r.counts.unreturned===0);
   const items=r.items.map((v:any)=>{output(v&&isUuid(v.visitRequestId)&&text(v.personName,200)&&isDate(v.visitDate)&&text(v.publicReference,40)&&text(v.publicPassNumber,50)&&isUtc(v.submittedAtUtc));return{visitRequestId:v.visitRequestId.toLowerCase(),personName:v.personName,visitDate:v.visitDate,publicReference:v.publicReference,publicPassNumber:v.publicPassNumber,submittedAtUtc:v.submittedAtUtc};});
   output(new Set(items.map((v:any)=>v.visitRequestId)).size===items.length&&items.length<=r.counts[category==='PENDING'?'pending':category==='EXPIRED_INSIDE'?'expiredInside':'unreturned']);
-  if(r.hasMore){const last=items.at(-1);output(items.length===24&&isUuid(r.afterVisitRequestId)&&isUtc(r.afterSubmittedAtUtc)&&last?.visitRequestId===r.afterVisitRequestId.toLowerCase()&&last?.submittedAtUtc===r.afterSubmittedAtUtc);}
+  if(r.hasMore){const last=items.at(-1);output(items.length===take&&isUuid(r.afterVisitRequestId)&&isUtc(r.afterSubmittedAtUtc)&&last?.visitRequestId===r.afterVisitRequestId.toLowerCase()&&last?.submittedAtUtc===r.afterSubmittedAtUtc);}
   return{category,checkedAtUtc:r.checkedAtUtc,counts:{pending:r.counts.pending,expiredInside:r.counts.expiredInside,unreturned:r.counts.unreturned},items,cursor:r.hasMore?{submittedAtUtc:r.afterSubmittedAtUtc,visitRequestId:r.afterVisitRequestId.toLowerCase()}:null};
  }
 }

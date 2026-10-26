@@ -19,7 +19,7 @@ test('driver uses exact stored-procedure RPC and explicit types', async () => {
   assert.equal(f.inputs[2].value, '9223372036854775807'); // Never coerce bigint IDs through Number.
 });
 test('API and auth procedure allowlists are disjoint and match DB grant counts', async () => {
-  assert.equal(procedureRoles.api.length, 63); assert.equal(procedureRoles.auth.length, 6);
+  assert.equal(procedureRoles.api.length, 66); assert.equal(procedureRoles.auth.length, 6);
   assert.ok(procedureRoles.api.includes('RemindPendingApproval'));
   assert.ok(procedureRoles.api.includes('GetReceptionEmployeeTimeline'));
   assert.ok(procedureRoles.api.includes('AuditReceptionRegistration'));
@@ -39,6 +39,22 @@ test('invalid primitive values never execute SQL', async () => {
     { type: 'datetime', value: '2026-10-20T00:00:00' }, { type: 'date', value: '2026-02-30' }, { type: 'query', value: 'DROP TABLE' }]) {
     const f = fixture(); await assert.rejects(f.client.callProcedure('gp.ListVisits', { X: p as any })); assert.equal(f.executed.length, 0);
   }
+});
+
+test('invalid SQL calendar values reject with stable errors before binding or executing',async()=>{
+ for(const type of ['date','datetime'] as const)for(const date of ['0000-01-01','2026-99-99','2026-13-01','2026-02-30','2025-02-29','1900-02-29']){
+  const f=fixture(),value=date+(type==='datetime'?'T00:00:00.000Z':'');
+  await assert.rejects(f.client.callProcedure('gp.ListVisits',{Day:{type,value}}),error=>error instanceof Error&&!(error instanceof RangeError)&&error.message==='INVALID_SQL_PARAMETER');
+  assert.equal(f.inputs.length,0);assert.equal(f.executed.length,0);
+ }
+});
+
+test('supported SQL calendar boundaries and nulls keep typed UTC conversion',async()=>{
+ for(const type of ['date','datetime'] as const)for(const date of ['0001-01-01','2000-02-29','9999-12-31',null]){
+  const f=fixture(),value=date===null?null:date+(type==='datetime'?'T23:59:59.999Z':'');await f.client.callProcedure('gp.ListVisits',{Day:{type,value}});
+  assert.equal(f.executed.length,1);assert.equal(f.inputs.length,1);
+  assert.equal(f.inputs[0].value instanceof Date?(f.inputs[0].value as Date).toISOString():f.inputs[0].value,value===null?null:type==='date'?value+'T00:00:00.000Z':value);
+ }
 });
 test('parameter names cannot be SQL fragments', async () => { const f = fixture(); await assert.rejects(f.client.callProcedure('gp.ListVisits', { 'x;select': { type: 'text', value: 'x' } })); assert.equal(f.executed.length, 0); });
 test('nullable typed parameters and Unicode text retained', async () => { const f = fixture(); await f.client.callProcedure('gp.ListVisits', { X: { type: 'bigint', value: null }, Name: { type: 'text', value: 'कर्मचारी' } }); assert.equal(f.inputs[0].value, null); assert.equal(f.inputs[1].value, 'कर्मचारी'); });

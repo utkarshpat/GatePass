@@ -51,3 +51,45 @@ test('one-shot worker reports a batch failure and successful one-shot never slee
  await assert.rejects(runNotificationWorker({async runOnce(){throw failure;}},{once:true,stopping:()=>false,onBatch:()=>{},onRetry:()=>{throw Error('Unexpected retry');},sleep:async()=>{sleeps++;}}),failure);
  let batches=0;await runNotificationWorker({async runOnce(){return[];}},{once:true,stopping:()=>false,onBatch:()=>{batches++;},onRetry:()=>{},sleep:async()=>{sleeps++;}});assert.equal(batches,1);assert.equal(sleeps,0);
 });
+
+test('cancellation during fresh recheck returns CANCELLED and skips send and completion',async()=>{
+ const sends:string[]=[],completed:number[]=[];let reads=0;
+ const sql={async callProcedure(name:string,p:any){
+  if(name==='gp.ClaimNotifications')return JSON.stringify([{notificationId:1,claimToken:claims[0].claimToken}]);
+  if(name==='gp.RenewNotificationLease')return'{}';
+  if(name==='gp.GetNotificationEmail'){reads++;return JSON.stringify(reads===1?job(1):{...job(1),status:'CANCELLED'});}
+  if(name==='gp.CompleteNotification'){completed.push(Number(p.NotificationId.value));return JSON.stringify({notificationId:1,status:'CANCELLED'});}
+  return'{}';
+ }};
+ const worker=new NotificationEmailWorker(sql,directory,{async send(m){sends.push(m.notificationId);return{};}},{} as any,'https://gatepass.example.invalid');
+ const result=await worker.runOnce();
+ assert.deepEqual(result,[{notificationId:1,status:'CANCELLED'}]);
+ assert.equal(sends.length,0);assert.equal(completed.length,0);assert.equal(reads,2);
+});
+
+test('mid-flight detail drift during fresh recheck marks failure and continues processing',async()=>{
+ const sends:string[]=[],failures:string[]=[];let reads=0;
+ const sql={async callProcedure(name:string,p:any){
+  if(name==='gp.ClaimNotifications')return JSON.stringify(claims);
+  const id=Number(p.NotificationId?.value);
+  if(name==='gp.RenewNotificationLease')return'{}';
+  if(name==='gp.GetNotificationEmail'){
+   if(id===1){reads++;return JSON.stringify(reads===1?job(1):{...job(1),recipientEmployeeId:'changed'});}
+   return JSON.stringify(job(2));
+  }
+  if(name==='gp.CompleteNotification'){
+   if(p.Outcome?.value==='FAILED')failures.push(p.ErrorCode?.value);
+   return JSON.stringify({notificationId:id,status:p.Outcome?.value});
+  }
+  return'{}';
+ }};
+ const worker=new NotificationEmailWorker(sql,directory,{async send(m){sends.push(m.notificationId);return{};}},{} as any,'https://gatepass.example.invalid');
+ const result=await worker.runOnce();
+ assert.equal(result.length,2);assert.equal(failures[0],'DIRECTORY_UNAVAILABLE');assert.deepEqual(sends,['2']);
+});
+
+test('daemon worker loop does not run when stopping is initially true',async()=>{
+ let runs=0,sleeps=0;
+ await runNotificationWorker({async runOnce(){runs++;return[];}},{stopping:()=>true,onBatch:()=>{},onRetry:()=>{},sleep:async()=>{sleeps++;}});
+ assert.equal(runs,0);assert.equal(sleeps,0);
+});

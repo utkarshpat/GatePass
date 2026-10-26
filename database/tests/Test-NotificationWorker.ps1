@@ -1,11 +1,11 @@
 #Requires -Version 7.0
 [CmdletBinding()]
-param([string]$Server='localhost\SQLEXPRESS',[switch]$TrustLocalServerCertificate)
+param([string]$Server='localhost\SQLEXPRESS',[switch]$TrustLocalServerCertificate,[string]$Database='GatePass_DesignTest')
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 $taskRoot=Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Import-Module (Join-Path $taskRoot 'tools/GatePass.LocalSql.psm1') -Force
-$taskAdmin=Open-GatePassLocalSql -Server $Server -TrustLocalServerCertificate:$TrustLocalServerCertificate
+$taskAdmin=Open-GatePassLocalSql -Server $Server -TrustLocalServerCertificate:$TrustLocalServerCertificate -Database $Database
 $taskRun=[guid]::NewGuid()
 $taskFixtureReady=$false
 $taskCreatedWorker=$false
@@ -37,7 +37,7 @@ function Expect-SqlError([scriptblock]$Action,[int]$Number) {
     throw "Expected SQL error $Number; operation succeeded."
 }
 function Open-TestConnection([string]$Principal='gp_worker_fixture') {
-    $taskConnection=Open-GatePassLocalSql -Server $Server -TrustLocalServerCertificate:$TrustLocalServerCertificate
+    $taskConnection=Open-GatePassLocalSql -Server $Server -TrustLocalServerCertificate:$TrustLocalServerCertificate -Database $Database
     if ($Principal -eq 'gp_worker_fixture') { Invoke-GatePassNonQuery $taskConnection "EXECUTE AS USER='gp_worker_fixture';" }
     elseif ($Principal -eq 'gp_worker_api_fixture') { Invoke-GatePassNonQuery $taskConnection "EXECUTE AS USER='gp_worker_api_fixture';" }
     else { $taskConnection.Dispose(); throw 'Unexpected fixture principal.' }
@@ -145,7 +145,7 @@ function Invoke-QueueRace($FirstConnection,$FirstCommand,$SecondConnection,$Seco
 }
 
 try {
-    Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT DB_NAME();') -eq 'GatePass_DesignTest') 'Wrong test database.'
+    Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT DB_NAME();') -eq $Database) 'Wrong test database.'
     Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.NotificationOutbox;') -eq 0) 'Worker tests require an empty dedicated outbox; unrelated jobs will not be claimed.'
     Assert-Condition ((Invoke-GatePassScalar $taskAdmin "SELECT COUNT(*) FROM gp.SchemaMigrations WHERE Version='004';") -eq 1) 'Migration 004 required.'
     Assert-Condition ((Invoke-GatePassScalar $taskAdmin "SELECT COUNT(*) FROM gp.SchemaMigrations WHERE Version='005';") -eq 1) 'Migration 005 required.'
@@ -395,7 +395,7 @@ finally {
     finally {
         $taskAdmin.Dispose()
         $taskReport=[ordered]@{Status=if ($taskHarnessComplete -and @($taskCases | Where-Object {-not $_.Passed}).Count -eq 0 -and $taskCleanupPassed) {'PASS'} else {'FAIL'};
-            CheckedAtUtc=[datetime]::UtcNow.ToString('o');Database='GatePass_DesignTest';ExecutionIdentity='Isolated users WITHOUT LOGIN in gp_worker_runtime and gp_api_runtime; admin only for synthetic fixture setup, gates and inspection';
+            CheckedAtUtc=[datetime]::UtcNow.ToString('o');Database=$Database;ExecutionIdentity='Isolated users WITHOUT LOGIN in gp_worker_runtime and gp_api_runtime; admin only for synthetic fixture setup, gates and inspection';
             MigrationSha256=(Get-FileHash -LiteralPath (Join-Path $taskRoot 'database/migrations/004_notification_worker_leases.sql') -Algorithm SHA256).Hash;
             HardeningMigrationSha256=(Get-FileHash -LiteralPath (Join-Path $taskRoot 'database/migrations/005_worker_contract_hardening.sql') -Algorithm SHA256).Hash;
             HarnessSha256=(Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash;

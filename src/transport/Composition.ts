@@ -1,3 +1,4 @@
+import {ProjectGroupService} from '../administration/ProjectGroupService.ts';
 import {ReceptionService} from '../reception/ReceptionService.ts';
 import {ActionCentreService} from '../operations/ActionCentreService.ts';
 import {EmailPublicRoutes} from './EmailPublicRoutes.ts';
@@ -54,6 +55,7 @@ export async function composeApi(config: { origin: string; sourceKey: Buffer; ap
 export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): ReadonlyMap<string, ApiAction> {
     const email=new EmailWorkflowService(api,links);
     const reads = new VisitReadService(new SqlVisitReadRepository(api, 'api'));
+    const groups = new ProjectGroupService(api);
     const duty = new GuardDutyService(api);
     const workspace = new GuardWorkspaceService(api);
     const cancellation = new VisitCancellationService(new SqlVisitCancellationRepository(api));
@@ -88,6 +90,7 @@ export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): 
     actions.set('/api/guard/queue',(session,body)=>duty.queue(session,body));
     actions.set('/api/guard/visitors',(session,body)=>duty.visitors(session,body));
     actions.set('/api/admin/common-duties',(session,body)=>duty.administration(session,body));
+    for(const action of ['project-groups','project-group','project-group-guard'] as const)actions.set('/api/admin/'+action,(session,body)=>groups.execute(session,action,body));
     actions.set('/api/admin/common-duty',(session,body)=>duty.manage(session,body));
     actions.set('/api/guard/verify', (session, body) => duty.detail(session, body));
     actions.set('/api/guard/detail', async (session, body) => {

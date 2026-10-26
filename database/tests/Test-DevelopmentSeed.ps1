@@ -54,7 +54,12 @@ try {
         Assert-Condition ($taskCount -eq 22) 'Manager links do not match the requested employee population.'
     }
     Test-Case 'Seed creates no SSO sessions or SQL identities' {
-        Assert-Condition ((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM gp.Sessions s JOIN gp.Users u ON u.UserId=s.UserId WHERE u.IdentityIssuer=N'urn:gatepass:development-directory';") -eq 0) 'Unexpected development session.'
+        # Existing developer sessions are legitimate. Assert the seed adds/removes
+        # no identities, rather than requiring an unused database with zero sessions.
+        $taskSessionQuery="SELECT(SELECT CONVERT(varchar(64),s.SessionHash,2) id FROM gp.Sessions s JOIN gp.Users u ON u.UserId=s.UserId WHERE u.IdentityIssuer=N'urn:gatepass:development-directory' ORDER BY s.SessionHash FOR JSON PATH);"
+        $taskSessionsBefore=Invoke-GatePassScalar $taskConnection $taskSessionQuery
+        $null=Seed-Dummy
+        Assert-Condition ($taskSessionsBefore -ceq (Invoke-GatePassScalar $taskConnection $taskSessionQuery)) 'Seed changed development sessions.'
         Assert-Condition ((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM sys.database_principals WHERE name IN('Employee 1','Guard 1','EMP001','GRD001');") -eq 0) 'Unexpected SQL principal.'
     }
     Test-Case 'Seed does not resurrect a revoked guard role' {

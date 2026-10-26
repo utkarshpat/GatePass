@@ -97,5 +97,17 @@
   "096_action_centre_reminders.sql": "1ff451401b7a63ba42abc09621957a411f8fe043e9135e58eaec60659c30a6c3",
   "097_admin_digital_id_detail_presence.sql": "0fe5ea7962a9b02e06eb8901f237043c9de9c9cd5e64d020b931cdf566d314d3",
   "098_digital_id_presence_followups.sql": "2072a905488b8c262239337d9397fd0495ec8b6a48f083e8f80ad3b68f05b997",
-  "099_employee_presence_and_export_authority.sql": "1edcc8a3af34dfe21a32d3d4dd27f1cdfc022a5581a63226d96e969cd815d33e"
+  "099_employee_presence_and_export_authority.sql": "1edcc8a3af34dfe21a32d3d4dd27f1cdfc022a5581a63226d96e969cd815d33e",
+  "100_scoped_read_sets_and_windows.sql": "e60442bac3d7049303d22b10776602a09b063fd1d571e3ea393ddeea02d82f26",
+  "101_presence_projection_and_guard_photos.sql": "542aafa2915bd8ccd296907c47ad0d71dcde4815bfa032cfae86e39c9459f018",
+  "102_static_register_paging_and_catalogue_search.sql": "ba442623b119bee5456b84344db4a662454147ec6e14ba7bd1ee9e7cf341f1a1",
+  "103_guard_thumbnail_content_versions.sql": "8e913e97ed764e942dae54a16a062cd24999d17e798b5f9e1c3f3c8a69f5fb87",
+  "104_bounded_consistent_export_snapshots.sql": "70f245a86819c9dc6d0959a0a8a90e6ef9b2d0a29dfc11aa1450deb09d6d9291",
+  "105_ordered_snapshot_slices_and_completion_bounds.sql": "ddc560c1abc587c123a941490cbb3bbc6f595bf4afd1ffc44d9bf5732428aa54",
+  "106_owner_bound_export_snapshot_cancellation.sql": "0ec832145de061f928c75c667e0f5605a52784cd8ba5f2b2a7c78e3a2167850c",
+  "107_export_snapshot_storage_budget.sql": "1d0a27dd6ea08e5336dce9ca6c1397d3a6dcc3ccc9f2f47c768f052fb21d033f",
+  "108_searchable_catalogue_local_project_freshness.sql": "51e8778a29b091aa600744e4f1f6e18ee8b7e3d4e380d1a132b071cf3c94025f",
+  "109_empty_workspace_queue_arrays.sql": "313c321138a5e0c9fe11420a37fb3bd8d61fd257550888b906d757acfa06c866",
+  "110_project_groups_and_guard_assignments.sql": "799a901df80ee14859449ba0f7cb3b79e63d11ef91fed0dd2bdda01736352299",
+  "111_preserve_local_project_group_assignment_policy.sql": "b7c6a8574f8c1401ed4454f3beb73bfc7c4ee55df49a01aec9a75c91c8644651"
 }

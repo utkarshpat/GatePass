@@ -30,10 +30,10 @@ for(const close of ['button','escape','replacement'])test('obsolete profile 401 
  await h.finish();await stays(page);if(close==='replacement')await expect(page.locator('#profile-assignments')).toContainText('Project Alpha');
 });
 for(const paging of [true,false])test('obsolete '+(paging?'paged':'legacy')+' queue 401 is ignored after a newer search',async({page,context})=>{
- const s=await workspace(page,context,paging),h=await hold(page,'/api/guard/'+(paging?'queue':'visitors'));await page.locator('#refresh-recent').click();await h.wait();await page.locator('#visitor-search').fill('Rohan');await page.clock.fastForward(251);await expect.poll(()=>s.reads.at(-1)?.search).toBe('Rohan');await expect(page.locator('#recent-scans')).toHaveAttribute('aria-busy','false');await h.finish();await stays(page);
+ const s=await workspace(page,context,paging),h=await hold(page,'/api/guard/'+(paging?'queue':'visitors'));await page.locator('#refresh-recent').click();await h.wait();await page.locator('#visitor-search').fill('Rohan');await page.clock.fastForward(251);expect(s.reads.at(-1)?.search).not.toBe('Rohan');await h.finish();await expect.poll(()=>s.reads.at(-1)?.search).toBe('Rohan');await expect(page.locator('#recent-scans')).toHaveAttribute('aria-busy','false');await stays(page);
 });
 test('obsolete queue 401 is ignored after switching to Inside',async({page,context})=>{
- const s=await workspace(page,context),h=await hold(page,'/api/guard/queue');await page.locator('#refresh-recent').click();await h.wait();await page.locator('[data-queue=INSIDE]').click();await expect.poll(()=>s.reads.at(-1)?.queue).toBe('INSIDE');await h.finish();await stays(page);await expect(page.locator('[data-queue=INSIDE]')).toHaveAttribute('aria-selected','true');
+ const s=await workspace(page,context),h=await hold(page,'/api/guard/queue');await page.locator('#refresh-recent').click();await h.wait();await page.locator('[data-queue=INSIDE]').click();expect(s.reads.at(-1)?.queue).toBe('EXPECTED');await h.finish();await expect.poll(()=>s.reads.at(-1)?.queue).toBe('INSIDE');await stays(page);await expect(page.locator('[data-queue=INSIDE]')).toHaveAttribute('aria-selected','true');
 });
 for(const path of ['detail','photo','remind-host'])test('obsolete pass '+path+' 401 is ignored when its dialog closes',async({page,context})=>{
  const s=await workspace(page,context);s.photo=path==='photo';if(path==='remind-host')await page.route('**/api/guard/detail',route=>route.fulfill({json:{...visitor(),status:'PENDING',passStatus:'PENDING',canEnter:false}}));

@@ -65,7 +65,7 @@ class ActionCentre{
   const category=this.category,rows=more?[...this.rows]:[],target=quiet?Math.max(24,this.rows.length):24;let cursor=more?this.cursor:null,result;this.busy=true;this.more.disabled=true;this.list.setAttribute('aria-busy','true');if(!quiet)this.status.textContent=this.t('Loading follow-ups…');
   try{const cursors=new Set();do{
    const cookie=name=>document.cookie.split('; ').find(v=>v.startsWith(name+'='))?.split('=')[1],csrf=cookie('gp-staff-csrf')??cookie('gp-reception-csrf');
-   const response=await fetch('/api/operations/actions',{method:'POST',credentials:'same-origin',signal:controller.signal,headers:{'Content-Type':'application/json','X-CSRF-Token':csrf??''},body:JSON.stringify({...this.selected.body,category,...(cursor?{cursor}:{})})});
+   const response=await fetch('/api/operations/actions',{method:'POST',credentials:'same-origin',signal:controller.signal,headers:{'Content-Type':'application/json','X-CSRF-Token':csrf??''},body:JSON.stringify({...this.selected.body,category,...(cursor?{cursor}:{}),...(quiet?{limit:Math.min(240,Math.max(24,target-rows.length))}:{})})});
    if(!response.ok)throw Object.assign(new Error(),{status:response.status});result=await response.json();if(version!==this.version)return;
    const known=new Set(rows.map(r=>r.visitRequestId));for(const row of result.items)if(!known.has(row.visitRequestId)){known.add(row.visitRequestId);rows.push(row);}cursor=result.cursor;
    if(cursor){const key=JSON.stringify(cursor);if(cursors.has(key))throw new Error();cursors.add(key);}

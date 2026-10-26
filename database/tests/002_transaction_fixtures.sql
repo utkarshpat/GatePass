@@ -4,7 +4,7 @@
    No real photo, QR, employee, SSO session or external message is used. */
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
-IF DB_NAME()<>N'GatePass_DesignTest' OR @RunId IS NULL
+IF (DB_NAME()<>N'GatePass_DesignTest' AND NOT(DB_NAME() LIKE N'GatePass[_]Verification[_]%' AND EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'GatePass.DisposableVerification' AND CONVERT(nvarchar(100),value)=DB_NAME()))) OR @RunId IS NULL
     THROW 52900, 'Fixtures require the dedicated test database and run ID.', 1;
 IF NOT EXISTS(SELECT 1 FROM gp.SchemaMigrations WHERE Version='003') THROW 52900, 'Migration 003 required.', 1;
 DECLARE @prefix varchar(30)='GP02-'+LEFT(REPLACE(CONVERT(varchar(36),@RunId),'-',''),20);

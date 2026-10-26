@@ -2,17 +2,17 @@
    This is not a production retention or database reset script. */
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
-IF DB_NAME()<>N'GatePass_DesignTest' OR @RunId IS NULL THROW 52900, 'Dedicated test database/run ID required.', 1;
+IF (DB_NAME()<>N'GatePass_DesignTest' AND NOT(DB_NAME() LIKE N'GatePass[_]Verification[_]%' AND EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'GatePass.DisposableVerification' AND CONVERT(nvarchar(100),value)=DB_NAME()))) OR @RunId IS NULL THROW 52900, 'Dedicated test database/run ID required.', 1;
 DECLARE @prefix varchar(30)='GP02-'+LEFT(REPLACE(CONVERT(varchar(36),@RunId),'-',''),20);
-DECLARE @users table(Id uniqueidentifier);
-DECLARE @visits table(Id uniqueidentifier);
-DECLARE @intakes table(Id uniqueidentifier);
-DECLARE @assignments table(Id bigint);
+DECLARE @users table(Id uniqueidentifier PRIMARY KEY);
+DECLARE @visits table(Id uniqueidentifier PRIMARY KEY);
+DECLARE @intakes table(Id uniqueidentifier PRIMARY KEY);
+DECLARE @assignments table(Id bigint PRIMARY KEY);
 INSERT @users SELECT UserId FROM gp.Users WHERE IdentityIssuer='gatepass-phase02-fixture' AND IdentitySubject LIKE @prefix+':%';
 INSERT @visits SELECT VisitRequestId FROM gp.VisitRequests WHERE PublicReference LIKE @prefix+'-%';
 INSERT @intakes SELECT DISTINCT IntakeId FROM gp.VisitRequests WHERE VisitRequestId IN(SELECT Id FROM @visits);
 INSERT @assignments SELECT GuardAssignmentId FROM gp.GuardAssignments WHERE GuardUserId IN(SELECT Id FROM @users);
-DECLARE @notifications table(Id bigint);
+DECLARE @notifications table(Id bigint PRIMARY KEY);
 INSERT @notifications SELECT NotificationId FROM gp.NotificationOutbox WHERE VisitRequestId IN(SELECT Id FROM @visits);
 BEGIN TRANSACTION;
 -- Serialize owned-fixture removal with API reads and writes that use the same gate.
@@ -48,6 +48,11 @@ DELETE FROM gp.StaffRoleGrants WHERE UserId IN(SELECT Id FROM @users);
 DELETE gp.GuardCommonAreaAssignments WHERE GuardUserId IN(SELECT Id FROM @users);
 DELETE gp.CommonAreas WHERE AreaName LIKE @prefix+'%';
 DELETE FROM gp.GuardAssignments WHERE GuardUserId IN(SELECT Id FROM @users);
+IF OBJECT_ID('gp.ProjectGroups','U') IS NOT NULL BEGIN
+ DELETE FROM gp.ProjectGroupGuardAssignments WHERE GuardUserId IN(SELECT Id FROM @users) OR ProjectGroupId IN(SELECT ProjectGroupId FROM gp.ProjectGroups WHERE CreatedByUserId IN(SELECT Id FROM @users));
+ DELETE FROM gp.ProjectGroupMembers WHERE ProjectGroupId IN(SELECT ProjectGroupId FROM gp.ProjectGroups WHERE CreatedByUserId IN(SELECT Id FROM @users));
+ DELETE FROM gp.ProjectGroups WHERE CreatedByUserId IN(SELECT Id FROM @users);
+END;
 DELETE FROM gp.EmployeeProjectLocationMemberships WHERE EmployeeId IN(SELECT EmployeeId FROM gp.Employees WHERE UserId IN(SELECT Id FROM @users));
 DELETE FROM gp.EmployeeOfficeMemberships WHERE EmployeeId IN(SELECT EmployeeId FROM gp.Employees WHERE UserId IN(SELECT Id FROM @users));
 DELETE FROM gp.EmployeeProjectMemberships WHERE EmployeeId IN(SELECT EmployeeId FROM gp.Employees WHERE UserId IN(SELECT Id FROM @users));

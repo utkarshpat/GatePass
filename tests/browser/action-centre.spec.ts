@@ -1,4 +1,17 @@
 import{test,expect}from'@playwright/test';import AxeBuilder from'@axe-core/playwright';
+test('quiet follow-up refresh reads two loaded pages in one bounded request',async({page,context})=>{
+ await page.clock.install();await context.addCookies(['gp-staff-session','gp-staff-csrf'].map(name=>({name,value:'synthetic',url:'http://localhost:18447'})));
+ const calls:any[]=[],items=Array.from({length:60},(_,n)=>({visitRequestId:'10000000-0000-4000-8000-'+String(n+1).padStart(12,'0'),personName:'Owned follow-up '+n,publicReference:'V-'+n,publicPassNumber:'GP-'+n,visitDate:'2026-10-24',submittedAtUtc:'2026-10-24T00:00:00.000Z'}));
+ await page.route('**/api/reception/**',route=>route.fulfill({json:route.request().url().endsWith('/me')?{displayName:'Reception',currentDate:'2026-10-24',queuePaging:true,locations:[{locationId:1,locationName:'Noida',canPrint:false}]}:{visits:[],visitDate:'2026-10-24',counts:{total:0,pending:0,inside:0},pendingReturnCount:0,cursor:null}}));
+ await page.route('**/api/workspace/events',route=>route.fulfill({status:404,json:{error:'NOT_FOUND'}}));
+ await page.route('**/api/operations/actions',route=>{
+  const d=route.request().postDataJSON();calls.push(d);const offset=d.cursor?items.findIndex(i=>i.visitRequestId===d.cursor.visitRequestId)+1:0,rows=items.slice(offset,offset+(d.limit??24)),last=rows.at(-1);
+  return route.fulfill({json:{category:'PENDING',checkedAtUtc:'2026-10-24T00:00:00.000Z',counts:{pending:60,expiredInside:0,unreturned:0},items:rows,cursor:offset+rows.length<items.length?{submittedAtUtc:last!.submittedAtUtc,visitRequestId:last!.visitRequestId}:null}});
+ });
+ await page.goto('/reception');await page.locator('#open-action-centre').click();await expect(page.locator('#action-items .action-item')).toHaveCount(24);
+ await page.locator('#action-centre').getByRole('button',{name:'Load more',exact:true}).click();await expect(page.locator('#action-items .action-item')).toHaveCount(48);const before=calls.length;
+ await page.clock.runFor(21000);await expect(page.locator('#action-items')).toHaveAttribute('aria-busy','false');expect(calls.length-before).toBe(1);expect(calls.at(-1).limit).toBe(48);await expect(page.locator('#action-items .action-item')).toHaveCount(48);
+});
 for(const width of [390,1366])test(`action panel loads on demand, pages follow-ups, opens an existing record and clears denied data at ${width}px`,async({page,context})=>{
  await page.setViewportSize({width,height:900});await context.addCookies(['gp-staff-session','gp-staff-csrf'].map(name=>({name,value:'synthetic',url:'http://localhost:18447'})));
  const reminders:any[]=[];let held=false;const calls:any[]=[],rows=Array.from({length:25},(_,n)=>({visitRequestId:`10000000-0000-4000-8000-${String(n+1).padStart(12,'0')}`,personName:['Asha Rao','Rohan Mehta','Priya Shah','Kunal Verma'][n%4]+' '+(n+1),publicReference:'V-'+(n+1),publicPassNumber:'GP-'+(n+1),visitDate:'2026-10-24',submittedAtUtc:'2026-10-24T00:00:00.000Z'}));let denied=false;

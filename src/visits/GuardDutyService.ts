@@ -43,14 +43,16 @@ export class GuardDutyService {
     return guardVisitors(r,d.queue as string);
   }
   async queue(session:Session,value:unknown){
-    const d=body(value,['locationId','dutyKind','dutyId','queue','search','cursor']);
+    const d=body(value,['locationId','dutyKind','dutyId','queue','search','cursor','limit']);
+    input(d.limit===undefined||Number.isInteger(d.limit)&&Number(d.limit)>=24&&Number(d.limit)<=240);const take=Number(d.limit??24);
     input(office(d.locationId)&&['ALL','COMMON','PROJECT'].includes(String(d.dutyKind))&&(d.dutyKind==='ALL'?d.dutyId===undefined:id(d.dutyId))&&['EXPECTED','INSIDE'].includes(String(d.queue))&&(d.dutyKind!=='COMMON'||d.queue==='EXPECTED')&&typeof d.search==='string'&&d.search.length<=100&&!/[\u0000-\u001f\u007f]/u.test(d.search));
     const cursor=d.cursor as any;input(cursor===undefined||cursor&&typeof cursor==='object'&&Object.keys(cursor).sort().join('|')==='submittedAtUtc|visitRequestId'&&isUtc(cursor.submittedAtUtc)&&isUuid(cursor.visitRequestId));
-    const r=await this.#call(session,'gp.ReadGuardQueue',{LocationId:{type:'int',value:Number(d.locationId)},DutyKind:{type:'text',value:String(d.dutyKind)},DutyId:{type:'bigint',value:d.dutyId as string??null},Queue:{type:'text',value:String(d.queue)},Search:{type:'text',value:(d.search as string).trim()},AfterSubmittedAtUtc:{type:'datetime',value:cursor?.submittedAtUtc??null},AfterVisitRequestId:{type:'guid',value:cursor?.visitRequestId??null}});
-    const page=guardVisitors(r,String(d.queue),24);output(Number.isSafeInteger(r.total)&&Number(r.total)>=page.visitors.length);
+    const r=await this.#call(session,'gp.ReadGuardQueue',{LocationId:{type:'int',value:Number(d.locationId)},DutyKind:{type:'text',value:String(d.dutyKind)},DutyId:{type:'bigint',value:d.dutyId as string??null},Queue:{type:'text',value:String(d.queue)},Search:{type:'text',value:(d.search as string).trim()},AfterSubmittedAtUtc:{type:'datetime',value:cursor?.submittedAtUtc??null},AfterVisitRequestId:{type:'guid',value:cursor?.visitRequestId??null},Take:{type:'int',value:take}});
+    const page=guardVisitors(r,String(d.queue),take);output(Number.isSafeInteger(r.total)&&Number(r.total)>=page.visitors.length);
     const visitors=page.visitors.map((v:any,index:number)=>{const raw=(r.visitors as any[])[index];output(isUtc(raw.submittedAtUtc)&&Array.isArray(raw.allocations)&&raw.allocations.length>0&&raw.allocations.length<=500);
       const allocations=raw.allocations.map((a:any)=>{output(['PROJECT','COMMON'].includes(a.kind)&&id(a.dutyId)&&text(a.name,200)&&(d.dutyKind==='ALL'||a.kind===d.dutyKind&&a.dutyId===d.dutyId)&&(d.queue!=='INSIDE'||a.kind==='PROJECT'));return{kind:a.kind,dutyId:a.dutyId,name:a.name};});
-      output(new Set(allocations.map((a:any)=>a.kind+':'+a.dutyId)).size===allocations.length);return{...v,submittedAtUtc:raw.submittedAtUtc,allocations};});
+      output(raw.photoVersion===undefined||typeof raw.photoVersion==='string'&&/^[a-f0-9]{64}$/u.test(raw.photoVersion));
+      output(new Set(allocations.map((a:any)=>a.kind+':'+a.dutyId)).size===allocations.length);return{...v,...(raw.photoVersion?{photoVersion:raw.photoVersion}:{}),submittedAtUtc:raw.submittedAtUtc,allocations};});
     output(new Set(visitors.map((v:any)=>v.visitRequestId)).size===visitors.length);
     if(page.hasMore){const last=visitors.at(-1);output(isUtc(r.afterSubmittedAtUtc)&&isUuid(r.afterVisitRequestId)&&last?.submittedAtUtc===r.afterSubmittedAtUtc&&last?.visitRequestId===(r.afterVisitRequestId as string).toLowerCase());}
     return{visitors,total:r.total as number,cursor:page.hasMore?{submittedAtUtc:r.afterSubmittedAtUtc as string,visitRequestId:(r.afterVisitRequestId as string).toLowerCase()}:null};

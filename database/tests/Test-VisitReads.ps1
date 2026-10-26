@@ -85,7 +85,12 @@ try {
     $taskBaseline=Invoke-GatePassScalar $taskAdmin 'SELECT (SELECT VisitRequestId id,Status,DecisionAtUtc FROM gp.VisitRequests WHERE PublicReference LIKE @prefix+''-%'' FOR JSON PATH);' @{prefix=$taskFixture.prefix}
     Invoke-GatePassNonQuery $taskAdmin @'
 INSERT gp.GrantCapabilities(RoleGrantId,CapabilityCode) SELECT g.RoleGrantId,'VISITS_READ' FROM gp.StaffRoleGrants g JOIN gp.Users u ON u.UserId=g.UserId
-WHERE u.IdentityIssuer='gatepass-phase02-fixture' AND u.IdentitySubject LIKE @prefix+':%' AND u.IdentitySubject NOT LIKE '%:NOCAP';
+WHERE u.IdentityIssuer='gatepass-phase02-fixture' AND u.IdentitySubject LIKE @prefix+':%' AND u.IdentitySubject NOT LIKE '%:NOCAP'
+AND NOT EXISTS(SELECT 1 FROM gp.GrantCapabilities c WHERE c.RoleGrantId=g.RoleGrantId AND c.CapabilityCode='VISITS_READ');
+-- Current shared fixtures also create common-area verification duties. This
+-- legacy-read suite deliberately checks project-only guards and a no-read actor.
+DELETE ca FROM gp.GuardCommonAreaAssignments ca JOIN gp.Users u ON u.UserId=ca.GuardUserId WHERE u.IdentityIssuer='gatepass-phase02-fixture' AND u.IdentitySubject IN(@prefix+':GUARD',@prefix+':NOCAP');
+DELETE c FROM gp.GrantCapabilities c JOIN gp.StaffRoleGrants g ON g.RoleGrantId=c.RoleGrantId JOIN gp.Users u ON u.UserId=g.UserId WHERE u.IdentityIssuer='gatepass-phase02-fixture' AND u.IdentitySubject=@prefix+':NOCAP' AND c.CapabilityCode='VISITS_READ';
 '@ @{prefix=$taskFixture.prefix}
     foreach ($taskSpec in @(@('gp_reads_api_fixture','gp_api_runtime'),@('gp_reads_media_fixture','gp_media_runtime'),@('gp_reads_worker_fixture','gp_worker_runtime'),@('gp_reads_auth_fixture','gp_guard_auth_runtime'))) {
         Invoke-GatePassNonQuery $taskAdmin ('CREATE USER '+$taskSpec[0]+' WITHOUT LOGIN; ALTER ROLE '+$taskSpec[1]+' ADD MEMBER '+$taskSpec[0]+';');$taskUsers.Add($taskSpec[0])

@@ -1,18 +1,29 @@
 #Requires -Version 7.0
-# Development-only RPC transport, with a disposable execute-only principal per call.
+# Development-only RPC transport; one leased execute-only connection per role/worker.
 param([switch]$Persistent)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 [Console]::InputEncoding=[Text.UTF8Encoding]::new($false);[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)
 if($env:NODE_ENV -notin @('development','test') -or $env:GATEPASS_SSO_MODE -ne 'dummy' -or $env:GATEPASS_DIRECTORY_MODE -ne 'mock'){throw 'Explicit local dummy mode required.'}
 Import-Module (Join-Path $PSScriptRoot 'GatePass.LocalSql.psm1') -Force
+Import-Module (Join-Path $PSScriptRoot 'GatePass.DevelopmentLeases.psm1') -Force
+# Principal DDL invalidates SQL's permission cache. Keep it outside concurrent
+# execute-only calls; shared calls still run together. Session ownership releases
+# the gate even if this disposable connection is interrupted.
+function Enter-DevelopmentGate($Connection,[string]$Mode){
+ Invoke-GatePassNonQuery $Connection "DECLARE @r int;EXEC @r=sys.sp_getapplock @Resource=N'gp:development:principal-ddl',@LockMode=@mode,@LockOwner='Session',@LockTimeout=10000;IF @r<0 THROW 52901,'Development principal gate unavailable.',1;" @{mode=$Mode}
+}
+function Exit-DevelopmentGate($Connection){Invoke-GatePassNonQuery $Connection "EXEC sys.sp_releaseapplock @Resource=N'gp:development:principal-ddl',@LockOwner='Session';"}
 function Invoke-DevelopmentCall($taskInput) {
-$taskConnection=Open-GatePassLocalSql -TrustLocalServerCertificate
-$taskPrincipal='gp_dev_api_'+[guid]::NewGuid().ToString('N');$taskCreated=$false;$taskImpersonated=$false
+$taskProfile=$env:NODE_ENV -eq 'test' -and $env:GATEPASS_LOAD_DIAGNOSTICS -eq '1';$script:taskTiming=$null
+$taskWatch=[Diagnostics.Stopwatch]::StartNew()
+$taskConnection=$null;$taskConnected=0;$taskImpersonated=$false;$taskGate=$false;$taskRole=$null;$taskDiscard=$false
 try{
- if($taskInput.procedure -notin @('gp.DecideVisit','gp.ReadEmailRequest','gp.RevokeEmailRequest','gp.CancelVisit','gp.GetEmployeeRequestCard','gp.GetEmailRequestCard','gp.ClaimNotifications','gp.GetNotificationEmail','gp.ResolveNotificationPhoto','gp.RenewNotificationLease','gp.CompleteNotification','gp.CreateRegistrationIntake','gp.RecordRegistrationPhoto','gp.SubmitRegistration','gp.ListRegistrationLocations','gp.GetRegistrationOptions','gp.GetVisitDetail','gp.GetOwnDigitalIdCard','gp.GetStaffAccessContext','gp.ManageStaffCredential','gp.ReadAdminVisitRegister','gp.GetAdminConsoleScope','gp.ListAdminGuardAssignments','gp.ListAdminProjectLocations','gp.ListAdminGuards','gp.SearchStaffSubjects','gp.ListStaffRoles','gp.GetOperationalSummary','gp.GetOperationalSummaryRange','gp.ReadGuardQueue','gp.ReadReceptionQueue','gp.ReadActionCentre','gp.RemindPendingApproval','gp.ListScopedAuditEvents','gp.AllocateGuard','gp.DeallocateGuard','gp.CreateScopedProject','gp.GetAdminWorkspaceContext','gp.GetGuardWorkspaceContext','gp.ListGuardDuties','gp.ReadGuardDutyPass','gp.ListGuardDutyVisitors','gp.RecordGuardDutyMovement','gp.GetCommonDutyAdministration','gp.ManageCommonDuty','gp.FindGuardPass','gp.ListGuardVisitors','gp.ListGuardRecentScans','gp.ListGuardWorkContexts','gp.ListVisits','gp.VerifyGuardPass','gp.RecordMovement','gp.ListLeadProjects','gp.SearchProjectLeadCandidates','gp.ListProjectHeads','gp.GrantStaffRole','gp.RevokeStaffRole','gp.BeginGuardLogin','gp.CompleteGuardLogin','gp.TouchGuardSession','gp.RevokeGuardSession','gp.ResolveStaffLoginIdentity','gp.BeginStaffLogin','gp.CompleteStaffLogin','gp.TouchStaffSession','gp.RevokeStaffSession','gp.InspectStaffSetup','gp.CompleteStaffSetup','gp.RemindVisitHost','gp.GetReceptionEmployeeTimeline','gp.AuditReceptionRegistration','gp.LookupReceptionVisits','gp.CorrectReceptionReturn','gp.CreateLocalStaffAccount','gp.ReissueLocalStaffSetup','gp.ReturnReceptionPass','gp.GetReceptionContext','gp.ListReceptionVisits','gp.RequestPassPrint','gp.GetPassPrintJob','gp.GetReceptionCardSource','gp.BeginPassRender','gp.FinishPassRender','gp.DispatchPassPrint','gp.FailPassPrint','gp.ResolveVisitPhoto')){throw 'Procedure not allowed.'}
+ if($taskInput.procedure -notin @('gp.GetAdminProjectGroups','gp.ManageProjectGroup','gp.ManageProjectGroupGuard','gp.DecideVisit','gp.ReadEmailRequest','gp.RevokeEmailRequest','gp.CancelVisit','gp.GetEmployeeRequestCard','gp.GetEmailRequestCard','gp.ClaimNotifications','gp.GetNotificationEmail','gp.ResolveNotificationPhoto','gp.RenewNotificationLease','gp.CompleteNotification','gp.CreateRegistrationIntake','gp.RecordRegistrationPhoto','gp.SubmitRegistration','gp.ListRegistrationLocations','gp.GetRegistrationOptions','gp.GetVisitDetail','gp.GetOwnDigitalIdCard','gp.GetStaffAccessContext','gp.ManageStaffCredential','gp.ReadAdminVisitRegister','gp.GetAdminConsoleScope','gp.ListAdminGuardAssignments','gp.ListAdminProjectLocations','gp.ListAdminGuards','gp.SearchStaffSubjects','gp.ListStaffRoles','gp.GetOperationalSummary','gp.GetOperationalSummaryRange','gp.ReadGuardQueue','gp.ReadReceptionQueue','gp.ReadActionCentre','gp.RemindPendingApproval','gp.ListScopedAuditEvents','gp.AllocateGuard','gp.DeallocateGuard','gp.CreateScopedProject','gp.GetAdminWorkspaceContext','gp.GetGuardWorkspaceContext','gp.ListGuardDuties','gp.ReadGuardDutyPass','gp.ListGuardDutyVisitors','gp.RecordGuardDutyMovement','gp.GetCommonDutyAdministration','gp.ManageCommonDuty','gp.FindGuardPass','gp.ListGuardVisitors','gp.ListGuardRecentScans','gp.ListGuardWorkContexts','gp.ListVisits','gp.VerifyGuardPass','gp.RecordMovement','gp.ListLeadProjects','gp.SearchProjectLeadCandidates','gp.ListProjectHeads','gp.GrantStaffRole','gp.RevokeStaffRole','gp.BeginGuardLogin','gp.CompleteGuardLogin','gp.TouchGuardSession','gp.RevokeGuardSession','gp.ResolveStaffLoginIdentity','gp.BeginStaffLogin','gp.CompleteStaffLogin','gp.TouchStaffSession','gp.RevokeStaffSession','gp.InspectStaffSetup','gp.CompleteStaffSetup','gp.RemindVisitHost','gp.GetReceptionEmployeeTimeline','gp.AuditReceptionRegistration','gp.LookupReceptionVisits','gp.CorrectReceptionReturn','gp.CreateLocalStaffAccount','gp.ReissueLocalStaffSetup','gp.ReturnReceptionPass','gp.GetReceptionContext','gp.ListReceptionVisits','gp.RequestPassPrint','gp.GetPassPrintJob','gp.GetReceptionCardSource','gp.BeginPassRender','gp.FinishPassRender','gp.DispatchPassPrint','gp.FailPassPrint','gp.ResolveVisitPhoto','gp.ReadGuardPhotoSource')){throw 'Procedure not allowed.'}
+ $taskRole=if($taskInput.procedure -in @('gp.ClaimNotifications','gp.GetNotificationEmail','gp.ResolveNotificationPhoto','gp.RenewNotificationLease','gp.CompleteNotification')){'gp_worker_runtime'}elseif($taskInput.procedure -in @('gp.ResolveStaffLoginIdentity','gp.BeginStaffLogin','gp.CompleteStaffLogin','gp.TouchStaffSession','gp.RevokeStaffSession','gp.InspectStaffSetup','gp.CompleteStaffSetup')){'gp_staff_auth_runtime'}elseif($taskInput.procedure -in @('gp.BeginGuardLogin','gp.CompleteGuardLogin','gp.TouchGuardSession','gp.RevokeGuardSession')){'gp_guard_auth_runtime'}elseif($taskInput.procedure -in @('gp.GetEmployeeRequestCard','gp.GetEmailRequestCard','gp.GetOwnDigitalIdCard','gp.GetReceptionCardSource','gp.BeginPassRender','gp.FinishPassRender','gp.DispatchPassPrint','gp.FailPassPrint')){'gp_render_runtime'}elseif($taskInput.procedure -in @('gp.ResolveVisitPhoto','gp.ReadGuardPhotoSource')){'gp_media_runtime'}else{'gp_api_runtime'}
+ $taskLease=Get-GatePassDevelopmentLease $taskRole;$taskConnection=$taskLease.Connection;$taskPrincipal=$taskLease.Principal
+ $taskConnected=$taskWatch.Elapsed.TotalMilliseconds
+ Enter-DevelopmentGate $taskConnection 'Shared';$taskGate=$true
  if((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM sys.extended_properties WHERE class=0 AND name=N'GatePass.DevelopmentDirectoryMarker' AND CONVERT(nvarchar(100),value)=N'SYNTHETIC-DIRECTORY-V1'") -ne 1){throw 'Synthetic development database required.'}
- $taskRole=if($taskInput.procedure -in @('gp.ClaimNotifications','gp.GetNotificationEmail','gp.ResolveNotificationPhoto','gp.RenewNotificationLease','gp.CompleteNotification')){'gp_worker_runtime'}elseif($taskInput.procedure -in @('gp.ResolveStaffLoginIdentity','gp.BeginStaffLogin','gp.CompleteStaffLogin','gp.TouchStaffSession','gp.RevokeStaffSession','gp.InspectStaffSetup','gp.CompleteStaffSetup')){'gp_staff_auth_runtime'}elseif($taskInput.procedure -in @('gp.BeginGuardLogin','gp.CompleteGuardLogin','gp.TouchGuardSession','gp.RevokeGuardSession')){'gp_guard_auth_runtime'}elseif($taskInput.procedure -in @('gp.GetEmployeeRequestCard','gp.GetEmailRequestCard','gp.GetOwnDigitalIdCard','gp.GetReceptionCardSource','gp.BeginPassRender','gp.FinishPassRender','gp.DispatchPassPrint','gp.FailPassPrint')){'gp_render_runtime'}elseif($taskInput.procedure -eq 'gp.ResolveVisitPhoto'){'gp_media_runtime'}else{'gp_api_runtime'}
- Invoke-GatePassNonQuery $taskConnection "CREATE USER [$taskPrincipal] WITHOUT LOGIN; ALTER ROLE $taskRole ADD MEMBER [$taskPrincipal];";$taskCreated=$true
  Invoke-GatePassNonQuery $taskConnection "EXECUTE AS USER='$taskPrincipal';";$taskImpersonated=$true
  $taskCommand=$taskConnection.CreateCommand();$taskCommand.CommandType=[Data.CommandType]::StoredProcedure;$taskCommand.CommandText=$taskInput.procedure;$taskCommand.CommandTimeout=15
  try{
@@ -31,24 +42,45 @@ try{
    elseif($taskValue.type -eq 'int'){$taskParameter.Value=[int]$taskValue.value}
    else{$taskParameter.Value=$taskValue.value}
   }
-  return [string]$taskCommand.ExecuteScalar()
+  $taskPrepared=$taskWatch.Elapsed.TotalMilliseconds
+  try{return [string]$taskCommand.ExecuteScalar()}finally{$taskExecuted=$taskWatch.Elapsed.TotalMilliseconds}
  }finally{$taskCommand.Dispose()}
 }catch{
  $taskError=$_.Exception;while($null -ne $taskError.InnerException -and $taskError -isnot [Data.SqlClient.SqlException]){$taskError=$taskError.InnerException};$taskNumber=if($taskError -is [Data.SqlClient.SqlException]){$taskError.Number}else{0}
  return (@{bridgeError=$true;number=$taskNumber;errorKind=$taskError.GetType().FullName}|ConvertTo-Json -Compress)
 }finally{
- try{if($taskImpersonated){Invoke-GatePassNonQuery $taskConnection 'REVERT;'};if($taskCreated){Invoke-GatePassNonQuery $taskConnection "DROP USER [$taskPrincipal];"}}finally{$taskConnection.Dispose()}
+ # A cleanup fault must not replay or disguise a committed result. Discard the
+ # role connection; its released lease permits safe collection on next startup.
+ if($taskConnection){
+  try{if($taskImpersonated){Invoke-GatePassNonQuery $taskConnection 'REVERT;'}
+   if((Invoke-GatePassScalar $taskConnection 'SELECT @@TRANCOUNT;') -ne 0){Invoke-GatePassNonQuery $taskConnection 'ROLLBACK;';$taskDiscard=$true}
+   if($taskGate){Exit-DevelopmentGate $taskConnection}
+  }catch{$taskDiscard=$true}
+  if($taskDiscard -or $taskConnection.State -ne [Data.ConnectionState]::Open){Remove-GatePassDevelopmentLease $taskRole}
+ }
+ if($taskProfile -and (Test-Path variable:taskExecuted)){$script:taskTiming=@{connectMs=$taskConnected;setupMs=$taskPrepared-$taskConnected;executeMs=$taskExecuted-$taskPrepared;cleanupMs=$taskWatch.Elapsed.TotalMilliseconds-$taskExecuted;totalMs=$taskWatch.Elapsed.TotalMilliseconds}}
 }
 
 
 
 }
+try{
 if($Persistent){
  while($null -ne ($taskLine=[Console]::In.ReadLine())){
   if($taskLine.Length -gt 2097152){throw 'RPC input too large.'}
   try{
-   $taskResult=Invoke-DevelopmentCall ($taskLine|ConvertFrom-Json)
-   [Console]::Out.WriteLine((@{result=[string]$taskResult}|ConvertTo-Json -Compress -Depth 3));[Console]::Out.Flush()
-  }finally{$taskResult=$null;$taskLine=$null}
+   $taskInput=$taskLine|ConvertFrom-Json
+   $script:taskTiming=$null
+   if(@($taskInput.PSObject.Properties.Name).Count -eq 1 -and $taskInput.PSObject.Properties['warmup'] -and $taskInput.warmup -is [bool] -and $taskInput.warmup){
+    # Private stdio readiness control: load the provider, open no SQL connection,
+    # create no principal, and run no stored procedure or authorization cache.
+    Add-Type -AssemblyName System.Data.SqlClient
+    $taskResult='{"ready":true}'
+   }else{$taskResult=Invoke-DevelopmentCall $taskInput}
+   $taskPacket=@{result=[string]$taskResult};if($null -ne $script:taskTiming){$taskPacket.timing=$script:taskTiming}
+   [Console]::Out.WriteLine(($taskPacket|ConvertTo-Json -Compress -Depth 3));[Console]::Out.Flush()
+  }finally{$taskResult=$null;$taskInput=$null;$taskLine=$null}
  }
 }else{[Console]::Out.Write((Invoke-DevelopmentCall ([Console]::In.ReadToEnd()|ConvertFrom-Json)))}
+
+}finally{try{Close-GatePassDevelopmentLeases}catch{[Console]::Error.WriteLine('DEVELOPMENT_RPC_CLEANUP_PENDING')}}
