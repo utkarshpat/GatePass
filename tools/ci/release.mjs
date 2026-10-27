@@ -16,7 +16,7 @@ await mkdir(destination, { recursive: true });
 // Explicit source allowlist: no .git, test fixtures, dummy login entrypoint,
 // node_modules, validation exports, credentials or private photo directories.
 const allowed = ['src', 'assets', 'database/migrations', 'database/migrations.sha256.json',
-  'package.json', 'package-lock.json', 'tools/start-api.ts', 'tools/PrivateStorage.Windows.ps1'];
+  'package.json', 'package-lock.json', '.env.example', 'tools/start-api.ts', 'tools/start-email-worker.ts', 'tools/check-configuration.ts', 'tools/PrivateStorage.Windows.ps1'];
 for (const path of allowed) {
   await cp(join(root, path), join(destination, path), {
     recursive: true, filter: source => !relative(root, source).replaceAll(sep, '/').startsWith('src/development')

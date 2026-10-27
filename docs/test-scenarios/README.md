@@ -1,5 +1,7 @@
 # GatePass End-to-End Test Scenarios & Audit Matrix
 
+> Updated 27 October 2026: current behavior/evidence is in [report 88](../88_Documentation_And_Release_28_October_2026.md). Visitor registration is single-person; employee project flows remain same-day; all calendar-day pass labels end at 23:59. Google station sign-in remains pending.
+
 > Latest 24 October execution and presentation guide: [final browser verification](../67_Final_Browser_Verification_And_Presentation.md). See [count definitions and concrete remaining scenarios](../66_Final_E2E_Counts_And_Edge_Cases_24_October_2026.md) and [closed browser exposure findings](../65_Browser_Data_Exposure_Audit_24_October_2026.md). Catalog case counts below describe scenarios, not the current executable Playwright test count. Retained demo records/history are preserved across runs.
 
 > 23 October presentation run: [current evidence and retained demo data](../55_Presentation_Rehearsal_23_October_2026.md). Earlier execution counts/cleanup statements in this catalog describe their dated runs; this presentation dataset is retained.

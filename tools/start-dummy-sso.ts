@@ -1,3 +1,4 @@
+import {loadRuntimeEnvironment} from '../src/runtime/Environment.ts';
 import {ActionCentreService} from '../src/operations/ActionCentreService.ts';
 import {ActionCentreRoutes} from '../src/development/ActionCentreRoutes.ts';
 import {GuardThumbnailService} from '../src/visits/GuardThumbnailService.ts';
@@ -24,7 +25,7 @@ import {ReceptionRegistrationRoutes} from '../src/development/ReceptionRegistrat
 import {ReceptionRoutes} from '../src/development/ReceptionRoutes.ts';
 import {PassPrintService,PassRenderService} from '../src/printing/PassPrintService.ts';
 import {SqlPassPrintRepository} from '../src/printing/SqlPassPrintRepository.ts';
-import {OwnDigitalIdCardService} from '../src/printing/OwnDigitalIdCardService.ts';
+import {OwnDigitalIdCardService,OwnCardError} from '../src/printing/OwnDigitalIdCardService.ts';
 import {PassCardRenderer} from '../src/printing/PassCardRenderer.ts';
 import {rasterizeCardPng} from '../src/printing/CardPngRasterizer.ts';
 import {NodeQrMatrixEncoder} from '../src/printing/NodeQrMatrixEncoder.ts';
@@ -55,7 +56,7 @@ import {LoadDiagnostics} from '../src/development/LoadDiagnostics.ts';
 
 // Explicit alternative entry point. Production start-api never imports this module.
 try {
-  requireDummySso();
+  loadRuntimeEnvironment();requireDummySso();
   const port = Number(process.env.GATEPASS_DUMMY_PORT ?? '8443'); if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('INVALID_LOCAL_PORT');
   const origin = `http://localhost:${port}`;
   const pwaAssets=await loadPwaAssets();
@@ -74,8 +75,9 @@ try {
     readFile(new URL('../src/app/visitor-components.js', import.meta.url), 'utf8'),
     ...['toast-notifications.js','select-control.js','reception.html','reception.css','reception.js','reception-print.html','staff-entry.html','staff-entry.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')),
   ]);
+  const validityScript=await readFile(new URL('../src/app/validity-display.js',import.meta.url),'utf8');
   const cropScript=await readFile(new URL('../src/app/photo-crop.js',import.meta.url),'utf8');
-  const html = markup.replace('__APP_STYLES__',()=>globalStyles+'\n'+styles).replace('__APP_SCRIPT__',()=>phoneLibrary+'\n'+visitorComponents+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+cropScript+'\n'+script);
+  const html = markup.replace('__APP_STYLES__',()=>globalStyles+'\n'+styles).replace('__APP_SCRIPT__',()=>validityScript+'\n'+phoneLibrary+'\n'+visitorComponents+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+cropScript+'\n'+script);
   const liveRefreshScript=await readFile(new URL('../src/app/live-refresh.js',import.meta.url),'utf8');
   const actionScript=await readFile(new URL('../src/app/action-centre.js',import.meta.url),'utf8');
   const imageViewerScript=await readFile(new URL('../src/app/image-viewer.js',import.meta.url),'utf8');
@@ -85,21 +87,21 @@ try {
   const [adminMarkup,adminStyles,adminScript]=await Promise.all(['admin.html','admin.css','admin.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')));
   const exportWorker=await readFile(new URL('../src/app/register-export-worker.js',import.meta.url),'utf8');
   const exportWorkerUrl='/assets/register-export-'+createHash('sha256').update(exportWorker).digest('hex').slice(0,16)+'.js';
-  const adminHtml=adminMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+adminStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>toastScript+'\n'+selectScript+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+adminScript.replace('__REGISTER_EXPORT_WORKER__',exportWorkerUrl)+'\n'+imageViewerScript);
+  const adminHtml=adminMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+adminStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>validityScript+'\n'+toastScript+'\n'+selectScript+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+adminScript.replace('__REGISTER_EXPORT_WORKER__',exportWorkerUrl)+'\n'+imageViewerScript);
   const guardI18n=await readFile(new URL('../src/app/guard-i18n.js',import.meta.url),'utf8');
   const guardNames=await readFile(new URL('../src/app/guard-names.js',import.meta.url),'utf8');
   const [guardMarkup,guardStyles,guardScript,qrDecoder]=await Promise.all(['../src/app/guard.html','../src/app/guard.css','../src/app/guard.js','../node_modules/@zxing/library/umd/index.min.js'].map(name=>readFile(new URL(name,import.meta.url),'utf8')));
   const qrDecoderUrl='/assets/qr-decoder-'+createHash('sha256').update(qrDecoder).digest('hex').slice(0,16)+'.js';
   const qrLoader=(await readFile(new URL('../src/app/qr-decoder.js',import.meta.url),'utf8')).replace('__QR_DECODER_URL__',qrDecoderUrl);
-  const guardHtml=guardMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+guardStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>qrLoader+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+guardI18n+'\n'+guardNames+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+guardScript+'\n'+imageViewerScript);
+  const guardHtml=guardMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+guardStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>validityScript+'\n'+qrLoader+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+guardI18n+'\n'+guardNames+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+guardScript+'\n'+imageViewerScript);
   const staffStyles=await readFile(new URL('../src/app/staff-entry.css',import.meta.url),'utf8');
   const staffBrand=(await readFile(new URL('../assets/brand/gatepass-logo.png',import.meta.url))).toString('base64');
-  const staffHtml=staffMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+staffStyles).replace('__GATEPASS_LOGO__',staffBrand).replace('__SCRIPT__',()=>toastScript+'\n'+staffScript);
+  const staffHtml=staffMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+staffStyles).replace('__GATEPASS_LOGO__',staffBrand).replace('__SCRIPT__',()=>validityScript+'\n'+toastScript+'\n'+staffScript);
   const receptionPrintState=await readFile(new URL('../src/app/reception-print-state.js',import.meta.url),'utf8');
-  const receptionHtml=receptionMarkup.replace('__STYLES__',()=>globalStyles+'\n'+receptionStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>qrLoader+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+receptionPrintState+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+receptionScript+'\n'+imageViewerScript);
+  const receptionHtml=receptionMarkup.replace('__STYLES__',()=>globalStyles+'\n'+receptionStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>validityScript+'\n'+qrLoader+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+receptionPrintState+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+receptionScript+'\n'+imageViewerScript);
   const companyLogo = (await readFile(new URL('../assets/brand/sopra-steria-logo.png', import.meta.url))).toString('base64');
   const [emailMarkup,emailScript]=await Promise.all(['email-request.html','email-request.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')));
-  const emailHtml=emailMarkup.replace('__GLOBAL_STYLES__',()=>globalStyles).replace('__EMAIL_SCRIPT__',()=>emailScript);
+  const emailHtml=emailMarkup.replace('__GLOBAL_STYLES__',()=>globalStyles).replace('__EMAIL_SCRIPT__',()=>validityScript+'\n'+emailScript);
   const officeImage=await readFile(new URL('../assets/locations/office-background.png',import.meta.url));
   const countryFlags=new Map(await Promise.all(getCountries().map(async code=>[code.toLowerCase(),await readFile(new URL('../node_modules/flag-icons/flags/4x3/'+(code==='AC'?'sh-ac':code==='TA'?'sh-ta':code.toLowerCase())+'.svg',import.meta.url))] as const)));
   const officeContext=new OfficeEntryContext(randomBytes(32));
@@ -117,6 +119,7 @@ try {
   const [organisationLogoPng,applicationLogoPng,organisationIconPng]=await Promise.all(['sopra-steria-logo.png','gatepass-logo.png','sopra-steria-icon.png'].map(name=>readFile(new URL('../assets/brand/'+name,import.meta.url))));
   const thumbnails=new PhotoThumbnails(sharp);
   const cardRenderer=new PassCardRenderer(new NodeQrMatrixEncoder(),{organisationLogoPng,applicationLogoPng,organisationIconPng});
+  const publicCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,svg=>rasterizeCardPng(sharp,svg),'PUBLIC');
   const ownCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,svg=>rasterizeCardPng(sharp,svg));
   const receptionReads=new VisitReadService(new SqlVisitReadRepository(client,'api'));
   const receptionPhotos=new VisitPhotoService(new SqlVisitReadRepository(client,'media'),storage.photos);
@@ -127,7 +130,7 @@ try {
   const emailService=new EmailWorkflowService(client,await localEmailLinks(storage.root));
   const employeeRequestCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,svg=>rasterizeCardPng(sharp,svg),'REQUEST');
   const externalRequestCards=new OwnDigitalIdCardService(client,storage.keys,storage.photos,cardRenderer,svg=>rasterizeCardPng(sharp,svg),'EMAIL');
-  const manualRegistration=new ReceptionRegistrationRoutes(staffEntry,new ReceptionService(client),registration,randomBytes(32),client);
+  const manualRegistration=new ReceptionRegistrationRoutes(staffEntry,new ReceptionService(client),registration,randomBytes(32),client,(ctx,id)=>publicCards.image({sessionToken:ctx.intakeToken,csrfToken:ctx.intakeCsrfToken},id,undefined,ctx.intakeId));
   // Explicit opt-in only: public Input Tools is an experimental display aid.
   const nameReadings=await localNameReadings(storage.root);
   const adminConsole=new AdminConsoleService(client),duties=new GuardDutyService(client),receptionWorkspace=new ReceptionService(client);
@@ -152,7 +155,7 @@ try {
     return topics;
   });
   const routes = [new ActionCentreRoutes(staffEntry,sso,new ActionCentreService(client)),events,manualRegistration,new EmailWorkflowRoutes(sso,emailService,receptionPhotos,employeeRequestCards,externalRequestCards),staffEntry,new GuardRoutes(staffEntry,new GuardWorkspaceService(client),receptionReads,receptionPhotos,duties,new HostReminderService(client),nameReadings,thumbnails,new GuardThumbnailService(client,storage.photos,thumbnails)),new AdminRoutes(staffEntry,new AdminWorkspaceService(client),new StaffAdministrationService(new SqlStaffAdministrationRepository(client)),duties,new AdministrationReadService(new SqlAdministrationReadRepository(client)),adminConsole,receptionReads,organisationIconPng,sharp),reception,new DummySsoRoutes(sso,{localHttp:true}),
-    new RegistrationHttpRoutes(registration,randomBytes(32),sso,{localHttp:true,allowedTypes:['DIGITAL_ID','EXTERNAL','EMPLOYEE_PROJECT'],office:req=>officeContext.read(req)}),
+    new RegistrationHttpRoutes(registration,randomBytes(32),sso,{localHttp:true,allowedTypes:['DIGITAL_ID','EXTERNAL','EMPLOYEE_PROJECT'],card:async(ctx,id)=>{try{return await publicCards.image({sessionToken:ctx.intakeToken,csrfToken:ctx.intakeCsrfToken},id,undefined,ctx.intakeId);}catch(e){throw new HttpFailure(e instanceof OwnCardError?e.status:503);}},office:req=>officeContext.read(req)}),
     new EmployeeDigitalIdRoutes(sso,new VisitReadService(new SqlVisitReadRepository(client,'api')),ownCards)];
   const api = createLoopbackHttpHandler(origin,{handles:path=>routes.some(route=>route.handles(path)),handle:(req,res)=>{
     const route=routes.find(route=>route.handles(req.url??''));if(!route)throw new Error('UNKNOWN_ROUTE');return route.handle(req,res);

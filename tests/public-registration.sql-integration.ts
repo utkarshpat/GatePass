@@ -44,18 +44,18 @@ try {
     assert.equal(page.headers['permissions-policy'],'camera=(self), microphone=(), geolocation=()');assert.match(page.headers['content-security-policy'],/img-src 'self'/u);
     const asset=await call('/assets/office-background.png',{},'GET');assert.equal(asset.status,200);assert.equal(digest(asset.raw),digest(await readFile(new URL('../assets/locations/office-background.png',import.meta.url))));
   });
-  let options:any,project:any,host:any;
-  await check('public visitor intake resolves office, current date and project options from SQL',async()=>{options=await start('EXTERNAL');assert.equal(options.locationCode,'NOIDA');assert.ok(options.projects.length);project=options.projects.find((row:any)=>row.projectCode==='DEMO-PRJ-001');assert.ok(project,'Use the seeded project with fixture host memberships, independently of locally created project ordering.');});
+  let options:any,host:any;
+  await check('public visitor intake resolves office, current date and project options from SQL',async()=>{options=await start('EXTERNAL');assert.equal(options.locationCode,'NOIDA');assert.equal(options.projects.length,0);});
   await check('host name/email search is limited to requested project and office',async()=>{
-    const result=await call('/api/registration/options',{projectLocationId:project.projectLocationId,search:'employee'});assert.equal(result.status,200,JSON.stringify(result.body));assert.ok(result.body.hosts.length);host=result.body.hosts[0];assert.ok(host.officialEmail.endsWith('@example.com'));
-    assert.equal((await call('/api/registration/options',{projectLocationId:'999999999',search:'employee'})).status,403);
+    const result=await call('/api/registration/options',{search:'employee1@example.com'});assert.equal(result.status,200,JSON.stringify(result.body));assert.ok(result.body.hosts.length);host=result.body.hosts[0];assert.ok(host.officialEmail.endsWith('@example.com'));
+    assert.equal((await call('/api/registration/options',{projectLocationId:'999999999',search:'employee'})).status,400);
   });
   const sharp=createRequire(import.meta.url)(process.env.GATEPASS_SHARP_PATH??join(homedir(),'.cache','codex-runtimes','codex-primary-runtime','dependencies','node','node_modules','sharp'));
   const image=await sharp({create:{width:160,height:200,channels:3,background:'#776655'}}).jpeg().toBuffer();
   const people=[];
   for(let index=0;index<2;index++){const uploaded=await call('/api/registration/photo',image);assert.equal(uploaded.status,200);photos.add(uploaded.body.photoAssetId);people.push({clientPersonKey:randomUUID(),photoAssetId:uploaded.body.photoAssetId,name:'Integration Visitor '+index,phone:'+91987654321'+index,email:'visitor'+index+'@example.com'});}
   const tomorrow=new Date(Date.parse(options.currentDate+'T12:00:00.000Z')+86400000).toISOString().slice(0,10);
-  const payload={clientKey:randomUUID(),requestType:'EXTERNAL',projectLocationId:project.projectLocationId,hostEmployeeId:host.employeeId,reason:'Business meeting',visitDate:tomorrow,people};
+  const payload={clientKey:randomUUID(),requestType:'EXTERNAL',hostEmployeeId:host.employeeId,reason:'Business meeting',validUntilDate:tomorrow,people:[people[0]]};
   await check('visitor cannot override QR office, send raw timestamps or use a past date',async()=>{
     assert.equal((await submit({...payload,locationId:options.locationId})).status,400);
     assert.equal((await submit({...payload,validUntilUtc:'2099-01-01T00:00:00.000Z'})).status,400);
@@ -63,18 +63,19 @@ try {
   });
   await check('final SQL submission rejects a host who does not belong to requested project',async()=>{
     const directory=JSON.parse(await readFile(new URL('../database/development/directory-fixtures.json',import.meta.url),'utf8'));
-    const wrong=directory.employees.find((row:any)=>row.isActive&&!row.projectCodes.includes(project.projectCode));assert.ok(wrong);
+    const wrong=directory.employees.find((row:any)=>row.isActive&&!row.locationCodes.includes('NOIDA'));assert.ok(wrong);
     const result=await submit({...payload,hostEmployeeId:wrong.employeeId});assert.ok([403,503].includes(result.status),JSON.stringify(result.body));
   });
   await check('every external participant needs a valid mobile while visitor email stays optional',async()=>{
     for(const phone of [undefined,null,'','+91123']){
-      const changed=people.map((person,index)=>index===1?{...person,phone}:person);
+      const changed=[{...people[0],phone}];
       assert.equal((await submit({...payload,people:changed})).status,400,'Missing or invalid participant mobile must reject the group.');
     }
   });
-  await check('future-date group visitor submission creates two independent pending visits and same-key retry returns them',async()=>{
-    const first=await submit(payload);assert.equal(first.status,200,JSON.stringify(first.body));assert.equal(first.body.visits.length,2);assert.ok(first.body.visits.every((row:any)=>row.status==='PENDING'));
+  await check('two individual registrations create independent pending visits and same-key retry returns them',async()=>{
+    const first=await submit(payload);assert.equal(first.status,200,JSON.stringify(first.body));assert.equal(first.body.visits.length,1);assert.ok(first.body.visits.every((row:any)=>row.status==='PENDING'));
     const retry=await submit(payload);assert.equal(retry.status,200);assert.deepEqual(retry.body.visits,first.body.visits);for(const row of first.body.visits)visits.push(row.visitRequestId);
+    await start('EXTERNAL');const secondPhoto=await call('/api/registration/photo',image);assert.equal(secondPhoto.status,200);photos.add(secondPhoto.body.photoAssetId);people[1].photoAssetId=secondPhoto.body.photoAssetId;const second=await submit({...payload,clientKey:randomUUID(),people:[people[1]]});assert.equal(second.status,200,JSON.stringify(second.body));visits.push(second.body.visits[0].visitRequestId);
   });
   await check('changing office entry cannot silently move an existing intake to another office',async()=>{
     assert.equal((await call('/office/pune',{},'GET')).status,200);assert.equal((await call('/api/registration/options')).status,403);assert.equal((await call('/office/noida',{},'GET')).status,200);
@@ -137,7 +138,7 @@ try {
     const projectDuty=roster.body.duties.find((d:any)=>d.kind==='PROJECT'&&d.name==='Project 1'),commonDuty=roster.body.duties.find((d:any)=>d.kind==='COMMON');assert.ok(projectDuty&&commonDuty);
     const scope={locationId,dutyKind:'PROJECT',dutyId:projectDuty.dutyId},commonScope={locationId,dutyKind:'COMMON',dutyId:commonDuty.dutyId};
     const queueInput={...scope,queue:'EXPECTED',search:'',offset:0};
-    const expected=await call('/api/guard/visitors',queueInput);assert.equal(expected.status,200,JSON.stringify(expected.body));assert.ok(expected.body.visitors.some((v:any)=>v.visitRequestId===digitalId));assert.ok(!expected.body.visitors.some((v:any)=>visits.slice(0,2).includes(v.visitRequestId)));
+    const expected=await call('/api/guard/visitors',queueInput);assert.equal(expected.status,200,JSON.stringify(expected.body));assert.ok(expected.body.visitors.some((v:any)=>v.visitRequestId===digitalId));assert.ok(expected.body.visitors.some((v:any)=>visits.slice(0,2).includes(v.visitRequestId)));
     const ownProjects=expected.body.visitors.find((v:any)=>v.visitRequestId===digitalId).employeeProjects;assert.equal(ownProjects.available,true);assert.equal(ownProjects.total,employee.projects.length);
     const extraDuty=roster.body.duties.find((d:any)=>d.kind==='PROJECT'&&d.name==='Project 2');assert.ok(extraDuty);
     const extraScope={locationId,dutyKind:'PROJECT',dutyId:extraDuty.dutyId};
@@ -171,8 +172,8 @@ try {
   });
   await check('reception daily search and status filtering remain inside assigned office',async()=>{
     const locationId=receptionContext.locations[0].locationId;
-    const all=await call('/api/reception/list',{locationId,visitDate:tomorrow,search:'Integration Visitor',status:'PENDING'});assert.equal(all.status,200,JSON.stringify(all.body));assert.equal(all.body.visits.length,2);receptionVisit=all.body.visits[0];assert.equal(receptionVisit.printCount,0);
-    assert.equal((await call('/api/reception/list',{locationId:locationId===1?2:1,visitDate:tomorrow})).status,403);
+    const all=await call('/api/reception/list',{locationId,visitDate:options.currentDate,search:'Integration Visitor',status:'PENDING'});assert.equal(all.status,200,JSON.stringify(all.body));assert.equal(all.body.visits.length,2);receptionVisit=all.body.visits[0];assert.equal(receptionVisit.printCount,0);
+    assert.equal((await call('/api/reception/list',{locationId:locationId===1?2:1,visitDate:options.currentDate})).status,403);
     const empty=await call('/api/reception/list',{locationId,search:'nobody-'+randomUUID()});assert.equal(empty.status,200,JSON.stringify(empty.body));assert.equal(empty.body.visits.length,0);
     assert.equal((await call('/api/reception/list',{locationId,actorId:randomUUID()})).status,400);
   });
@@ -180,7 +181,7 @@ try {
     const detail=await call('/api/reception/detail',{visitRequestId:receptionVisit.visitRequestId});assert.equal(detail.status,200);assert.equal(detail.body.status,'PENDING');
     const photo=await call('/api/reception/photo',{visitRequestId:receptionVisit.visitRequestId});assert.equal(photo.status,200);assert.equal(photo.body.mimeType,'image/jpeg');
     const preview=await call('/api/reception/preview',{visitRequestId:receptionVisit.visitRequestId});assert.equal(preview.status,200,JSON.stringify(preview.body));assert.equal(preview.body.mimeType,'image/png');const metadata=await sharp(Buffer.from(preview.body.imageBase64,'base64')).metadata();assert.equal(metadata.width,1712);
-    assert.equal((await call('/api/reception/list',{locationId:receptionContext.locations[0].locationId,visitDate:tomorrow,search:receptionVisit.publicReference})).body.visits[0].printCount,0);
+    assert.equal((await call('/api/reception/list',{locationId:receptionContext.locations[0].locationId,visitDate:options.currentDate,search:receptionVisit.publicReference})).body.visits[0].printCount,0);
   });
   await check('pending card print request is idempotent, dispatched once and reprint is separately audited',async()=>{
     const body={clientKey:randomUUID(),visitRequestId:receptionVisit.visitRequestId,expectedPassId:receptionVisit.accessPassId,printerLabel:'Integration browser handoff'};
@@ -190,7 +191,7 @@ try {
     assert.equal((await call('/api/reception/print/render',{printJobId:first.body.printJobId})).status,409);
     const reprint=await call('/api/reception/print/request',{...body,clientKey:randomUUID()});assert.equal(reprint.status,200);assert.equal(reprint.body.printReason,'REPRINT');assert.notEqual(reprint.body.printJobId,first.body.printJobId);
     assert.equal((await call('/api/reception/print/render',{printJobId:reprint.body.printJobId})).status,200);
-    const result=await call('/api/reception/list',{locationId:receptionContext.locations[0].locationId,visitDate:tomorrow,search:receptionVisit.publicReference});assert.equal(result.body.visits[0].printCount,2);
+    const result=await call('/api/reception/list',{locationId:receptionContext.locations[0].locationId,visitDate:options.currentDate,search:receptionVisit.publicReference});assert.equal(result.body.visits[0].printCount,2);
     assert.equal((await call('/api/staff/logout')).status,200);assert.equal((await call('/api/reception/me')).status,401);
   });
    let approval:any,denial:any,externalLink:string;

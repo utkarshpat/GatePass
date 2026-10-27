@@ -1,3 +1,5 @@
+> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+
 # Local dummy employee SSO and manager profile
 
 Real corporate SSO is deferred until the organization's configuration is available, as requested. The local simulator lets the existing synthetic employees sign in without provider keys and exercise actual SQL sessions and authorization. It is a development identity selector, not an implementation of an OpenID Connect provider.

@@ -1,3 +1,5 @@
+> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+
 # Registration HTTP and SSO boundary
 
 Historical registration-transport increment (185 tests). The [local dummy employee SSO increment](21_Local_Dummy_Employee_SSO.md) records the current 200-test state and development-only authentication now authorized by the user. Real corporate SSO integration is deferred to the final integration stage.

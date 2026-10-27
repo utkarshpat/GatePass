@@ -14,5 +14,5 @@ export function registrationDates(type:ProductRequestType,visitDate:unknown,curr
   if(type==='DIGITAL_ID')return {};
   const selected=type==='EXTERNAL'?day(visitDate):today;
   if(selected<today||selected>maximum)throw new RegistrationError('INVALID_INPUT');
-  return {validFromUtc:new Date(selected-330*60000).toISOString(),validUntilUtc:new Date(selected+86400000-330*60000).toISOString()};
+  return {validFromUtc:new Date(today-330*60000).toISOString(),validUntilUtc:new Date(selected+86400000-330*60000).toISOString()};
 }

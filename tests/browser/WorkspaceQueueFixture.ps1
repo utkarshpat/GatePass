@@ -1,5 +1,5 @@
 #Requires -Version 7.0
-[CmdletBinding()]param([Parameter(Mandatory)][guid]$RunId,[ValidateSet('Create','Cleanup')][string]$Action,[ValidateRange(1000,10000)][int]$Rows=1000)
+[CmdletBinding()]param([Parameter(Mandatory)][guid]$RunId,[ValidateSet('Create','Cleanup')][string]$Action,[ValidateRange(1,10000)][int]$Rows=1000)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 $root=Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if($Action -eq 'Cleanup'){

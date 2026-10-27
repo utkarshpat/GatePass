@@ -15,6 +15,7 @@
     "test:guard-movement": "node --test tests/guard-movement.test.ts",
     "test:transport": "node --test tests/http-api.test.ts tests/sql-procedure-client.test.ts tests/api-composition.test.ts tests/registration-http.test.ts",
     "test": "node --test --test-concurrency=4 tests/*.test.ts",
+    "check:config": "node tools/check-configuration.ts",
     "start:api": "node tools/start-api.ts",
     "dev:sso": "node tools/launch-dummy-sso.mjs",
     "test:dummy-sso": "node --test tests/dummy-sso.test.ts",

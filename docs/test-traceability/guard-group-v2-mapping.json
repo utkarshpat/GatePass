@@ -11,27 +11,31 @@
       "P1": 22
     },
     "mappingCounts": {
-      "PARTIAL": 36,
+      "PARTIAL": 32,
       "POLICY_ALIGNMENT": 4,
-      "MAPPED": 20,
-      "GAP": 13,
+      "MAPPED": 26,
+      "GAP": 11,
       "OUT_OF_SCOPE": 3
     },
     "p0MappingCounts": {
-      "PARTIAL": 29,
-      "MAPPED": 12,
+      "PARTIAL": 25,
+      "MAPPED": 18,
       "OUT_OF_SCOPE": 1,
-      "GAP": 10,
+      "GAP": 8,
       "POLICY_ALIGNMENT": 2
     },
-    "freshApplicationTestExecutions": 0,
-    "databaseOrAppCodeChanged": false,
+    "freshApplicationTestExecutions": 345,
+    "databaseOrAppCodeChanged": true,
     "databaseSeparationPerformed": false,
     "refactorStarted": false,
     "knownBroadSuiteResult": {
-      "passed": 317,
-      "failed": 1,
-      "failure": "Existing register/export SQL command timeout; isolated repeats passed; remains open."
+      "passed": 345,
+      "failed": 0,
+      "skipped": 0,
+      "artifact": "output/presentation-final-26-oct/465f90ae515d4a2ca47e9b06fb40680f/browser-all.xml",
+      "sha256": "0f47d3ac67419970b8eace0678b75af2b0a22f77723923c41c772fef412afdab",
+      "report": "docs/84_Final_Browser_Verification_And_Retained_Presentation_26_October_2026.md",
+      "note": "Fresh full suite with retained presentation enabled; 16.5 minutes, one worker, zero retries."
     },
     "uiLocationFollowUp": {
       "report": "docs/82_Project_Group_Management_Location_26_October_2026.md",
@@ -41,7 +45,39 @@
       "unitSkipped": 1,
       "catalogueStatusesChanged": false,
       "note": "Original mapping summary fields describe the earlier mapping-only operation. This follow-up relocates UI and refreshes browser evidence; catalogue cases remain Not Run."
-    }
+    },
+    "catalogueExecutionCounts": {
+      "Not Run": 70,
+      "Pass": 6
+    },
+    "latestFollowUp": {
+      "report": "docs/83_P0_Group_Boundaries_Stable_Refresh_And_Export_Memory_26_October_2026.md",
+      "closedCatalogueCases": [
+        "GP-0612",
+        "GP-0621",
+        "GP-0622",
+        "GP-0623",
+        "GP-0624",
+        "GP-0625"
+      ],
+      "sqlSupportingCatalogueCases": [
+        "GP-0634",
+        "GP-0639",
+        "GP-0640"
+      ],
+      "inputArchiveAndExcelUnchanged": true
+    },
+    "previousBroadSuiteResults": [
+      {
+        "passed": 344,
+        "failed": 1,
+        "skipped": 0,
+        "failure": "Audit pagination assumption in onboarding test; corrected, repeated native tests pass in separately recorded evidence.",
+        "correctedTestRepeatArtifact": "output/group-p0-refresh/23028bca90a740ffa93a2e25e8581997/onboarding-export-repeat.xml",
+        "correctedTestAndExportRepeatsPassed": 9,
+        "artifact": "output/group-p0-refresh/23028bca90a740ffa93a2e25e8581997/browser-all-final.xml"
+      }
+    ]
   },
   "statusDefinitions": {
     "MAPPED": "Expected core outcome has explicit existing assertions; fixture names may differ. This is not a fresh catalogue execution PASS.",
@@ -1406,6 +1442,172 @@
       "sourceSha256": "e71f37efd64ae81e94ffb0fe20acd8f04c19ac2d9550c18ffbc59664f7f68713",
       "historicalSourceHashMatches": true,
       "evidenceStatus": "IMPLEMENTATION_ONLY_NOT_TEST_EVIDENCE"
+    },
+    "N_HTTP_ROLE": {
+      "kind": "browser",
+      "path": "tests/browser/project-group-authority-live.spec.ts",
+      "title": "actual group HTTP endpoints deny guard, reception, project-only, CSRF and unauthenticated requests",
+      "line": 14,
+      "assertionAnchors": [
+        {
+          "line": 14,
+          "anchor": "test('actual group HTTP endpoints deny guard, reception, project-only, CSRF and unauthenticated requests"
+        }
+      ],
+      "sourceSha256": "13de0f3f44d55c8dbb1d6f8ab1c0ddca5329943d23312b0e432bbef539a9f042",
+      "currentRunSourceHashMatches": true,
+      "currentNativeTests": [
+        "actual group HTTP endpoints deny guard, reception, project-only, CSRF and unauthenticated requests"
+      ],
+      "artifact": {
+        "path": "output/group-p0-refresh/23028bca90a740ffa93a2e25e8581997/browser-all-final.xml",
+        "sha256": "468bccdc862ee7d1882353f8b1d208bd5b08bdeddf69654398893d58c6786921",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_PASS_SOURCE_MATCH"
+    },
+    "N_HTTP_IDOR": {
+      "kind": "browser",
+      "path": "tests/browser/project-group-authority-live.spec.ts",
+      "title": "actual group HTTP endpoints reject foreign office/group IDs and another existing group binding",
+      "line": 29,
+      "assertionAnchors": [
+        {
+          "line": 29,
+          "anchor": "test('actual group HTTP endpoints reject foreign office/group IDs and another existing group binding"
+        }
+      ],
+      "sourceSha256": "13de0f3f44d55c8dbb1d6f8ab1c0ddca5329943d23312b0e432bbef539a9f042",
+      "currentRunSourceHashMatches": true,
+      "currentNativeTests": [
+        "actual group HTTP endpoints reject foreign office/group IDs and another existing group binding"
+      ],
+      "artifact": {
+        "path": "output/group-p0-refresh/23028bca90a740ffa93a2e25e8581997/browser-all-final.xml",
+        "sha256": "468bccdc862ee7d1882353f8b1d208bd5b08bdeddf69654398893d58c6786921",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_PASS_SOURCE_MATCH"
+    },
+    "N_HTTP_SCAN": {
+      "kind": "browser",
+      "path": "tests/browser/project-group-authority-live.spec.ts",
+      "title": "GP-0612 actual HTTP ENTRY rejects an already verified pass after group membership revocation",
+      "line": 45,
+      "assertionAnchors": [
+        {
+          "line": 45,
+          "anchor": "test('GP-0612 actual HTTP ENTRY rejects an already verified pass after group membership revocation"
+        }
+      ],
+      "sourceSha256": "13de0f3f44d55c8dbb1d6f8ab1c0ddca5329943d23312b0e432bbef539a9f042",
+      "currentRunSourceHashMatches": true,
+      "currentNativeTests": [
+        "GP-0612 actual HTTP ENTRY rejects an already verified pass after group membership revocation"
+      ],
+      "artifact": {
+        "path": "output/group-p0-refresh/23028bca90a740ffa93a2e25e8581997/browser-all-final.xml",
+        "sha256": "468bccdc862ee7d1882353f8b1d208bd5b08bdeddf69654398893d58c6786921",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_PASS_SOURCE_MATCH"
+    },
+    "N_SQL_REVOKE": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroupBoundaries.ps1",
+      "title": "GP-0612: scanned credential loses ENTRY after membership revocation in the same session",
+      "line": 66,
+      "assertionAnchors": [
+        {
+          "line": 66,
+          "anchor": "foreach($action in @('membership','binding','archive'))"
+        }
+      ],
+      "sourceSha256": "d8be2fd45a4f9a6c8cae3e6ace98e83268ff5dc732eb13c596d3b28c1206eaef",
+      "currentRunSourceHashMatches": true,
+      "currentNativeTests": [
+        "GP-0612: scanned credential loses ENTRY after membership revocation in the same session",
+        "GP-0612: scanned credential loses ENTRY after binding revocation in the same session",
+        "GP-0612: scanned credential loses ENTRY after archive revocation in the same session"
+      ],
+      "artifact": {
+        "path": "output/group-p0-refresh/23028bca90a740ffa93a2e25e8581997/group-boundaries-final.json",
+        "sha256": "7c4f49cb16aa75b535e25bdebbee9569798dd6524dcbc8df9ad9f9b33338b094",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_PASS_SOURCE_MATCH"
+    },
+    "N_SQL_RACE": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroupBoundaries.ps1",
+      "title": "GP-0639: revoke queued before ENTRY denies the waiting mutation",
+      "line": 71,
+      "assertionAnchors": [
+        {
+          "line": 71,
+          "anchor": "Case 'GP-0639: revoke"
+        }
+      ],
+      "sourceSha256": "d8be2fd45a4f9a6c8cae3e6ace98e83268ff5dc732eb13c596d3b28c1206eaef",
+      "currentRunSourceHashMatches": true,
+      "currentNativeTests": [
+        "GP-0639: revoke queued before ENTRY denies the waiting mutation",
+        "GP-0639: ENTRY queued before revoke commits once and revoke removes future authority"
+      ],
+      "artifact": {
+        "path": "output/group-p0-refresh/23028bca90a740ffa93a2e25e8581997/group-boundaries-final.json",
+        "sha256": "7c4f49cb16aa75b535e25bdebbee9569798dd6524dcbc8df9ad9f9b33338b094",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_PASS_SOURCE_MATCH"
+    },
+    "N_SQL_EDIT_REMOVE": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroupBoundaries.ps1",
+      "title": "GP-0640: membership edit races with group deallocation, edit queued first",
+      "line": 86,
+      "assertionAnchors": [
+        {
+          "line": 86,
+          "anchor": "foreach($first in @('edit','remove'))"
+        }
+      ],
+      "sourceSha256": "d8be2fd45a4f9a6c8cae3e6ace98e83268ff5dc732eb13c596d3b28c1206eaef",
+      "currentRunSourceHashMatches": true,
+      "currentNativeTests": [
+        "GP-0640: membership edit races with group deallocation, edit queued first",
+        "GP-0640: membership edit races with group deallocation, remove queued first"
+      ],
+      "artifact": {
+        "path": "output/group-p0-refresh/23028bca90a740ffa93a2e25e8581997/group-boundaries-final.json",
+        "sha256": "7c4f49cb16aa75b535e25bdebbee9569798dd6524dcbc8df9ad9f9b33338b094",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_PASS_SOURCE_MATCH"
+    },
+    "N_SQL_ROLLBACK": {
+      "kind": "sql",
+      "path": "database/tests/Test-ProjectGroupBoundaries.ps1",
+      "title": "GP-0634: injected PROJECT_GROUP_CHANGED audit failure rolls back all writes and the idempotency receipt",
+      "line": 99,
+      "assertionAnchors": [
+        {
+          "line": 99,
+          "anchor": "foreach($faultAction in @('PROJECT_GROUP_CHANGED'"
+        }
+      ],
+      "sourceSha256": "d8be2fd45a4f9a6c8cae3e6ace98e83268ff5dc732eb13c596d3b28c1206eaef",
+      "currentRunSourceHashMatches": true,
+      "currentNativeTests": [
+        "GP-0634: injected PROJECT_GROUP_CHANGED audit failure rolls back all writes and the idempotency receipt",
+        "GP-0634: injected PROJECT_GROUP_GUARD_CHANGED audit failure rolls back all writes and the idempotency receipt"
+      ],
+      "artifact": {
+        "path": "output/group-p0-refresh/23028bca90a740ffa93a2e25e8581997/group-boundaries-final.json",
+        "sha256": "7c4f49cb16aa75b535e25bdebbee9569798dd6524dcbc8df9ad9f9b33338b094",
+        "availability": "local-existing-artifact"
+      },
+      "evidenceStatus": "CURRENT_PASS_SOURCE_MATCH"
     }
   },
   "cases": [
@@ -2140,15 +2342,18 @@
       "feature": "Effective permissions",
       "expectedResult": "Entry action forbidden; no movement persisted",
       "requestedExecutionLevel": "API+DB",
-      "catalogueExecutionStatus": "Not Run",
-      "mappingStatus": "GAP",
+      "catalogueExecutionStatus": "Pass",
+      "mappingStatus": "MAPPED",
       "referenceIds": [
         "S12",
-        "G_MOVE"
+        "G_MOVE",
+        "N_HTTP_SCAN",
+        "N_SQL_REVOKE"
       ],
-      "assertedNow": "Group revoke aur movement authorization baseline tests alag hain.",
-      "remainingWork": "Scan valid, group revoke commit, phir ENTRY deny aur zero movement event explicitly test karo.",
-      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+      "assertedNow": "Real HTTP verify ke baad membership revoke aur same-session ENTRY403; DB access events/inside0.",
+      "remainingWork": "Targeted API+DB expected result executed and passed; see current native evidence.",
+      "evidenceLabel": "Fresh real HTTP + SQL inspection PASS; synthetic invocation-owned fixtures.",
+      "previousExecutionStatus": "Not Run"
     },
     {
       "testId": "GP-0613",
@@ -2325,14 +2530,16 @@
       "feature": "API & RBAC",
       "expectedResult": "403; no DB mutation",
       "requestedExecutionLevel": "API+DB",
-      "catalogueExecutionStatus": "Not Run",
-      "mappingStatus": "GAP",
+      "catalogueExecutionStatus": "Pass",
+      "mappingStatus": "MAPPED",
       "referenceIds": [
-        "C_OFFICE"
+        "C_OFFICE",
+        "N_HTTP_ROLE"
       ],
-      "assertedNow": "Current office GUARDS_MANAGE requirement reception mutations ko disallow karti hai.",
-      "remainingWork": "Authenticated reception token se create/edit/archive/assign/remove 403 aur unchanged DB test karo.",
-      "evidenceLabel": "Implementation-only context; no direct executable assertion/run evidence mapped."
+      "assertedNow": "Reception ke read/create/edit/assign HTTP403; before/after group/member/binding/child state unchanged.",
+      "remainingWork": "Targeted API+DB expected result executed and passed; see current native evidence.",
+      "evidenceLabel": "Fresh real HTTP + SQL inspection PASS; synthetic invocation-owned fixtures.",
+      "previousExecutionStatus": "Not Run"
     },
     {
       "testId": "GP-0622",
@@ -2343,14 +2550,16 @@
       "feature": "API & RBAC",
       "expectedResult": "403; no DB mutation",
       "requestedExecutionLevel": "API+DB",
-      "catalogueExecutionStatus": "Not Run",
-      "mappingStatus": "PARTIAL",
+      "catalogueExecutionStatus": "Pass",
+      "mappingStatus": "MAPPED",
       "referenceIds": [
-        "S19"
+        "S19",
+        "N_HTTP_ROLE"
       ],
-      "assertedNow": "Guard token se group catalogue denial tested hai.",
-      "remainingWork": "Guard token ke all group mutation endpoints par 403 aur zero writes assert karo.",
-      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+      "assertedNow": "Guard token ke group edit/create/assign HTTP403; before/after business state unchanged.",
+      "remainingWork": "Targeted API+DB expected result executed and passed; see current native evidence.",
+      "evidenceLabel": "Fresh real HTTP + SQL inspection PASS; synthetic invocation-owned fixtures.",
+      "previousExecutionStatus": "Not Run"
     },
     {
       "testId": "GP-0623",
@@ -2361,14 +2570,16 @@
       "feature": "API & RBAC",
       "expectedResult": "401/appropriate auth response; no project/guard disclosure",
       "requestedExecutionLevel": "API+DB",
-      "catalogueExecutionStatus": "Not Run",
-      "mappingStatus": "PARTIAL",
+      "catalogueExecutionStatus": "Pass",
+      "mappingStatus": "MAPPED",
       "referenceIds": [
-        "H_AUTH"
+        "H_AUTH",
+        "N_HTTP_ROLE"
       ],
-      "assertedNow": "Shared HTTP unauthenticated session rejection tested hai.",
-      "remainingWork": "Named group endpoints par no-cookie/expired-cookie enumeration requests aur non-disclosure explicitly test karo.",
-      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+      "assertedNow": "Unauthenticated group endpoint HTTP401 with generic error only; no business mutation.",
+      "remainingWork": "Targeted API+DB expected result executed and passed; see current native evidence.",
+      "evidenceLabel": "Fresh real HTTP + SQL inspection PASS; synthetic invocation-owned fixtures.",
+      "previousExecutionStatus": "Not Run"
     },
     {
       "testId": "GP-0624",
@@ -2379,15 +2590,17 @@
       "feature": "API & RBAC",
       "expectedResult": "404/403; no foreign location details and no mutation",
       "requestedExecutionLevel": "API+DB",
-      "catalogueExecutionStatus": "Not Run",
-      "mappingStatus": "PARTIAL",
+      "catalogueExecutionStatus": "Pass",
+      "mappingStatus": "MAPPED",
       "referenceIds": [
         "S04",
-        "S19"
+        "S19",
+        "N_HTTP_IDOR"
       ],
-      "assertedNow": "Foreign-office members aur foreign-office catalogue denied hain.",
-      "remainingWork": "Own office body ke saath foreign group ID read/edit/archive/assign/remove IDOR matrix add karo.",
-      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+      "assertedNow": "Real foreign-office/group IDs403 with generic error; foreign binding409; authorized group state unchanged.",
+      "remainingWork": "Targeted API+DB expected result executed and passed; see current native evidence.",
+      "evidenceLabel": "Fresh real HTTP + SQL inspection PASS; synthetic invocation-owned fixtures.",
+      "previousExecutionStatus": "Not Run"
     },
     {
       "testId": "GP-0625",
@@ -2398,16 +2611,18 @@
       "feature": "API & RBAC",
       "expectedResult": "Server derives/checks scope and rejects unsafe relations",
       "requestedExecutionLevel": "API+DB",
-      "catalogueExecutionStatus": "Not Run",
-      "mappingStatus": "PARTIAL",
+      "catalogueExecutionStatus": "Pass",
+      "mappingStatus": "MAPPED",
       "referenceIds": [
         "U05",
         "S04",
-        "S19"
+        "S19",
+        "N_HTTP_ROLE"
       ],
-      "assertedNow": "Forged actor/unknown body keys aur invalid/foreign scope cases fail closed hain.",
-      "remainingWork": "Forged positive foreign office ID plus valid own-office group/guard combination mutation test karo.",
-      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+      "assertedNow": "Forged location403 and actor-field mass assignment400 on real endpoints; DB business state unchanged.",
+      "remainingWork": "Targeted API+DB expected result executed and passed; see current native evidence.",
+      "evidenceLabel": "Fresh real HTTP + SQL inspection PASS; synthetic invocation-owned fixtures.",
+      "previousExecutionStatus": "Not Run"
     },
     {
       "testId": "GP-0626",
@@ -2573,11 +2788,12 @@
       "catalogueExecutionStatus": "Not Run",
       "mappingStatus": "PARTIAL",
       "referenceIds": [
-        "S18"
+        "S18",
+        "N_SQL_ROLLBACK"
       ],
-      "assertedNow": "Rejected add old membership count preserve karta hai despite earlier transactional changes.",
-      "remainingWork": "Mid-materialization injected SQL failure ke baad members/children/revision/audit full rollback assert karo.",
-      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+      "assertedNow": "SQL API/runtime-role audit-fault rollback, no idempotency receipt and same-key retry pass. HTTP injected-fault composition separately pending.",
+      "remainingWork": "SQL API/runtime-role audit-fault rollback, no idempotency receipt and same-key retry pass. HTTP injected-fault composition separately pending.",
+      "evidenceLabel": "Fresh SQL boundary PASS supporting evidence; catalogue HTTP composition remains Not Run."
     },
     {
       "testId": "GP-0635",
@@ -2667,11 +2883,12 @@
       "mappingStatus": "GAP",
       "referenceIds": [
         "G_RACE",
-        "S12"
+        "S12",
+        "N_SQL_RACE"
       ],
-      "assertedNow": "Baseline two-entry race aur group revocation separately tested hain.",
-      "remainingWork": "Committed group revoke versus concurrent guard ENTRY under authorization lock ka exact race test add karo.",
-      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+      "assertedNow": "Both independently gated SQL ENTRY/revoke orders pass with committed-revoke denial. HTTP concurrency composition separately pending.",
+      "remainingWork": "Both independently gated SQL ENTRY/revoke orders pass with committed-revoke denial. HTTP concurrency composition separately pending.",
+      "evidenceLabel": "Fresh SQL boundary PASS supporting evidence; catalogue HTTP composition remains Not Run."
     },
     {
       "testId": "GP-0640",
@@ -2686,11 +2903,12 @@
       "mappingStatus": "GAP",
       "referenceIds": [
         "S17",
-        "S18"
+        "S18",
+        "N_SQL_EDIT_REMOVE"
       ],
-      "assertedNow": "Multi-guard edit aur role eligibility rollback separately tested hain.",
-      "remainingWork": "Concurrent group edit versus guard-office revocation/binding removal ka no-restored-access test add karo.",
-      "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+      "assertedNow": "Both SQL edit/remove orders, stale-revision conflict/retry and no revived child access pass. HTTP concurrency composition separately pending.",
+      "remainingWork": "Both SQL edit/remove orders, stale-revision conflict/retry and no revived child access pass. HTTP concurrency composition separately pending.",
+      "evidenceLabel": "Fresh SQL boundary PASS supporting evidence; catalogue HTTP composition remains Not Run."
     },
     {
       "testId": "GP-0641",
@@ -2859,6 +3077,51 @@
       "assertedNow": "Effective duty list and admin management routes separately verified hain.",
       "remainingWork": "Group-assigned guard browser view mein effective projects aur absence of group admin controls assert karo.",
       "evidenceLabel": "Historical supporting runs; see per-reference source hashes. Catalogue ID not independently executed."
+    }
+  ],
+  "history": [
+    {
+      "label": "Before P0/refresh/export follow-up",
+      "summary": {
+        "scope": "GP-0574 through GP-0649 only; first 573 base cases not remapped",
+        "total": 76,
+        "priorities": {
+          "P0": 54,
+          "P1": 22
+        },
+        "mappingCounts": {
+          "PARTIAL": 36,
+          "POLICY_ALIGNMENT": 4,
+          "MAPPED": 20,
+          "GAP": 13,
+          "OUT_OF_SCOPE": 3
+        },
+        "p0MappingCounts": {
+          "PARTIAL": 29,
+          "MAPPED": 12,
+          "OUT_OF_SCOPE": 1,
+          "GAP": 10,
+          "POLICY_ALIGNMENT": 2
+        },
+        "freshApplicationTestExecutions": 0,
+        "databaseOrAppCodeChanged": false,
+        "databaseSeparationPerformed": false,
+        "refactorStarted": false,
+        "knownBroadSuiteResult": {
+          "passed": 317,
+          "failed": 1,
+          "failure": "Existing register/export SQL command timeout; isolated repeats passed; remains open."
+        },
+        "uiLocationFollowUp": {
+          "report": "docs/82_Project_Group_Management_Location_26_October_2026.md",
+          "browserPassed": 42,
+          "browserFailed": 0,
+          "unitPassed": 627,
+          "unitSkipped": 1,
+          "catalogueStatusesChanged": false,
+          "note": "Original mapping summary fields describe the earlier mapping-only operation. This follow-up relocates UI and refreshes browser evidence; catalogue cases remain Not Run."
+        }
+      }
     }
   ]
 }

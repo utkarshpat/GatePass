@@ -13,8 +13,8 @@ test('employee has no client date; future and same-day date injection are both r
 test('employee extra project window is always the current India calendar day',()=>{
   assert.deepEqual(registrationDates('EMPLOYEE_PROJECT',undefined,'2026-10-20','2026-11-19'),{validFromUtc:'2026-10-19T18:30:00.000Z',validUntilUtc:'2026-10-20T18:30:00.000Z'});
 });
-test('visitor date is calendar-valid and bounded by server policy',()=>{
-  assert.deepEqual(registrationDates('EXTERNAL','2026-10-21','2026-10-20','2026-11-19'),{validFromUtc:'2026-10-20T18:30:00.000Z',validUntilUtc:'2026-10-21T18:30:00.000Z'});
+test('visitor stay starts today and end date is calendar-valid and bounded by server policy',()=>{
+  assert.deepEqual(registrationDates('EXTERNAL','2026-10-21','2026-10-20','2026-11-19'),{validFromUtc:'2026-10-19T18:30:00.000Z',validUntilUtc:'2026-10-21T18:30:00.000Z'});
   for(const value of ['2026-10-19','2026-11-20','2026-02-30','2026-10-20T00:00:00Z',undefined])assert.throws(()=>registrationDates('EXTERNAL',value,'2026-10-20','2026-11-19'),{code:'INVALID_INPUT'});
 });
 test('office context is signed, bounded and cannot be changed by editing cookies',()=>{

@@ -1,6 +1,6 @@
 # 03. Architecture and boundaries
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–088. The original 22 October export and snapshot remain historical.
+> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 ## Components
 | Component | Responsibility | Source |
@@ -30,6 +30,9 @@ Reviewed forward SQL migrations define schema/contracts. Apply and inspect SQL, 
 | gp_outlook_runtime | Independently authenticated Outlook decision only |
 
 Use consistent SQL host/catalog with distinct principals. No web process should use schema-admin access, arbitrary table reads or elevated fallback. Generated role declarations are source evidence, not a live permission audit.
+
+## Runtime configuration
+API/email startup and the local Node launcher load the root `.env`. The tracked `.env.example` contains empty production settings; actual `.env` is ignored. Existing service environment variables take precedence. Required configuration is validated without printing secret values; production rejects dummy/mock identities and the development database. Photo/key-ring/TLS files remain protected storage referenced by configuration. See chapter 07 and report 86.
 
 ## Local versus production
 The complete running UI is assembled by the explicit local-only runner. It uses real SQL/private storage but development cookies/HTTP and dummy employee authentication. Workspace adapters in `src/development` explicitly require loopback and dummy/mock modes.

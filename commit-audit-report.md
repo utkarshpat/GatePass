@@ -26,6 +26,10 @@ Load run ke dauran normal app8443 bhi shared local SQL host par running thi; ye 
 
 ## Guard Assignment Groups follow-up — 26 October 2026
 
+Final presentation verification: docs/84_Final_Browser_Verification_And_Retained_Presentation_26_October_2026.md. Fresh full Chromium345/345 pass, zero skips/retries;12 visitors+3 Digital IDs retained across pending/declined/inside/outside/printed/returned states. Existing2111 visits unchanged; final2126. Photos, movements, approvals, print jobs, returns and Floor11/Rakesh group assignment retained. Below broad344/1 and previous export failures remain historical records.
+
+Latest follow-up: docs/83_P0_Group_Boundaries_Stable_Refresh_And_Export_Memory_26_October_2026.md. Stable manual refresh, Profile late-response fencing,20 real SQL group boundary cases,56 register parity checks aur export memory-grant reduction implemented/verified hain. Latest broad browser344 pass/1 audit-pagination test fail; corrected onboarding plus export fresh-server repeats9/9 pass. Separate same-source rapid-repeat setup failure remains explicitly recorded; all-green single broad run claim nahi hai. Unit627 pass/1 platform skip; migrations115; six catalogue API+DB cases Pass/70 Not Run. Changes local/uncommitted hain.
+
 Office-scoped dynamic project groups implement hue: direct assignments aur overlapping sources preserve hain; group edits linked guard access atomic/audited update karti hain. Forward migrations110/111 apply hain; 111 existing local-project freshness policy preserve karti hai. Details: docs/80_Guard_Assignment_Groups_26_October_2026.md.
 
 Unit627 pass +1 platform skip; seven SQL suites pass (group/local-project/staff final111 reruns), focused browser4 pass. Broad Chromium317 pass +1 register/export SQL timeout; same export concurrent repeats1/3 pass, normal app stop karne ke baad3/3 pass. Broad suite all-green nahi hai; exact shared-SQL contention/root cause pending performance priority hai. Group cases all pass. Normal app restored; fixture cleanup verified. Changes local/uncommitted hain.

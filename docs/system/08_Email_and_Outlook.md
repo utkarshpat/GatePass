@@ -1,6 +1,6 @@
 # 08. Email, Graph and Outlook
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
+> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 Current request/approval details and notification rendering include optional visitor company and declared device types. Host Approve/Reject stays disabled while sign-in details/photo loading is still in progress, preventing an ignored early click. The retained rehearsal verifies real host decisions in the browser; queued notifications do not establish mailbox delivery. It sends no real messages.
 
@@ -36,3 +36,6 @@ Capability binds individual request/host/snapshot/decision/idempotency. Trusted 
 Implementation expects Entra v2 authentication and embedded unsigned Adaptive Card on the approved sender-verification route. If organizational policy requires signed cards, add/accept the certificate-signing adapter before activation. Local preview/Gmail delivery is not native Outlook approval acceptance. Document 36 contains the detailed contract.
 
 Sources: docs/35_Email_Driven_Request_Workflow.md; docs/36_Outlook_Direct_Approvals.md; src/email; migrations 061-062.
+
+## Current organization configuration
+Production Graph sender, tenant/client ID and client secret are configured through `.env`, with an organization-approved mailbox-scoped sending permission. The live worker requires application authentication; personal Outlook device-code cache remains development-only. `.env` also configures approved directory/link-key module paths and private mail-photo storage. Native Outlook actions remain separately opt-in and require their provider/token/key configuration. Calendar-day expiry is displayed as the final date at 23:59 in emails and card images. Corporate delivery acceptance remains pending.

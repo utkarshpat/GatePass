@@ -1,3 +1,5 @@
+> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+
 # Employee application UX
 
 The application frontend now lives under `src/app`, separately from the temporary sign-in adapter. The HTML, styles and browser controller are separate source files. The local runner composes them using the existing nonce-based CSP; no external fonts, analytics, component CDN or third-party scripts are loaded.

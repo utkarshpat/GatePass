@@ -9,13 +9,14 @@ import { registrationDates } from '../registration/RegistrationDates.ts';
 export interface EmployeeSsoGate { verify(session: Session): Promise<boolean> }
 type Service = Pick<RegistrationService, 'start' | 'recordPhoto' | 'submit'> & Partial<Pick<RegistrationService,'locations'|'options'>>;
 type CookieData = { intakeId: string; intakeToken: string; intakeCsrfToken: string; requestType: ProductRequestType; expires: number;officeCode?:string };
-const paths = ['/api/registration/start', '/api/registration/photo', '/api/registration/submit', '/api/registration/reset', '/api/registration/locations','/api/registration/options'];
+const paths = ['/api/registration/start', '/api/registration/photo', '/api/registration/submit', '/api/registration/reset', '/api/registration/locations','/api/registration/options','/api/registration/card'];
 const types = ['EXTERNAL', 'DIGITAL_ID', 'EMPLOYEE_PROJECT'];
 const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/u;
 const same = (a: string, b: string) => a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
 
 /** One active intake per browser. SQL owns expiry/ownership/idempotency; cookie signatures only protect transport context. */
 export class RegistrationHttpRoutes implements AdditionalHttpRoutes {
+  #card?: (context:RegistrationContext,visitRequestId:string)=>Promise<unknown>;
   #service: Service; #key: Buffer; #sso?: EmployeeSsoGate;
   #buckets = new Map<string, { start: number; starts: number; photos: number; submits: number }>();
   #active = 0;
@@ -23,10 +24,10 @@ export class RegistrationHttpRoutes implements AdditionalHttpRoutes {
   #office?: (req:IncomingMessage)=>string;
   #surface:'PUBLIC'|'RECEPTION';
   #submitted?: (req:IncomingMessage,context:RegistrationContext,result:unknown)=>Promise<void>;
-  constructor(service: Service, cookieKey: Buffer, sso?: EmployeeSsoGate, options:{localHttp?:boolean;allowedTypes?:ProductRequestType[];office?:(req:IncomingMessage)=>string;surface?:'PUBLIC'|'RECEPTION';submitted?:(req:IncomingMessage,context:RegistrationContext,result:unknown)=>Promise<void>}={}) {
+  constructor(service: Service, cookieKey: Buffer, sso?: EmployeeSsoGate, options:{card?:(context:RegistrationContext,visitRequestId:string)=>Promise<unknown>;localHttp?:boolean;allowedTypes?:ProductRequestType[];office?:(req:IncomingMessage)=>string;surface?:'PUBLIC'|'RECEPTION';submitted?:(req:IncomingMessage,context:RegistrationContext,result:unknown)=>Promise<void>}={}) {
     if (!Buffer.isBuffer(cookieKey) || cookieKey.length < 32) throw new Error('INVALID_INTAKE_COOKIE_KEY');
     this.#service = service; this.#key = Buffer.from(cookieKey); this.#sso = sso;
-    this.#office=options.office;
+    this.#office=options.office;this.#card=options.card;
     this.#surface=options.surface??'PUBLIC';this.#submitted=options.submitted;
     this.#localHttp=options.localHttp===true;this.#types=[...(options.allowedTypes??types)] as ProductRequestType[];
     if(!this.#types.length||this.#types.some(t=>!types.includes(t)))throw new Error('INVALID_REGISTRATION_TYPES');
@@ -114,6 +115,7 @@ export class RegistrationHttpRoutes implements AdditionalHttpRoutes {
       if(this.#office&&this.#office(req)!==data.officeCode)throw new HttpFailure(403);
       const context: RegistrationContext = { intakeId: data.intakeId, intakeToken: data.intakeToken, intakeCsrfToken: data.intakeCsrfToken, requestType: data.requestType };
       if (data.requestType !== 'EXTERNAL') context.employeeSession = await this.#employee(req, jar);
+      if(req.url===paths[6]){this.#budget(req,'submits');const input=await readJsonBody(req);if(data.requestType!=='EXTERNAL'||Object.keys(input).join('|')!=='visitRequestId'||typeof input.visitRequestId!=='string'||!uuid.test(input.visitRequestId)||!this.#card)throw new HttpFailure(400);return this.#card(context,input.visitRequestId);}
       if(req.url===paths[5]){
         this.#budget(req,'submits');
         const input=await readJsonBody(req);
@@ -140,8 +142,8 @@ export class RegistrationHttpRoutes implements AdditionalHttpRoutes {
         if(!data.officeCode||!this.#service.options)throw new HttpFailure(503);
         if(['locationId','validFromUtc','validUntilUtc'].some(k=>Object.hasOwn(input,k)))throw new HttpFailure(400);
         const options=await this.#service.options(context,data.officeCode);
-        const dates=registrationDates(data.requestType,input.visitDate,options.currentDate,options.maxVisitDate);
-        delete input.visitDate;
+        if(Object.hasOwn(input,'visitDate'))throw new HttpFailure(400);const dates=registrationDates(data.requestType,input.validUntilDate,options.currentDate,options.maxVisitDate);
+        delete input.validUntilDate;
         const result=await this.#service.submit(context,{...input,locationId:options.locationId,...dates});
         await this.#submitted?.(req,context,result);return result;
       }

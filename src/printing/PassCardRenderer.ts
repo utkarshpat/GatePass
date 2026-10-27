@@ -1,3 +1,4 @@
+import {displayedValidityEnd} from './ValidityDisplay.ts';
 import { createHash } from 'node:crypto';
 export interface QrMatrixEncoder { readonly errorCorrectionLevel: 'H'; encode(credential: string): Promise<boolean[][]> }
 export type CardBrandAssets = { organisationLogoPng: Buffer; applicationLogoPng: Buffer; organisationIconPng: Buffer };
@@ -89,7 +90,7 @@ export class PassCardRenderer {
     const formatter = new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
     const time = (value: string) => formatter.format(new Date(value)).replace(',', ' ·') + ' IST';
     p.push('<path d="M28 425H828" stroke="#E4E7EC"/>', text(28, 461, 'VALID FROM', 13, 700, '#667085'), text(148, 461, time(data.validFromUtc), 18),
-      text(28, 494, 'VALID UNTIL', 13, 700, '#667085'), text(148, 494, time(data.validUntilUtc), 18), img(this.#logo, 780, 473, 48, 48, 'GatePass'),
+      text(28, 494, 'VALID UNTIL', 13, 700, '#667085'), text(148, 494, time(displayedValidityEnd(data.validUntilUtc).toISOString()), 18), img(this.#logo, 780, 473, 48, 48, 'GatePass'),
       `<rect y="534" width="856" height="6" fill="url(#${prefix}-accent)"/></svg>`);
     const output = Buffer.from(p.join(''), 'utf8'); if (output.length > 10485760) throw new Error('CARD_TOO_LARGE'); return output;
   }

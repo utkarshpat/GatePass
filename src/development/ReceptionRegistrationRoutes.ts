@@ -13,12 +13,12 @@ import { requireDummySso } from './DummyEmployeeSso.ts';
 export class ReceptionRegistrationRoutes {
  #staff:StaffEntryRoutes;#reception:ReceptionService;#registration:RegistrationHttpRoutes;
  #context=new WeakMap<IncomingMessage,{office:string;session:{sessionToken:string;csrfToken:string}}>();
- constructor(staff:StaffEntryRoutes,reception:ReceptionService,service:RegistrationService,key:Buffer,client:{callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>}) {
+ constructor(staff:StaffEntryRoutes,reception:ReceptionService,service:RegistrationService,key:Buffer,client:{callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>},card?:(context:import('../registration/RegistrationService.ts').RegistrationContext,id:string)=>Promise<unknown>) {
   this.#staff=staff;this.#reception=reception;
-  this.#registration=new RegistrationHttpRoutes(service,key,undefined,{localHttp:true,surface:'RECEPTION',allowedTypes:['EXTERNAL'],office:req=>this.#context.get(req)!.office,
+  this.#registration=new RegistrationHttpRoutes(service,key,undefined,{localHttp:true,surface:'RECEPTION',card,allowedTypes:['EXTERNAL'],office:req=>this.#context.get(req)!.office,
    submitted:async(req,intake)=>{const ctx=this.#context.get(req)!;const hash=(v:string)=>createHash('sha256').update(Buffer.from(v,'base64url')).digest();await client.callProcedure('gp.AuditReceptionRegistration',{...receptionIdentity(ctx.session),IntakeId:{type:'guid',value:intake.intakeId},TokenHash:{type:'binary',value:hash(intake.intakeToken)},IntakeCsrfHash:{type:'binary',value:hash(intake.intakeCsrfToken)}});}});
  }
- handles(path:string){return /^\/api\/reception\/manual\/(start|reset|options|photo|submit)$/u.test(path);}
+ handles(path:string){return /^\/api\/reception\/manual\/(start|reset|options|photo|submit|card)$/u.test(path);}
  async handle(req:IncomingMessage,res:ServerResponse){
   requireDummySso();if(!this.handles(req.url??''))throw new HttpFailure(404);
   if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress??''))throw new HttpFailure(403);

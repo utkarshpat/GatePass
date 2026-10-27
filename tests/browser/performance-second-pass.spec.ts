@@ -56,12 +56,15 @@ test('10k-row Excel worker remains responsive and creates a compressed workbook'
 test('live SQL export serves owned snapshot pages, validates the full dataset and cleans storage before download',async({page})=>{
  test.setTimeout(120000);const run=randomUUID(),fixture=(action:string)=>execFileSync('pwsh',['-NoProfile','-File','tests/browser/ExportSnapshotFixture.ps1','-RunId',run,'-Action',action],{encoding:'utf8',timeout:60000});
  try{
-  const f=JSON.parse(fixture('Create')),calls:any[]=[];page.on('request',r=>{if(r.url().endsWith('/api/admin/register')&&r.postDataJSON().export)calls.push(r.postDataJSON());});
+  const f=JSON.parse(fixture('Create')),calls:any[]=[],timings:any[]=[];
+  page.on('request',r=>{if(r.url().endsWith('/api/admin/register')&&r.postDataJSON().export)calls.push(r.postDataJSON());});
+  page.on('response',async r=>{const request=r.request();if(!r.url().endsWith('/api/admin/register')||!request.postDataJSON().export)return;await r.finished();const d=request.postDataJSON();timings.push({page:d.page,phase:d.finishExport?'final-validation':d.cancelExport?'cancellation':d.snapshot&&!d.snapshotId?'snapshot-create':'snapshot-page',status:r.status(),milliseconds:request.timing().responseEnd});});
   await page.goto('/');await page.getByRole('textbox',{name:'Email or Staff ID',exact:true}).fill(f.adminLogin);await page.getByRole('textbox',{name:'Password',exact:true}).fill('Sopra@123');await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page).toHaveURL(/\/admin$/u);await expect(page.locator('#console-project')).toBeEnabled();
   await page.locator('#console-project').selectOption(String(f.pair));await page.locator('[data-admin-view=reports]').click();await expect(page.locator('#register-export')).toBeEnabled();
   const total=Number(await page.evaluate('registerState.total'));expect(total).toBeGreaterThanOrEqual(1000);
   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#register-export').click()]);expect(download.suggestedFilename()).toMatch(/\.xlsx$/u);await expect(page.locator('#report-status')).toContainText('visits exported');
   expect(calls.filter(d=>!d.finishExport&&!d.cancelExport)).toHaveLength(Math.ceil(total/200));expect(calls.filter(d=>d.finishExport)).toHaveLength(1);expect(calls[0].snapshotId).toBeUndefined();expect(calls[1].snapshotId).toBeTruthy();expect(JSON.parse(fixture('Inspect')).snapshots).toBe(0);
+  const folder='output/performance-second-pass/'+run;await mkdir(folder,{recursive:true});await writeFile(folder+'/live-export.json',JSON.stringify({runId:run,total,requests:timings,limits:'Sequential real browser export on the shared local SQL host; per-request timings are observations, not a load-test p95.'},null,2));console.log('LIVE_EXPORT_DIAGNOSTIC '+folder+'/live-export.json');
  }finally{fixture('Cleanup');}
 });
 

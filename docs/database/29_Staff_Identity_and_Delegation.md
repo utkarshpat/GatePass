@@ -1,3 +1,5 @@
+> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+
 # Staff identity and scoped administration
 
 This is the current staff identity contract, superseding employee-only reception and guard-only password assumptions in earlier implementation snapshots. The application remains DB-first. Real corporate SSO integration is deferred; the explicit dummy SSO adapter is still used locally.

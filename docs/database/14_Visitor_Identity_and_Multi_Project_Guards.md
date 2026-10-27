@@ -1,3 +1,5 @@
+> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+
 # 14 - Visitor identity cards and shared-area project guards
 
 Version: 1.7 | Date: 20 October 2026 | Current policy: Phase 02G

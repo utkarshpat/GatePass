@@ -118,13 +118,14 @@ export class RegistrationService {
     });return{locations};
   }
   async options(context: RegistrationContext, locationCode: string, projectLocationId: unknown = null, search: unknown = null) {
-    requireInput(['NOIDA','BENGALURU','CHENNAI','PUNE'].includes(locationCode));
+    requireInput(['NOIDA','BENGALURU','CHENNAI','PUNE'].includes(locationCode));if(context.requestType==='EXTERNAL')requireInput(projectLocationId===null);
     requireInput(projectLocationId === null || typeof projectLocationId === 'string' && /^[1-9][0-9]{0,18}$/u.test(projectLocationId) && BigInt(projectLocationId)<=9223372036854775807n);
-    requireInput(search === null || projectLocationId !== null && typeof search === 'string' && search.trim().length>=2 && search.length<=100 && !/[\u0000-\u001f\u007f]/u.test(search));
+    requireInput(search === null || (context.requestType==='EXTERNAL'||projectLocationId !== null) && typeof search === 'string' && search.trim().length>=2 && search.length<=100 && !/[\u0000-\u001f\u007f]/u.test(search));
     const result=await this.#call('gp.GetRegistrationOptions',{...this.#identity(context),LocationCode:t(locationCode),ProjectLocationId:{type:'bigint',value:projectLocationId as string|null},Search:t(search as string|null)});
     if(!Number.isInteger(result.locationId)||Number(result.locationId)<1||result.locationCode!==locationCode||typeof result.locationName!=='string'||result.locationName.length>100
       ||typeof result.currentDate!=='string'||!/^\d{4}-\d{2}-\d{2}$/u.test(result.currentDate)||typeof result.maxVisitDate!=='string'||!/^\d{4}-\d{2}-\d{2}$/u.test(result.maxVisitDate)
       ||typeof result.digitalIdEligible!=='boolean'||!Array.isArray(result.projects)||result.projects.length>100||!Array.isArray(result.hosts)||result.hosts.length>10)throw new RegistrationError('UNAVAILABLE');
+    if(context.requestType==='EXTERNAL'&&result.projects.length)throw new RegistrationError('UNAVAILABLE');
     const projects=(result.projects as Record<string,unknown>[]).map(row=>{
       if(!row||typeof row.assigned!=='boolean'||typeof row.projectLocationId!=='string'||!/^[1-9][0-9]{0,18}$/u.test(row.projectLocationId)||typeof row.projectCode!=='string'||row.projectCode.length>80||typeof row.projectName!=='string'||row.projectName.length>200)throw new RegistrationError('UNAVAILABLE');
       return {projectLocationId:row.projectLocationId,projectCode:row.projectCode,projectName:row.projectName,assigned:row.assigned===true};
@@ -139,7 +140,7 @@ export class RegistrationService {
     const data = object(input, ['clientKey', 'requestType', 'locationId', 'reason', 'people', 'projectLocationId', 'hostEmployeeId', 'digitalIdReason', 'validFromUtc', 'validUntilUtc']);
     const requestType = productType(data.requestType); requireInput(requestType === context.requestType);
     requireInput(Number.isInteger(data.locationId) && Number(data.locationId) > 0 && Number(data.locationId) <= 2147483647);
-    requireInput(Array.isArray(data.people) && data.people.length > 0 && data.people.length <= 50);
+    requireInput(Array.isArray(data.people) && data.people.length > 0 && data.people.length === 1);
     const people = (data.people as unknown[]).map(value => {
       const person = object(value, ['clientPersonKey', 'photoAssetId', 'name', 'email', 'phone', 'companyName', 'deviceTypes']);
       let extras:ReturnType<typeof visitorDetails>;try{extras=visitorDetails(person.companyName,person.deviceTypes);}catch{throw new RegistrationError('INVALID_INPUT');}
@@ -160,14 +161,14 @@ export class RegistrationService {
     if (requestType === 'DIGITAL_ID') {
       requireInput(['FORGOT', 'LOST', 'OTHER'].includes(String(data.digitalIdReason)) && [data.projectLocationId, data.hostEmployeeId, data.validFromUtc, data.validUntilUtc].every(value => value === undefined || value === null));
     } else {
-      requireInput(typeof data.projectLocationId === 'string' && /^[1-9][0-9]{0,18}$/u.test(data.projectLocationId) && BigInt(data.projectLocationId) <= 9223372036854775807n);
+      requireInput(requestType==='EXTERNAL'?(data.projectLocationId===undefined||data.projectLocationId===null):typeof data.projectLocationId === 'string' && /^[1-9][0-9]{0,18}$/u.test(data.projectLocationId) && BigInt(data.projectLocationId) <= 9223372036854775807n);
       requireInput(data.digitalIdReason === undefined || data.digitalIdReason === null);
       string(data.hostEmployeeId, 64);
       requireInput(typeof data.validFromUtc === 'string' && typeof data.validUntilUtc === 'string');
     }
     const parameters: Record<string, RegistrationParameter> = { ...this.#identity(context), ClientKey: g(uuid(data.clientKey)),
       RequestType: t(requestType === 'DIGITAL_ID' ? 'TEMP_ID' : requestType), LocationId: i(Number(data.locationId)), Reason: t(string(data.reason, 1000)), PeopleJson: t(JSON.stringify(people)),
-      ProjectLocationId: { type: 'bigint', value: requestType === 'DIGITAL_ID' ? null : data.projectLocationId as string },
+      ProjectLocationId: { type: 'bigint', value: requestType === 'DIGITAL_ID'||requestType==='EXTERNAL' ? null : data.projectLocationId as string },
       HostEmployeeId: t(requestType === 'DIGITAL_ID' ? null : data.hostEmployeeId as string), TemporaryIdReason: t(requestType === 'DIGITAL_ID' ? data.digitalIdReason as string : null),
       ValidFromUtc: { type: 'datetime', value: requestType === 'DIGITAL_ID' ? null : data.validFromUtc as string },
       ValidUntilUtc: { type: 'datetime', value: requestType === 'DIGITAL_ID' ? null : data.validUntilUtc as string }, CredentialsJson: t(null) };

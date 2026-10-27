@@ -1,6 +1,6 @@
 # 05. HTTP and API reference
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
+> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 Current additions: `POST /api/admin/register` applies authorized date ranges, field filters, sorting and pagination in SQL; the UI exports the complete selected result as an Excel workbook. `POST /api/admin/create-staff` and `/reset-staff-setup` provide scoped local account/setup issuance. `POST /api/staff/setup` inspects/completes the one-time password setup capability. Reception's `POST /api/reception/lookup` searches authorized records across dates, while `/correct-return` requires the current pass/return receipt and a reason. All staff operations retain session/CSRF and current SQL authorization checks; no browser-supplied identity or scope becomes authority.
 
@@ -54,3 +54,9 @@ Sources: src/development/*Routes.ts; src/transport/RegistrationHttpRoutes.ts, Co
 ## Refresh-safe external endpoints (follow-up)
 
 POST /api/email/external/session exchanges a signed link for a path-scoped HttpOnly holder cookie after current SQL checks. POST /api/email/external/{visitId}/detail and /image require an empty JSON body and that visit-scoped cookie. Legacy /external/detail and /external/image still require the original explicit signed link. No route grants approval authority. See docs/35_Email_Driven_Request_Workflow.md for expiry/key-retention policy.
+
+## Current visitor registration boundary
+
+`POST /api/registration/options` returns no projects for EXTERNAL intakes; host searches use the bound office and reject supplied project filters. EXTERNAL submit accepts one person, `hostEmployeeId` and `validUntilDate`; old `visitDate`, supplied office/timestamps and project selection are rejected by the office-bound adapter. Employee project requests retain their authenticated project selector and same-day behavior.
+
+`POST /api/registration/card` accepts only `visitRequestId` and requires the signed active intake cookie plus CSRF. `gp.GetPublicRegistrationCard` binds the visit to that exact intake under the render role. The response is PNG/filename/MIME only, with two authorization reads around rendering. Reception manual has the corresponding `/api/reception/manual/card` route with independent staff/intake checks.

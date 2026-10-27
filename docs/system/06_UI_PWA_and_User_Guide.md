@@ -1,6 +1,6 @@
 # 06. UI, PWA and user guide
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
+> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 Current administration has seven modules, project lead previews, guard/project roster grouping, a separate allocation dialog, date/field-filtered visit register with Excel export and visit timelines, office QR standees and filterable audit events. Local staff can be created and receive a one-use password setup link. Reception offers all-date lookup/QR search, device confirmation on final pass return and a reasoned correction for mistaken returns. Visitor company and devices remain optional and per person. See the dated walkthrough for retained names and the 23 October presentation sequence.
 
@@ -18,6 +18,11 @@ Current administration has seven modules, project lead previews, guard/project r
 | /pwa/offline.html | Reconnection shell; no cached authorized workspace |
 
 The separate 22 October screenshot package contains 43 views at Phone 390x844 and Laptop 1366x768 CSS viewports. Selectors/dialogs/state examples are views, not 43 routes. Populated queues/success/card examples sometimes use intercepted synthetic data, not live approvals/production identities. Screenshots are a separate artifact, not duplicated into the documentation ZIP.
+
+## Visitor registration
+One visitor per form; optional company/devices, camera photo, office-wide host search and inclusive Valid until. Project selection is absent from visitor UI/public options; employee project access is unchanged. Desktop places Host and Valid until together; mobile stacks them. The success page renders a downloadable card for visitors as well as Digital IDs. Card failure has an explicit retry. A pending card remains pending.
+
+All calendar-day pass expiry labels, including images/printing, details, emails and register export, show the last included date at 23:59. The original exclusive timestamp continues to control access.
 
 ## Shared UI
 `global.css` owns tokens/reusable controls; feature CSS owns layout. Utilities include accessible custom selects, country-aware phone input, toasts, camera lifecycle and photo adjustment. Password visibility is an accessible icon and the whole control has a consistent focus state. Mobile forms render directly without redundant page cards/marketing copy.

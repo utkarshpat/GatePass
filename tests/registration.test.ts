@@ -160,21 +160,21 @@ test('SQL errors and invalid result data never expose private infrastructure or 
 test('external numbers require valid international format before reaching SQL', async()=>{
   for(const phone of [undefined,null,'',' ','9876543210','+91123','+911234567890','Call +919876543210','+919876543210 ext 2']){
     const fake=fakeRepository(),ctx=context('EXTERNAL'),service=new RegistrationService(fake.repository,keys,normalizer,store);
-    await assert.rejects(service.submit(ctx,{clientKey:randomUUID(),requestType:'EXTERNAL',locationId:1,projectLocationId:'1',hostEmployeeId:'EMP001',reason:'Business meeting',validFromUtc:'2026-10-20T00:00:00.000Z',validUntilUtc:'2026-10-20T12:00:00.000Z',people:[{clientPersonKey:randomUUID(),photoAssetId:randomUUID(),name:'Visitor',phone}]}));
+    await assert.rejects(service.submit(ctx,{clientKey:randomUUID(),requestType:'EXTERNAL',locationId:1,hostEmployeeId:'EMP001',reason:'Business meeting',validFromUtc:'2026-10-20T00:00:00.000Z',validUntilUtc:'2026-10-20T12:00:00.000Z',people:[{clientPersonKey:randomUUID(),photoAssetId:randomUUID(),name:'Visitor',phone}]}));
     assert.equal(fake.calls.length,0);
   }
   const fake=fakeRepository(),ctx=context('EXTERNAL'),service=new RegistrationService(fake.repository,keys,normalizer,store);
-  await service.submit(ctx,{clientKey:randomUUID(),requestType:'EXTERNAL',locationId:1,projectLocationId:'1',hostEmployeeId:'EMP001',reason:'Business meeting',validFromUtc:'2026-10-20T00:00:00.000Z',validUntilUtc:'2026-10-20T12:00:00.000Z',people:[{clientPersonKey:randomUUID(),photoAssetId:randomUUID(),name:'Visitor',phone:'+919876543210'}]});
+  await service.submit(ctx,{clientKey:randomUUID(),requestType:'EXTERNAL',locationId:1,hostEmployeeId:'EMP001',reason:'Business meeting',validFromUtc:'2026-10-20T00:00:00.000Z',validUntilUtc:'2026-10-20T12:00:00.000Z',people:[{clientPersonKey:randomUUID(),photoAssetId:randomUUID(),name:'Visitor',phone:'+919876543210'}]});
   assert.equal(JSON.parse(String(fake.calls[0].parameters.PeopleJson.value))[0].personPhone,'+919876543210');
 });
 
 
 test('one missing mobile rejects the whole external group before SQL while email remains optional',async()=>{
   const fake=fakeRepository(),ctx=context('EXTERNAL'),service=new RegistrationService(fake.repository,keys,normalizer,store);
-  const data={clientKey:randomUUID(),requestType:'EXTERNAL',locationId:1,projectLocationId:'1',hostEmployeeId:'EMP001',reason:'Business meeting',validFromUtc:'2026-10-20T00:00:00.000Z',validUntilUtc:'2026-10-20T12:00:00.000Z',people:[{clientPersonKey:randomUUID(),photoAssetId:randomUUID(),name:'Alice',phone:'+919876543210'},{clientPersonKey:randomUUID(),photoAssetId:randomUUID(),name:'Bob'}]};
+  const data={clientKey:randomUUID(),requestType:'EXTERNAL',locationId:1,hostEmployeeId:'EMP001',reason:'Business meeting',validFromUtc:'2026-10-20T00:00:00.000Z',validUntilUtc:'2026-10-20T12:00:00.000Z',people:[{clientPersonKey:randomUUID(),photoAssetId:randomUUID(),name:'Alice',phone:'+919876543210'},{clientPersonKey:randomUUID(),photoAssetId:randomUUID(),name:'Bob'}]};
   await assert.rejects(service.submit(ctx,data),{code:'INVALID_INPUT'});assert.equal(fake.calls.length,0);
-  await service.submit(ctx,{...data,people:data.people.map(p=>({...p,phone:'+919876543210'}))});
-  assert(JSON.parse(String(fake.calls[0].parameters.PeopleJson.value)).every((p:any)=>p.personEmail===null&&p.personPhone==='+919876543210'));
+  await assert.rejects(service.submit(ctx,{...data,people:data.people.map(p=>({...p,phone:'+919876543210'}))}),{code:'INVALID_INPUT'});
+  assert.equal(fake.calls.length,0);await service.submit(ctx,{...data,people:[data.people[0]]});assert.equal(JSON.parse(String(fake.calls[0].parameters.PeopleJson.value))[0].personEmail,null);
 });
 
 test('registration options preserve SQL office eligibility and exact assigned pair flags, failing closed on old contracts', async () => {
@@ -188,4 +188,16 @@ test('registration options preserve SQL office eligibility and exact assigned pa
   delete packet.digitalIdEligible;await assert.rejects(service.options(ctx,'NOIDA'),{code:'UNAVAILABLE'});
   packet.digitalIdEligible=true;delete packet.projects[0].assigned;await assert.rejects(service.options(ctx,'NOIDA'),{code:'UNAVAILABLE'});
   packet.projects[0].assigned='true';await assert.rejects(service.options(ctx,'NOIDA'),{code:'UNAVAILABLE'});
+});
+
+test('public host search is office-wide and cannot expose or accept project mapping',async()=>{
+ const ctx=context('EXTERNAL'),packet:any={locationId:1,locationCode:'NOIDA',locationName:'Noida',currentDate:'2026-10-27',maxVisitDate:'2026-11-26',digitalIdEligible:false,projects:[],hosts:[{employeeId:'EMP001',displayName:'Host One',officialEmail:'host@example.com',projectName:'PRIVATE'}]};let calls=0;
+ const service=new RegistrationService({async execute(_name,p){calls++;assert.equal(p.ProjectLocationId.value,null);return packet;}},keys,normalizer,store);
+ const result=await service.options(ctx,'NOIDA',null,'Host');assert.deepEqual(result.projects,[]);assert(!JSON.stringify(result).includes('PRIVATE'));assert.equal(result.hosts[0].displayName,'Host One');
+ await assert.rejects(service.options(ctx,'NOIDA','1','Host'),{code:'INVALID_INPUT'});assert.equal(calls,1);
+ packet.projects=[{projectLocationId:'1',projectCode:'PRIVATE',projectName:'PRIVATE',assigned:false}];await assert.rejects(service.options(ctx,'NOIDA'),{code:'UNAVAILABLE'});
+ const fake=fakeRepository(),submitter=new RegistrationService(fake.repository,keys,normalizer,store),person={clientPersonKey:randomUUID(),photoAssetId:randomUUID(),name:'Visitor',phone:'+919876543210'};
+ const body={clientKey:randomUUID(),requestType:'EXTERNAL',locationId:1,hostEmployeeId:'EMP001',reason:'Meeting',validFromUtc:'2026-10-26T18:30:00.000Z',validUntilUtc:'2026-10-28T18:30:00.000Z',people:[person]};
+ await assert.rejects(submitter.submit(ctx,{...body,projectLocationId:'1'}),{code:'INVALID_INPUT'});await assert.rejects(submitter.submit(ctx,{...body,people:[person,{...person,clientPersonKey:randomUUID(),photoAssetId:randomUUID()}]}),{code:'INVALID_INPUT'});assert.equal(fake.calls.length,0);
+ await submitter.submit(ctx,body);assert.equal(fake.calls[0].parameters.ProjectLocationId.value,null);
 });

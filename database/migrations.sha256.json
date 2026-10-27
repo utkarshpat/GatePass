@@ -109,5 +109,12 @@
   "108_searchable_catalogue_local_project_freshness.sql": "51e8778a29b091aa600744e4f1f6e18ee8b7e3d4e380d1a132b071cf3c94025f",
   "109_empty_workspace_queue_arrays.sql": "313c321138a5e0c9fe11420a37fb3bd8d61fd257550888b906d757acfa06c866",
   "110_project_groups_and_guard_assignments.sql": "799a901df80ee14859449ba0f7cb3b79e63d11ef91fed0dd2bdda01736352299",
-  "111_preserve_local_project_group_assignment_policy.sql": "b7c6a8574f8c1401ed4454f3beb73bfc7c4ee55df49a01aec9a75c91c8644651"
+  "111_preserve_local_project_group_assignment_policy.sql": "b7c6a8574f8c1401ed4454f3beb73bfc7c4ee55df49a01aec9a75c91c8644651",
+  "112_narrow_register_ordering_and_memory_grants.sql": "0681e44ba27861fd2db7223a6aedbde5182857a16f53060ff3371a45d95d131c",
+  "113_register_json_subquery_compatibility.sql": "8ae1d74d057ef0ecd829ee364e8d9579e574006e7eaf05e3799bbb056853ca38",
+  "114_narrow_register_display_lookups.sql": "77cd6ee7893b5fa0296479b79979cd2aec55a5f0c5cace5f213f13811e82dc56",
+  "115_bound_register_utc_projection_width.sql": "932c26d8e9586ac6592511148a4f5f1657e2d4fbaa18bed27031202a27c0b192",
+  "116_individual_visitor_registration.sql": "8999b9dc0d869c6caf431f48617ab9f9b9f45528e593cf4c89c966da6623a030",
+  "117_multiday_visitor_queues.sql": "7ce8749bd9c14b592dd9c1ee096a7c9ec38b17f3ddd60d57ec3807fc81381835",
+  "118_preserve_visitor_device_memory_bounds.sql": "15fecdfafb563be2e9705df1c459f0a6412a95ca067f84411b86cf3f432ab0b4"
 }

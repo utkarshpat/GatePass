@@ -2,10 +2,7 @@ import {test,expect} from '@playwright/test';
 import {syntheticCamera} from './camera.ts';
 for(const width of [390,1366])test(`visitor company is optional and device selections remain per person at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:844});await syntheticCamera(page);await page.goto('/office/noida');await page.getByRole('button',{name:/Visitor Check-in/u}).click();
- const first=page.locator('.visitor-card').first();await first.locator('[name=name]').fill('Visitor One');await first.locator('[name=phone]').fill('9876543210');await first.locator('[name=companyName]').fill('Test Company');await first.locator('[value=LAPTOP]').check();await first.locator('[value=TABLET]').check();await page.locator('#add-visitor').click();
- await expect(first.locator('.visitor-summary')).toContainText('Test Company');await expect(first.locator('.visitor-summary')).toContainText('Laptop, Tablet / iPad');
- const second=page.locator('.visitor-card').last();await second.locator('[name=name]').fill('Visitor Two');await second.locator('[name=phone]').fill('9876543211');await expect(second.locator('[name=companyName]')).toBeEmpty();await expect(second.locator('[value=LAPTOP]')).not.toBeChecked();await second.locator('[value=CAMERA]').check();
- await first.locator('.edit-visitor').click();await expect(first.locator('[name=companyName]')).toHaveValue('Test Company');await expect(first.locator('[value=LAPTOP]')).toBeChecked();await expect(first.locator('[value=CAMERA]')).not.toBeChecked();
+ const first=page.locator('.visitor-card').first();await first.locator('[name=name]').fill('Visitor One');await first.locator('[name=phone]').fill('9876543210');await first.locator('[name=companyName]').fill('Test Company');await first.locator('[value=LAPTOP]').check();await first.locator('[value=TABLET]').check();await expect(page.locator('#add-visitor,.remove-visitor')).toHaveCount(0);await expect(first.locator('[name=companyName]')).toHaveValue('Test Company');
  await page.getByRole('button',{name:'Continue',exact:true}).click();await expect(page.locator('#visit-step')).toBeVisible();await expect(page.locator('input[type=file]')).toHaveCount(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 

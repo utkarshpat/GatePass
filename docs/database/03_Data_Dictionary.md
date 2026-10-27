@@ -1,3 +1,5 @@
+> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+
 # 03 - Data dictionary - GatePass v1.11
 
 Derived from the reviewed SQL DDL through Microsoft ScriptDom; descriptive notes do not define schema. Live database verification is tracked separately.

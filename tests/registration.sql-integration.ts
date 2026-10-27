@@ -89,10 +89,9 @@ const planned = { locationId: fixture.locationId, projectLocationId: String(fixt
   reason: 'Integration visit', validFromUtc: tomorrow.toISOString(), validUntilUtc: new Date(tomorrow.getTime() + 3600000).toISOString() };
 await check('external grouped form creates independent pending visitors with encrypted credentials', async () => {
   const started = await service.start('EXTERNAL'); const people = [];
-  for (let index = 1; index <= 2; index++) { const photo = await service.recordPhoto(started.context, image); people.push({ clientPersonKey: randomUUID(), photoAssetId: photo.photoAssetId, name: 'अतिथि ' + index, phone:'+919876543210' }); }
-  const result = await service.submit(started.context, { ...planned, requestType: 'EXTERNAL', clientKey: randomUUID(), people });
-  assert.equal(result.visits.length, 2); assert(result.visits.every(visit => visit.status === 'PENDING'));
-  assert.notEqual(result.visits[0].visitRequestId, result.visits[1].visitRequestId);
+  for (let index = 1; index <= 1; index++) { const photo = await service.recordPhoto(started.context, image); people.push({ clientPersonKey: randomUUID(), photoAssetId: photo.photoAssetId, name: 'अतिथि ' + index, phone:'+919876543210' }); }
+  const result = await service.submit(started.context, { ...planned,projectLocationId:undefined,validFromUtc:new Date(new Date(Date.now()+330*60000).setUTCHours(0,0,0,0)-330*60000).toISOString(), requestType: 'EXTERNAL', clientKey: randomUUID(), people });
+  assert.equal(result.visits.length, 1); assert(result.visits.every(visit => visit.status === 'PENDING'));
   for (const visit of result.visits) { const row = await inspect(started.context, visit); const raw = await recoverQrCredential({ ...row, clientPersonKey: visit.clientPersonKey }, keys); assert.equal(hash(raw), row.credentialHash); raw.fill(0); }
 });
 await check('employee project request derives employee identity and stays pending for its assigned host', async () => {

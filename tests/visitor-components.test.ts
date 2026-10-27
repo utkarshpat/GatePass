@@ -17,15 +17,6 @@ test('country mismatch, invalid lengths and embedded or extended numbers are rej
  for(const [input,country] of [['123','IN'],['1234567890','IN'],['9876543210000000','IN'],['+12133734253','IN'],['Call 9876543210','IN'],['9876543210 ext 2','IN'],['','IN']])assert.equal(phone.parse(input,country),null,input);
 });
 const app=readFileSync(new URL('../src/app/employee-portal.js',import.meta.url),'utf8');
-test('collapsed visitor keeps summary and data and can expand again',()=>{
- const fields:any={'.visitor-details':{},'.visitor-summary':{},'.edit-visitor':{setAttribute(k:string,v:string){this[k]=v;}},h2:{}};
- const entry={name:'Visitor One',phone:'+919876543210',email:'one@example.com',expanded:true};const context={state:{people:[entry]}};
- vm.createContext(context);vm.runInContext(app.slice(app.indexOf('function setVisitorExpanded('),app.indexOf('function validateVisitorCard(')),context);
- const toggle=(context as any).setVisitorExpanded,card={querySelector:(name:string)=>fields[name]};
- toggle(card,entry,false);assert.equal(entry.expanded,false);assert.equal(fields.h2.textContent,entry.name);assert.match(fields['.visitor-summary'].textContent,/\+919876543210/);assert.equal(fields['.visitor-details'].hidden,true);
- toggle(card,entry,true);assert.equal(fields['.visitor-details'].hidden,false);assert.equal(entry.phone,'+919876543210');assert.equal(fields.h2.textContent,'Visitor 1');
-});
-
 test('toasts use accessible roles, replace stale messages and allow dismissal',()=>{
  class Element extends EventTarget {children:any[]=[];attrs:any={};className='';textContent='';append(...nodes:any[]){this.children.push(...nodes);}replaceChildren(){this.children=[];}setAttribute(k:string,v:string){this.attrs[k]=v;}}
  const body=new Element(),timers=new Map();let next=0;const context={document:{body,createElement:()=>new Element()},setTimeout:(fn:any)=>{const id=++next;timers.set(id,fn);return id;},clearTimeout:(id:any)=>timers.delete(id)};

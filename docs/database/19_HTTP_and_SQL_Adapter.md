@@ -1,3 +1,5 @@
+> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+
 # Secure HTTP boundary and SQL adapter
 
 Historical first transport increment (169 tests). The [registration HTTP increment](20_Registration_HTTP_and_SSO_Boundary.md) records the current 185-test/50-transport-test state and optional registration bindings.

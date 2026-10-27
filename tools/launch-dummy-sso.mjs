@@ -1,8 +1,10 @@
+import {loadRuntimeEnvironment} from '../src/runtime/Environment.ts';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolvePowerShell } from '../src/development/PowerShellRuntime.mjs';
 
 try {
+  loadRuntimeEnvironment();
   if (process.env.NODE_ENV === 'production') throw new Error('DEVELOPMENT_ONLY');
   const runtime = resolvePowerShell();
   const child = spawn(runtime, ['-NoProfile', '-File', fileURLToPath(new URL('./Start-DummySso.ps1', import.meta.url))], {

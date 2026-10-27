@@ -1,3 +1,5 @@
+> Updated 28 October 2026: current source ends at migration **118**. Read [the current setup guide](../docs/system/07_Development_Setup_and_Configuration.md), [migration catalogue](../docs/system/REFERENCE_SQL_Catalog.md) and [release evidence](../docs/88_Documentation_And_Release_28_October_2026.md). The staged examples below are historical; the baseline/fixed-list helpers do not install every current version. Apply missing reviewed versions in order with `database/setup/Apply-LocalForwardMigration.ps1 -Version NNN`; never rewrite applied migrations.
+
 Latest pre-push audit: [bug fixes and complete E2E verification](../docs/69_Pre_Push_Audit_And_E2E_24_October_2026.md).
 
 # GatePass database — current local implementation

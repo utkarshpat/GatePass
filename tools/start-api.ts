@@ -1,3 +1,4 @@
+import {loadRuntimeEnvironment,requireServiceConfiguration} from '../src/runtime/Environment.ts';
 import {pathToFileURL} from 'node:url';
 import {isAbsolute} from 'node:path';
 import { createServer } from 'node:https';
@@ -8,6 +9,7 @@ import {loadOutlookActions} from '../src/email/OutlookConfiguration.ts';
 const required = (key: string) => { const value = process.env[key]; if (!value) throw new Error('MISSING_' + key); return value; };
 // Explicit TLS files and separate restricted SQL logins. No dev-login or elevated fallback.
 try {
+ loadRuntimeEnvironment();requireServiceConfiguration('api');
   if (process.env.GATEPASS_SSO_MODE === 'dummy' || process.env.NODE_ENV === 'production' && process.env.GATEPASS_DB_NAME === 'GatePass_DesignTest') throw new Error('DEVELOPMENT_AUTH_NOT_ALLOWED');
   const common = { server: required('GATEPASS_DB_SERVER'), port: Number(required('GATEPASS_DB_PORT')), database: required('GATEPASS_DB_NAME') };
   const sourceKey = Buffer.from(required('GATEPASS_SOURCE_KEY'), 'base64url');

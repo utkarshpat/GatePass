@@ -56,9 +56,10 @@ function New-Submission([string]$Type='TEMP_ID',[int]$Count=1,[byte[]]$PhotoCont
     if ($Type -ne 'TEMP_ID') {
         $taskParams.ProjectLocationId=[long]$taskFixture.projectLocationId; $taskParams.HostEmployeeId=$taskOtherHost
         $taskParams.TemporaryIdReason=$null
-        $taskParams.ValidFromUtc=if ($Type -eq 'EMPLOYEE_PROJECT') {[datetime]::UtcNow.AddMinutes(330).Date.AddMinutes(-330)} else {[datetime]::UtcNow.AddMinutes(330).Date.AddDays(1).AddHours(10).AddMinutes(-330)}
-        $taskParams.ValidUntilUtc=if ($Type -eq 'EMPLOYEE_PROJECT') {[datetime]::UtcNow.AddMinutes(330).Date.AddDays(1).AddMinutes(-330)} else {$taskParams.ValidFromUtc.AddHours(2)}
+        $taskParams.ValidFromUtc=if ($Type -eq 'EMPLOYEE_PROJECT') {[datetime]::UtcNow.AddMinutes(330).Date.AddMinutes(-330)} else {[datetime]::UtcNow.AddMinutes(330).Date.AddMinutes(-330)}
+        $taskParams.ValidUntilUtc=if ($Type -eq 'EMPLOYEE_PROJECT') {[datetime]::UtcNow.AddMinutes(330).Date.AddDays(1).AddMinutes(-330)} else {[datetime]::UtcNow.AddMinutes(330).Date.AddDays(2).AddMinutes(-330)}
     }
+    if($Type -eq 'EXTERNAL'){$taskParams.ProjectLocationId=$null}
     $taskParams.CredentialsJson=New-Credentials $taskPeople
     return $taskParams
 }
@@ -119,17 +120,16 @@ try {
     }
     $taskApi=Open-Restricted; $taskWorker=Open-Restricted 'gp_registration_worker_fixture'; $taskAuth=Open-Restricted 'gp_registration_auth_fixture'
     Test-Case 'Visitor company is optional and device types remain per participant with canonical retries' {
-        $taskP=New-Submission 'EXTERNAL' 2;$taskPeople=@($taskP.PeopleJson|ConvertFrom-Json)
+        $taskP=New-Submission 'EXTERNAL';$taskPeople=@($taskP.PeopleJson|ConvertFrom-Json)
         $taskPeople[0]|Add-Member companyName 'Acme Test'
         $taskPeople[0]|Add-Member deviceTypes @('TABLET','LAPTOP')
         $taskP.PeopleJson=ConvertTo-Json -InputObject $taskPeople -Depth 5 -Compress
-        $taskResult=Submit $taskP;Assert-Condition ($taskResult.visits.Count -eq 2) 'Group did not submit both participants.'
-        $taskFirst=@{i=$taskP.IntakeId;p=[guid]$taskPeople[0].clientPersonKey};$taskSecond=@{i=$taskP.IntakeId;p=[guid]$taskPeople[1].clientPersonKey}
+        $taskResult=Submit $taskP;Assert-Condition ($taskResult.visits.Count -eq 1) 'Group did not submit both participants.'
+        $taskFirst=@{i=$taskP.IntakeId;p=[guid]$taskPeople[0].clientPersonKey}
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT CompanyName FROM gp.VisitRequests WHERE IntakeId=@i AND ClientPersonKey=@p;' $taskFirst) -eq 'Acme Test') 'Company was not saved on its participant.'
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT DeviceTypesJson FROM gp.VisitRequests WHERE IntakeId=@i AND ClientPersonKey=@p;' $taskFirst) -eq '["LAPTOP","TABLET"]') 'Devices were not canonicalized.'
-        Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.VisitRequests WHERE IntakeId=@i AND ClientPersonKey=@p AND CompanyName IS NULL AND DeviceTypesJson=N''[]'';' $taskSecond) -eq 1) 'Visitor details leaked to another participant.'
         $taskPeople[0].deviceTypes=@('LAPTOP','TABLET');$taskP.PeopleJson=ConvertTo-Json -InputObject $taskPeople -Depth 5 -Compress
-        Assert-Condition ((Submit $taskP).visits.Count -eq 2) 'Reordered devices changed the retry payload.'
+        Assert-Condition ((Submit $taskP).visits.Count -eq 1) 'Reordered devices changed the retry payload.'
         $taskPeople[0].companyName='Changed';$taskP.PeopleJson=ConvertTo-Json -InputObject $taskPeople -Depth 5 -Compress;Expect-Error {Submit $taskP} 52703
     }
     Test-Case 'Unknown duplicate device types and device identifiers are rejected before persistence' {
@@ -209,14 +209,14 @@ try {
     }
     Test-Case 'Project-only host membership cannot authorize a request at another office' {
         $taskP=New-Submission 'EXTERNAL';$taskPair=Invoke-GatePassScalar $taskAdmin 'SELECT pl.ProjectLocationId FROM gp.ProjectLocations pl WHERE pl.ProjectId=(SELECT ProjectId FROM gp.ProjectLocations WHERE ProjectLocationId=@pair) AND pl.LocationId<>@location;' @{pair=[long]$taskFixture.projectLocationId;location=[int]$taskFixture.locationId}
-        $taskP.ProjectLocationId=[long]$taskPair;$taskP.LocationId=[int](Invoke-GatePassScalar $taskAdmin 'SELECT LocationId FROM gp.ProjectLocations WHERE ProjectLocationId=@pair;' @{pair=$taskPair})
+        $taskP.ProjectLocationId=$null;$taskP.LocationId=[int](Invoke-GatePassScalar $taskAdmin 'SELECT LocationId FROM gp.ProjectLocations WHERE ProjectLocationId=@pair;' @{pair=$taskPair})
         Expect-Error { Submit $taskP } 52701
     }
     Test-Case 'Cross-office employee access requires an exact local host, supports approval, and permits scoped movement' {
         $taskP=New-Submission 'EMPLOYEE_PROJECT'
         $taskPair=[long](Invoke-GatePassScalar $taskAdmin 'SELECT ProjectLocationId FROM gp.ProjectLocations WHERE ProjectId=@p AND LocationId=@l;' @{p=[long]$taskFixture.projectId;l=[int]$taskFixture.otherLocationId})
         $taskP.ProjectLocationId=$taskPair;$taskP.LocationId=[int]$taskFixture.otherLocationId
-        $taskSelector=New-Intake 'PUBLIC';$taskSelector.LocationCode='PUNE';$taskSelector.ProjectLocationId=$taskPair;$taskSelector.Search='Synthetic'
+        $taskSelector=New-Intake 'EMPLOYEE';$taskSelector.LocationCode='PUNE';$taskSelector.ProjectLocationId=$taskPair;$taskSelector.Search='Synthetic'
         Assert-Condition ((Call $taskApi 'gp.GetRegistrationOptions' $taskSelector).hosts.Count -eq 0) 'Project-only host leaked into another office.'
         try {
             Invoke-GatePassNonQuery $taskAdmin 'INSERT gp.EmployeeOfficeMemberships(EmployeeId,LocationId,IsActive,VerifiedAtUtc) VALUES(@e,@l,1,SYSUTCDATETIME());INSERT gp.EmployeeProjectLocationMemberships(EmployeeId,ProjectLocationId,IsActive,VerifiedAtUtc) VALUES(@e,@p,1,SYSUTCDATETIME());' @{e=$taskOtherHost;l=$taskP.LocationId;p=$taskPair}
@@ -364,12 +364,7 @@ try {
         } finally {Invoke-GatePassNonQuery $taskAdmin 'DELETE gp.EmployeeOfficeMemberships WHERE EmployeeId=@e AND LocationId=@l;' @{e=$taskFixture.hostEmployeeId;l=$taskParams.LocationId}}
         Assert-Condition ($taskFirst.visits[0].visitRequestId -ne $taskSecond.visits[0].visitRequestId -and (New-VisitCount) -eq 2) 'Locations incorrectly coupled.'
     }
-    Test-Case 'External multi-person registration permits optional contact and creates independent pending rows' {
-        $taskResult=Submit (New-Submission 'EXTERNAL' 3)
-        Assert-Condition ($taskResult.visits.Count -eq 3 -and @($taskResult.visits | Where-Object {$_.status -ne 'PENDING'}).Count -eq 0) 'Individual pending visits missing.'
-        Assert-Condition ((New-VisitCount) -eq 3) 'Incorrect final visit count.'
-        Assert-Condition ((Invoke-GatePassScalar $taskAdmin 'SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId IN(SELECT visitRequestId FROM OPENJSON(@j,''$.visits'') WITH(visitRequestId uniqueidentifier)) AND TemplateCode=''HOST_APPROVAL_REQUEST'';' @{j=($taskResult | ConvertTo-Json -Depth 6 -Compress)}) -eq 3) 'Individual notices missing.'
-    }
+    Test-Case 'External grouped registration is rejected without partial records' { $taskP=New-Submission 'EXTERNAL' 3;Expect-Error {Submit $taskP} 52702;Assert-Condition ((New-VisitCount) -eq 0) 'Grouped registration persisted.' }
     Test-Case 'Visitor email queues its own receipt and assigned-host approval exactly once on replay' {
         $taskP=New-Submission 'EXTERNAL';$taskPeople=@($taskP.PeopleJson|ConvertFrom-Json);$taskPeople[0].personEmail='visitor@example.invalid';$taskP.PeopleJson=ConvertTo-Json -InputObject $taskPeople -Compress
         $taskResult=Submit $taskP;$null=Submit $taskP;$taskVisit=$taskResult.visits[0]
@@ -377,7 +372,7 @@ try {
         Assert-Condition ((Invoke-GatePassScalar $taskAdmin "SELECT COUNT(*) FROM gp.NotificationOutbox WHERE VisitRequestId=@id AND TemplateCode='HOST_APPROVAL_REQUEST' AND RecipientKind='EMPLOYEE' AND RecipientEmployeeId=@host;" @{id=[guid]$taskVisit.visitRequestId;host=$taskP.HostEmployeeId}) -eq 1) 'Host notice missing, duplicated or misaddressed.'
     }
     Test-Case 'Independent host decisions do not approve or move other people from the same form' {
-        $taskResult=Submit (New-Submission 'EXTERNAL' 3);$taskIndex=0
+        $taskResult=@{visits=@(1..3|ForEach-Object{(Submit (New-Submission 'EXTERNAL')).visits[0]})};$taskIndex=0
         foreach ($taskDecision in @('APPROVED','DENIED')) {
             $taskVisit=$taskResult.visits[$taskIndex];$taskParams=Auth 'OTHERHOST';$taskParams.ClientKey=[guid]::NewGuid();$taskParams.VisitRequestId=[guid]$taskVisit.visitRequestId;$taskParams.SnapshotVersion=1
             $taskParams.SnapshotHash=[Convert]::FromHexString((Invoke-GatePassScalar $taskAdmin 'SELECT CONVERT(varchar(64),SnapshotHash,2) FROM gp.VisitRequests WHERE VisitRequestId=@id;' @{id=$taskParams.VisitRequestId}))
@@ -422,10 +417,10 @@ try {
         finally { Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.Employees SET LastSyncedAtUtc=SYSUTCDATETIME() WHERE EmployeeId=@id;' @{id=$taskOtherHost} }
     }
     Test-Case 'Project availability and location must agree' {
-        $taskParams=New-Submission 'EXTERNAL';$taskParams.LocationId=[int]$taskFixture.otherLocationId;Expect-Error { Submit $taskParams } 52704
+        $taskParams=New-Submission 'EXTERNAL';$taskParams.LocationId=[int]$taskFixture.otherLocationId;Expect-Error { Submit $taskParams } 52701
     }
-    Test-Case 'Cross-day expired and over-horizon planned windows are rejected' {
-        $taskParams=New-Submission 'EXTERNAL';$taskParams.ValidUntilUtc=$taskParams.ValidFromUtc.AddDays(1);Expect-Error { Submit $taskParams } 52702
+    Test-Case 'Multi-day visitor stay is accepted; future starts and over-horizon windows are rejected' {
+        $taskParams=New-Submission 'EXTERNAL';$taskParams.ValidUntilUtc=$taskParams.ValidFromUtc.AddDays(2);$taskMulti=Submit $taskParams;Assert-Condition ($taskMulti.visits.Count -eq 1) 'Multi-day stay failed.'
         $taskParams=New-Submission 'EXTERNAL';$taskParams.ValidFromUtc=$taskParams.ValidFromUtc.AddDays(31);$taskParams.ValidUntilUtc=$taskParams.ValidFromUtc.AddHours(1);Expect-Error { Submit $taskParams } 52702
     }
     Test-Case 'Employee project registration remains pending and an equivalent new intake is reused' {
@@ -446,11 +441,11 @@ try {
         Assert-Condition ((New-VisitCount) -eq 2) 'Adjacent windows were treated as overlap.'
     }
     Test-Case 'Same-key and new-key retries return the original result even without encryption envelopes' {
-        $taskParams=New-Submission 'EXTERNAL' 2;$taskOne=Submit $taskParams;$taskParams.CredentialsJson=$null;$taskTwo=Submit $taskParams
+        $taskParams=New-Submission 'EXTERNAL';$taskOne=Submit $taskParams;$taskParams.CredentialsJson=$null;$taskTwo=Submit $taskParams
         $taskParams.ClientKey=[guid]::NewGuid();$taskThree=Submit $taskParams
         Assert-Condition (($taskOne | ConvertTo-Json -Depth 7 -Compress) -eq ($taskTwo | ConvertTo-Json -Depth 7 -Compress)) 'Same-key result changed.'
         Assert-Condition (($taskOne | ConvertTo-Json -Depth 7 -Compress) -eq ($taskThree | ConvertTo-Json -Depth 7 -Compress)) 'New-key intake retry duplicated submission.'
-        Assert-Condition ((New-VisitCount) -eq 2) 'Retry created extra people.'
+        Assert-Condition ((New-VisitCount) -eq 1) 'Retry created extra people.'
     }
     Test-Case 'Changed payload with reused key or submitted intake cannot alter frozen content' {
         $taskParams=New-Submission 'EXTERNAL';$null=Submit $taskParams;$taskParams.Reason='Changed';Expect-Error { Submit $taskParams } 52703
@@ -473,9 +468,9 @@ try {
         } finally { Invoke-GatePassNonQuery $taskAdmin 'DROP TRIGGER gp.RegistrationFixtureFault;' }
     }
     Test-Case 'Concurrent same-intake retries create one set of individual records' {
-        $taskParams=New-Submission 'EXTERNAL' 2;$taskOne=Open-Restricted;$taskTwo=Open-Restricted
+        $taskParams=New-Submission 'EXTERNAL';$taskOne=Open-Restricted;$taskTwo=Open-Restricted
         $taskRace=Race (New-GatePassSqlCommand $taskOne $taskSubmitSql $taskParams) (New-GatePassSqlCommand $taskTwo $taskSubmitSql $taskParams) $taskOne $taskTwo
-        Assert-Condition (@($taskRace | Where-Object Success).Count -eq 2 -and (New-VisitCount) -eq 2) 'Concurrent retry duplicated records.'
+        Assert-Condition (@($taskRace | Where-Object Success).Count -eq 2 -and (New-VisitCount) -eq 1) 'Concurrent retry duplicated records.'
         Assert-Condition (($taskRace[0].Result | ConvertTo-Json -Depth 6 -Compress) -eq ($taskRace[1].Result | ConvertTo-Json -Depth 6 -Compress)) 'Retry outcomes differ.'
     }
     Test-Case 'Concurrent different keys on one intake preserve one submitted outcome' {

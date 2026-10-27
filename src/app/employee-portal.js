@@ -28,10 +28,10 @@ window.addEventListener('popstate',event=>{
     else {screen('landing');}
   }finally{restoringNavigation=false;history.replaceState(navigationState(),'');}
 });
-const person = () => ({key:crypto.randomUUID(),name:'',phone:'',phoneRaw:'',country:'IN',email:'',companyName:'',deviceTypes:[],expanded:true,file:null,url:null});
+const person = () => ({key:crypto.randomUUID(),name:'',phone:'',phoneRaw:'',country:'IN',email:'',companyName:'',deviceTypes:[],file:null,url:null});
 const toasts=new ToastNotifications();
 const cookie = name => document.cookie.split('; ').find(value=>value.startsWith(name+'='))?.split('=')[1];
-const steps = () => state.mode==='employee'?['Details','Photo','Review']:['People','Visit','Photo','Review'];
+const steps = () => state.mode==='employee'?['Details','Photo','Review']:['Details','Visit','Photo','Review'];
 const photoStep = () => steps().length-2;
 
 function notify(message='',tone='info') { toasts.show(message,tone); }
@@ -88,7 +88,7 @@ function busy(value,{initializing=false}={}) {
   $('close-flow').disabled=frozen;
   $('flow').setAttribute('aria-busy',String(value&&!initializing));
   $('next-step').setAttribute('aria-busy',String(value));
-  if(!frozen) { $('host-search').disabled=!$('project').value; $('add-visitor').disabled=state.people.length>=10; }
+  if(!frozen) { $('host-search').disabled=state.mode==='employee'&&!$('project').value; }
   $('stepper').querySelectorAll('button').forEach((button,index)=>button.disabled=frozen||index>state.step);
 }
 
@@ -145,35 +145,11 @@ function syncPeople() {
   }
 }
 
-function setVisitorExpanded(card,entry,expanded){
-  entry.expanded=expanded;card.querySelector('.visitor-details').hidden=!expanded;card.querySelector('.visitor-summary').hidden=expanded;
-  card.querySelector('.edit-visitor').hidden=expanded;card.querySelector('.edit-visitor').setAttribute('aria-expanded',String(expanded));
-  card.querySelector('h2').textContent=expanded?'Visitor '+(state.people.indexOf(entry)+1):entry.name;
-  card.querySelector('.visitor-summary').textContent=[entry.phone,entry.email,entry.companyName,entry.deviceTypes?.length?entry.deviceTypes.map(code=>deviceLabels[code]).join(', '):''].filter(Boolean).join(' · ');
-}
-function validateVisitorCard(card){
-  const entry=state.people.find(row=>row.key===card.dataset.key);
-  const phoneValid=card.phoneField.validate();
-  const valid=phoneValid&&[...card.querySelectorAll('input')].every(input=>input.checkValidity());
-  if(!valid){setVisitorExpanded(card,entry,true);checkControls(card);if(!phoneValid)notify('Check the mobile number and country code.','error');}
-  return valid;
-}
-function renderPeople() {
-  CountryPicker.close();$('visitors').replaceChildren();
-  state.people.forEach((entry,index)=>{
-    const fragment=$('visitor-template').content.cloneNode(true),card=fragment.querySelector('.visitor-card');card.dataset.key=entry.key;
-    for(const key of ['name','email','companyName'])card.querySelector(`[name="${key}"]`).value=entry[key];
-    for(const box of card.querySelectorAll('[name="deviceTypes"]'))box.checked=(entry.deviceTypes??[]).includes(box.value);
-    const input=card.querySelector('[name="phone"]');input.id='mobile-'+entry.key;card.querySelector('.mobile-label').htmlFor=input.id;
-    const feedback=card.querySelector('.phone-feedback');feedback.id=input.id+'-feedback';input.setAttribute('aria-describedby',feedback.id);
-    card.phoneField=new VisitorPhoneField(card.querySelector('.phone-control'),entry.country,entry.phoneRaw);
-    setVisitorExpanded(card,entry,entry.expanded);
-    card.querySelector('.edit-visitor').addEventListener('click',()=>{syncPeople();setVisitorExpanded(card,entry,true);card.querySelector('[name="name"]').focus();});
-    const remove=card.querySelector('.remove-visitor');remove.hidden=state.people.length===1;
-    remove.addEventListener('click',()=>{syncPeople();if(entry.url)URL.revokeObjectURL(entry.url);if(entry.croppedUrl)URL.revokeObjectURL(entry.croppedUrl);state.people=state.people.filter(row=>row!==entry);if(!state.people.some(row=>row.expanded))state.people[0].expanded=true;renderPeople();notify('Visitor removed.');});
-    $('visitors').append(fragment);
-  });
-  $('add-visitor').disabled=state.people.length>=10;
+function validateVisitorCard(card){const phoneValid=card.phoneField.validate();if(!phoneValid)notify('Check the mobile number and country code.','error');return phoneValid&&checkControls(card);}
+function renderPeople(){CountryPicker.close();const entry=state.people[0],fragment=$('visitor-template').content.cloneNode(true),card=fragment.querySelector('.visitor-card');card.dataset.key=entry.key;
+ for(const key of ['name','email','companyName'])card.querySelector(`[name="${key}"]`).value=entry[key];
+ for(const box of card.querySelectorAll('[name="deviceTypes"]'))box.checked=(entry.deviceTypes??[]).includes(box.value);
+ const input=card.querySelector('[name="phone"]');input.id='visitor-mobile';card.querySelector('.mobile-label').htmlFor=input.id;const feedback=card.querySelector('.phone-feedback');feedback.id='visitor-mobile-feedback';input.setAttribute('aria-describedby',feedback.id);card.phoneField=new VisitorPhoneField(card.querySelector('.phone-control'),entry.country,entry.phoneRaw);$('visitors').replaceChildren(fragment);
 }
 
 function renderProjects() {
@@ -189,7 +165,7 @@ function renderProjects() {
 async function beginFlow(mode) {
   if(manualReception&&mode!=='visitor')throw new Error('Employee verification required.');
   reset();state.mode=mode;
-  $('flow-title').textContent=mode==='employee'?'Digital ID':'Visitor registration';
+  $('visitor-project-field').hidden=mode==='visitor';$('project').required=mode==='employee';$('flow-title').textContent=mode==='employee'?'Digital ID':'Visitor registration';
   $('employee-summary').hidden=$('employee-fields').hidden=mode!=='employee';$('visitor-fields').hidden=mode!=='visitor';
   if(mode==='employee') {state.people[0].name=state.employee.displayName;setEmployee(state.employee);} else renderPeople();
   screen('flow');renderStep(0);busy(true,{initializing:true});
@@ -251,7 +227,7 @@ function validateDetails() {
 }
 
 function validateVisit() {
-  if(!$('project').value){$('project-trigger').focus();notify('Select a project.','error');return false;}
+  if(state.mode==='employee'&&!$('project').value){$('project-trigger').focus();notify('Select a project.','error');return false;}
   if(!state.host){$('host-search').focus();notify('Select a host from the search results.','error');return false;}
   if(!$('purpose').value){$('purpose-trigger').focus();notify('Select a purpose.','error');return false;}
   if($('purpose').value==='Other'&&!$('purpose-details').value.trim()){$('purpose-details').focus();notify('Add the purpose.','error');return false;}
@@ -305,12 +281,12 @@ window.addEventListener('resize',fitAccessDialog);window.visualViewport?.addEven
 async function searchHosts() {
   const version=++state.searchVersion,query=$('host-search').value.trim(),projectId=$('project').value;
   state.host=null;state.hosts=[];$('host-results').replaceChildren();$('host-results').hidden=true;$('host-search').setAttribute('aria-expanded','false');
-  if(query.length<2||!projectId){$('host-feedback').textContent=query.length?'Type at least 2 characters.':'';return;}
+  if(query.length<2||(state.mode==='employee'&&!projectId)){$('host-feedback').textContent=query.length?'Type at least 2 characters.':'';return;}
   $('host-feedback').textContent='Searching…';
   try {
-    const result=await send('/api/registration/options',{projectLocationId:projectId,search:query});
+    const result=await send('/api/registration/options',{...(state.mode==='employee'?{projectLocationId:projectId}:{}),search:query});
     if(version!==state.searchVersion||projectId!==$('project').value)return;
-    state.hosts=result.hosts;$('host-feedback').textContent=result.hosts.length?'':'No matching host for this project.';
+    state.hosts=result.hosts;$('host-feedback').textContent=result.hosts.length?'':'No matching host in this office.';
     result.hosts.forEach((host,index)=>{
       const button=document.createElement('button'),name=document.createElement('strong'),email=document.createElement('span');
       button.type='button';button.id='host-option-'+index;button.setAttribute('role','option');button.setAttribute('aria-selected','false');name.textContent=host.displayName;email.textContent=host.officialEmail;button.append(name,email);
@@ -347,7 +323,7 @@ async function commitPhotoCrop(entry) {
 function renderPhoto() {
   const entry=state.people[state.photoIndex];
   $('photo-title').textContent=state.mode==='employee'?'Your photo':entry.name||'Visitor '+(state.photoIndex+1);
-  $('photo-position').textContent=state.people.length>1?`${state.photoIndex+1} / ${state.people.length}`:'';
+  $('photo-position').textContent='';
   const hasPhoto=!!entry.url;
   $('photo-preview').hidden=!hasPhoto;
   $('photo-placeholder').hidden=hasPhoto;
@@ -362,12 +338,7 @@ function renderPhoto() {
     $('photo-preview').style.transform='';
   }
   $('photo-people').replaceChildren();
-  if(state.people.length>1)state.people.forEach((row,index)=>{
-    const button=document.createElement('button');button.type='button';button.className='person-photo';button.textContent=(row.file?'✓ ':'')+(row.name||'Visitor '+(index+1));
-    if(index===state.photoIndex)button.setAttribute('aria-current','true');
-    button.addEventListener('click',async()=>{if(state.busy||state.jobs||index===state.photoIndex)return;busy(true);try{if(entry.url)await commitPhotoCrop(entry);stopCamera();state.photoIndex=index;renderPhoto();}catch(error){notify(error.message,'error');}finally{busy(false);}});
-    $('photo-people').append(button);
-  });
+
 }
 
 function useCapturedPhoto(file) {
@@ -415,7 +386,7 @@ function renderReview() {
   }
   const rows=[reviewItem('Office',state.options.locationName)];
   if(state.mode==='employee') {rows.push(reviewItem('Reason',$('reason').selectedOptions[0].textContent));if($('reason-details').value.trim())rows.push(reviewItem('Details',$('reason-details').value.trim()));}
-  else rows.push(reviewItem('Project',projectSelection().projectName),reviewItem('Host',state.host.displayName+' · '+state.host.officialEmail),reviewItem('Purpose',purpose()),reviewItem('Date',new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeZone:'Asia/Kolkata'}).format(new Date($('visit-date').value+'T12:00:00.000Z'))));
+  else rows.push(reviewItem('Host',state.host.displayName+' · '+state.host.officialEmail),reviewItem('Purpose',purpose()),reviewItem('Valid until',new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeZone:'Asia/Kolkata'}).format(new Date($('visit-date').value+'T12:00:00.000Z'))));
   $('review-details').replaceChildren(...rows);$('review-access').replaceChildren();$('review-access').hidden=!state.extras.length;
   if(state.extras.length){const title=document.createElement('h2');title.textContent='Additional project access';$('review-access').append(title);for(const entry of state.extras)$('review-access').append(reviewItem(entry.projectName,entry.host.displayName+' · '+entry.host.officialEmail));}
 }
@@ -423,15 +394,15 @@ function renderReview() {
 function prepareJobs() {
   const first={requestType:state.mode==='employee'?'DIGITAL_ID':'EXTERNAL',clientKey:crypto.randomUUID(),reason:state.mode==='employee'?$('reason-details').value.trim()||$('reason').selectedOptions[0].textContent:purpose()};
   if(state.mode==='employee')first.digitalIdReason=$('reason').value;
-  else {first.visitDate=$('visit-date').value;first.projectLocationId=$('project').value;first.hostEmployeeId=state.host.employeeId;}
-  const jobs=state.mode==='employee'&&!state.options.digitalIdEligible?[]:[{body:first,people:state.people.map(entry=>({...entry})),started:true,photos:[],result:null,label:state.mode==='employee'?'Digital ID':projectSelection().projectName}];
+  else {first.validUntilDate=$('visit-date').value;first.hostEmployeeId=state.host.employeeId;}
+  const jobs=state.mode==='employee'&&!state.options.digitalIdEligible?[]:[{body:first,people:state.people.map(entry=>({...entry})),started:true,photos:[],result:null,label:state.mode==='employee'?'Digital ID':'Visitor pass'}];
   for(const extra of state.extras)jobs.push({body:{requestType:'EMPLOYEE_PROJECT',clientKey:crypto.randomUUID(),projectLocationId:extra.projectLocationId,hostEmployeeId:extra.host.employeeId,reason:extra.reason},people:[{...state.people[0],key:crypto.randomUUID()}],started:false,photos:[],result:null,label:extra.projectName});
   return jobs;
 }
 
 function digitalCardRequest(job){
   if(job.cardRequest)return job.cardRequest;
-  const pending=send('/api/employee/digital-id/image',{visitRequestId:job.result.visits[0].visitRequestId});job.cardRequest=pending;
+  const pending=send(job.body.requestType==='EXTERNAL'?'/api/registration/card':'/api/employee/digital-id/image',{visitRequestId:job.result.visits[0].visitRequestId});job.cardRequest=pending;
   // Prefetch may fail before results are displayed; retain retry without an
   // unhandled rejection or a second request while this one is in progress.
   pending.catch(()=>{});return pending;
@@ -440,7 +411,7 @@ async function renderDigitalCard(job,container){
   const preview=document.createElement('div');preview.className='digital-card-preview';
   const message=document.createElement('p');message.className='hint';message.textContent='Preparing card…';preview.append(message);container.append(preview);
   const display=()=>{
-    preview.replaceChildren();const image=document.createElement('img');image.src=job.cardUrl;image.alt='Digital ID for '+job.people[0].name;image.width=1712;image.height=1080;preview.append(image);
+    preview.replaceChildren();const image=document.createElement('img');image.src=job.cardUrl;image.alt=(job.body.requestType==='EXTERNAL'?'Visitor pass for ':'Digital ID for ')+job.people[0].name;image.width=1712;image.height=1080;preview.append(image);
     const actions=document.createElement('div'),download=document.createElement('a');actions.className='digital-card-actions';download.className='primary';download.href=job.cardUrl;download.download=job.cardFileName;download.textContent='Download image';actions.append(download);container.append(actions);
   };
   if(job.cardUrl){display();return;}
@@ -483,9 +454,9 @@ function showResults() {
     const liveStatus=job.detail?(job.detail.status==='CANCELLED'?'CANCELLED':Date.parse(job.detail.validUntilUtc)<=Date.parse(job.detail.checkedAtUtc)?'EXPIRED':job.detail.passStatus):visit.status;
     card.className='result-card';heading.className='result-card-heading';name.textContent=state.mode==='visitor'?person.name:job.label;badge.className='status-pill';badge.dataset.status=liveStatus;badge.textContent=(visit.reused?'Existing · ':'')+liveStatus.charAt(0)+liveStatus.slice(1).toLowerCase();heading.append(name,badge);
     reference.className='result-reference';reference.textContent=visit.publicPassNumber;card.append(heading,reference);
-    if(job.detail){const validity=document.createElement('div');validity.className='meta';validity.textContent='Valid until '+new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(job.detail.validUntilUtc));card.append(validity);}
+    if(job.detail){const validity=document.createElement('div');validity.className='meta';validity.textContent='Valid until '+passValidityLabel(job.detail.validUntilUtc);card.append(validity);}
     $('submission-results').append(card);
-    if(job.body.requestType==='DIGITAL_ID'){card.className='digital-card-result';card.replaceChildren();renderDigitalCard(job,card);}
+    if(['DIGITAL_ID','EXTERNAL'].includes(job.body.requestType)){card.className='digital-card-result';card.replaceChildren();renderDigitalCard(job,card);}
   }));
   $('retry-pending').hidden=done.length===state.jobs.length;$('success-title').focus();
 }
@@ -503,7 +474,7 @@ async function submitJobs() {
       job.result=await send('/api/registration/submit',job.payload);
       // The digital result displays only the authorized card image. Fetching a
       // separate detail record here added a blocking read whose UI was discarded.
-      if(job.body.requestType==='DIGITAL_ID')digitalCardRequest(job);
+      if(['DIGITAL_ID','EXTERNAL'].includes(job.body.requestType))digitalCardRequest(job);
     }
     showResults();notify('Request submitted.','success');if(manualReception)parent.postMessage({type:'gatepass-manual-submitted'},location.origin);
   } catch(error) {
@@ -549,12 +520,6 @@ async function leaveFlow(){
 }
 $('close-flow').addEventListener('click',()=>{if(!state.jobs)leaveFlow();});
 $('success-home').addEventListener('click',leaveFlow);
-$('add-visitor').addEventListener('click',()=>{
-  syncPeople();if(state.people.length>=10)return;
-  for(const card of $('visitors').children)if(!validateVisitorCard(card))return;
-  state.people.forEach(entry=>entry.expanded=false);state.people.push(person());renderPeople();
-  const card=$('visitors').lastElementChild;card.querySelector('[name="name"]').focus();card.scrollIntoView({block:'nearest'});
-});
 $('reason').addEventListener('change',()=>{$('reason-details').required=$('reason').value==='OTHER';$('reason-optional').textContent=$('reason-details').required?'(required)':'(optional)';});
 $('purpose').addEventListener('change',()=>{$('purpose-details').required=$('purpose').value==='Other';$('purpose-optional').textContent=$('purpose-details').required?'(required)':'(optional)';});
 $('toggle-access').addEventListener('click',editAccess);

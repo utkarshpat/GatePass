@@ -2,6 +2,8 @@
 
 **76 new cases mapped: GP-0574–GP-0649; 54 P0 + 22 P1. Mapping is not a fresh execution PASS.**
 
+**Latest execution follow-up:** [Report83](83_P0_Group_Boundaries_Stable_Refresh_And_Export_Memory_26_October_2026.md) aur machine JSON mein six targeted API+DB cases Pass /70 Not Run recorded hain. Neeche ki original mapping table aur Excel earlier historical snapshot hain. Fresh SQL concurrency/rollback evidence separately linked hai; old broad-suite export timeout ka memory finding/fix aur remaining intermittent same-source setup limitation report83 mein hai.
+
 Original 649-case input workbook/CSV unchanged hain. First573 base cases is mapping scope mein remap nahi hue. All76 catalogue statuses Not Run preserve hain. Application code, database, test fixtures aur framework/refactor change nahi hua.
 
 **Follow-up:** Upar ka statement original mapping-only snapshot ke liye hai. [Report 82](82_Project_Group_Management_Location_26_October_2026.md) mein later approved UI relocation aur fresh scoped browser verification recorded hain. Machine mapping ke 10 browser references current source/JUnit evidence par refresh hue hain; previous evidence `priorEvidence` mein preserved hai. Mapping counts/catalogue statuses aur original Excel snapshot unchanged hain.

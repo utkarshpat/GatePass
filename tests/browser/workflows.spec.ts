@@ -29,13 +29,10 @@ for (const size of [{ width: 390, height: 844 }, { width: 1366, height: 768 }]) 
     await accessible(page);
     await page.getByRole('textbox', { name: /^Name/u }).fill('CI Visitor');
     await page.getByRole('textbox', { name: /^Mobile/u }).fill('9876543210');
-    await page.getByRole('button', { name: '+ Add visitor', exact: true }).click();
-    await expect(page.locator('.visitor-summary').first()).toBeVisible();
-    await noHorizontalOverflow(page);
-    await page.locator('.remove-visitor').last().click();
+    await expect(page.locator('#add-visitor,.remove-visitor')).toHaveCount(0);
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
-    await expect(page.getByRole('combobox', { name: /^Project/u })).toBeEnabled();
-    await expect(page.locator('#host-search')).toBeDisabled();
+    await expect(page.locator('#visitor-project-field')).toBeHidden();
+    await expect(page.locator('#host-search')).toBeEnabled();
     await noHorizontalOverflow(page);
     await accessible(page);
   });

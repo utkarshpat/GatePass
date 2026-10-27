@@ -1,11 +1,16 @@
 # 09. Deployment, operations and recovery
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
+> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 ## Target and boundary
 Agreed target: private Ubuntu Server 24.04 LTS x86-64 VM for UI/API, worker, SQL Server Express and private media, with protected off-VM backups. This is intended topology, not deployed evidence or a fresh vendor compatibility/licensing assessment. Windows DPAPI-protected files cannot simply be copied to Linux and assumed operational.
 
 Validate exact OS/SQL edition/CU compatibility, organizational entitlements, hosting cost, service accounts and support policy. This documentation/CI package creates no VM, purchase or deployment.
+
+## Organization inputs
+The six requested deliverables are an application VM, reachable default hostname with HTTPS, organization no-reply Graph mail integration, trusted employee data feed, Entra SSO configuration and managed Google station-account/OAuth configuration. Retention, operating ownership and off-VM backup destination also need confirmation. See [the full request list](../87_Organization_Production_Requirements.md).
+
+Production configuration lives in a private root `.env` with restrictive filesystem permissions. Deploy `.env.example` as a template only; never package actual `.env`. API/email startup validates required settings. Key rings, photos, SQL data and PEM files remain their own protected assets. Do not deploy development dummy adapters as a shortcut.
 
 ## Deployment sequence
 1. Complete production UI/endpoints and approved identity/directory composition.

@@ -1,6 +1,6 @@
 # 11. Readiness, gaps and roadmap
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
+> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 ## Status matrix
 | Area | Current status | Remaining acceptance |
@@ -9,14 +9,17 @@
 | Exact office/project authorization | Implemented services/migrations | Trustworthy entitlement feed/lifecycle sync |
 | Guard cards/duties/movement | Local project presence/common verification | Physical camera, language/users and reconciliation operations |
 | Reception preview/print/reprint | Audited/retry-aware local implementation | Physical printer/media; historical SQL 547 investigation |
-| Admin projects/leads/common areas | Scoped local UI | Broader necessary staff/credential/reporting UI |
+| Admin projects/leads/common areas | Scoped local UI | Current scoped UI complete for local workflows; corporate provider/deployment acceptance |
 | Report/audit/staff backends | Service/SQL contracts | Production exposure/permission review and required screens |
 | Email/status/host workflow | Code and confirmed personal test delivery | Organization Graph/mailbox, company delivery, reachable deployed links |
 | Native Outlook | Code/SQL tests; disabled by default | Provider/Entra/public HTTPS/stable identity/client onboarding |
 | PWA | Manifest/icons/public-only offline shell | Install/device acceptance; no offline entry |
 | Media/keys | Windows ACL/DPAPI | Linux protector, reference-aware cleanup, retention/recovery |
 | CI | Quality and opt-in integration/probe | Current remote run, branch rules and minutes policy |
-| Production | Target/API boundary partially composed | Full hosting/composition, identities, deployment/operations |
+| Production | Target/API boundary partially composed | Complete production composition, Entra/Google identities, directory/mail integration and operations |
+
+## Current configuration and station-login status
+Root `.env` loading/template/startup validation are implemented. Organization credentials are not populated. Google station sign-in is an agreed model, not implemented: IT-owned tablet account maps to a station/location/scope, and audit identifies that station rather than the person on shift. Entra corporate SSO/MFA and trusted directory integration remain pending. Physical-device binding requires a separately enforced device policy.
 
 ## Next sequence
 1. Complete production composition: UI routes, auth/session adapters, media/renderer and staff workspace endpoints. Prove equivalent authorization in staging.

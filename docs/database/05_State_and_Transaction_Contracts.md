@@ -1,3 +1,5 @@
+> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+
 # 05 - State and transaction contracts
 
 Version: 1.2 + Phases 02A/02B | Migration 003 implements the WEB host decision, movement/reconciliation and scoped guard deallocation subset (40 cases). Migrations 004/005 implement the worker database contract (39 cases). Intake, other credential/read/admin paths and real worker/API integrations remain pending. See documents 07/08 for precise boundaries.

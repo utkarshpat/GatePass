@@ -1,11 +1,11 @@
 # 04. Data, state and transactions
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
+> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 Approval, current pass validity, project presence and printed-card return are separate dimensions. A returned visit may retain `APPROVED` while its pass is `REVOKED`, the holder is outside and the printed-card control shows Returned. Return correction is receipt/pass-bound and audited; a replacement request/pass may fence correction. Optional `CompanyName` and canonical `DeviceTypesJson` belong to each individual visit snapshot. Migration 084 keeps the same five-code canonical order without an unbounded LOB sort. Migration 085 compares audit-window duration without overflowing far-future datetime values.
 
 ## Baseline and domains
-Source contains forward migrations 001-062. The generated SQL catalog records hashes/object declarations, not a fresh live-database drift attestation. Compare deployment ledger and approved artifacts before startup. Never rewrite an applied migration to change behavior.
+Source contains forward migrations 001–118. The generated SQL catalog records hashes/object declarations, not a fresh live-database drift attestation. Compare deployment ledger and approved artifacts before startup. Never rewrite an applied migration to change behavior.
 
 | Domain | Records/relationships |
 |---|---|
@@ -20,6 +20,9 @@ Source contains forward migrations 001-062. The generated SQL catalog records ha
 | Outlook | EmployeeEntraIdentities maps verified tenant/object ID to employee |
 
 Historical data dictionary explains columns but later ALTER migrations supersede old counts. The source catalog gives provenance; inspect the deployed catalog for actual latest columns, indexes, constraints and permissions.
+
+## Visitor stay and routing contracts
+Migration 116 accepts exactly one visitor, rejects a public project selection, resolves the eligible host route server-side and permits a today-started stay through the selected final day within policy. SQL stores the end as exclusive next midnight. Display labels subtract one minute only at India calendar-day boundaries; non-midnight ends and authorization comparisons remain unchanged. Migration 117 keeps active multi-day visitors in current operational queues. Migration 118 retains bounded device canonicalization. Historical grouped visits are not deleted or rewritten.
 
 ## Independent lifecycles
 Decision, credential validity, presence, print job and notification are separate. APPROVED is not Inside. QR verification does not write entry. Printed pending cards do not grant project access. Revocation/cancellation does not silently erase occupancy.

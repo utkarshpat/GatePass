@@ -1,3 +1,4 @@
+import {loadRuntimeEnvironment,requireServiceConfiguration} from '../src/runtime/Environment.ts';
 import {readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {isAbsolute} from 'node:path';
@@ -14,6 +15,7 @@ const required=(name:string)=>{const v=process.env[name];if(!v)throw new Error('
 async function adapter(name:string,factory:string){const file=required(name);if(!isAbsolute(file))throw new Error('ABSOLUTE_MAIL_ADAPTER_REQUIRED');const module=await import(pathToFileURL(file).href);if(typeof module[factory]!=='function')throw new Error('MAIL_ADAPTER_REQUIRED');return module[factory]();}
 let sql:Awaited<ReturnType<typeof connectSql>>|undefined;let stopping=false;
 try{
+ loadRuntimeEnvironment();requireServiceConfiguration('email');
  if(process.env.GATEPASS_SSO_MODE==='dummy'||process.env.GATEPASS_DIRECTORY_MODE==='mock')throw new Error('LIVE_MAIL_REQUIRES_APPROVED_DIRECTORY');
  const mode=process.env.GATEPASS_MAIL_AUTH_MODE??'application';if(!['application','personal'].includes(mode))throw new Error('INVALID_MAIL_AUTH_MODE');
  const personal=mode==='personal'?await openPersonalOutlook():undefined;

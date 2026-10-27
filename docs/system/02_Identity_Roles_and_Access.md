@@ -1,6 +1,6 @@
 # 02. Identity, roles and access
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
+> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 Local staff onboarding requires both permitted role delegation and staff credential-management authority. Project administrators cannot create local password accounts; internal project leads remain directory employees. New local accounts use a one-use, 15-minute setup link and the existing 15–128 character password policy. Reset revokes prior credentials/sessions/setup links. Admin audit metadata displays safe actor/target/role/scope/reason fields and excludes password/setup-token material. See [the onboarding contract](../54_Local_Staff_Onboarding_And_Audit.md).
 
@@ -10,6 +10,9 @@ Local staff onboarding requires both permitted role delegation and staff credent
 Internal project leads use employee SSO. Internal admins can use SSO; eligible external admins use local credentials with their scoped roles. Employee identities cannot acquire staff-password sessions to bypass corporate authentication. Directory data is not authentication.
 
 Staff enter at `/`; authorized login resolves their workspace. Public intake opens through office QR. HttpOnly sessions, CSRF and current SQL checks remain necessary even if self-service omits Sign out. A simpler UI does not imply stateless trust.
+
+## Agreed Google station model — pending implementation
+Each organization-managed Android guard tablet/station will use an IT-configured Google account; guards will not receive its password. Admin will map the approved account to location, gate/station and duty scope. Staff turnover does not change the station account. Audit will identify the station account, not automatically the individual guard. Reception retains local ID/password. This is an agreed design: Google OAuth linking/sign-in is not implemented, and strict physical-device restriction requires additional managed-device controls.
 
 ## Delegation matrix
 | Actor | Authority with explicit capability | Restriction |

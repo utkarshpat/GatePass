@@ -1,3 +1,5 @@
+> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+
 # Reception dashboard
 
 Current authentication update: reception now uses independent local staff accounts through the common `/` entry. Employee-only sign-in details below describe the earlier implementation snapshot. See [staff identity and delegation](29_Staff_Identity_and_Delegation.md).

@@ -1,3 +1,5 @@
+> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+
 # 09 - Development directory and combination coverage
 
 Date: 20 October 2026. Synthetic master data is persisted in local `GatePass_DesignTest`. This is not a working login or registration application.

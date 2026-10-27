@@ -1,6 +1,6 @@
 # 12. Maintenance and reference map
 
-> Current local changes and presentation evidence (23 October 2026): [retained browser rehearsal](../55_Presentation_Rehearsal_23_October_2026.md). Source migrations are 001–087. The original 22 October export and snapshot remain historical.
+> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 ## Precedence
 This handbook is the consolidated local baseline dated 22 October 2026. Earlier numbered documents are historical increments. Resolve conflict using latest approved requirements, executable source/migrations and applicable current evidence; update the handbook when behavior changes. Historical reports are not current environment attestations.
@@ -51,3 +51,11 @@ Regenerate inventories from reviewed source while preserving source-declaration 
 | DISPATCHED | Server print handoff, not physical output |
 | Provider accepted | Graph 202, not inbox delivery |
 | Local adapter | Development composition, not corporate SSO |
+
+## Current change map
+- Individual visitor intake/host privacy/card/multi-day queues: report 85; migrations 116–118.
+- Inclusive pass expiry labels: `ValidityDisplay.ts`, `validity-display.js`; data/authorization timestamps unchanged.
+- Runtime `.env`: report 86; `Environment.ts`, `.env.example`, `check:config`.
+- Organization inputs and planned station identity: report 87.
+- Current pre-push checks and documentation snapshot: report 88, regenerated source/route/SQL references.
+- Reports 83–84 preserve the prior performance/group verification findings. Dated PDFs, screenshots and prior validation reports remain historical artifacts.

@@ -1,3 +1,5 @@
+> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+
 # Guard workspace
 
 Common staff sign-in routes guards with current `VISITS_READ` permission to `/guard`. Local credentials remain independent of employee IDs and corporate SSO. SQL remains the authority for office/project scope and all movement decisions.

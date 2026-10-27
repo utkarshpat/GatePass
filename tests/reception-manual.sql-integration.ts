@@ -39,19 +39,19 @@ try {
   assert.equal((await call('/api/reception/manual/start',{requestType:'DIGITAL_ID'})).status,400);
   assert.equal((await call('/api/reception/manual/options',{testOffice:'CHENNAI'})).status,403);
  });
- let options:any,project:any,host:any,photoId:string,submitted:any;
+ let options:any,host:any,photoId:string,submitted:any;
  await check('manual intake uses isolated capability cookies and resolves scoped host names/emails',async()=>{
   const page=await call('/reception/register/noida',{},'GET');assert.equal(page.status,200);assert.ok(page.body.includes('data-reception-manual="true"'));assert.match(page.headers['content-security-policy'],/frame-ancestors 'self'/);
   assert.equal((await call('/api/reception/manual/start',{requestType:'EXTERNAL'})).status,200);assert.ok(jar.has('gp-reception-intake'));assert.ok(!jar.has('gp-dev-intake'));
-  options=(await call('/api/reception/manual/options')).body;assert.equal(options.locationCode,'NOIDA');project=options.projects.find((p:any)=>p.projectCode==='DEMO-PRJ-001');assert.ok(project,'Use the seeded project with scoped fixture hosts, independently of local project ordering.');
-  host=(await call('/api/reception/manual/options',{projectLocationId:project.projectLocationId,search:'Employee'})).body.hosts[0];assert.ok(host?.officialEmail);
+  options=(await call('/api/reception/manual/options')).body;assert.equal(options.locationCode,'NOIDA');assert.equal(options.projects.length,0);
+  host=(await call('/api/reception/manual/options',{search:'employee1@example.com'})).body.hosts[0];assert.ok(host?.officialEmail);
  });
  await check('manual photo upload uses actual normalization and private storage',async()=>{
   const jpg=await sharp({create:{width:600,height:800,channels:3,background:'#456789'}}).jpeg().toBuffer();const r=await call('/api/reception/manual/photo',jpg);assert.equal(r.status,200,JSON.stringify(r.body));photoId=r.body.photoAssetId;photos.add(photoId);
  });
  const key=randomUUID(),person=randomUUID();clientKeys.add(key);
  await check('manual submit is real, remains pending, retries idempotently and cannot override office',async()=>{
-  const body={requestType:'EXTERNAL',clientKey:key,projectLocationId:project.projectLocationId,hostEmployeeId:host.employeeId,visitDate:options.currentDate,reason:'Synthetic manual test',people:[{clientPersonKey:person,photoAssetId:photoId,name:'Manual Reception Test',phone:'+919876543210',email:'synthetic@example.com'}]};
+  const body={requestType:'EXTERNAL',clientKey:key,hostEmployeeId:host.employeeId,validUntilDate:options.currentDate,reason:'Synthetic manual test',people:[{clientPersonKey:person,photoAssetId:photoId,name:'Manual Reception Test',phone:'+919876543210',email:'synthetic@example.com'}]};
   assert.equal((await call('/api/reception/manual/submit',{...body,locationId:999})).status,400);
   const first=await call('/api/reception/manual/submit',body);assert.equal(first.status,200,JSON.stringify(first.body));submitted=first.body;assert.equal(submitted.visits.length,1);assert.equal(submitted.visits[0].status,'PENDING');visits.push(submitted.visits[0].visitRequestId);
   const retry=await call('/api/reception/manual/submit',body);assert.equal(retry.status,200,JSON.stringify(retry.body));assert.equal(retry.body.visits[0].visitRequestId,visits[0]);
@@ -63,7 +63,7 @@ try {
  });
  await check('reception sees the real host/project/email and card without exposing source secrets',async()=>{
   const me=await call('/api/reception/me');assert.equal(me.status,200);const office=me.body.locations[0].locationId;
-  const list=await call('/api/reception/list',{locationId:office,visitDate:options.currentDate,search:submitted.visits[0].publicReference});assert.equal(list.status,200,JSON.stringify(list.body));assert.equal(list.body.visits.length,1);assert.equal(list.body.visits[0].hostName,host.displayName);assert.equal(list.body.visits[0].hostEmail,host.officialEmail);assert.equal(list.body.visits[0].projectName,project.projectName);
+  const list=await call('/api/reception/list',{locationId:office,visitDate:options.currentDate,search:submitted.visits[0].publicReference});assert.equal(list.status,200,JSON.stringify(list.body));assert.equal(list.body.visits.length,1);assert.equal(list.body.visits[0].hostName,host.displayName);assert.equal(list.body.visits[0].hostEmail,host.officialEmail);assert.ok(list.body.visits[0].projectName);
   const detail=await call('/api/reception/detail',{visitRequestId:visits[0]});assert.equal(detail.status,200);assert.equal(detail.body.hostEmail,host.officialEmail);assert.ok(Array.isArray(detail.body.movements));
   for(const forbidden of ['storageKey','ciphertext','credentialHash','claimToken','snapshotHash'])assert.ok(!Object.hasOwn(detail.body,forbidden));
   const started=performance.now();const preview=await call('/api/reception/preview',{visitRequestId:visits[0]});assert.equal(preview.status,200,JSON.stringify(preview.body));assert.equal(preview.body.mimeType,'image/png');timings.previewMs=Math.round(performance.now()-started);
