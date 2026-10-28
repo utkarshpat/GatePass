@@ -72,7 +72,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg>
         </div>
       </div>
-      <div class="kpi" id="kpi-inside" role="button" tabindex="0" title="Click to filter Inside projects">
+      <div class="kpi" id="kpi-inside" role="button" tabindex="0" title="Click to filter Inside accounts">
         <div>
           <div class="kpi-value" id="stat-inside">0</div>
           <div class="kpi-label">Inside (matching)</div>
@@ -141,7 +141,7 @@
         <thead>
           <tr class="table-header-row">
             <th scope="col" class="th-identity">Person / Request</th>
-            <th scope="col" class="th-project">Project</th>
+            <th scope="col" class="th-project">Account</th>
             <th scope="col" class="th-host host-col">Host / Reference</th>
             <th scope="col" class="th-approval">Approval</th>
             <th scope="col" class="th-card">Card Status</th>
@@ -206,7 +206,7 @@
 </dialog>
 <dialog id="profile-dialog" class="modal app-dialog" aria-labelledby="profile-title"><div class="modal-header"><h2 id="profile-title">Profile</h2><button id="close-profile" class="close" type="button" aria-label="Close profile">×</button></div><div class="modal-body"><dl id="profile-fields" class="info-grid"></dl><h3>Assigned offices</h3><div id="profile-offices"></div></div></dialog>
 <dialog id="history-dialog" class="modal app-dialog history-dialog" aria-labelledby="history-title"><div class="modal-header"><h2 id="history-title">Registration history</h2><button id="close-history" class="close" type="button" aria-label="Close history">×</button></div><div class="modal-body"><div class="history-range"><label>From<input id="history-date" type="date"></label><label>To<input id="history-end" type="date"></label><button id="refresh-history" class="btn outline" type="button">Refresh history</button></div><p id="history-status" role="status"></p><div id="history-rows"></div></div></dialog>
-<dialog id="devices-return-dialog" class="modal app-dialog" aria-labelledby="devices-return-title"><form id="devices-return-form"><div class="modal-header"><h2 id="devices-return-title">Confirm final pass return</h2><button id="cancel-devices-return" type="button" class="close" aria-label="Cancel device verification">×</button></div><div class="modal-body"><p id="devices-return-person"></p><p id="return-explanation">Confirm the printed pass has been collected and all project exits are recorded.</p><div id="devices-return-list"></div><p id="devices-return-status" role="status"></p></div><div class="modal-footer"><button type="submit" class="btn primary" id="confirm-devices-return">Verify devices &amp; mark returned</button></div></form></dialog>
+<dialog id="devices-return-dialog" class="modal app-dialog" aria-labelledby="devices-return-title"><form id="devices-return-form"><div class="modal-header"><h2 id="devices-return-title">Confirm final pass return</h2><button id="cancel-devices-return" type="button" class="close" aria-label="Cancel device verification">×</button></div><div class="modal-body"><p id="devices-return-person"></p><p id="return-explanation">Confirm the printed pass has been collected and all account exits are recorded.</p><div id="devices-return-list"></div><p id="devices-return-status" role="status"></p></div><div class="modal-footer"><button type="submit" class="btn primary" id="confirm-devices-return">Verify devices &amp; mark returned</button></div></form></dialog>
 <dialog id="lookup-scanner" class="modal app-dialog" aria-labelledby="lookup-scanner-title"><div class="modal-header"><h2 id="lookup-scanner-title">Scan pass QR</h2><button id="lookup-scan-close" class="close" type="button" aria-label="Close QR scanner">×</button></div><div class="modal-body"><video id="lookup-video" muted playsinline autoplay aria-label="Pass QR camera preview"></video><p id="lookup-camera-status" role="status"></p><p>Scan the visitor's pass to open its record. You can also search by pass ID, name or mobile.</p></div></dialog>
 <dialog id="correct-return-dialog" class="modal app-dialog" aria-labelledby="correct-return-title"><form id="correct-return-form"><div class="modal-header"><h2 id="correct-return-title">Correct mistaken return</h2><button id="correct-return-close" class="close" type="button" aria-label="Cancel return correction">×</button></div><div class="modal-body"><p id="correct-return-person"></p><p>Use only if the pass was marked returned by mistake. The original return and this correction will remain in the audit trail. A replacement request or changed pass can block correction.</p><label for="correct-return-reason">Reason for correction</label><textarea id="correct-return-reason" required minlength="5" maxlength="300"></textarea><p id="correct-return-status" role="status"></p></div><div class="modal-footer"><button id="correct-return-submit" class="btn primary" type="submit">Correct return</button></div></form></dialog>
 <script nonce="__NONCE__">__SCRIPT__</script>

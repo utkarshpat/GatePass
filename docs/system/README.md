@@ -1,6 +1,6 @@
 # GatePass system documentation
 
-Current source handbook — **28 October 2026 · migrations 001–118**.
+Current source handbook — **28 October 2026 · migrations 001–121**.
 
 The running local app uses real SQL and private media. Corporate identity/directory/mail, Google station login and production composition remain pending. Earlier exported PDFs, screenshots and dated reports remain historical, not current deployment certificates.
 
@@ -10,7 +10,7 @@ The running local app uses real SQL and private media. Corporate identity/direct
 - Today-started visitor stay with inclusive final day; still-valid multi-day visits remain in operational queues. Employee requests stay same-day.
 - Calendar-day pass labels show final date 23:59; actual authorization uses exclusive midnight.
 - Private root .env loading, empty tracked template and name-only startup validation.
-- Scoped project/common/group administration, register/export/audit and performance corrections.
+- Scoped account/common/group administration, register/export/audit and performance corrections.
 - Google tablet accounts are planned station identities, not automatic physical-device binding or individual guard identification.
 
 ## Chapters
@@ -36,6 +36,10 @@ The running local app uses real SQL and private media. Corporate identity/direct
 - [Runtime .env setup](../86_Runtime_Environment_Configuration.md)
 - [Organization requirements](../87_Organization_Production_Requirements.md)
 - [Current release evidence](../88_Documentation_And_Release_28_October_2026.md)
+
+- [Accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md)
+- [Retained demo hosts and live acceptance](../90_Retained_Demo_Host_Acceptance_28_October_2026.md)
+- [Shared publication and NHS draft preservation](../91_Shared_Account_Host_Release_28_October_2026.md)
 
 ## Source references
 

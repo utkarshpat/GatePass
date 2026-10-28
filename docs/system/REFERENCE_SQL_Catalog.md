@@ -1,6 +1,6 @@
 # SQL source catalogue
 
-Updated 28 October 2026; 118 forward migration files. Declaration provenance is lexical source evidence, not a live catalogue or permission audit. Dynamic ALTER migrations may preserve/change existing definitions without a new literal declaration.
+Updated 28 October 2026; 121 forward migration files. Declaration provenance is lexical source evidence, not a live catalogue or permission audit. Dynamic ALTER migrations may preserve/change existing definitions without a new literal declaration.
 
 ## Migration hashes
 
@@ -124,11 +124,15 @@ Updated 28 October 2026; 118 forward migration files. Declaration provenance is 
 | [116_individual_visitor_registration.sql](../../database/migrations/116_individual_visitor_registration.sql) | `7b253e365e1e7b6589bbdb41ee67e81afe76347d53fbb7550ade268ee60afe97` |
 | [117_multiday_visitor_queues.sql](../../database/migrations/117_multiday_visitor_queues.sql) | `7ce8749bd9c14b592dd9c1ee096a7c9ec38b17f3ddd60d57ec3807fc81381835` |
 | [118_preserve_visitor_device_memory_bounds.sql](../../database/migrations/118_preserve_visitor_device_memory_bounds.sql) | `6f4453a576610ed7c95f34f37d46721d9b4b9f02060f0e990fb9398004c39247` |
+| [119_account_host_allowlists.sql](../../database/migrations/119_account_host_allowlists.sql) | `124ea32d2262bc6769fc2389e96282ffec224f0dc8a7fe66a8cdd0fcce7cdd3a` |
+| [120_account_host_management_visibility.sql](../../database/migrations/120_account_host_management_visibility.sql) | `792e0c216115d73457595fc629c248d1d0d5b6d80f169bd89873cf8041c62533` |
+| [121_account_host_audit_details.sql](../../database/migrations/121_account_host_audit_details.sql) | `e8f810acdbdaa40842cd4f1199435c61eab212e80dab4702e84fcfd6cc715c3a` |
 
 ## Object declaration provenance
 
 | Kind | Object | Declaration/change migrations |
 |---|---|---|
+| FUNCTION | `gp._AccountHostEligible` | 119 |
 | FUNCTION | `gp._AdminScopeAllowed` | 019, 033, 034 |
 | FUNCTION | `gp._AuditEventReadAllowed` | 019 |
 | FUNCTION | `gp._CanProvisionStaff` | 081, 082 |
@@ -213,12 +217,14 @@ Updated 28 October 2026; 118 forward migration files. Declaration provenance is 
 | PROCEDURE | `gp.ListStaffRoles` | 019, 033, 034 |
 | PROCEDURE | `gp.ListVisits` | 010 |
 | PROCEDURE | `gp.LookupReceptionVisits` | 080 |
+| PROCEDURE | `gp.ManageAccountHost` | 119 |
 | PROCEDURE | `gp.ManageCommonDuty` | 056, 058, 074, 075 |
 | PROCEDURE | `gp.ManageGuardCredential` | 006, 028 |
 | PROCEDURE | `gp.ManageProjectGroup` | 110 |
 | PROCEDURE | `gp.ManageProjectGroupGuard` | 110 |
 | PROCEDURE | `gp.ManageStaffCredential` | 029 |
 | PROCEDURE | `gp.PurgeGuardAuthTransient` | 006 |
+| PROCEDURE | `gp.ReadAccountHosts` | 119 |
 | PROCEDURE | `gp.ReadActionCentre` | 093, 094, 095, 098, 100, 109 |
 | PROCEDURE | `gp.ReadAdminVisitRegister` | 077, 078, 089, 099, 100, 101, 102, 104, 105, 106, 107, 112, 114 |
 | PROCEDURE | `gp.ReadEmailRequest` | 061, 079, 090 |
@@ -281,6 +287,7 @@ Updated 28 October 2026; 118 forward migration files. Declaration provenance is 
 | ROLE | `gp_worker_runtime` | 004 |
 | TABLE | `gp.AccessEvents` | 001 |
 | TABLE | `gp.AccessPasses` | 001 |
+| TABLE | `gp.AccountHosts` | 119 |
 | TABLE | `gp.AdminExportSnapshots` | 104, 107 |
 | TABLE | `gp.ApprovalDecisions` | 001 |
 | TABLE | `gp.Capabilities` | 001 |

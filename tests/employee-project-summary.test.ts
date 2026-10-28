@@ -30,7 +30,7 @@ test('guard keeps assignment/project labels separate from person and host names,
   assert.equal(f.projectTitle(extra), 'Requested project');
   assert.equal(f.hostTitle(extra), 'Host One');
   assert.equal(f.projectDescription({ requestType: 'DIGITAL_ID', employeeProjects: { available: false } }), 'Assignments unavailable.');
-  assert.equal(f.projectDescription({ requestType: 'DIGITAL_ID', employeeProjects: { available: true, total: 0, items: [] } }), 'No assigned projects');
+  assert.equal(f.projectDescription({ requestType: 'DIGITAL_ID', employeeProjects: { available: true, total: 0, items: [] } }), 'No assigned accounts');
   assert.equal(f.shortPass('GP-abcdef123456'), 'ABCDEF');
   assert.equal(f.personTitle('Employee One'), 'Employee One');
   assert.ok(!f.shortPass('GP-abcdef123456').includes('#'));

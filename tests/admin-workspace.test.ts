@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {randomBytes} from 'node:crypto';
 import {AdminWorkspaceService} from '../src/administration/AdminWorkspaceService.ts';
 const session={sessionToken:randomBytes(32).toString('base64url'),csrfToken:randomBytes(32).toString('base64url')};
-const project={projectLocationId:'2',projectId:'1',projectName:'Project',projectCode:'PR1',directoryCurrent:true,canAssignProject:false,canAssignLocation:true};
+const project={projectLocationId:'2',projectId:'1',projectName:"Account",projectCode:'PR1',directoryCurrent:true,canAssignProject:false,canAssignLocation:true,canManageHosts:false};
 function fixture(result:any){const calls:any[]=[];return{calls,service:new AdminWorkspaceService({async callProcedure(name,p){calls.push({name,p});return JSON.stringify(result);}})};}
 test('projects use trusted session hashes and preserve scoped delegation flags',async()=>{const f=fixture({projects:[{...project,secret:'not exposed'}],hasMore:true,afterProjectLocationId:'2'});const r=await f.service.read(session,'projects',{locationId:1});assert.deepEqual(r,{projects:[project],cursor:'2'});assert.equal(f.calls[0].name,'gp.ListLeadProjects');assert.equal(f.calls[0].p.SessionHash.value.length,32);assert.equal(f.calls[0].p.AfterProjectLocationId.value,null);});
 test('invalid filters, overflowing cursor and actor injection never reach SQL',async()=>{for(const d of [{locationId:0},{locationId:1,actor:'other'},{locationId:1,cursor:'9223372036854775808'}]){const f=fixture({});await assert.rejects(f.service.read(session,'projects',d),(e:any)=>e.code==='INVALID_INPUT');assert.equal(f.calls.length,0);}});

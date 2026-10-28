@@ -1,6 +1,6 @@
 # 02. Email & Host Approval Workflows
 
-> Updated 27 October 2026: current behavior/evidence is in [report 88](../88_Documentation_And_Release_28_October_2026.md). Visitor registration is single-person; employee project flows remain same-day; all calendar-day pass labels end at 23:59. Google station sign-in remains pending.
+> Updated 27 October 2026: current behavior/evidence is in [report 88](../88_Documentation_And_Release_28_October_2026.md). Visitor registration is single-person; employee account flows remain same-day; all calendar-day pass labels end at 23:59. Google station sign-in remains pending.
 
 > 23 October presentation run: [current evidence and retained demo data](../55_Presentation_Rehearsal_23_October_2026.md). Earlier execution counts/cleanup statements in this catalog describe their dated runs; this presentation dataset is retained.
 
@@ -31,7 +31,7 @@
 ### TC-EMAIL-03: Authorized Host Approval, Visitor Company/Devices & Pass Activation (Migrations 076 & 079)
 - **Steps**:
   1. Open `/approval/<visitRequestId>` and sign in as the assigned host (`employee19@example.com` / `Sopra@123`).
-  2. Verify visitor details (Name, Company, Devices, Request ref, Office, Project, Host, Purpose, Valid window) and visitor photo (`#photo`) load.
+  2. Verify visitor details (Name, Company, Devices, Request ref, Office, Account, Host, Purpose, Valid window) and visitor photo (`#photo`) load.
   3. Verify that HTML notification emails (`NotificationEmailWorker`) and Outlook Actionable Adaptive Cards (`OutlookApprovalCard`) also render escaped `Company` and formatted `Devices` (`Laptop`, `Tablet / iPad`, `Pen Drive`, `Camera`, `Other`).
   4. Click **Approve**.
 - **Expected Result**:
@@ -72,7 +72,7 @@
   - `gp._NotificationRelevance` marks any pending outbox rows for the returned visit as `STATE_CHANGED` (`CANCELLED`).
 
 ### TC-EMAIL-08: Person Photos and Outlook-Compatible Notification Layout (Migration 088)
-- Generate the host, manager and visitor notification samples with `npm.cmd run mail:preview`. Check explicit status, person/company, inline person photo, office/project/devices, purpose, validity and actions at desktop/mobile widths. The subject uses the person's name and office; the full request reference remains visible in the footer.
+- Generate the host, manager and visitor notification samples with `npm.cmd run mail:preview`. Check explicit status, person/company, inline person photo, office/account/devices, purpose, validity and actions at desktop/mobile widths. The subject uses the person's name and office; the full request reference remains visible in the footer.
 - Verify the Graph capture contains `gatepass-company-logo` and `gatepass-person-photo` inline MIME parts, with no pass/QR attachment or public storage URL. Manager notices have no approval or private-holder link; pass-replacement notices have no person photo.
 - Under a restricted worker identity, resolve only a current relevant notification claim with `gp.ResolveNotificationPhoto`. API-role access, wrong/expired claims and changed recipients are denied. A purged photo has no storage metadata. The service rejects wrong visits, path traversal, bad length/hash and metadata/permission loss during file reads. The final relevance check prevents stale dispatch.
 - Ordinary HTML links still require the assigned host's active browser session or sign-in; no GET or mail scanner automatically decides. Direct Outlook actions require the separately configured Microsoft Entra actor-token flow. See [design, configuration and validation](../60_Email_Design_Person_Photos_And_Approvals.md).

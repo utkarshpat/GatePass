@@ -2,7 +2,7 @@
 
 > Latest execution: [24 October final browser verification and push](../67_Final_Browser_Verification_And_Presentation.md). The earlier 23 October counts below are historical. [Report 66](../66_Final_E2E_Counts_And_Edge_Cases_24_October_2026.md) distinguishes live SQL workflows from controlled UI fixtures, reconciles totals and lists remaining deployment/hardware/concurrency checks. That run is historical; current migration integrity covers **118** files.
 
-> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 Fresh 23 October evidence: all 65 Chromium/Axe browser tests passed on the final full rerun. 458 unit tests passed with one skip; coverage is 95.42% lines / 88.87% branches / 94.12% functions. All 15 selected live SQL/HTTP suites pass, including registration (57), guard duty (19), admin reads (38), printing (55), public/employee HTTP/SQL (25) and manual reception HTTP/SQL (7). The retained browser runner separately persists realistic synthetic records and verifies decisions, movement/return/correction, real rendered QR decoding, new staff setup/login and Excel export. Signed holder-cookie exchange/reload and employee status/card checks use actual local SQL and signing keys without sending mail. See the linked report for final browser counts and artifact paths.
 
@@ -44,3 +44,7 @@ Sources: azure-pipelines.yml; tools/ci; tests; docs/31_CI_Checks_and_Limits.md; 
 
 ## 27 October evidence
 The final configuration/validity unit run has 633 tests: 632 pass, one platform skip, zero failures; coverage 97.34% lines, 89.94% branches, 94.17% functions. Registration SQL has 58 passing cases; public/employee actual HTTP+SQL has 25; reception manual actual HTTP+SQL has 7. Two focused six-case browser runs cover individual visitors/accessibility and card/employee regressions. Full pre-push browser results are recorded in report 88. These local checks do not establish corporate SSO/Google/mail/printer/restore acceptance.
+
+## Account host policy update
+
+See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.

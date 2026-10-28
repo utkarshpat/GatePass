@@ -1,3 +1,4 @@
+import {AccountHostService} from './AccountHostService.ts';
 import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
 import {receptionIdentity} from '../reception/ReceptionService.ts';
 import {isUuid} from '../visits/SqlVisitReadRepository.ts';
@@ -9,6 +10,7 @@ const text=(v:unknown,max:number)=>typeof v==='string'&&v.length>0&&v.length<=ma
 const valid=(v:unknown,output=false)=>{if(!v)throw new StaffAdministrationError(output?'UNAVAILABLE':'INVALID_INPUT');};
 export class AdminWorkspaceService{
  #client:Client;constructor(client:Client){this.#client=client;}
+ hosts(session:Session,action:'account-hosts'|'account-host',input:unknown){return new AccountHostService(this.#client).execute(session,action,input);}
  async createProject(session:Session,d:Record<string,unknown>){
   valid(Object.keys(d).sort().join('|')==='clientKey|locationId|projectCode|projectName|reason');
   valid(isUuid(d.clientKey)&&Number.isInteger(d.locationId)&&Number(d.locationId)>0&&Number(d.locationId)<=2147483647);
@@ -29,7 +31,7 @@ export class AdminWorkspaceService{
   if(action==='candidates'){valid(Array.isArray(r.employees)&&r.employees.length<=20,true);return{employees:r.employees.map((e:any)=>{valid(isUuid(e.userId)&&text(e.employeeId,64)&&text(e.displayName,200)&&text(e.email,320),true);return{userId:e.userId,employeeId:e.employeeId,displayName:e.displayName,email:e.email};})};}
   valid(typeof r.hasMore==='boolean',true);const rawCursor=action==='projects'?r.afterProjectLocationId:r.afterRoleGrantId;valid(!r.hasMore||big(rawCursor),true);
   const raw=action==='projects'?r.projects:r.leads;valid(Array.isArray(raw)&&raw.length<=25,true);
-  const rows=raw.map((v:any)=>{if(action==='projects'){valid(big(v.projectLocationId)&&big(v.projectId)&&text(v.projectName,200)&&text(v.projectCode,64)&&['directoryCurrent','canAssignProject','canAssignLocation'].every(k=>typeof v[k]==='boolean'),true);return{projectLocationId:v.projectLocationId,projectId:v.projectId,projectName:v.projectName,projectCode:v.projectCode,directoryCurrent:v.directoryCurrent,canAssignProject:v.canAssignProject,canAssignLocation:v.canAssignLocation};}valid(big(v.roleGrantId)&&text(v.displayName,200)&&(v.employeeId===null||text(v.employeeId,64))&&(v.email===null||text(v.email,320))&&['PROJECT','PROJECT_LOCATION'].includes(v.scopeType)&&typeof v.canRemove==='boolean',true);return{roleGrantId:v.roleGrantId,displayName:v.displayName,employeeId:v.employeeId,email:v.email,scopeType:v.scopeType,canRemove:v.canRemove};});
+  const rows=raw.map((v:any)=>{if(action==='projects'){valid(big(v.projectLocationId)&&big(v.projectId)&&text(v.projectName,200)&&text(v.projectCode,64)&&['directoryCurrent','canAssignProject','canAssignLocation'].every(k=>typeof v[k]==='boolean'),true);return{projectLocationId:v.projectLocationId,projectId:v.projectId,projectName:v.projectName,projectCode:v.projectCode,directoryCurrent:v.directoryCurrent,canAssignProject:v.canAssignProject,canAssignLocation:v.canAssignLocation,canManageHosts:v.canManageHosts===true};}valid(big(v.roleGrantId)&&text(v.displayName,200)&&(v.employeeId===null||text(v.employeeId,64))&&(v.email===null||text(v.email,320))&&['PROJECT','PROJECT_LOCATION'].includes(v.scopeType)&&typeof v.canRemove==='boolean',true);return{roleGrantId:v.roleGrantId,displayName:v.displayName,employeeId:v.employeeId,email:v.email,scopeType:v.scopeType,canRemove:v.canRemove};});
   return{[action]:rows,cursor:r.hasMore?rawCursor:null};
  }
 }

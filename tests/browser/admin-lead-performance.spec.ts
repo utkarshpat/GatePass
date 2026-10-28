@@ -28,9 +28,9 @@ for(const width of[390,1366])test(`hidden overview makes no lead requests; visib
 test('a pending preview and first dialog read share one request; reopening performs a fresh authorization check',async({page,context})=>{
  let release=()=>{};const gate=new Promise<void>(resolve=>release=resolve);
  const calls=await setup(page,context,{count:1,onLead:async(route,index)=>{if(index===1){await gate;return route.fulfill({json:{leads:[{displayName:'Approved Lead',employeeId:'EMP001',scopeType:'PROJECT_LOCATION',canRemove:false}],cursor:null}});}return route.fulfill({status:403,json:{error:'NOT_AUTHORIZED'}});}});
- await page.locator('[data-admin-view="projects"]').click();await expect.poll(()=>calls.length).toBe(1);await page.getByRole('button',{name:'Project leads',exact:true}).click();
+ await page.locator('[data-admin-view="projects"]').click();await expect.poll(()=>calls.length).toBe(1);await page.getByRole('button',{name:"Account leads",exact:true}).click();
  await expect(page.locator('#lead-status')).toContainText('Loading');expect(calls).toHaveLength(1);release();await expect(page.locator('#lead-list')).toContainText('Approved Lead');
- await page.locator('#close-leads').click();await page.getByRole('button',{name:'Project leads',exact:true}).click();await expect(page.locator('#projects')).toBeEmpty();await expect(page.locator('#lead-dialog')).toBeHidden();expect(calls).toHaveLength(2);
+ await page.locator('#close-leads').click();await page.getByRole('button',{name:"Account leads",exact:true}).click();await expect(page.locator('#projects')).toBeEmpty();await expect(page.locator('#lead-dialog')).toBeHidden();expect(calls).toHaveLength(2);
 });
 test('preview concurrency stays at three and queued work pauses when the projects tab is hidden',async({page,context})=>{
  let release=()=>{};const gate=new Promise<void>(resolve=>release=resolve);let active=0,maximum=0;

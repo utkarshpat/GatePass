@@ -1,11 +1,11 @@
 # 08. Email, Graph and Outlook
 
-> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 Current request/approval details and notification rendering include optional visitor company and declared device types. Host Approve/Reject stays disabled while sign-in details/photo loading is still in progress, preventing an ignored early click. The retained rehearsal verifies real host decisions in the browser; queued notifications do not establish mailbox delivery. It sends no real messages.
 
 ## Notifications
-New individual requests with a recipient queue REQUEST_RECEIVED. External/project requests separately notify the assigned host. Temporary IDs auto-approve and queue informational TEMP_ID_MANAGER_NOTICE. Decisions independently queue results. Reused IDs/same-key replay must not duplicate receipt records.
+New individual requests with a recipient queue REQUEST_RECEIVED. External/account requests separately notify the assigned host. Temporary IDs auto-approve and queue informational TEMP_ID_MANAGER_NOTICE. Decisions independently queue results. Reused IDs/same-key replay must not duplicate receipt records.
 
 Worker uses dedicated SQL identity, bounded claims and lease/fence ownership. It resolves current directory contacts, obtains authorized content, rechecks relevance near dispatch, sends outside the transaction and acknowledges. Missing manager contact may retry without undoing issuance. Guard authorization reads SQL, not email delivery status.
 
@@ -17,7 +17,7 @@ Personal Outlook-to-personal-mail delivery was confirmed during development. Com
 Live addresses, tenant-specific credentials, secrets and personal token caches are excluded. Personal connector is a testing bridge, not final organization sender/identity architecture.
 
 ## Ordinary review links
-Normal Approve/Reject/View links open minimal authenticated request detail. Assigned host confirms explicitly; GET/link scanners never decide. SQL checks identity, exact host/project-office, freshness, snapshot, pending state and deadline. Internal status requires ownership. External receipt uses an individually signed expiring fragment capability; public reference is not an access token.
+Normal Approve/Reject/View links open minimal authenticated request detail. Assigned host confirms explicitly; GET/link scanners never decide. SQL checks identity, exact host/account-office, freshness, snapshot, pending state and deadline. Internal status requires ownership. External receipt uses an individually signed expiring fragment capability; public reference is not an access token.
 
 ## Native Outlook actions
 Optional Action.Http Approve/Reject has View details fallback. The endpoint validates organizational Entra v2 token and separate capability: configured issuer/audience/tenant, object ID, delegated scope, permitted Actions client, signature and time bounds. Personal, app-only, Graph-audience, ID and unsupported legacy tokens do not authorize it.
@@ -39,3 +39,7 @@ Sources: docs/35_Email_Driven_Request_Workflow.md; docs/36_Outlook_Direct_Approv
 
 ## Current organization configuration
 Production Graph sender, tenant/client ID and client secret are configured through `.env`, with an organization-approved mailbox-scoped sending permission. The live worker requires application authentication; personal Outlook device-code cache remains development-only. `.env` also configures approved directory/link-key module paths and private mail-photo storage. Native Outlook actions remain separately opt-in and require their provider/token/key configuration. Calendar-day expiry is displayed as the final date at 23:59 in emails and card images. Corporate delivery acceptance remains pending.
+
+## Account host policy update
+
+See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.

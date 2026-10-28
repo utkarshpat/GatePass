@@ -42,6 +42,9 @@ INSERT gp.EmployeeOfficeMemberships(EmployeeId,LocationId,IsActive,VerifiedAtUtc
 SELECT @prefix+'-'+Label,@loc,1,@now FROM @actors WHERE Label IN ('HOST','OTHERHOST');
 INSERT gp.EmployeeProjectLocationMemberships(EmployeeId,ProjectLocationId,IsActive,VerifiedAtUtc)
 SELECT @prefix+'-'+Label,@pair,1,@now FROM @actors WHERE Label IN ('HOST','OTHERHOST');
+IF OBJECT_ID('gp.AccountHosts') IS NOT NULL
+ INSERT gp.AccountHosts(ProjectLocationId,EmployeeId,IsActive,ChangedByUserId,ChangedAtUtc,Reason)
+ SELECT @pair,@prefix+'-'+Label,1,@host,@now,N'Explicit owned test host approval' FROM @actors WHERE Label IN('HOST','OTHERHOST');
 INSERT gp.StaffRoleGrants(UserId,RoleCode,ScopeType,LocationId,GrantedByUserId,ValidFromUtc)
 SELECT UserId,CASE WHEN Label='ADMIN' THEN 'LOCATION_ADMIN' WHEN Label='RECEPTION' THEN 'RECEPTION' ELSE 'GUARD' END,
     'LOCATION',CASE WHEN Label='WRONGLOCATION' THEN @pune ELSE @loc END,@host,DATEADD(hour,-1,@now)

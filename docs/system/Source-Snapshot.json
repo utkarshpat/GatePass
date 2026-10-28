@@ -1,15 +1,15 @@
 {
   "documentDate": "2026-10-28",
   "timezone": "Asia/Calcutta",
-  "gitBaseCommit": "c19e4ba6f27cc3a611dff913772b06e2d25a6910",
+  "gitBaseCommit": "b41248bae4023183aa9984be59e0b96e8bd1a50e",
   "snapshot": "Reviewed working-tree source before release commit; excludes actual .env, runtime data and private artifacts",
-  "migrationCount": 118,
+  "migrationCount": 121,
   "sqlDeclarationCounts": {
-    "TABLE": 48,
-    "PROCEDURE": 121,
+    "TABLE": 49,
+    "PROCEDURE": 123,
     "ROLE": 7,
     "VIEW": 1,
-    "FUNCTION": 22
+    "FUNCTION": 23
   },
   "sourceFiles": [
     {
@@ -58,7 +58,7 @@
     },
     {
       "path": "database/migrations.sha256.json",
-      "sha256": "6bb478fce3c70f531b68d9889e5002b39e6686efecf04c3e8ab95a9a475e681f"
+      "sha256": "092c7f843fe9a660cdc027500fcfaac0c06e2b2a4edcd35f333af830986e4bcd"
     },
     {
       "path": "database/migrations/001_individual_visit_baseline.sql",
@@ -533,12 +533,28 @@
       "sha256": "6f4453a576610ed7c95f34f37d46721d9b4b9f02060f0e990fb9398004c39247"
     },
     {
+      "path": "database/migrations/119_account_host_allowlists.sql",
+      "sha256": "124ea32d2262bc6769fc2389e96282ffec224f0dc8a7fe66a8cdd0fcce7cdd3a"
+    },
+    {
+      "path": "database/migrations/120_account_host_management_visibility.sql",
+      "sha256": "792e0c216115d73457595fc629c248d1d0d5b6d80f169bd89873cf8041c62533"
+    },
+    {
+      "path": "database/migrations/121_account_host_audit_details.sql",
+      "sha256": "e8f810acdbdaa40842cd4f1199435c61eab212e80dab4702e84fcfd6cc715c3a"
+    },
+    {
       "path": "package-lock.json",
       "sha256": "3c03b1709f4570474594476900df2f2842fa34fa0d14cd8e4da6b78dbc8ffc68"
     },
     {
       "path": "package.json",
       "sha256": "7b58f7a8e36a1e84c85d30978df4d22e98466ffd55751677e6f7bf41cce6d512"
+    },
+    {
+      "path": "src/administration/AccountHostService.ts",
+      "sha256": "1de31881b000d897dfe21df6246ef7552f5a3fb24a3f4e5f671efd61b0a6685d"
     },
     {
       "path": "src/administration/AdminConsoleService.ts",
@@ -550,7 +566,7 @@
     },
     {
       "path": "src/administration/AdminWorkspaceService.ts",
-      "sha256": "2f610a312048c3a7290ddfc84c403c3e14fb4d0692fb2622b8fe265af095fdfb"
+      "sha256": "5cbff4bbfb6ec9811def3ec70c8543d218fa5e8901bdd0599b63beafb1d07499"
     },
     {
       "path": "src/administration/AdministrationReadService.ts",
@@ -586,11 +602,11 @@
     },
     {
       "path": "src/app/admin.html",
-      "sha256": "21b3bce855f3a69c79f393d69a22f6a5f46805b856927331f161d4331d0deedb"
+      "sha256": "aaa6db9b2405dc52f376e1938f332edc1bf013b37f4563e9b9a4595f54da4b56"
     },
     {
       "path": "src/app/admin.js",
-      "sha256": "10a67a2d9cde4c7bb522b631cc5f418f9826c5509d3a0d25da3f179d48cc6f1a"
+      "sha256": "146e6cf43800fbf87b91003099edd2fee3a04cf776f98b7ddb87e41235c871a2"
     },
     {
       "path": "src/app/camera-session.js",
@@ -602,7 +618,7 @@
     },
     {
       "path": "src/app/email-request.js",
-      "sha256": "e53cca414c949f53b01223b5c0f3ee53903d4a72c4f7adfb867e4506a45d14ac"
+      "sha256": "8940b3bf710d47162c642e5bead252857de96a453f533e5d6ff54e32505d4860"
     },
     {
       "path": "src/app/employee-portal.css",
@@ -610,11 +626,11 @@
     },
     {
       "path": "src/app/employee-portal.html",
-      "sha256": "a32759ea0a56b45974699658bea0208bb22475d7c9011d58e58cb27cac36b8ac"
+      "sha256": "4ed6e5c05659b461184a51992d709a5e7f5d550b0908f4d92dd403282b6c6898"
     },
     {
       "path": "src/app/employee-portal.js",
-      "sha256": "67043caa5255670f21fcbdfd3db551af141eb45b13a315078f49e2c1ea685ff2"
+      "sha256": "85c7ae3c57cb3f59821238cfcc1e3726456683698ffb7949e261637794982265"
     },
     {
       "path": "src/app/global.css",
@@ -622,7 +638,7 @@
     },
     {
       "path": "src/app/guard-i18n.js",
-      "sha256": "f33b9156a1228740d12eb835d9e98272d1ea8da1d05f98550eaf3375e3af1a8d"
+      "sha256": "6a5113561a72f27d3634886bb320331c054907b4cdb7cbff56bb3f40d17b8924"
     },
     {
       "path": "src/app/guard-names.js",
@@ -634,11 +650,11 @@
     },
     {
       "path": "src/app/guard.html",
-      "sha256": "f11bce3cc23f44b7ba3f72eea800a2cf8c0c420b8fe5d9387ad56d6c53dfd022"
+      "sha256": "caa7b4319f76d0c6023cde9abc3f5c750e3aa698e85971b7f8e3805700ec325e"
     },
     {
       "path": "src/app/guard.js",
-      "sha256": "89c0d44a4757d80d1385cccc7f6d49ddf88182d3a576735d892bf8d1ca7d3a55"
+      "sha256": "149996773b2ca68528c60b84dec5d91c67852620f4e26207a2d62d0c5630a69b"
     },
     {
       "path": "src/app/image-viewer.css",
@@ -690,11 +706,11 @@
     },
     {
       "path": "src/app/reception.html",
-      "sha256": "e5a9d84ec396ddb41ac1d443f1be261da4a8af383db7ee07bdc3dc62c8b26107"
+      "sha256": "1fe52afb6a407df141010a54a32e4593455ee0fd4e5adebb305aeaaa20d2fbdf"
     },
     {
       "path": "src/app/reception.js",
-      "sha256": "b64205334e6cc7980ff92fcf98bfbc0a7f4270524bd6291494fc5ceb56bd9576"
+      "sha256": "47f77fe3343520185b0067c4e4bed98f6adec896aba1bf3138b199320f0126da"
     },
     {
       "path": "src/app/register-export-worker.js",
@@ -742,7 +758,7 @@
     },
     {
       "path": "src/development/AdminRoutes.ts",
-      "sha256": "6720211ebdaac5dc54c6465c530a4c7477189f41ee8eb0f0d5db0eec04b81fd3"
+      "sha256": "4fdd55bc618847388a3d79e52349aababc7332a1e79b66aa557b1f6bb444bca6"
     },
     {
       "path": "src/development/DevelopmentMailSandbox.ts",
@@ -782,7 +798,7 @@
     },
     {
       "path": "src/development/LocalDevelopmentApiClient.ts",
-      "sha256": "89839ad96e688282837cc9aa0779d747cb819eaf5d5880e79e10849167465caf"
+      "sha256": "5bde112d236e6db44d09071d39d40783a3597f673231261d355b0f8b66ba137c"
     },
     {
       "path": "src/development/LocalNameReadings.ts",
@@ -846,7 +862,7 @@
     },
     {
       "path": "src/email/NotificationEmailLayout.ts",
-      "sha256": "46fc58577fda706d424d8e20af16d5b7fde49361ed92f2e4f6e33b49d9017122"
+      "sha256": "eb52aa28bce5dad388c4b068a5ca080adfd38cfd3892d559cc2244446c66c7ec"
     },
     {
       "path": "src/email/NotificationEmailWorker.ts",
@@ -906,7 +922,7 @@
     },
     {
       "path": "src/printing/PassCardRenderer.ts",
-      "sha256": "3d75c594f3ce9653e19a9e901df5e7b03f61fa544d2ea4aad7cc0073d87fdc66"
+      "sha256": "17dfb36f34b864164530e09c56d9f3225eff7b51fe0eb19be5ee01fa6c98bcf1"
     },
     {
       "path": "src/printing/PassPrintService.ts",
@@ -998,7 +1014,7 @@
     },
     {
       "path": "src/transport/Composition.ts",
-      "sha256": "7fade2bdf6bba20ce464dedc10a5a2e8eb6498d44fec158e1e0dfec24c1f5b0e"
+      "sha256": "de6ccdc40b1dc41b889d9642c87df2a516a54a228d518d4dfb51f2bfcd57e4f4"
     },
     {
       "path": "src/transport/EmailPublicRoutes.ts",
@@ -1018,7 +1034,7 @@
     },
     {
       "path": "src/transport/SqlProcedureClient.ts",
-      "sha256": "eeec1f47b5b80bb06c3184dcee94e29ba1b6b7f63170a49a9791307c97bd9b07"
+      "sha256": "f0e9bce182e5520fdba8f73da4dd0fc209860a28723fa87033c13e786706c256"
     },
     {
       "path": "src/transport/runtime-identity.sql",
@@ -1065,6 +1081,10 @@
       "sha256": "831398f9fc34b7ea0c178a6835af52053db3b6ab5c045ba366ccefc72b1a0181"
     },
     {
+      "path": "tests/account-hosts.test.ts",
+      "sha256": "cf7082ce81c3f0055d527288488c1d626412fb458ecff5cbdb43274712e1df08"
+    },
+    {
       "path": "tests/action-centre-routes.test.ts",
       "sha256": "3471bda0e2f5fc23e6f3ba290d6375c1bab1fb3d1d527241ea022e40895e4b2d"
     },
@@ -1086,7 +1106,7 @@
     },
     {
       "path": "tests/admin-workspace.test.ts",
-      "sha256": "3d7cda691a23f6ebe4e3b82446c1dbd68702f64dfc0547904f0efd8274282278"
+      "sha256": "d5d962cb5aea4fb2daac50cb2eb91c905284ecaef06f4acbcb468f1742d9ae24"
     },
     {
       "path": "tests/administration-reads.sql-integration.ts",
@@ -1098,7 +1118,7 @@
     },
     {
       "path": "tests/api-composition.test.ts",
-      "sha256": "24239c48db72bd108ebac0f655a725e8b14752149b17b2aa2d75bd5929bd5e21"
+      "sha256": "e4e9ecc878acbc18ecbfb71a2ab2a53bd8028f494d2d43eccca6a73afe275617"
     },
     {
       "path": "tests/browser/ActionReminderFixture.ps1",
@@ -1126,11 +1146,15 @@
     },
     {
       "path": "tests/browser/VisitorIndividualFixture.ps1",
-      "sha256": "85f7a96025255f252116c1c07628565d70d1042c04237d83781b5b2fc36695ed"
+      "sha256": "d34856f4ba2154d70979d7a060b46128487afeb2c7dc7b6537263e337c79783f"
     },
     {
       "path": "tests/browser/WorkspaceQueueFixture.ps1",
       "sha256": "fe2dc5483a825cd1b4aecc4e76547d93bf99bc41869318caf5904d2fd14be752"
+    },
+    {
+      "path": "tests/browser/account-hosts.spec.ts",
+      "sha256": "073d968c86627743b7385ae04479df562f4ef1bbcd41c0ca89bf013d309fae74"
     },
     {
       "path": "tests/browser/action-centre.spec.ts",
@@ -1150,7 +1174,7 @@
     },
     {
       "path": "tests/browser/admin-access-boundaries.spec.ts",
-      "sha256": "34bb48506e9946e35bde17b974b5368853dcd953f98c51afa1f774b9afb4832a"
+      "sha256": "3e24f50cc6cb621cf8a11d179406b699a8a2e7de52459c60762466df8a2f9dbf"
     },
     {
       "path": "tests/browser/admin-console-live.spec.ts",
@@ -1158,19 +1182,19 @@
     },
     {
       "path": "tests/browser/admin-console.spec.ts",
-      "sha256": "70920a9e47272aef0459c3eebb841cab9955a6c20181a111cb28e801fb8abcde"
+      "sha256": "a0d8564e32d4d1e3cab6055b1bf0e8e84a3b6636d59321d715ff8469c92581aa"
     },
     {
       "path": "tests/browser/admin-followup-regressions.spec.ts",
-      "sha256": "b267216f97966e11d259f6437c558635bdb28253631700b177c04a5280bd891a"
+      "sha256": "e4effa36198842d7dc019a48578116f21325ddfde5185ad0545b5b79862bb11e"
     },
     {
       "path": "tests/browser/admin-lead-performance.spec.ts",
-      "sha256": "a412c18afb0fca8c8f4419f255265cc06d39cc165dbba09be5ea296117a79b31"
+      "sha256": "d0d339dd6f637c36b1e99af9c01b82f2f034fd5e8406db00e29922637dc85203"
     },
     {
       "path": "tests/browser/admin-pages.spec.ts",
-      "sha256": "68e15efa72c8cef6039e9f9d676a5420586da1d2f185b7d839194163a9ac8604"
+      "sha256": "0ccd6d72d4165280cf7fc238011484e0d0e5b93d5b1d85ba6a14db8fc775f9f8"
     },
     {
       "path": "tests/browser/admin-presentation-live.spec.ts",
@@ -1178,11 +1202,11 @@
     },
     {
       "path": "tests/browser/admin-project-creation-live.spec.ts",
-      "sha256": "07ff5ae9b4a8f2e5d9de2f5a26619ddc4bc86c5032923818444a6a666055dffb"
+      "sha256": "4fef9381445fe60f745e07899f1e748277813e643826ec72db0ad2aaf38915e7"
     },
     {
       "path": "tests/browser/admin-project-creation.spec.ts",
-      "sha256": "299f57aa7dc6fb756078f127c19b2dd582925046ef1ef47dfc9bfa33c0274d12"
+      "sha256": "58e3bb4a0561338e4cd8d622d85d85424a60dcfe0dbb94ef135943862ef4f93b"
     },
     {
       "path": "tests/browser/admin-qr-layout.spec.ts",
@@ -1214,7 +1238,7 @@
     },
     {
       "path": "tests/browser/admin-writes-live.spec.ts",
-      "sha256": "d29f473684551b93ab55981a4ca9f9fb48782893fe194e055b95b9404375da11"
+      "sha256": "7451d853733db97650e547d619368faff70a9bb09bc30967e15f8057998f7027"
     },
     {
       "path": "tests/browser/camera.ts",
@@ -1282,7 +1306,7 @@
     },
     {
       "path": "tests/browser/performance-second-pass.spec.ts",
-      "sha256": "f908af86382f55f75fb520dcf45cebf7c7d33df0b2bb397a8c018c1badef4130"
+      "sha256": "11ac582cc028a008185499644e34604e916ec1a2c6d53d7dd4113313e333630b"
     },
     {
       "path": "tests/browser/project-group-authority-live.spec.ts",
@@ -1358,11 +1382,11 @@
     },
     {
       "path": "tests/browser/visitor-individual.spec.ts",
-      "sha256": "fbda135d7470e93c11d68e1fc7a3207c1160069ba47470e195c7204cce1d4793"
+      "sha256": "bef7d3950f407d12c2f7b970c182d15f1ad24d20413fc55e8989e5219e99964c"
     },
     {
       "path": "tests/browser/workflows.spec.ts",
-      "sha256": "df7a77509495a05704114dd6cb5cb4253a4bc5ccf79cc8eee9c3c819f3fa387b"
+      "sha256": "b54acebe6de5208913da5e850c34c1bd49a80901c024fb906154b2072c4a6eea"
     },
     {
       "path": "tests/browser/workspace-lifecycle-regressions.spec.ts",
@@ -1430,7 +1454,7 @@
     },
     {
       "path": "tests/email-revocation.test.ts",
-      "sha256": "1194c73c0fd775352b0c1c1cc412dce366e68fc9860356e6050aceac70bc0d55"
+      "sha256": "0303481e0d1296ba9ac4cfba1bb14781df1633095b3ba70cd8f6877dceeace91"
     },
     {
       "path": "tests/email-worker-recovery.test.ts",
@@ -1446,7 +1470,7 @@
     },
     {
       "path": "tests/employee-project-summary.test.ts",
-      "sha256": "6bb2a8851bdbcb8bb1b9e8f249faaba393bd5da5a84b4d8c952d9ed56345eca8"
+      "sha256": "e4ba46be615f92b655851955cd21c4d93e694dc4b57afb56ff8296682395727a"
     },
     {
       "path": "tests/entry-request-timeout.test.ts",
@@ -1706,7 +1730,7 @@
     },
     {
       "path": "tests/sql-procedure-client.test.ts",
-      "sha256": "3d1c1db0a656ac73cc951859da098618566197e75cf47f60538a882c4f6d3d5b"
+      "sha256": "b3c6a8fb69f764bb26a3856d6ff0dea2c511a8618b10aea0b98a5025a7ab7707"
     },
     {
       "path": "tests/sql/development-leases.test.ts",
@@ -1754,7 +1778,7 @@
     },
     {
       "path": "tests/visit-reads.test.ts",
-      "sha256": "e6c7a85ce2e1c038094fb749e304ed5da1e63085fc037a1a379e55a86021ddb6"
+      "sha256": "0e371807c99e2aea464432c2d6ffcde33a23a878f472981161f2d209abee32e9"
     },
     {
       "path": "tests/visitor-components.test.ts",
@@ -1778,7 +1802,7 @@
     },
     {
       "path": "tools/GatePass.DevelopmentApiBridge.ps1",
-      "sha256": "08338a8f85589358c6483556541a7a92834526fff58fc6dfddfbcb1754cfc434"
+      "sha256": "6498191fbcff0ab85423e6d8a4701830c9c0e40461d67556fb29037c4782360d"
     },
     {
       "path": "tools/GatePass.DevelopmentLeases.psm1",
@@ -1846,7 +1870,7 @@
     },
     {
       "path": "tools/ci/Run-SqlChecks.ps1",
-      "sha256": "f4f33697cd1c365c9673965a843bc59ac81497958fe39480ddfa3cdea3ba004e"
+      "sha256": "e5f9ed9c1d37b28db59ebe7a81a7fec29d0644704e1a641c8d3fd36c6d5d876c"
     },
     {
       "path": "tools/ci/migrations.mjs",
@@ -2010,7 +2034,7 @@
     },
     {
       "path": "tools/update-documentation-references.py",
-      "sha256": "8b6fef6cd17c497341ccbdcc57fb63e5ca2fd418c96e1a2b4c24fe90d87cc623"
+      "sha256": "67c7eb7bc77437104f4ce76e5fbadad79bc6893e83452e4692afa59fcca27f91"
     },
     {
       "path": "tools/validate_database_model.py",

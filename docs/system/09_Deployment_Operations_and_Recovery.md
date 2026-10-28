@@ -1,6 +1,6 @@
 # 09. Deployment, operations and recovery
 
-> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 ## Target and boundary
 Agreed target: private Ubuntu Server 24.04 LTS x86-64 VM for UI/API, worker, SQL Server Express and private media, with protected off-VM backups. This is intended topology, not deployed evidence or a fresh vendor compatibility/licensing assessment. Windows DPAPI-protected files cannot simply be copied to Linux and assumed operational.
@@ -28,7 +28,7 @@ Reverse-proxy trust is a separate decision. Current production admission expects
 | Signal | Response |
 |---|---|
 | Controlled API startup failure | Verify config/TLS/key permissions and SQL separation without printing secrets |
-| Authorization failure | Check current session, office/project, freshness, grant and allocation |
+| Authorization failure | Check current session, office/account, freshness, grant and allocation |
 | Quota/stale storage lock | Reconcile SQL references/files; no blind deletion or lock stealing |
 | Notification retry/age | Inspect lease, recipient freshness, sender/provider and relevance |
 | Unconfirmed print | Query live job; separate dispatch, popup display and printer output |
@@ -49,3 +49,7 @@ Default media quotas: 512 MiB and 10,000 files. Immutable bounded publication fa
 Contain affected identities/scopes or the specific worker; preserve protected redacted evidence. Revoke/reset through governed paths and reconcile occupants/print/mail before broad retry. Exposure needs key-specific impact analysis: QR encryption, external status and Outlook action rings are separate rotations.
 
 Sources: docs/database/22_Private_Photos_and_QR_Key_Storage.md; docs/37_Reception_Audit.md; runtime/CI source.
+
+## Account host policy update
+
+See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.

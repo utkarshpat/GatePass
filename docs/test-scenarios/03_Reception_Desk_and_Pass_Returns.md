@@ -1,6 +1,6 @@
 # 03. Reception Desk & Printed Pass Returns
 
-> Updated 27 October 2026: current behavior/evidence is in [report 88](../88_Documentation_And_Release_28_October_2026.md). Visitor registration is single-person; employee project flows remain same-day; all calendar-day pass labels end at 23:59. Google station sign-in remains pending.
+> Updated 27 October 2026: current behavior/evidence is in [report 88](../88_Documentation_And_Release_28_October_2026.md). Visitor registration is single-person; employee account flows remain same-day; all calendar-day pass labels end at 23:59. Google station sign-in remains pending.
 
 > 23 October presentation run: [current evidence and retained demo data](../55_Presentation_Rehearsal_23_October_2026.md). Earlier execution counts/cleanup statements in this catalog describe their dated runs; this presentation dataset is retained.
 
@@ -35,7 +35,7 @@
 ### TC-REC-03: View Pass Details, Card Preview & Movement Timeline
 - **Steps**:
   1. Click a visitor/employee row or the eye icon button (`View pass for ...`).
-  2. Inspect `#visit-dialog`: Pass ID, Company, Devices, Office, Project / Assigned projects, Host name & email, Purpose, Valid from/until, Print count, Card status, and Entry/exit timeline.
+  2. Inspect `#visit-dialog`: Pass ID, Company, Devices, Office, Account / Assigned accounts, Host name & email, Purpose, Valid from/until, Print count, Card status, and Entry/exit timeline.
 - **Expected Result**:
   - Printable passes (`PENDING` or `APPROVED`, active/pending pass, unreturned, not expired, `canPrint: true`) render the high-res card preview image (`#reception-card img`) and enable `#detail-print`.
   - Non-printable passes (expired, denied, cancelled, revoked, returned, or view-only operator) render a read-only pass summary without QR credentials and hide `#detail-print`.
@@ -61,7 +61,7 @@
 - **Steps**:
   1. Click the floating **Manual registration** button (`#assistedFab`).
   2. Verify `#assisted-dialog` opens an iframe `/reception/register/<office-code>`.
-  3. Complete Visitor details (Name, Mobile, Email), Project, Host, Purpose (`Contractor` / `Support staff` / `Business meeting`), Photo, Review, and Submit.
+  3. Complete Visitor details (Name, Mobile, Email), Account, Host, Purpose (`Contractor` / `Support staff` / `Business meeting`), Photo, Review, and Submit.
   4. Close the manual dialog.
 - **Expected Result**:
   - Uses `/api/reception/manual/*` with `gp-reception-intake` cookies (isolated from public `/api/registration/*`).
@@ -104,4 +104,4 @@
 - **Expected Result**:
   - Calls `/api/reception/correct-return` with `visitRequestId`, `expectedPassId`, `expectedReturnedAtUtc`, `reason`, and idempotent `clientKey`.
   - Copies the original return receipt and correction metadata into `gp.PassReturnCorrections`, deletes the active `gp.PassReturns` marker, restores `AccessPasses.Status` (`ACTIVE` for approved, `PENDING` for pending), re-queues a fresh `HOST_APPROVAL_REQUEST` outbox notice if still pending before deadline, and records `PASS_RETURN_CORRECTED` in `gp.SecurityAuditEvents`.
-  - Replaying the original return `clientKey` after correction is rejected with `54503` (`CONFLICT`), and correction is blocked if the person is inside a project (`54504`) or a newer overlapping request exists in the office (`54503`).
+  - Replaying the original return `clientKey` after correction is rejected with `54503` (`CONFLICT`), and correction is blocked if the person is inside a account (`54504`) or a newer overlapping request exists in the office (`54503`).

@@ -7,7 +7,7 @@ def relative(p):return p.relative_to(root).as_posix()
 def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 out=root/'docs/system'
 migrations=sorted((root/'database/migrations').glob('*.sql'))
-lines=['# SQL source catalogue','','Updated 28 October 2026; 118 forward migration files. Declaration provenance is lexical source evidence, not a live catalogue or permission audit. Dynamic ALTER migrations may preserve/change existing definitions without a new literal declaration.','','## Migration hashes','','| Migration | SHA-256 |','|---|---|']
+lines=['# SQL source catalogue','',f'Updated 28 October 2026; {len(migrations)} forward migration files. Declaration provenance is lexical source evidence, not a live catalogue or permission audit. Dynamic ALTER migrations may preserve/change existing definitions without a new literal declaration.','','## Migration hashes','','| Migration | SHA-256 |','|---|---|']
 objects={}
 for p in migrations:
  lines.append(f'| [{p.name}](../../database/migrations/{p.name}) | `{digest(p)}` |')

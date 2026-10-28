@@ -9,7 +9,7 @@ import type { ReadParameter, VisitReadRepository } from '../src/visits/SqlVisitR
 const context = (view: ReadContext['view'] = 'GUARD'): ReadContext => ({ view, sessionToken: randomBytes(32).toString('base64url'), csrfToken: randomBytes(32).toString('base64url') });
 const stamp = '2026-10-20T10:20:00.000Z';
 const visit = () => ({ visitRequestId: randomUUID().toUpperCase(), publicReference: 'V-' + 'a'.repeat(32), requestType: 'EXTERNAL', personName: 'अतिथि / 1',
-  locationId: 1, locationName: 'Noida', projectLocationId: '1', projectName: 'Project', status: 'APPROVED', passStatus: 'ACTIVE', isInside: false,
+  locationId: 1, locationName: 'Noida', projectLocationId: '1', projectName: "Account", status: 'APPROVED', passStatus: 'ACTIVE', isInside: false,
   validFromUtc: stamp, validUntilUtc: stamp, accessPassId: randomUUID().toUpperCase(), publicPassNumber: 'GP-' + 'b'.repeat(32),
   checkedAtUtc: stamp, photoAvailable: true, canDecide: false, canCancel: false, canEnter: true, canExit: false, canReconcileExit: false,
   personEmail: 'private@example.com', personPhone: 'private', storageKey: 'PRIVATE', ciphertext: 'PRIVATE', credentialHash: 'PRIVATE', reason: 'PRIVATE' });

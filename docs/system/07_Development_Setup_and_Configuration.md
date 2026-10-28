@@ -1,8 +1,8 @@
 # 07. Development setup and configuration
 
-> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
-Apply missing forward migrations in order using `database/setup/Apply-LocalTransactionCore.ps1`; never rewrite/reapply an existing ledger version. Current source migrations end at 118; this development database has applied 118. Use `Apply-LocalForwardMigration.ps1 -Version NNN` for later versions beyond the older fixed-list setup helper. Before Node decoder tests, set `GATEPASS_SHARP_PATH` to the installed `node_modules/sharp` package and `GATEPASS_PWSH_PATH` to PowerShell 7. `npm.cmd run dev` serves port 8443. The opt-in retained browser rehearsal is documented separately and uses port 18448 by default. Run SQL fault/locking suites separately from browser rehearsals.
+Apply missing forward migrations in order using `database/setup/Apply-LocalTransactionCore.ps1`; never rewrite/reapply an existing ledger version. Current source migrations end at 121; this development database has applied 121. Use `Apply-LocalForwardMigration.ps1 -Version NNN` for later versions beyond the older fixed-list setup helper. Before Node decoder tests, set `GATEPASS_SHARP_PATH` to the installed `node_modules/sharp` package and `GATEPASS_PWSH_PATH` to PowerShell 7. `npm.cmd run dev` serves port 8443. The opt-in retained browser rehearsal is documented separately and uses port 18448 by default. Run SQL fault/locking suites separately from browser rehearsals.
 
 ## .env configuration
 Copy `.env.example` to root `.env`; the existing local file retains development/dummy/mock mode. API/email worker and Node dev launcher load it before startup. Populate production SQL identities, HTTPS origin/TLS paths, source key, Graph sender/app credentials and approved adapter/storage paths only on the production VM. Keep `.env` out of Git, public hosting and personal sync; restrict filesystem access.
@@ -26,7 +26,7 @@ The local UI host includes [cost-aware SSE invalidations](../Performance_Optimiz
 For an existing synthetic `GatePass_DesignTest`, run `./database/setup/Optimize-LocalTestDatabase.ps1 -TrustLocalServerCertificate` from the repository root to verify/set `AUTO_CLOSE OFF`. Omit the certificate switch when the local certificate is trusted. This explicit local maintenance command preserves all records; ordinary server startup does not change database options. Fresh development/CI setup also sets this option. See [the measured performance result](../Performance_Optimization_Phase_3.md).
 
 1. Select the dedicated synthetic test database and approved migration identity.
-2. Read database/README.md and helper parameters. Validate-LocalDatabase.ps1 handles the historical baseline, not the complete current 118 installation.
+2. Read database/README.md and helper parameters. Validate-LocalDatabase.ps1 handles the historical baseline, not the complete current 121 installation.
 3. Apply missing reviewed migrations ascending through the baseline setup and Apply-LocalTransactionCore.ps1 path. Check ledger/compatibility; do not reapply recorded files or drop databases to hide failures.
 4. Run approved synthetic directory/staff enrollment only with explicit development/mock flags. Credential seeding and test-password override are deliberate local operations, not boot behavior.
 5. Initialize protected storage, start loopback host and verify staff/public flows.
@@ -67,3 +67,7 @@ Abbreviated names within grouped rows share the indicated prefix; use exact gene
 Mail connect/test/scenario/dev commands can connect an identity, enqueue data or send email. Run them only deliberately for the authorized environment/recipient. They are not documentation-generation commands.
 
 Sources: package.json; tools/Start-DummySso.ps1; tools/start-api.ts; tools/start-email-worker.ts; database setup helpers.
+
+## Account host policy update
+
+See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.

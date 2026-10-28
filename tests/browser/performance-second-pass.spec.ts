@@ -29,7 +29,7 @@ test('load more before a changed search dispatch never reuses the previous query
  const calls:any[]=[],projects=Array.from({length:25},(_,i)=>({projectLocationId:String(i+1),projectId:String(i+1),projectName:'Project '+(i+1),projectCode:'P-'+(i+1),directoryCurrent:true,canAssignProject:false,canAssignLocation:false}));
  await admin(page,context,d=>{calls.push(d);return{projects,cursor:'25'};});
  await page.evaluate(`document.getElementById('project-search').value='Project';cataloguePage(true)`);
- expect(calls.at(-1).search).toBe('Project');expect(calls.at(-1).cursor).toBeUndefined();expect(await page.evaluate('state.projects.length')).toBe(25);
+ expect(calls.at(-1).search).toBe("Account");expect(calls.at(-1).cursor).toBeUndefined();expect(await page.evaluate('state.projects.length')).toBe(25);
 });
 
 test('newly loaded catalogue project stays selectable when a complete metadata cache exists',async({page,context})=>{
@@ -72,7 +72,7 @@ test('guard thumbnails reuse only an authorized matching content version and cle
  const {createRequire}=await import('node:module'),sharp=createRequire(import.meta.url)(process.env.GATEPASS_SHARP_PATH??'sharp');
  const jpeg=(await sharp({create:{width:8,height:8,channels:3,background:'#7799aa'}}).jpeg().toBuffer()).toString('base64');let version='a'.repeat(64),photos=0,denied=false;
  await context.addCookies(['gp-staff-session','gp-staff-csrf'].map(name=>({name,value:'synthetic',url:'http://localhost:18447'})));
- await page.route('**/api/**',route=>{const action=route.request().url().split('/').at(-1);const replies:any={context:{queuePaging:true,displayName:'Synthetic Guard',locations:[{locationId:1,locationName:'Noida'},{locationId:2,locationName:'Chennai'}]},duties:{duties:[{kind:'PROJECT',dutyId:'1',name:'Project'}]},queue:{visitors:[{visitRequestId:actor,personName:'Synthetic Person',publicReference:'SYN-1',publicPassNumber:'GP-1',requestType:'EXTERNAL',projectName:'Project',status:'APPROVED',passStatus:'ACTIVE',isInside:false,validUntilUtc:'2030-10-25T00:00:00.000Z',photoAvailable:true,photoVersion:version,allocations:[{kind:'PROJECT',dutyId:'1',name:'Project'}]}],total:1,cursor:null}};
+ await page.route('**/api/**',route=>{const action=route.request().url().split('/').at(-1);const replies:any={context:{queuePaging:true,displayName:'Synthetic Guard',locations:[{locationId:1,locationName:'Noida'},{locationId:2,locationName:'Chennai'}]},duties:{duties:[{kind:'PROJECT',dutyId:'1',name:"Account"}]},queue:{visitors:[{visitRequestId:actor,personName:'Synthetic Person',publicReference:'SYN-1',publicPassNumber:'GP-1',requestType:'EXTERNAL',projectName:"Account",status:'APPROVED',passStatus:'ACTIVE',isInside:false,validUntilUtc:'2030-10-25T00:00:00.000Z',photoAvailable:true,photoVersion:version,allocations:[{kind:'PROJECT',dutyId:'1',name:"Account"}]}],total:1,cursor:null}};
   if(action==='queue'&&denied)return route.fulfill({status:403,json:{error:'NOT_AUTHORIZED'}});if(action==='photo'){photos++;return route.fulfill({json:{mimeType:'image/jpeg',imageBase64:jpeg,photoVersion:version}});}return route.fulfill({json:replies[action!]??{}});
  });
  await page.goto('/guard');await expect(page.locator('.guard-card-avatar img')).toHaveCount(1);await page.evaluate('liveRefresh.close()');expect(photos).toBe(1);

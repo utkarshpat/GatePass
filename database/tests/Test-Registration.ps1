@@ -220,6 +220,7 @@ try {
         Assert-Condition ((Call $taskApi 'gp.GetRegistrationOptions' $taskSelector).hosts.Count -eq 0) 'Project-only host leaked into another office.'
         try {
             Invoke-GatePassNonQuery $taskAdmin 'INSERT gp.EmployeeOfficeMemberships(EmployeeId,LocationId,IsActive,VerifiedAtUtc) VALUES(@e,@l,1,SYSUTCDATETIME());INSERT gp.EmployeeProjectLocationMemberships(EmployeeId,ProjectLocationId,IsActive,VerifiedAtUtc) VALUES(@e,@p,1,SYSUTCDATETIME());' @{e=$taskOtherHost;l=$taskP.LocationId;p=$taskPair}
+            Invoke-GatePassNonQuery $taskAdmin 'INSERT gp.AccountHosts(ProjectLocationId,EmployeeId,IsActive,ChangedByUserId,ChangedAtUtc,Reason) SELECT @p,@e,1,UserId,SYSUTCDATETIME(),N''Explicit owned cross-office host approval'' FROM gp.Employees WHERE EmployeeId=@e;' @{e=$taskOtherHost;p=$taskPair}
             Assert-Condition ((Call $taskApi 'gp.GetRegistrationOptions' $taskSelector).hosts.Count -eq 1) 'Explicit local host missing.'
             $taskV=(Submit $taskP).visits[0];Assert-Condition ($taskV.status -eq 'PENDING') 'Cross-office access bypassed approval.'
             $taskDecision=Auth 'OTHERHOST';$taskDecision.ClientKey=[guid]::NewGuid();$taskDecision.VisitRequestId=[guid]$taskV.visitRequestId;$taskDecision.SnapshotVersion=1;$taskDecision.SnapshotHash=[Convert]::FromHexString((Invoke-GatePassScalar $taskAdmin 'SELECT CONVERT(varchar(64),SnapshotHash,2) FROM gp.VisitRequests WHERE VisitRequestId=@id;' @{id=[guid]$taskV.visitRequestId}));$taskDecision.Decision='APPROVED'
@@ -231,7 +232,21 @@ try {
             $taskMove=Auth 'WRONGLOCATION';$taskMove.ClientKey=[guid]::NewGuid();$taskMove.VisitRequestId=[guid]$taskV.visitRequestId;$taskMove.AccessPassId=[guid]$taskV.accessPassId;$taskMove.LocationId=$taskP.LocationId;$taskMove.SelectedProjectLocationId=$taskPair;$taskMove.EventType='ENTRY';$taskMove.EntryMethod='MANUAL'
             Assert-Condition (Call $taskApi 'gp.RecordMovement' $taskMove).isInside 'Approved hosted cross-office employee could not enter.'
             $taskMove.ClientKey=[guid]::NewGuid();$taskMove.EventType='EXIT';$null=Call $taskApi 'gp.RecordMovement' $taskMove
-        } finally {Invoke-GatePassNonQuery $taskAdmin 'DELETE gp.EmployeeProjectLocationMemberships WHERE EmployeeId=@e AND ProjectLocationId=@p;DELETE gp.EmployeeOfficeMemberships WHERE EmployeeId=@e AND LocationId=@l;' @{e=$taskOtherHost;p=$taskPair;l=$taskP.LocationId}}
+        } finally {Invoke-GatePassNonQuery $taskAdmin 'DELETE gp.AccountHosts WHERE EmployeeId=@e AND ProjectLocationId=@p;DELETE gp.EmployeeProjectLocationMemberships WHERE EmployeeId=@e AND ProjectLocationId=@p;DELETE gp.EmployeeOfficeMemberships WHERE EmployeeId=@e AND LocationId=@l;' @{e=$taskOtherHost;p=$taskPair;l=$taskP.LocationId}}
+    }
+    Test-Case 'Unlisted account host cannot be forged through direct visitor submission' {
+        $taskP=New-Submission 'EXTERNAL'
+        try {
+            Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.AccountHosts SET IsActive=0 WHERE EmployeeId=@e AND ProjectLocationId=@p;' @{e=$taskOtherHost;p=[long]$taskFixture.projectLocationId}
+            Expect-Error { Submit $taskP } 52701
+        } finally {Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.AccountHosts SET IsActive=1 WHERE EmployeeId=@e AND ProjectLocationId=@p;' @{e=$taskOtherHost;p=[long]$taskFixture.projectLocationId}}
+    }
+    Test-Case 'Committed visitor retry revalidates the account host list before cached replay' {
+        $taskP=New-Submission 'EXTERNAL';$null=Submit $taskP
+        try {
+            Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.AccountHosts SET IsActive=0 WHERE EmployeeId=@e AND ProjectLocationId=@p;' @{e=$taskOtherHost;p=[long]$taskFixture.projectLocationId}
+            Expect-Error { Submit $taskP } 52701
+        } finally {Invoke-GatePassNonQuery $taskAdmin 'UPDATE gp.AccountHosts SET IsActive=1 WHERE EmployeeId=@e AND ProjectLocationId=@p;' @{e=$taskOtherHost;p=[long]$taskFixture.projectLocationId}}
     }
     Test-Case 'Revoked exact host assignment blocks submission despite project membership' {
         $taskP=New-Submission 'EXTERNAL'

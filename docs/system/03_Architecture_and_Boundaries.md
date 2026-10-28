@@ -1,6 +1,6 @@
 # 03. Architecture and boundaries
 
-> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 ## Components
 | Component | Responsibility | Source |
@@ -44,3 +44,7 @@ Production admission requires configured HTTPS origin/Host. Arbitrary forwarded 
 Keep private photos, SQL files, secrets, credentials, backups and signing keys outside source/OneDrive. Logs retain controlled codes/correlations rather than tokens, capability URLs, photographs or raw provider bodies.
 
 Sources: src/transport/Composition.ts; src/transport/ApiHandler.ts; tools/start-api.ts; docs/37_Reception_Audit.md.
+
+## Account host policy update
+
+See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.

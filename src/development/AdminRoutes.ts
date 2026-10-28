@@ -50,8 +50,9 @@ export class AdminRoutes implements AdditionalHttpRoutes{
    return 'data:image/png;base64,'+finalBuf.toString('base64');
   }catch{return 'data:image/png;base64,'+qrBuf.toString('base64');}
  }
- handles(path:string){return /^\/api\/admin\/(project-groups|project-group|project-group-guard|context|create-project|projects|leads|candidates|grant|revoke|common-duties|common-duty|scope|assignments|guards|subjects|roles|summary|summary-range|audit|allocate|deallocate|visits|register|create-staff|reset-staff-setup|visit-detail|office-qr)$/u.test(path);}
+ handles(path:string){return /^\/api\/admin\/(account-hosts|account-host|project-groups|project-group|project-group-guard|context|create-project|projects|leads|candidates|grant|revoke|common-duties|common-duty|scope|assignments|guards|subjects|roles|summary|summary-range|audit|allocate|deallocate|visits|register|create-staff|reset-staff-setup|visit-detail|office-qr)$/u.test(path);}
  async handle(req:IncomingMessage,_res:ServerResponse){requireDummySso();if(!['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress??''))throw new HttpFailure(403);if(!this.handles(req.url??''))throw new HttpFailure(404);const session=this.#staff.session(req);if(!await this.#staff.verify(session))throw new HttpFailure(401);const d=await readJsonBody(req),action=req.url!.split('/').at(-1)!;
+  if(action==='account-hosts'||action==='account-host')return this.#reads.hosts(session,action,d);
   if(['project-groups','project-group','project-group-guard'].includes(action)){if(!this.#console)throw new HttpFailure(503);return this.#console.groups(session,action as 'project-groups'|'project-group'|'project-group-guard',d);}
   if(['scope','assignments'].includes(action)){if(!this.#console)throw new HttpFailure(503);return this.#console.read(session,action as 'scope'|'assignments',d);}
   if(['guards','subjects','roles','summary','audit'].includes(action)){if(!this.#admin)throw new HttpFailure(503);return this.#admin[action as 'guards'|'subjects'|'roles'|'summary'|'audit'](session,d);}

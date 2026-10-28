@@ -1,6 +1,6 @@
 # 01. Public & Employee Registration Scenarios
 
-> Updated 27 October 2026: current behavior/evidence is in [report 88](../88_Documentation_And_Release_28_October_2026.md). Visitor registration is single-person; employee project flows remain same-day; all calendar-day pass labels end at 23:59. Google station sign-in remains pending.
+> Updated 27 October 2026: current behavior/evidence is in [report 88](../88_Documentation_And_Release_28_October_2026.md). Visitor registration is single-person; employee account flows remain same-day; all calendar-day pass labels end at 23:59. Google station sign-in remains pending.
 
 > 23 October presentation run: [current evidence and retained demo data](../55_Presentation_Rehearsal_23_October_2026.md). Earlier execution counts/cleanup statements in this catalog describe their dated runs; this presentation dataset is retained.
 
@@ -25,7 +25,7 @@
   1. Click **SSI Employee** on `/office/noida`.
   2. Sign in with `employee2@example.com` and `Sopra@123`.
 - **Expected Result**:
-  - Employee identity card displays `Employee 2`, `EMP002 · employee2@example.com`, `Primary Office: Noida`, and assigned project chips (`Project 1 · Noida`).
+  - Employee identity card displays `Employee 2`, `EMP002 · employee2@example.com`, `Primary Office: Noida`, and assigned account chips (`Project 1 · Noida`).
   - `+ Request access to another project` button is available.
 
 ### TC-REG-03: Employee Digital ID Issuance (Eligible Office, Camera-Only Capture)
@@ -58,13 +58,13 @@
   2. Select reason `Forgot my card` and click **Continue**.
 - **Expected Result**:
   - Banner states `Access to this office requires host approval.`
-  - Clicking **Continue** without adding a project/host shows error toast `Add a project and local host for approval.` and focuses `+ Request project access`.
+  - Clicking **Continue** without adding a account/host shows error toast `Add a project and local host for approval.` and focuses `+ Request project access`.
 
-### TC-REG-07: Employee Additional Project Access (`EMPLOYEE_PROJECT`)
+### TC-REG-07: Employee Additional Account Access (`EMPLOYEE_PROJECT`)
 - **Steps**:
   1. Sign in as `employee2@example.com` on `/office/noida`.
   2. Click `+ Request access to another project`.
-  3. In the modal, select an unassigned project (`Project 2`), search for an eligible host assigned to `Project 2` at Noida, select Purpose, and click **Add project**.
+  3. In the modal, select an unassigned account (`Project 2`), search for an eligible host assigned to `Project 2` at Noida, select Purpose, and click **Add account**.
   4. Complete Photo and Review steps and submit.
 - **Expected Result**:
   - Submits both `DIGITAL_ID` (auto-approved) and `EMPLOYEE_PROJECT` (status `PENDING`, awaiting host approval) as separate visits.
@@ -75,16 +75,16 @@
   1. Open `/office/noida` and click **Visitor Check-in**.
   2. Enter Name (`Arjun Mehta`), valid mobile (`9876543210` with `+91` country code), optional Email (`visitor1@example.com`), optional **Company Name** (`Acme Corp`), and optional **Devices Carried** (`Laptop`, `Tablet / iPad`, `Pen Drive`, `Camera`, `Other`).
   3. Click **Continue** to Visit details.
-  4. Select Valid until (within `[currentDate, maxVisitDate]`), search/select an office host by name/email without a project selector, and select Purpose (`Business meeting`, `Contractor`, `Support staff`, etc.).
+  4. Select Valid until (within `[currentDate, maxVisitDate]`), search/select an office host by name/email without a account selector, and select Purpose (`Business meeting`, `Contractor`, `Support staff`, etc.).
   5. Capture visitor photo via camera, review details (verifying `Company` and `Devices` appear in the review summary), and click **Submit Pass**.
 - **Expected Result**:
   - Request is created with `status: PENDING`, `passStatus: PENDING`, `CompanyName = 'Acme Corp'`, and canonical sorted `DeviceTypesJson = '["LAPTOP","TABLET"]'`.
   - Success screen shows `Approval pending` badge, reference `V-...`, and pass number `GP-...`.
 
-### TC-REG-09: Individual Registration and Project Privacy
+### TC-REG-09: Individual Registration and Account Privacy
 - Verify Add visitor, Remove visitor and collapsed-person controls are absent.
-- Send two people or a public project filter/project ID directly; expect rejection without persisted partial visits.
-- Search a host in the QR office; responses contain no project mapping/catalogue. Out-of-office hosts cannot be submitted.
+- Send two people or a public account filter/account ID directly; expect rejection without persisted partial visits.
+- Search a host in the QR office; responses contain no account mapping/catalogue. Out-of-office hosts cannot be submitted.
 - Submit one visitor without email; preview/download the real pending card. A different intake cannot export that card.
 - Select tomorrow as Valid until; stored start is today and the final displayed minute is tomorrow 23:59. Verify non-midnight ends are not changed.
 - Verify desktop Host/Valid until alignment, mobile stacking, and current queues on later valid stay days.

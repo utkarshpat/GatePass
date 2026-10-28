@@ -1,6 +1,6 @@
 # 12. Maintenance and reference map
 
-> Current source documentation: **28 October 2026**, migrations **001–118**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 ## Precedence
 This handbook is the consolidated local baseline dated 22 October 2026. Earlier numbered documents are historical increments. Resolve conflict using latest approved requirements, executable source/migrations and applicable current evidence; update the handbook when behavior changes. Historical reports are not current environment attestations.
@@ -18,7 +18,7 @@ The package contains current chapters, source-derived inventories and existing M
 | Original domain/ER/dictionary | docs/database/00_READ_ME_FIRST.md, 01_Domain_and_Design_Decisions.md, 03_Data_Dictionary.md |
 | Identity/delegation | docs/database/29_Staff_Identity_and_Delegation.md |
 | Office policy | docs/33_Employee_Office_Authorization.md |
-| Duties/project presence | docs/34_Guard_Duties_and_Project_Presence.md |
+| Duties/account presence | docs/34_Guard_Duties_and_Project_Presence.md |
 | Email/status | docs/35_Email_Driven_Request_Workflow.md |
 | Native Outlook | docs/36_Outlook_Direct_Approvals.md |
 | Print/reception audit | docs/37_Reception_Audit.md |
@@ -37,13 +37,13 @@ Regenerate inventories from reviewed source while preserving source-declaration 
 | Term | Meaning |
 |---|---|
 | Office | Server-bound location, not a user-chosen entitlement |
-| Project-location | Exact authorization pair |
+| Account-location | Exact authorization pair |
 | Primary office | Trusted directory field, not complete entitlement set |
 | Digital ID | Same-day employee identity credential |
-| Hosted visit | Individually approved temporary project-office permission |
+| Hosted visit | Individually approved temporary account-office permission |
 | Duty | Guard PROJECT or COMMON allocation |
 | Common area | Office verification without movement |
-| Presence | Project occupancy, distinct from decision/pass |
+| Presence | Account occupancy, distinct from decision/pass |
 | Capability | Explicit role permission, or narrow signed bearer authority depending on context |
 | Snapshot | Immutable submitted approval data |
 | Idempotency key | Stable identity of a logical retryable operation |
@@ -59,3 +59,7 @@ Regenerate inventories from reviewed source while preserving source-declaration 
 - Organization inputs and planned station identity: report 87.
 - Current pre-push checks and documentation snapshot: report 88, regenerated source/route/SQL references.
 - Reports 83–84 preserve the prior performance/group verification findings. Dated PDFs, screenshots and prior validation reports remain historical artifacts.
+
+## Account host policy update
+
+See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.

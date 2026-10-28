@@ -75,7 +75,7 @@ test('guard dashboard, project filter, language and profile work without a sideb
   await noHorizontalOverflow(page);
   await accessible(page);
   await page.locator('#project-filter-trigger').click();
-  await expect(page.getByRole('option', { name: 'Project 1 · Project', exact: true })).toBeVisible();
+  await expect(page.getByRole('option', { name: 'Project 1 · Account', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await page.locator('#account-toggle').click();
   await page.locator('#language-menu').click();
@@ -118,7 +118,7 @@ test('employee in another office gets an approval flow and exact local project c
   await page.getByRole('button',{name:'Continue',exact:true}).click();
   await expect(page.locator('#details-step')).toBeVisible();
   await expect(page.locator('#photo-step')).toBeHidden();
-  await page.getByRole('button',{name:'+ Request project access',exact:true}).click();
+  await page.getByRole('button',{name:"+ Request account access",exact:true}).click();
   await page.locator('#project-trigger').click();
   await expect(page.getByRole('option',{name:'Project 1',exact:true})).toBeVisible();
   await page.getByRole('option',{name:'Project 1',exact:true}).click();

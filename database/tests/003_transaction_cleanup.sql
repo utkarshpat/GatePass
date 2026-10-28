@@ -15,6 +15,8 @@ INSERT @assignments SELECT GuardAssignmentId FROM gp.GuardAssignments WHERE Guar
 DECLARE @notifications table(Id bigint PRIMARY KEY);
 INSERT @notifications SELECT NotificationId FROM gp.NotificationOutbox WHERE VisitRequestId IN(SELECT Id FROM @visits);
 BEGIN TRANSACTION;
+IF OBJECT_ID('gp.AccountHosts') IS NOT NULL DELETE FROM gp.AccountHosts WHERE EmployeeId LIKE @prefix+'-%';
+
 -- Serialize owned-fixture removal with API reads and writes that use the same gate.
 EXEC gp._TakeLock N'gp:authorization','Exclusive';
 DELETE FROM gp.PassReturnCorrections WHERE VisitRequestId IN(SELECT Id FROM @visits);

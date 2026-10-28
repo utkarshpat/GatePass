@@ -116,5 +116,8 @@
   "115_bound_register_utc_projection_width.sql": "932c26d8e9586ac6592511148a4f5f1657e2d4fbaa18bed27031202a27c0b192",
   "116_individual_visitor_registration.sql": "8999b9dc0d869c6caf431f48617ab9f9b9f45528e593cf4c89c966da6623a030",
   "117_multiday_visitor_queues.sql": "7ce8749bd9c14b592dd9c1ee096a7c9ec38b17f3ddd60d57ec3807fc81381835",
-  "118_preserve_visitor_device_memory_bounds.sql": "15fecdfafb563be2e9705df1c459f0a6412a95ca067f84411b86cf3f432ab0b4"
+  "118_preserve_visitor_device_memory_bounds.sql": "15fecdfafb563be2e9705df1c459f0a6412a95ca067f84411b86cf3f432ab0b4",
+  "119_account_host_allowlists.sql": "d7c97f60c214f33eacffe760c67e099ad2e7cb9c7353ead065ae6d6d321ec8ee",
+  "120_account_host_management_visibility.sql": "b2b42b47e2ca5a4502aa7b75993ca35b3a3d5f133312659e03ddb2722f387c58",
+  "121_account_host_audit_details.sql": "e8f810acdbdaa40842cd4f1199435c61eab212e80dab4702e84fcfd6cc715c3a"
 }

@@ -31,3 +31,7 @@ Google sign-in does not itself enforce physical-device binding. That restriction
 Database installation, application deployment, private storage, jobs and logging can be configured on the VM. Confirm the initial platform administrator; support/patching/backup owners; visitor/privacy notice; retention periods; visitor-stay limit; multi-project/no-project host-routing policy; and an off-VM backup destination/recovery target.
 
 Production settings belong in a private VM `.env`, using `.env.example` as the empty template. Actual credentials remain outside source control. Integration, production composition and hardware/recovery acceptance are still required.
+
+## Account terminology and initial host approvals
+
+The previous project assignment fields represent accounts/clients and exact account-office membership. Real sub-projects share that account-office approval. Existing integration field names remain legacy compatibility identifiers. Supply the initial approved-host mapping (employee ID + account + office), or have authorized admins configure it through Manage hosts before launch. Directory membership alone does not grant host authority. See [the account-host policy](89_Accounts_And_Approved_Hosts_28_October_2026.md).

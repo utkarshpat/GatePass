@@ -8,6 +8,7 @@ $taskConnection=Open-GatePassLocalSql -TrustLocalServerCertificate
 $taskRun=[guid]::NewGuid();$taskReport=$null
 $taskTemp=[IO.Path]::GetFullPath([IO.Path]::GetTempPath());$taskStore=[IO.Path]::GetFullPath((Join-Path $taskTemp ('gatepass-public-test-'+$taskRun.ToString('N'))))
 try {
+ & (Join-Path $PSScriptRoot 'DevelopmentHostFixture.ps1') -RunId $taskRun -Action Create
  if($UiReview){foreach($taskReviewFile in @('tmp/guard-ui-review-ready.json','tmp/guard-ui-review-ready.json.done')){ $taskReviewPath=Join-Path $taskRoot $taskReviewFile;if(Test-Path -LiteralPath $taskReviewPath){Remove-Item -LiteralPath $taskReviewPath -Force}}}
  $taskProcess=[Diagnostics.Process]::new();$taskProcess.StartInfo=[Diagnostics.ProcessStartInfo]::new('node');$taskProcess.StartInfo.ArgumentList.Add((Join-Path $taskRoot 'tests/reception-manual.sql-integration.ts'))
  $taskProcess.StartInfo.WorkingDirectory=$taskRoot;$taskProcess.StartInfo.UseShellExecute=$false;$taskProcess.StartInfo.CreateNoWindow=$true
@@ -48,6 +49,7 @@ DELETE s FROM gp.Sessions s JOIN gp.Users u ON u.UserId=s.UserId WHERE s.Session
    foreach($taskKey in $taskReport.clientKeys){if((Invoke-GatePassScalar $taskConnection "SELECT COUNT(*) FROM gp.IdempotencyRequests WHERE OperationCode='SUBMIT_REGISTRATION' AND ClientKey=@Id" @{Id=[guid]$taskKey}) -ne 0){throw 'Owned idempotency cleanup incomplete.'}}
   }
  }finally{
+  & (Join-Path $PSScriptRoot 'DevelopmentHostFixture.ps1') -RunId $taskRun -Action Cleanup
   $taskConnection.Dispose()
   if($UiReview){foreach($taskReviewFile in @('tmp/guard-ui-review-ready.json','tmp/guard-ui-review-ready.json.done')){$taskReviewPath=Join-Path $taskRoot $taskReviewFile;if(Test-Path -LiteralPath $taskReviewPath){Remove-Item -LiteralPath $taskReviewPath -Force}}}
   if($taskStore.StartsWith($taskTemp,[StringComparison]::OrdinalIgnoreCase) -and [IO.Path]::GetFileName($taskStore) -eq ('gatepass-public-test-'+$taskRun.ToString('N'))){if(Test-Path -LiteralPath $taskStore){Remove-Item -LiteralPath $taskStore -Recurse -Force}}

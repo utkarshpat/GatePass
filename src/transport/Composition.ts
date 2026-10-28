@@ -1,3 +1,4 @@
+import {AccountHostService} from '../administration/AccountHostService.ts';
 import {ProjectGroupService} from '../administration/ProjectGroupService.ts';
 import {ReceptionService} from '../reception/ReceptionService.ts';
 import {ActionCentreService} from '../operations/ActionCentreService.ts';
@@ -55,6 +56,7 @@ export async function composeApi(config: { origin: string; sourceKey: Buffer; ap
 export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): ReadonlyMap<string, ApiAction> {
     const email=new EmailWorkflowService(api,links);
     const reads = new VisitReadService(new SqlVisitReadRepository(api, 'api'));
+    const hosts = new AccountHostService(api);
     const groups = new ProjectGroupService(api);
     const duty = new GuardDutyService(api);
     const workspace = new GuardWorkspaceService(api);
@@ -64,6 +66,7 @@ export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): 
     const reception=new ReceptionService(api);
     const actionCentre=new ActionCentreService(api);
     const actions = new Map<string, ApiAction>();
+    for(const action of ['account-hosts','account-host'] as const)actions.set('/api/admin/'+action,(session,body)=>hosts.execute(session,action,body));
     actions.set('/api/reception/queue',(session,body)=>reception.queue(session,body as Record<string,unknown>));
     actions.set('/api/operations/actions',(session,body)=>actionCentre.read(session,body as Record<string,unknown>));
     actions.set('/api/operations/remind',(session,body)=>actionCentre.remind(session,body as Record<string,unknown>));

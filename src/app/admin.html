@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Projects & Delegation · Sopra Steria</title>
+  <title>Accounts & Delegation · Sopra Steria</title>
   <style nonce="__NONCE__">__STYLES__</style>
 </head>
 <body>
@@ -63,7 +63,7 @@
       </button>
       <button type="button" hidden data-admin-view="projects">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 7h18v14H3zM8 7V3h8v4"/></svg>
-        <span>Projects & areas</span>
+        <span>Accounts & areas</span>
       </button>
       <button type="button" hidden data-admin-view="staff">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M20 8v6M17 11h6"/></svg>
@@ -100,10 +100,10 @@
       <div id="scope-project-wrap" class="scope-select-wrap" hidden>
         <label for="console-project" class="scope-label">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h18v14H3zM8 7V3h8v4"/></svg>
-          <span>Project scope</span>
+          <span>Account scope</span>
         </label>
         <select id="console-project">
-          <option value="">All authorized projects in office</option>
+          <option value="">All authorized accounts in office</option>
         </select>
       </div>
       <p id="scope-hint" class="hint scope-hint-pill" hidden></p>
@@ -161,10 +161,10 @@
     </section>
 
     <!-- 2. Projects & Leads Section -->
-    <section id="admin-projects" aria-label="Projects and common areas" hidden>
+    <section id="admin-projects" aria-label="Accounts and common areas" hidden>
       <div class="page-head">
         <div class="page-head-copy">
-          <h2>Projects &amp; areas</h2>
+          <h2>Accounts &amp; areas</h2>
           <p id="projects-summary" class="hint"></p>
         </div>
         <div class="page-head-actions">
@@ -172,25 +172,25 @@
           <div class="refresh-slot" data-refresh-slot></div>
         </div>
       </div>
-      <div id="projects-tabs" class="chip-row projects-tabs" role="group" aria-label="Projects and areas views" hidden>
-        <button type="button" class="choice-chip" data-project-tab="catalogue" aria-pressed="true">Projects &amp; areas</button>
-        <button type="button" class="choice-chip" data-project-tab="groups" aria-pressed="false">Project groups</button>
+      <div id="projects-tabs" class="chip-row projects-tabs" role="group" aria-label="Accounts and areas views" hidden>
+        <button type="button" class="choice-chip" data-project-tab="catalogue" aria-pressed="true">Accounts &amp; areas</button>
+        <button type="button" class="choice-chip" data-project-tab="groups" aria-pressed="false">Account groups</button>
       </div>
       <div id="project-catalogue-panel">
       <div class="list-toolbar">
         <div class="search-box">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <label class="sr-only" for="project-search">Search projects and areas</label>
-          <input id="project-search" type="search" maxlength="80" autocomplete="off" placeholder="Search projects and areas by name or code">
+          <label class="sr-only" for="project-search">Search accounts and areas</label>
+          <input id="project-search" type="search" maxlength="80" autocomplete="off" placeholder="Search accounts and areas by name or code">
         </div>
       </div>
       <p id="common-catalog-status" class="hint" role="status"></p>
       <div id="projects" class="project-grid"></div>
-      <button type="button" class="secondary load-more-btn" id="more-projects" hidden>Load more projects and areas</button>
+      <button type="button" class="secondary load-more-btn" id="more-projects" hidden>Load more accounts and areas</button>
       </div>
-      <section id="project-groups-panel" aria-label="Project groups" hidden>
+      <section id="project-groups-panel" aria-label="Account groups" hidden>
         <div class="page-head">
-          <div class="page-head-copy"><h3>Project groups</h3><p class="hint">Group projects by floor or entry. Project changes automatically update linked guards.</p></div>
+          <div class="page-head-copy"><h3>Account groups</h3><p class="hint">Group accounts by floor or entry. Account changes automatically update linked guards.</p></div>
           <div class="page-head-actions"><button id="create-project-group" type="button" class="secondary">Create group</button></div>
         </div>
         <p id="project-groups-status" class="hint" role="status" aria-live="polite"></p>
@@ -261,7 +261,7 @@
           </fieldset>
           <div class="field">
             <label for="staff-reason">Assignment justification / Reason</label>
-            <input id="staff-reason" maxlength="300" placeholder="e.g. Project Delivery Lead delegation" required>
+            <input id="staff-reason" maxlength="300" placeholder="e.g. Account Delivery Lead delegation" required>
           </div>
           <div class="panel-actions">
             <button class="primary" id="staff-grant" type="submit">Assign role</button>
@@ -271,7 +271,7 @@
     </section>
 
     <!-- 4. Guard Assignments Section -->
-    <section id="admin-assignments" aria-label="Guard project assignments" hidden>
+    <section id="admin-assignments" aria-label="Guard account assignments" hidden>
       <div class="page-head">
         <div class="page-head-copy">
           <h2>Guard assignments</h2>
@@ -298,12 +298,12 @@
         </div>
         <div class="search-box">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <label class="sr-only" for="guard-search">Search guards or projects</label>
-          <input id="guard-search" type="search" maxlength="80" autocomplete="off" placeholder="Search guard or project">
+          <label class="sr-only" for="guard-search">Search guards or accounts</label>
+          <input id="guard-search" type="search" maxlength="80" autocomplete="off" placeholder="Search guard or account">
         </div>
         <div class="range-presets" role="group" aria-label="Group duties by">
           <button type="button" class="range-chip" data-roster-view="guard" aria-pressed="true">By guard</button>
-          <button type="button" class="range-chip" data-roster-view="project" aria-pressed="false">By project</button>
+          <button type="button" class="range-chip" data-roster-view="project" aria-pressed="false">By account</button>
         </div>
       </div>
       <p id="roster-status" class="filter-status-text" role="status" aria-live="polite"></p>
@@ -333,7 +333,7 @@
       <div class="page-head">
         <div class="page-head-copy">
           <h2>Visit register</h2>
-          <p class="hint">Search visits in the selected office and project scope, up to 31 days at a time. Select any row to see its full history.</p>
+          <p class="hint">Search visits in the selected office and account scope, up to 31 days at a time. Select any row to see its full history.</p>
         </div>
         <div class="page-head-actions">
           <button type="button" id="register-export" class="secondary" disabled>
@@ -359,7 +359,7 @@
           <label>Visitor name<input id="quick-name" maxlength="200" placeholder="Contains name…"></label>
           <label>Approval<select id="quick-status"><option value="">Any</option><option value="PENDING">Pending</option><option value="APPROVED">Approved</option><option value="DENIED">Denied</option><option value="CANCELLED">Cancelled</option></select></label>
           <label>Presence<select id="quick-presence"><option value="">Any</option><option value="INSIDE">Inside</option><option value="OUTSIDE">Outside</option></select></label>
-          <label>Visit type<select id="quick-type"><option value="">Any</option><option value="EXTERNAL">External</option><option value="EMPLOYEE_PROJECT">Employee project</option><option value="DIGITAL_ID">Digital ID</option></select></label>
+          <label>Visit type<select id="quick-type"><option value="">Any</option><option value="EXTERNAL">External</option><option value="EMPLOYEE_PROJECT">Employee account</option><option value="DIGITAL_ID">Digital ID</option></select></label>
         </div>
         <div id="register-filters" class="register-filters"></div>
         <div class="register-actions">
@@ -478,11 +478,11 @@
     <div class="dialog-title-group">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <div>
-        <h2 id="lead-title">Project Leads</h2>
+        <h2 id="lead-title">Account Leads</h2>
         <p id="lead-project" class="hint"></p>
       </div>
     </div>
-    <button type="button" id="close-leads" class="quiet dialog-close-btn" aria-label="Close project leads">✕</button>
+    <button type="button" id="close-leads" class="quiet dialog-close-btn" aria-label="Close account leads">✕</button>
   </div>
   <div class="dialog-body">
     <h3 class="dialog-section-title">Current leads</h3>
@@ -491,7 +491,7 @@
     <button type="button" class="secondary load-more-btn" id="more-leads" hidden>Load more leads</button>
 
     <form id="lead-form" class="dialog-subform" hidden>
-      <h3>Assign New Project Lead</h3>
+      <h3>Assign New Account Lead</h3>
       <div class="field">
         <label for="employee-search">Search Employee</label>
         <input id="employee-search" type="search" maxlength="80" autocomplete="off" placeholder="Search name, email or employee ID">
@@ -505,7 +505,7 @@
       </div>
       <div class="field">
         <label for="grant-reason">Assignment Reason</label>
-        <input id="grant-reason" maxlength="300" placeholder="e.g. Project Delivery Lead delegation" required>
+        <input id="grant-reason" maxlength="300" placeholder="e.g. Account Delivery Lead delegation" required>
       </div>
       <div class="dialog-actions">
         <button type="submit" class="primary" id="add-lead" disabled>Assign Lead</button>
@@ -513,10 +513,10 @@
     </form>
 
     <form id="remove-form" class="dialog-subform danger-zone" hidden>
-      <h3 id="remove-title">Remove Project Lead</h3>
+      <h3 id="remove-title">Remove Account Lead</h3>
       <div class="field">
         <label for="remove-reason">Revocation Reason</label>
-        <input id="remove-reason" maxlength="300" placeholder="e.g. Project transition / roll-off" required>
+        <input id="remove-reason" maxlength="300" placeholder="e.g. Account transition / roll-off" required>
       </div>
       <div class="dialog-actions">
         <button type="button" class="secondary" id="cancel-remove">Cancel</button>
@@ -533,7 +533,7 @@
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       <div>
         <h2 id="assign-title">Assign guard</h2>
-        <span class="subtext-muted">Post a guard to a project gate</span>
+        <span class="subtext-muted">Post a guard to a account gate</span>
       </div>
     </div>
     <button type="button" data-close="assign-dialog" class="quiet dialog-close-btn" aria-label="Close guard assignment">✕</button>
@@ -542,15 +542,15 @@
     <div class="dialog-body">
       <div id="allocation-kind-field" class="field" hidden>
         <label for="allocation-kind">Assign using</label>
-        <select id="allocation-kind"><option value="project">Individual project</option><option value="group">Project group</option></select>
+        <select id="allocation-kind"><option value="project">Individual account</option><option value="group">Account group</option></select>
       </div>
       <div id="allocation-group-field" class="field" hidden>
-        <label for="allocation-group">Project group</label>
+        <label for="allocation-group">Account group</label>
         <select id="allocation-group"></select>
         <p id="allocation-group-preview" class="hint"></p>
       </div>
       <div id="allocation-project-field" class="field">
-        <label for="allocation-project">Project</label>
+        <label for="allocation-project">Account</label>
         <select id="allocation-project" required></select>
       </div>
       <div class="field">
@@ -589,11 +589,11 @@
 </dialog>
 
 <dialog id="project-group-dialog" class="app-dialog" aria-labelledby="project-group-title">
-  <div class="dialog-heading"><h2 id="project-group-title">Create project group</h2><button type="button" class="quiet dialog-close-btn" data-close="project-group-dialog" aria-label="Close project group">✕</button></div>
+  <div class="dialog-heading"><h2 id="project-group-title">Create account group</h2><button type="button" class="quiet dialog-close-btn" data-close="project-group-dialog" aria-label="Close account group">✕</button></div>
   <form id="project-group-form">
     <div class="dialog-body">
       <div class="field"><label for="project-group-name">Group name</label><input id="project-group-name" required maxlength="100" placeholder="e.g. Floor 11 — Main Entry"></div>
-      <fieldset><legend>Projects in this office</legend><p class="hint">Select 1–50 projects. Existing individual assignments remain available.</p><div id="project-group-members" class="group-project-options"></div></fieldset>
+      <fieldset><legend>Accounts in this office</legend><p class="hint">Select 1–50 accounts. Existing individual assignments remain available.</p><div id="project-group-members" class="group-project-options"></div></fieldset>
       <p id="project-group-impact" class="hint" role="status"></p>
       <div class="field"><label for="project-group-reason">Reason</label><input id="project-group-reason" required maxlength="300" placeholder="e.g. Floor entry coverage"></div>
     </div>
@@ -732,18 +732,18 @@
   </div>
 </dialog>
 
-<dialog id="add-staff-dialog" class="app-dialog" aria-labelledby="add-staff-title"><div class="dialog-heading"><h2 id="add-staff-title">Add user</h2><button id="close-add-staff" class="quiet dialog-close-btn" type="button" aria-label="Close account creation">×</button></div><div class="dialog-body"><form id="add-staff-form"><p id="new-staff-help" class="hint"></p><div class="admin-form-grid"><div class="field"><label for="new-staff-name">Full name</label><input id="new-staff-name" maxlength="200" required autocomplete="off"></div><div class="field"><label for="new-staff-login">Login / Staff ID</label><input id="new-staff-login" minlength="3" maxlength="64" required autocomplete="off" autocapitalize="none" placeholder="sec-noi-001"></div><div class="field"><label for="new-staff-role">Role</label><select id="new-staff-role" required></select></div></div><p id="new-staff-scope" class="hint"></p><fieldset id="new-staff-capabilities" class="capabilities-fieldset"><legend>Permissions</legend></fieldset><label id="new-guard-project-label" hidden><input id="new-guard-project" type="checkbox"> Assign to the selected project now</label><div class="field"><label for="new-staff-reason">Reason for adding this account</label><input id="new-staff-reason" maxlength="300" required></div><button id="new-staff-submit" type="submit" class="primary">Create account</button></form><form id="staff-reset-form" hidden><p id="reset-staff-copy"></p><div class="field"><label for="staff-reset-reason">Reason for password reset</label><input id="staff-reset-reason" maxlength="300" required></div><button id="staff-reset-submit" type="submit" class="primary">Generate new setup link</button></form><p id="new-staff-status" role="status"></p><section id="new-staff-result" hidden><h3>Account ready for password setup</h3><p id="new-staff-summary"></p><p id="new-staff-expiry" class="hint"></p><label for="new-staff-link">One-time password setup link</label><input id="new-staff-link" readonly autocomplete="off"><button id="copy-staff-setup" class="secondary" type="button">Copy setup link</button><p class="hint">Share this link directly with the staff member. It can be used once, within 15 minutes. They choose their own password; no email is sent automatically.</p></section></div></dialog>
+<dialog id="add-staff-dialog" class="app-dialog" aria-labelledby="add-staff-title"><div class="dialog-heading"><h2 id="add-staff-title">Add user</h2><button id="close-add-staff" class="quiet dialog-close-btn" type="button" aria-label="Close account creation">×</button></div><div class="dialog-body"><form id="add-staff-form"><p id="new-staff-help" class="hint"></p><div class="admin-form-grid"><div class="field"><label for="new-staff-name">Full name</label><input id="new-staff-name" maxlength="200" required autocomplete="off"></div><div class="field"><label for="new-staff-login">Login / Staff ID</label><input id="new-staff-login" minlength="3" maxlength="64" required autocomplete="off" autocapitalize="none" placeholder="sec-noi-001"></div><div class="field"><label for="new-staff-role">Role</label><select id="new-staff-role" required></select></div></div><p id="new-staff-scope" class="hint"></p><fieldset id="new-staff-capabilities" class="capabilities-fieldset"><legend>Permissions</legend></fieldset><label id="new-guard-project-label" hidden><input id="new-guard-project" type="checkbox"> Assign to the selected account now</label><div class="field"><label for="new-staff-reason">Reason for adding this account</label><input id="new-staff-reason" maxlength="300" required></div><button id="new-staff-submit" type="submit" class="primary">Create account</button></form><form id="staff-reset-form" hidden><p id="reset-staff-copy"></p><div class="field"><label for="staff-reset-reason">Reason for password reset</label><input id="staff-reset-reason" maxlength="300" required></div><button id="staff-reset-submit" type="submit" class="primary">Generate new setup link</button></form><p id="new-staff-status" role="status"></p><section id="new-staff-result" hidden><h3>Account ready for password setup</h3><p id="new-staff-summary"></p><p id="new-staff-expiry" class="hint"></p><label for="new-staff-link">One-time password setup link</label><input id="new-staff-link" readonly autocomplete="off"><button id="copy-staff-setup" class="secondary" type="button">Copy setup link</button><p class="hint">Share this link directly with the staff member. It can be used once, within 15 minutes. They choose their own password; no email is sent automatically.</p></section></div></dialog>
 <dialog id="add-project-dialog" class="app-dialog" aria-labelledby="add-project-title">
-  <div class="dialog-heading"><h2 id="add-project-title">Add project or common area</h2><button id="close-add-project" class="quiet dialog-close-btn" type="button" aria-label="Close creation">×</button></div>
+  <div class="dialog-heading"><h2 id="add-project-title">Add account or common area</h2><button id="close-add-project" class="quiet dialog-close-btn" type="button" aria-label="Close creation">×</button></div>
   <div class="dialog-body"><form id="add-project-form">
     <p id="new-project-office" class="hint"></p>
     <div class="field"><label for="new-workspace-type">Type</label><select id="new-workspace-type" required></select></div>
-    <div class="field"><label for="new-project-name">Project name</label><input id="new-project-name" maxlength="200" required autocomplete="off" placeholder="Digital Workplace Transformation"></div>
-    <div id="new-project-code-field" class="field"><label for="new-project-code">Project code</label><input id="new-project-code" minlength="3" maxlength="64" pattern="[A-Z0-9][A-Z0-9._\-]{2,63}" required autocomplete="off" autocapitalize="characters" aria-describedby="new-project-code-help" placeholder="DWT-NOI"><p id="new-project-code-help" class="hint">Use a unique code with uppercase letters, numbers, dots, hyphens or underscores.</p></div>
-    <div class="field"><label for="new-project-reason">Reason for adding this project</label><input id="new-project-reason" maxlength="300" required autocomplete="off"></div>
+    <div class="field"><label for="new-project-name">Account name</label><input id="new-project-name" maxlength="200" required autocomplete="off" placeholder="Digital Workplace Transformation"></div>
+    <div id="new-project-code-field" class="field"><label for="new-project-code">Account code</label><input id="new-project-code" minlength="3" maxlength="64" pattern="[A-Z0-9][A-Z0-9._\-]{2,63}" required autocomplete="off" autocapitalize="characters" aria-describedby="new-project-code-help" placeholder="DWT-NOI"><p id="new-project-code-help" class="hint">Use a unique code with uppercase letters, numbers, dots, hyphens or underscores.</p></div>
+    <div class="field"><label for="new-project-reason">Reason for adding this account</label><input id="new-project-reason" maxlength="300" required autocomplete="off"></div>
     <p id="new-project-help" class="hint"></p>
     <p id="new-project-status" role="status"></p>
-    <button id="new-project-submit" type="submit" class="primary">Create project</button>
+    <button id="new-project-submit" type="submit" class="primary">Create account</button>
   </form></div>
 </dialog>
 <script nonce="__NONCE__">__SCRIPT__</script>

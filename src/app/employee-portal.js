@@ -132,7 +132,7 @@ function setEmployee(employee) {
   setEmployeeOffice(employee.primaryOffice);
   $('employee-projects').replaceChildren();
   for(const project of employee.projects) {const chip=document.createElement('span');chip.className='chip';chip.textContent=project.projectName;$('employee-projects').append(chip);}
-  if(!employee.projects.length) $('employee-projects').textContent='No assigned projects';
+  if(!employee.projects.length) $('employee-projects').textContent='No assigned accounts';
 }
 
 function syncPeople() {
@@ -154,7 +154,7 @@ function renderPeople(){CountryPicker.close();const entry=state.people[0],fragme
 
 function renderProjects() {
   const own=new Set(state.options.projects.filter(row=>row.assigned).map(row=>row.projectLocationId));
-  $('project').replaceChildren(new Option('Select project',''));
+  $('project').replaceChildren(new Option('Select account',''));
   for(const project of state.options.projects) {
     if(state.mode==='employee'&&(own.has(project.projectLocationId)||state.extras.some(row=>row.projectLocationId===project.projectLocationId)))continue;
     $('project').append(new Option(project.projectName,project.projectLocationId));
@@ -179,8 +179,8 @@ async function beginFlow(mode) {
     if(mode==='employee') {
       $('employee-projects').replaceChildren();
       for(const project of state.options.projects.filter(row=>row.assigned)){const chip=document.createElement('span');chip.className='chip';chip.textContent=project.projectName+' · '+state.options.locationName;$('employee-projects').append(chip);}
-      $('toggle-access').textContent=state.options.digitalIdEligible?'+ Request access to another project':'+ Request project access';
-      if(!state.options.digitalIdEligible){$('employee-projects').textContent='Access to this office requires host approval.';notify('Select a project and local host to request access.');}
+      $('toggle-access').textContent=state.options.digitalIdEligible?'+ Request access to another account':'+ Request account access';
+      if(!state.options.digitalIdEligible){$('employee-projects').textContent='Access to this office requires host approval.';notify('Select a account and local host to request access.');}
     }
   } catch(error) {screen('landing');notify(error.message,'error');}
   finally {busy(false);}
@@ -220,14 +220,14 @@ function validateDetails() {
     if(state.people.some(entry=>!entry.name||!entry.phone)){notify('Enter a name and mobile number for each visitor.','error');return false;}
     return true;
   }
-  if(!state.options.digitalIdEligible&&!state.extras.length){notify('Add a project and local host for approval.','error');$('toggle-access').focus();return false;}
+  if(!state.options.digitalIdEligible&&!state.extras.length){notify('Add a account and local host for approval.','error');$('toggle-access').focus();return false;}
   if(!$('reason').value){$('reason').focus();notify('Select a reason.','error');return false;}
   if($('reason').value==='OTHER'&&!$('reason-details').value.trim()){$('reason-details').focus();notify('Add the reason.','error');return false;}
   return $('reason-details').reportValidity();
 }
 
 function validateVisit() {
-  if(state.mode==='employee'&&!$('project').value){$('project-trigger').focus();notify('Select a project.','error');return false;}
+  if(state.mode==='employee'&&!$('project').value){$('project-trigger').focus();notify('Select a account.','error');return false;}
   if(!state.host){$('host-search').focus();notify('Select a host from the search results.','error');return false;}
   if(!$('purpose').value){$('purpose-trigger').focus();notify('Select a purpose.','error');return false;}
   if($('purpose').value==='Other'&&!$('purpose-details').value.trim()){$('purpose-details').focus();notify('Add the purpose.','error');return false;}
@@ -388,7 +388,7 @@ function renderReview() {
   if(state.mode==='employee') {rows.push(reviewItem('Reason',$('reason').selectedOptions[0].textContent));if($('reason-details').value.trim())rows.push(reviewItem('Details',$('reason-details').value.trim()));}
   else rows.push(reviewItem('Host',state.host.displayName+' · '+state.host.officialEmail),reviewItem('Purpose',purpose()),reviewItem('Valid until',new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeZone:'Asia/Kolkata'}).format(new Date($('visit-date').value+'T12:00:00.000Z'))));
   $('review-details').replaceChildren(...rows);$('review-access').replaceChildren();$('review-access').hidden=!state.extras.length;
-  if(state.extras.length){const title=document.createElement('h2');title.textContent='Additional project access';$('review-access').append(title);for(const entry of state.extras)$('review-access').append(reviewItem(entry.projectName,entry.host.displayName+' · '+entry.host.officialEmail));}
+  if(state.extras.length){const title=document.createElement('h2');title.textContent='Additional account access';$('review-access').append(title);for(const entry of state.extras)$('review-access').append(reviewItem(entry.projectName,entry.host.displayName+' · '+entry.host.officialEmail));}
 }
 
 function prepareJobs() {
@@ -523,7 +523,7 @@ $('success-home').addEventListener('click',leaveFlow);
 $('reason').addEventListener('change',()=>{$('reason-details').required=$('reason').value==='OTHER';$('reason-optional').textContent=$('reason-details').required?'(required)':'(optional)';});
 $('purpose').addEventListener('change',()=>{$('purpose-details').required=$('purpose').value==='Other';$('purpose-optional').textContent=$('purpose-details').required?'(required)':'(optional)';});
 $('toggle-access').addEventListener('click',editAccess);
-$('add-project-access').addEventListener('click',()=>{if(state.busy||!validateVisit())return;const project=projectSelection();state.extras.push({...project,host:{...state.host},reason:purpose()});renderExtras();closeAccessDialog();notify('Project added.','success');});
+$('add-project-access').addEventListener('click',()=>{if(state.busy||!validateVisit())return;const project=projectSelection();state.extras.push({...project,host:{...state.host},reason:purpose()});renderExtras();closeAccessDialog();notify('Account added.','success');});
 $('project').addEventListener('change',()=>{clearTimeout(searchTimer);state.searchVersion++;state.host=null;$('host-search').value='';$('host-search').disabled=!$('project').value;$('host-results').hidden=true;$('host-search').setAttribute('aria-expanded','false');$('host-feedback').textContent='';});
 $('host-search').addEventListener('input',()=>{state.host=null;state.hosts=[];clearTimeout(searchTimer);state.searchVersion++;$('host-results').replaceChildren();$('host-results').hidden=true;$('host-search').setAttribute('aria-expanded','false');$('host-feedback').textContent='';searchTimer=setTimeout(searchHosts,350);});
 $('host-search').addEventListener('keydown',event=>{if(event.key==='Escape'){$('host-results').hidden=true;$('host-search').setAttribute('aria-expanded','false');}if(event.key==='ArrowDown'&&!$('host-results').hidden){event.preventDefault();$('host-results').firstElementChild?.focus();}});

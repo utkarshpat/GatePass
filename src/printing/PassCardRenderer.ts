@@ -68,10 +68,10 @@ export class PassCardRenderer {
     p.push(label(28, 340, 'Location'), block(28, 365, 156, fit(data.locationName, 156, 2, 22, 16)));
     if (!external) {
       const codes = data.assignedProjects.map(project => clean(project.code)); const additional = data.assignedProjectCount - codes.length;
-      const summary = codes.length ? codes.join(' · ') + (additional ? ` · +${additional} more` : '') : 'No active project';
+      const summary = codes.length ? codes.join(' · ') + (additional ? ` · +${additional} more` : '') : 'No active account';
       const employeeId = fit(data.employeeId!, 390, 2, 21, 15); const detailShift = shift + (employeeId.lines.length > 1 ? 15 : 0);
       p.push(label(207, 190 + shift, 'Employee ID'), block(207, 214 + shift, 390, employeeId),
-        label(207, 249 + detailShift, 'Assigned projects'), block(207, 273 + detailShift, 390, fit(summary, 390, 2, 20, 16)),
+        label(207, 249 + detailShift, 'Assigned accounts'), block(207, 273 + detailShift, 390, fit(summary, 390, 2, 20, 16)),
         label(207, 329 + detailShift, data.requestType === 'DIGITAL_ID' ? 'Reason' : 'Purpose'), block(207, 353 + detailShift, 390, fit(data.purpose, 390, 2, 19, 17)));
       if (additional) p.push(text(597, 322 + detailShift, `${data.assignedProjectCount} assigned`, 10, 400, '#667085', 'end'));
     } else {
