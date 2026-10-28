@@ -1,6 +1,6 @@
 'use strict';
 // The nonce authorizes only our versioned same-origin public decoder asset.
-const qrDecoderNonce=document.currentScript?.nonce;
+const qrDecoderNonce=document.currentScript?.nonce??document.getElementById('app-config')?.nonce;
 let qrDecoderLoad=null;
 function loadQrDecoder(){
  if(window.ZXing?.BrowserQRCodeReader)return Promise.resolve(window.ZXing);

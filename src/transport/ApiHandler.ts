@@ -1,3 +1,5 @@
+import {RequestAdmission, publicRequestPath} from './RequestAdmission.ts';
+import type {RequestLimits} from './RequestAdmission.ts';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { GuardAuthService } from '../security/GuardAuthService.ts';
@@ -5,7 +7,7 @@ import type { GuardAuthService } from '../security/GuardAuthService.ts';
 export type Session = { sessionToken: string; csrfToken: string };
 export type ApiAction = (session: Session, body: unknown) => Promise<unknown>;
 export interface AdditionalHttpRoutes { handles(path: string): boolean; handle(req: IncomingMessage, res: ServerResponse): Promise<unknown> }
-type Options = { origin: string; sourceKey: Buffer; auth: Pick<GuardAuthService, 'signIn' | 'completeSetup' | 'sessionAction'>; actions: ReadonlyMap<string, ApiAction>; registration?: AdditionalHttpRoutes };
+type Options = { origin: string; sourceKey: Buffer; auth: Pick<GuardAuthService, 'signIn' | 'completeSetup' | 'sessionAction'>; actions: ReadonlyMap<string, ApiAction>; registration?: AdditionalHttpRoutes; limits?: RequestLimits };
 export const token = (v: unknown): v is string => typeof v === 'string' && /^[A-Za-z0-9_-]{43}$/u.test(v) && Buffer.from(v, 'base64url').toString('base64url') === v;
 export class HttpFailure extends Error { status: number; constructor(status: number) { super('REQUEST_REJECTED'); this.status = status; } }
 const cookie = (name: string, value: string, clear = false) => `${name}=${value}; Path=/; Secure; SameSite=Strict${name === '__Host-gp-session' ? '; HttpOnly' : ''}${clear ? '; Max-Age=0' : ''}`;
@@ -30,21 +32,26 @@ export async function readJsonBody(req: IncomingMessage): Promise<Record<string,
 }
 export function createApiHandler(options: Options) {
   if (new URL(options.origin).origin !== options.origin || !options.origin.startsWith('https://') || options.sourceKey.length < 32) throw new Error('INVALID_HTTP_CONFIGURATION');
+  const admission = new RequestAdmission(options.limits);
   const origin = options.origin; const key = Buffer.from(options.sourceKey); const actions = new Map(options.actions);
   return async (req: IncomingMessage, res: ServerResponse) => {
     res.setHeader('Cache-Control', 'no-store'); res.setHeader('Pragma', 'no-cache'); res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'"); res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Strict-Transport-Security', 'max-age=31536000'); res.setHeader('Content-Type', 'application/json; charset=utf-8');
     const send = (status: number, value: unknown) => { res.statusCode = status; res.end(JSON.stringify(value)); };
+    let release: (() => void) | undefined;
     try {
       // Direct TLS only. Forwarded headers never create trust or rate-limit buckets.
       if (!(req.socket as typeof req.socket & { encrypted?: boolean }).encrypted) throw new HttpFailure(400);
       if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); throw new HttpFailure(405); }
       if (req.headers.origin !== origin || req.headers.host !== new URL(origin).host || ['cross-site', 'same-site'].includes(String(req.headers['sec-fetch-site']))) throw new HttpFailure(403);
       const path = req.url ?? ''; if (path.includes('?') || (!actions.has(path) && !options.registration?.handles(path) && !['/api/auth/login', '/api/auth/setup', '/api/auth/touch', '/api/auth/logout'].includes(path))) throw new HttpFailure(404);
+      const context = { sourceHash: createHmac('sha256', key).update(req.socket.remoteAddress ?? 'unknown').digest() };
+      const ticket = admission.enter(context.sourceHash.toString('hex'), publicRequestPath(path));
+      if (!ticket.allowed) { res.setHeader('Retry-After', String(ticket.retryAfter)); throw new HttpFailure(429); }
+      release = ticket.release;
       if (options.registration?.handles(path)) return send(200, await options.registration.handle(req, res));
       const data = await readJsonBody(req);
-      const context = { sourceHash: createHmac('sha256', key).update(req.socket.remoteAddress ?? 'unknown').digest() };
       if (path === '/api/auth/login') {
         if (Object.keys(data).some(k => !['login', 'password', 'newPassword'].includes(k))) throw new HttpFailure(400);
         const result = await options.auth.signIn(data.login, data.password, context, data.newPassword as string | undefined);
@@ -72,6 +79,6 @@ export function createApiHandler(options: Options) {
       const code = (error as { code?: string })?.code;
       const status = error instanceof HttpFailure ? error.status : code === 'INVALID_INPUT' ? 400 : code === 'NOT_AUTHORIZED' ? 403 : code === 'CONFLICT' ? 409 : 503;
       send(status, { error: ({ 400: 'INVALID_INPUT', 401: 'NOT_AUTHENTICATED', 403: 'NOT_AUTHORIZED', 404: 'NOT_FOUND', 405: 'METHOD_NOT_ALLOWED', 409: 'CONFLICT', 413: 'BODY_TOO_LARGE', 415: 'UNSUPPORTED_MEDIA_TYPE', 429: 'RATE_LIMITED' } as Record<number, string>)[status] ?? 'UNAVAILABLE' });
-    }
+    } finally { release?.(); }
   };
 }

@@ -13,6 +13,8 @@ The six requested deliverables are an application VM, reachable default hostname
 Production configuration lives in a private root `.env` with restrictive filesystem permissions. Deploy `.env.example` as a template only; never package actual `.env`. API/email startup validates required settings. Key rings, photos, SQL data and PEM files remain their own protected assets. Do not deploy development dummy adapters as a shortcut.
 
 ## Deployment sequence
+
+Release preparation now includes six immutable React assets plus `public/frontend-manifest.json`. Build with locked dependencies before packaging. The manifest supplies the asset for each React document; it does not supply the missing production identity/session/workspace composition. Print/offline documents remain HTML. See [migration and build ownership](../92_React_Frontend_Migration_28_October_2026.md).
 1. Complete production UI/endpoints and approved identity/directory composition.
 2. Provision staging with private SQL, trusted TLS and independent principals.
 3. Implement Linux media permissions/key protector and controlled rewrap/migration retaining key IDs.

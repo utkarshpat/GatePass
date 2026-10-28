@@ -55,6 +55,9 @@ export class GuardAuthService {
     this.#active++;
     try {
       const source = this.#context(context);
+      // Development fixtures may retain short demo passwords; production local
+      // accounts must complete audited setup with the current passphrase policy.
+      if (process.env.NODE_ENV === 'production') validateNewGuardPassword(password);
       if (newPassword !== undefined) validateNewGuardPassword(newPassword);
       const attempt = randomBytes(32);
       const challenge = await this.#repository.execute(`gp.Begin${this.#domain}Login`, {

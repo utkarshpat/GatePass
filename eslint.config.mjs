@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint';
 export default [
   { ignores: ['node_modules/**', '.tools/**', 'tmp/**', 'output/**', 'database/validation/**'] },
   {
-    files: ['src/**/*.{ts,js,mjs}', 'tools/**/*.{ts,mjs}', 'tests/**/*.ts', 'playwright.config.ts'],
+    files: ['src/**/*.{ts,tsx,js,mjs}', 'tools/**/*.{ts,mjs}', 'tests/**/*.ts', 'playwright.config.ts'],
     languageOptions: { parser: tseslint.parser, ecmaVersion: 'latest', sourceType: 'module' },
     rules: {
       ...js.configs.recommended.rules,

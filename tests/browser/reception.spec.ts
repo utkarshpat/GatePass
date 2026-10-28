@@ -27,7 +27,8 @@ for(const width of [390,1366])test(`reception pending preview, filter, direct pr
  await page.locator('#visit-search').fill('Reception');await expect(page.locator('#visit-rows tr')).toHaveCount(1);
  await page.getByRole('button',{name:'View pass for Reception Test Visitor',exact:true}).click();await expect(page.locator('#reception-card img')).toBeVisible();await expect(page.locator('#detail-print')).toBeEnabled();
  const bounds=await page.locator('#visit-dialog').boundingBox();expect(bounds!.x).toBeGreaterThanOrEqual(0);expect(bounds!.x+bounds!.width).toBeLessThanOrEqual(width+1);
- const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(axe.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)}))).toEqual([]);
+ if(await page.locator('#remind-host').isVisible()){await page.locator('#remind-host').hover();await page.locator('#remind-host').evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(a=>a.finished));});}
+ const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();if(axe.violations.length)console.log('RECEPTION_A11Y_DIAGNOSTIC',JSON.stringify(axe.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))));expect(axe.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)}))).toEqual([]);
  await page.screenshot({path:`output/reception-audit-${width}.png`});
  for(let copy=0;copy<2;copy++){
   await page.locator('#detail-print').click();await expect.poll(()=>dispatches).toBe(copy+1);await expect(page.locator('#detail-print')).toHaveText('Reprint pass');await expect.poll(()=>page.frames().some(f=>f.url().endsWith('/reception/print'))).toBe(true);expect(page.context().pages()).toHaveLength(1);

@@ -25,6 +25,8 @@ One visitor per form; optional company/devices, camera photo, office-wide host s
 All calendar-day pass expiry labels, including images/printing, details, emails and register export, show the last included date at 23:59. The original exclusive timestamp continues to control access.
 
 ## Shared UI
+
+The six main served views now use `src/frontend/pages/*.tsx`; original CSS and workflows remain. All six pages use native React models/components, including dynamic lists, dialogs and forms. Legacy page controllers are no longer frontend build inputs. Old main HTML templates are reference-only. New UI uses React/TypeScript. Print/offline remain HTML. See [migration detail](../92_React_Frontend_Migration_28_October_2026.md).
 `global.css` owns tokens/reusable controls; feature CSS owns layout. Utilities include accessible custom selects, country-aware phone input, toasts, camera lifecycle and photo adjustment. Password visibility is an accessible icon and the whole control has a consistent focus state. Mobile forms render directly without redundant page cards/marketing copy.
 
 Public landing fits the viewport, with mobile campus background and overlaid choices. Long forms/workspaces may scroll for genuine content. Landing fit is not a prohibition on useful scrolling. Responsive acceptance requires testing, not an inference from a single screenshot.

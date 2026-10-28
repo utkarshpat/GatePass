@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SqlProcedureClient, connectSql, procedureRoles } from '../src/transport/SqlProcedureClient.ts';
+import { SqlProcedureClient, connectSql, procedureRoles, runtimeAdmissionProcedures, runtimeRoleNames } from '../src/transport/SqlProcedureClient.ts';
 
 function fixture(role: 'api' | 'auth' = 'api', result: unknown = { recordsets: [[{ '': '{"ok":true}' }]] }) {
   const inputs: Array<{ name: string; type: any; value: unknown }> = []; const executed: string[] = [];
@@ -68,3 +68,11 @@ test('SQL error numbers reach existing services without mutation retries', async
 });
 test('client closes owned pool', async () => { const f = fixture(); await f.client.close(); assert.equal(f.closed(), true); });
 test('missing database configuration fails before network', async () => { await assert.rejects(connectSql({ server: '', port: 1433, database: 'test', user: 'user', password: 'password' }, 'api'), /INVALID_DATABASE_CONFIGURATION/u); });
+
+test('startup admission covers the reviewed SQL grant catalogue without widening client RPCs',async()=>{
+ assert.equal(Object.keys(runtimeRoleNames).length,7);
+ for(const role of Object.keys(procedureRoles) as Array<keyof typeof procedureRoles>){const names=runtimeAdmissionProcedures(role);assert.equal(new Set(names).size,names.length);assert(names.every(n=>/^gp\.[A-Za-z][A-Za-z0-9]*$/u.test(n)));}
+ assert(runtimeAdmissionProcedures('worker').includes('gp.PurgeGuardAuthTransient'));
+ const client=new SqlProcedureClient({request(){throw Error('Must not reach the driver');},async close(){}},'worker');
+ await assert.rejects(client.callProcedure('gp.PurgeGuardAuthTransient',{}),/SQL_PROCEDURE_NOT_ALLOWED/u);
+});

@@ -1,3 +1,5 @@
+import {buildFrontend} from './frontend-build.mjs';
+import {reactDocument} from '../src/app/ReactDocuments.ts';
 import {loadRuntimeEnvironment} from '../src/runtime/Environment.ts';
 import {ActionCentreService} from '../src/operations/ActionCentreService.ts';
 import {ActionCentreRoutes} from '../src/development/ActionCentreRoutes.ts';
@@ -17,7 +19,7 @@ import {AdminRoutes} from '../src/development/AdminRoutes.ts';
 import {AdminWorkspaceService} from '../src/administration/AdminWorkspaceService.ts';
 import {StaffAdministrationService,SqlStaffAdministrationRepository} from '../src/administration/StaffAdministrationService.ts';
 import {StaffEntryRoutes} from '../src/development/StaffEntryRoutes.ts';
-import {loadPwaAssets,pwaHead} from '../src/app/PwaAssets.ts';
+import {loadPwaAssets} from '../src/app/PwaAssets.ts';
 import {StaffAuthService} from '../src/security/StaffAuthService.ts';
 import {SqlStaffAuthRepository} from '../src/security/StaffAuthService.ts';
 import {ReceptionService} from '../src/reception/ReceptionService.ts';
@@ -60,48 +62,20 @@ try {
   const port = Number(process.env.GATEPASS_DUMMY_PORT ?? '8443'); if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('INVALID_LOCAL_PORT');
   const origin = `http://localhost:${port}`;
   const pwaAssets=await loadPwaAssets();
-  const pwaScript=await readFile(new URL('../src/app/pwa.js',import.meta.url),'utf8');
-  const withPwa=(page:string)=>page.replace('</head>',pwaHead+'</head>').replace('</body>','<script nonce="__NONCE__">'+pwaScript+'</script></body>');
   const repository = new LocalDevelopmentSsoRepository();
   const sso = new DummyEmployeeSso(repository);
   if ((await repository.execute('refresh', null, null, null)).ok !== true) throw new Error('DUMMY_DIRECTORY_UNAVAILABLE');
-  const [markup, globalStyles, styles, cameraScript, script, phoneLibrary, visitorComponents, toastScript,selectScript,receptionMarkup,receptionStyles,receptionScript,printMarkup,staffMarkup,staffScript] = await Promise.all([
-    readFile(new URL('../src/app/employee-portal.html', import.meta.url), 'utf8'),
-    readFile(new URL('../src/app/global.css', import.meta.url), 'utf8'),
-    readFile(new URL('../src/app/employee-portal.css', import.meta.url), 'utf8'),
-    readFile(new URL('../src/app/camera-session.js', import.meta.url), 'utf8'),
-    readFile(new URL('../src/app/employee-portal.js', import.meta.url), 'utf8'),
-    readFile(new URL('../node_modules/libphonenumber-js/bundle/libphonenumber-mobile.js', import.meta.url), 'utf8'),
-    readFile(new URL('../src/app/visitor-components.js', import.meta.url), 'utf8'),
-    ...['toast-notifications.js','select-control.js','reception.html','reception.css','reception.js','reception-print.html','staff-entry.html','staff-entry.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')),
+  const [globalStyles,styles,staffStyles,guardStyles,receptionStyles,adminStyles,workspaceShellStyles,actionStyles,imageViewerStyles,printMarkup,exportWorker,qrDecoder,emailStyles]=await Promise.all([
+    ...['global.css','employee-portal.css','staff-entry.css','guard.css','reception.css','admin.css','workspace-shell.css','action-centre.css','image-viewer.css','reception-print.html','register-export-worker.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')),
+    readFile(new URL('../node_modules/@zxing/library/umd/index.min.js',import.meta.url),'utf8'),readFile(new URL('../src/frontend/email.css',import.meta.url),'utf8')
   ]);
-  const validityScript=await readFile(new URL('../src/app/validity-display.js',import.meta.url),'utf8');
-  const cropScript=await readFile(new URL('../src/app/photo-crop.js',import.meta.url),'utf8');
-  const html = markup.replace('__APP_STYLES__',()=>globalStyles+'\n'+styles).replace('__APP_SCRIPT__',()=>validityScript+'\n'+phoneLibrary+'\n'+visitorComponents+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+cropScript+'\n'+script);
-  const liveRefreshScript=await readFile(new URL('../src/app/live-refresh.js',import.meta.url),'utf8');
-  const actionScript=await readFile(new URL('../src/app/action-centre.js',import.meta.url),'utf8');
-  const imageViewerScript=await readFile(new URL('../src/app/image-viewer.js',import.meta.url),'utf8');
-  const imageViewerStyles=await readFile(new URL('../src/app/image-viewer.css',import.meta.url),'utf8');
-  const actionStyles=await readFile(new URL('../src/app/action-centre.css',import.meta.url),'utf8');
-  const workspaceShellStyles=await readFile(new URL('../src/app/workspace-shell.css',import.meta.url),'utf8');
-  const [adminMarkup,adminStyles,adminScript]=await Promise.all(['admin.html','admin.css','admin.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')));
-  const exportWorker=await readFile(new URL('../src/app/register-export-worker.js',import.meta.url),'utf8');
   const exportWorkerUrl='/assets/register-export-'+createHash('sha256').update(exportWorker).digest('hex').slice(0,16)+'.js';
-  const adminHtml=adminMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+adminStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>validityScript+'\n'+toastScript+'\n'+selectScript+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+adminScript.replace('__REGISTER_EXPORT_WORKER__',exportWorkerUrl)+'\n'+imageViewerScript);
-  const guardI18n=await readFile(new URL('../src/app/guard-i18n.js',import.meta.url),'utf8');
-  const guardNames=await readFile(new URL('../src/app/guard-names.js',import.meta.url),'utf8');
-  const [guardMarkup,guardStyles,guardScript,qrDecoder]=await Promise.all(['../src/app/guard.html','../src/app/guard.css','../src/app/guard.js','../node_modules/@zxing/library/umd/index.min.js'].map(name=>readFile(new URL(name,import.meta.url),'utf8')));
   const qrDecoderUrl='/assets/qr-decoder-'+createHash('sha256').update(qrDecoder).digest('hex').slice(0,16)+'.js';
-  const qrLoader=(await readFile(new URL('../src/app/qr-decoder.js',import.meta.url),'utf8')).replace('__QR_DECODER_URL__',qrDecoderUrl);
-  const guardHtml=guardMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+guardStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>validityScript+'\n'+qrLoader+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+guardI18n+'\n'+guardNames+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+guardScript+'\n'+imageViewerScript);
-  const staffStyles=await readFile(new URL('../src/app/staff-entry.css',import.meta.url),'utf8');
   const staffBrand=(await readFile(new URL('../assets/brand/gatepass-logo.png',import.meta.url))).toString('base64');
-  const staffHtml=staffMarkup.replace('__STYLES__',()=>globalStyles+'\n'+workspaceShellStyles+'\n'+staffStyles).replace('__GATEPASS_LOGO__',staffBrand).replace('__SCRIPT__',()=>validityScript+'\n'+toastScript+'\n'+staffScript);
-  const receptionPrintState=await readFile(new URL('../src/app/reception-print-state.js',import.meta.url),'utf8');
-  const receptionHtml=receptionMarkup.replace('__STYLES__',()=>globalStyles+'\n'+receptionStyles+'\n'+actionStyles+'\n'+imageViewerStyles).replace('__SCRIPT__',()=>validityScript+'\n'+qrLoader+'\n'+toastScript+'\n'+selectScript+'\n'+cameraScript+'\n'+receptionPrintState+'\n'+liveRefreshScript+'\n'+actionScript+'\n'+receptionScript+'\n'+imageViewerScript);
-  const companyLogo = (await readFile(new URL('../assets/brand/sopra-steria-logo.png', import.meta.url))).toString('base64');
-  const [emailMarkup,emailScript]=await Promise.all(['email-request.html','email-request.js'].map(name=>readFile(new URL('../src/app/'+name,import.meta.url),'utf8')));
-  const emailHtml=emailMarkup.replace('__GLOBAL_STYLES__',()=>globalStyles).replace('__EMAIL_SCRIPT__',()=>validityScript+'\n'+emailScript);
+  const companyLogo=(await readFile(new URL('../assets/brand/sopra-steria-logo.png',import.meta.url))).toString('base64');
+  const reactFrontend=await buildFrontend({testMode:process.env.NODE_ENV==='test'});
+  const reactStyles={staff:globalStyles+'\n'+workspaceShellStyles+'\n'+staffStyles,'self-service':globalStyles+'\n'+styles,guard:globalStyles+'\n'+workspaceShellStyles+'\n'+guardStyles+'\n'+actionStyles+'\n'+imageViewerStyles,reception:globalStyles+'\n'+receptionStyles+'\n'+actionStyles+'\n'+imageViewerStyles,admin:globalStyles+'\n'+workspaceShellStyles+'\n'+adminStyles+'\n'+actionStyles+'\n'+imageViewerStyles,email:globalStyles+'\n'+emailStyles};
+  const reactPage=(page:import('../src/frontend/types.ts').PageName,officeCode='NOIDA',manualReception=false)=>reactDocument({page,companyLogo:'data:image/png;base64,'+companyLogo,gatepassLogo:'data:image/png;base64,'+staffBrand,officeCode,officeName:officeNames[officeCode],manualReception,qrDecoderUrl,exportWorkerUrl},reactStyles[page],reactFrontend.pages[page]);
   const officeImage=await readFile(new URL('../assets/locations/office-background.png',import.meta.url));
   const countryFlags=new Map(await Promise.all(getCountries().map(async code=>[code.toLowerCase(),await readFile(new URL('../node_modules/flag-icons/flags/4x3/'+(code==='AC'?'sh-ac':code==='TA'?'sh-ta':code.toLowerCase())+'.svg',import.meta.url))] as const)));
   const officeContext=new OfficeEntryContext(randomBytes(32));
@@ -165,6 +139,7 @@ try {
     // enforce exact Origin/Host and CSRF through the separate handler below.
     const publicPeer=['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress??'')&&req.headers.host===`localhost:${port}`;
     if(publicPeer&&pwaAssets(req,res))return;
+    const reactAsset=reactFrontend.assets.get((req.url??'').split('?')[0]);if(req.method==='GET'&&publicPeer&&reactAsset){res.setHeader('Content-Type','application/javascript; charset=utf-8');res.setHeader('Cache-Control','public, max-age=31536000, immutable');res.setHeader('X-Content-Type-Options','nosniff');res.end(reactAsset);return;}
     const pathname=(req.url??'').split('?')[0];
     if(req.method==='GET'&&pathname===exportWorkerUrl&&publicPeer){res.setHeader('Content-Type','application/javascript; charset=utf-8');res.setHeader('Cache-Control','public, max-age=31536000, immutable');res.setHeader('X-Content-Type-Options','nosniff');res.end(exportWorker);return;}
     if(req.method==='GET'&&pathname===qrDecoderUrl&&publicPeer){res.setHeader('Content-Type','application/javascript; charset=utf-8');res.setHeader('Cache-Control','public, max-age=31536000, immutable');res.setHeader('X-Content-Type-Options','nosniff');res.end(qrDecoder);return;}
@@ -178,11 +153,11 @@ try {
       const nonce=randomBytes(24).toString('base64');res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');
       res.setHeader('Content-Security-Policy',`default-src 'none'; script-src 'nonce-${nonce}'; worker-src 'self'; manifest-src 'self'; style-src 'nonce-${nonce}'; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self'; connect-src 'self'; frame-ancestors ${pathname==='/reception/print'?"'self'":"'none'"}; base-uri 'none'; form-action 'self'`);
       res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Permissions-Policy',['/guard','/guard/','/reception','/reception/'].includes(pathname)?'camera=(self), microphone=(), geolocation=()':'camera=(), microphone=(), geolocation=()');
-      const page=pathname==='/'?staffHtml:['/guard','/guard/'].includes(pathname)?guardHtml:['/admin','/admin/'].includes(pathname)?adminHtml:pathname==='/reception/print'?printMarkup:receptionHtml;
-      res.end((pathname==='/reception/print'?page:withPwa(page)).replaceAll('__NONCE__',nonce).replaceAll('__COMPANY_LOGO__',companyLogo));return;
+      const page=pathname==='/'?reactPage('staff'):['/guard','/guard/'].includes(pathname)?reactPage('guard'):['/admin','/admin/'].includes(pathname)?reactPage('admin'):pathname==='/reception/print'?printMarkup:reactPage('reception');
+      res.end(page.replaceAll('__NONCE__',nonce).replaceAll('__COMPANY_LOGO__',companyLogo));return;
     }
     if(req.method==='GET'&&/^\/(approval|request)\/[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}\/?$/iu.test(pathname)&&publicPeer){
-      const nonce=randomBytes(24).toString('base64');res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Content-Security-Policy',`default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`);res.end(emailHtml.replaceAll('__NONCE__',nonce).replaceAll('__COMPANY_LOGO__',companyLogo));return;
+      const nonce=randomBytes(24).toString('base64');res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Content-Security-Policy',`default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`);res.end(reactPage('email').replaceAll('__NONCE__',nonce).replaceAll('__COMPANY_LOGO__',companyLogo));return;
     }
     const manualEntry=/^\/reception\/register\/(noida|bengaluru|chennai|pune)$/u.exec(pathname);
     if(req.method==='GET'&&manualEntry&&publicPeer){
@@ -190,7 +165,7 @@ try {
       res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');
       res.setHeader('Content-Security-Policy',`default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; img-src 'self' data: blob:; media-src blob:; connect-src 'self'; frame-ancestors 'self'; base-uri 'none'; form-action 'self'`);
       res.setHeader('Permissions-Policy','camera=(self), microphone=(), geolocation=()');
-      res.end(html.replace('<body ', '<body data-reception-manual="true" ').replaceAll('__NONCE__',nonce).replaceAll('__COMPANY_LOGO__',companyLogo).replaceAll('__OFFICE_NAME__',officeNames[officeCode]).replaceAll('__OFFICE_CODE__',officeCode));return;
+      res.end(reactPage('self-service',officeCode,true).replaceAll('__NONCE__',nonce));return;
     }
     const entry=/^\/office\/(noida|bengaluru|chennai|pune)\/?$/u.exec(pathname);
     if (req.method === 'GET' && entry && publicPeer) {
@@ -199,7 +174,7 @@ try {
       const nonce = randomBytes(24).toString('base64'); res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.setHeader('Cache-Control', 'no-store');
       res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'nonce-${nonce}'; worker-src 'self'; manifest-src 'self'; style-src 'nonce-${nonce}'; img-src 'self' data: blob:; media-src blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`);
       res.setHeader('Permissions-Policy','camera=(self), microphone=(), geolocation=()');
-      res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Referrer-Policy','no-referrer'); res.end(withPwa(html).replaceAll('__NONCE__', nonce).replaceAll('__COMPANY_LOGO__',companyLogo).replaceAll('__OFFICE_NAME__',officeNames[officeCode]).replaceAll('__OFFICE_CODE__',officeCode).replaceAll('__Host-gp-csrf','gp-dev-csrf'));
+      res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Referrer-Policy','no-referrer'); res.end(reactPage('self-service',officeCode).replaceAll('__NONCE__',nonce));
     } else void api(req, res);
   });
   server.requestTimeout=15000;server.headersTimeout=10000;server.keepAliveTimeout=5000;server.maxConnections=16;server.maxRequestsPerSocket=100;

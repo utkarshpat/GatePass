@@ -5,7 +5,7 @@
 ## Components
 | Component | Responsibility | Source |
 |---|---|---|
-| Browser UI | Forms, role workspaces, camera, dialogs, download | src/app |
+| Browser UI | Six React/TSX page views with native state and event handlers; existing CSS | src/frontend; src/app |
 | Development host | Loopback pages/dummy identity with real SQL/media | tools/start-dummy-sso.ts |
 | Production API entry | Direct HTTPS, separated SQL identities | tools/start-api.ts; src/transport/Composition.ts |
 | Services | Typed input validation and SQL orchestration | src/registration, visits, reception, administration |

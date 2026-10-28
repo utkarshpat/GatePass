@@ -1,3 +1,4 @@
+import type {RequestLimits} from './RequestAdmission.ts';
 import {AccountHostService} from '../administration/AccountHostService.ts';
 import {ProjectGroupService} from '../administration/ProjectGroupService.ts';
 import {ReceptionService} from '../reception/ReceptionService.ts';
@@ -31,7 +32,7 @@ import { RegistrationHttpRoutes } from './RegistrationHttpRoutes.ts';
 import type { EmployeeSsoGate } from './RegistrationHttpRoutes.ts';
 
 export type RegistrationDependencies = { cookieKey: Buffer; keys: QrKeySource; normalizer: PhotoNormalizer; photos: PrivatePhotoStore; sso?: EmployeeSsoGate;card?:(context:import('../registration/RegistrationService.ts').RegistrationContext,id:string)=>Promise<unknown> };
-export async function composeApi(config: { origin: string; sourceKey: Buffer; api: DatabaseIdentity; auth: DatabaseIdentity; registration?: RegistrationDependencies; emailLinks?:EmailLinkCodec; emailCards?:Pick<OwnDigitalIdCardService,'image'>; outlook?:NonNullable<Awaited<ReturnType<typeof loadOutlookActions>>>&{database:DatabaseIdentity} }) {
+export async function composeApi(config: { origin: string; sourceKey: Buffer; limits?:RequestLimits; api: DatabaseIdentity; auth: DatabaseIdentity; registration?: RegistrationDependencies; emailLinks?:EmailLinkCodec; emailCards?:Pick<OwnDigitalIdCardService,'image'>; outlook?:NonNullable<Awaited<ReturnType<typeof loadOutlookActions>>>&{database:DatabaseIdentity} }) {
   if (config.api.user.toLowerCase() === config.auth.user.toLowerCase() || config.api.database !== config.auth.database || config.api.server !== config.auth.server || config.api.port !== config.auth.port) throw new Error('INVALID_IDENTITY_SEPARATION');
   if(config.outlook&&([config.api.user.toLowerCase(),config.auth.user.toLowerCase()].includes(config.outlook.database.user.toLowerCase())||['database','server','port'].some(k=>(config.outlook!.database as any)[k]!== (config.api as any)[k])||config.outlook.config.origin!==config.origin))throw new Error('INVALID_OUTLOOK_IDENTITY_SEPARATION');
   const api = await connectSql(config.api, 'api');
@@ -44,7 +45,7 @@ export async function composeApi(config: { origin: string; sourceKey: Buffer; ap
       config.registration.normalizer, config.registration.photos), config.registration.cookieKey, config.registration.sso,{card:config.registration.card}) : undefined;
     const publicEmail=config.emailLinks?new EmailPublicRoutes(new EmailWorkflowService(api,config.emailLinks),config.emailCards):undefined;
     const extra=registration||publicEmail?{handles:(path:string)=>!!(registration?.handles(path)||publicEmail?.handles(path)),handle:async(req:import('node:http').IncomingMessage,res:import('node:http').ServerResponse)=>{const route=registration?.handles(req.url??'')?registration:publicEmail;if(!route)throw new Error('UNKNOWN_ROUTE');return route.handle(req,res);}}:undefined;
-    const normal=createApiHandler({ origin: config.origin, sourceKey: config.sourceKey, auth, actions, registration:extra });
+    const normal=createApiHandler({ origin: config.origin, sourceKey: config.sourceKey, auth, actions, registration:extra, limits:config.limits });
     if(config.outlook)outlookClient=await connectSql(config.outlook.database,'outlook');
     const outlook=config.outlook&&outlookClient?createOutlookActionHandler(new OutlookDecisionService(outlookClient,config.outlook.verifier,config.outlook.codec),config.outlook.config):undefined;
     return { handler: (req:import('node:http').IncomingMessage,res:import('node:http').ServerResponse)=>outlook&&req.url==='/api/outlook/decision'?outlook(req,res):normal(req,res),

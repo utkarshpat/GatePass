@@ -15,7 +15,7 @@ for p in migrations:
 lines+=['','## Object declaration provenance','','| Kind | Object | Declaration/change migrations |','|---|---|---|']
 for (kind,name),versions in sorted(objects.items()):lines.append(f'| {kind} | `{name}` | '+', '.join(dict.fromkeys(versions))+' |')
 (out/'REFERENCE_SQL_Catalog.md').write_text('\n'.join(lines)+'\n',encoding='utf8')
-files=sorted([*list((root/'src').rglob('*.ts')),*list((root/'src').rglob('*.js')),*list((root/'tools').rglob('*.ts')),*list((root/'tools').glob('*.mjs'))])
+files=sorted([*list((root/'src').rglob('*.ts')),*list((root/'src').rglob('*.tsx')),*list((root/'src').rglob('*.js')),*list((root/'tools').rglob('*.ts')),*list((root/'tools').glob('*.mjs'))])
 routes={};env={}
 for p in files:
  for n,line in enumerate(p.read_text(encoding='utf8').splitlines(),1):

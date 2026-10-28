@@ -46,7 +46,17 @@ test('GP-0612 actual HTTP ENTRY rejects an already verified pass after group mem
  test.setTimeout(120000);const run=randomUUID();let ready=false;const admin=await playwright.request.newContext(),guard=await playwright.request.newContext();
  try{
   const f=JSON.parse(fixture(run,'Create'));ready=true;
-  for(const [client,login] of [[admin,f.login],[guard,f.guardLogin]] as const)expect((await client.post(origin+'/api/staff/login',{data:{login,password:'Sopra@123'},headers:{Origin:origin}})).status()).toBe(200);
+  for(const [client,login] of [[admin,f.login],[guard,f.guardLogin]] as const){
+   // Successful logins and setup operations share the real 20/minute source budget.
+   // The first owned login has no attempt row yet, so conservatively wait out any
+   // measured saturated window before signing in. Do not retry credential failures,
+   // disable limits, reveal source hashes or reset shared security state.
+   const budget=JSON.parse(fixture(run,'AuthState'));
+   expect(budget.credentials).toBe(3);expect(budget.eligibleCredentials).toBe(3);
+   const reset=Math.max(budget.sourceRequests===20?budget.sourceResetInSeconds??0:0,budget.saturatedResetInSeconds??0);
+   if(reset>0){expect(reset).toBeLessThanOrEqual(61);console.info('AUTH_SOURCE_PACING: waiting for the measured saturated source window');await new Promise(resolve=>setTimeout(resolve,(reset+1)*1000));}
+   const response=await client.post(origin+'/api/staff/login',{data:{login,password:'Sopra@123'},headers:{Origin:origin}});expect(response.status(),(client===admin?'Owned admin':'Owned guard')+' authentication '+(response.status()===200?'OK':fixture(run,'AuthState'))).toBe(200);
+  }
   const create=await call(admin,'project-group',{locationId:1,action:'SAVE',name:f.prefix+' Revoke Entry',projectLocationIds:[f.beta],reason:'Owned scan revoke test',clientKey:randomUUID()});expect(create.status()).toBe(200);const group=await create.json();
   const assigned=await call(admin,'project-group-guard',{locationId:1,action:'ASSIGN',groupId:group.groupId,revision:group.revision,guardUserId:f.guard,reason:'Owned scan revoke test',clientKey:randomUUID()});expect(assigned.status()).toBe(200);const binding=await assigned.json();
   const scope={locationId:1,dutyKind:'PROJECT',dutyId:f.beta},headers={Origin:origin,'X-CSRF-Token':await csrf(guard)};

@@ -28,8 +28,10 @@ for(const staleStatus of [200,403])test('obsolete catalogue refresh '+staleStatu
 test('load more before a changed search dispatch never reuses the previous query cursor',async({page,context})=>{
  const calls:any[]=[],projects=Array.from({length:25},(_,i)=>({projectLocationId:String(i+1),projectId:String(i+1),projectName:'Project '+(i+1),projectCode:'P-'+(i+1),directoryCurrent:true,canAssignProject:false,canAssignLocation:false}));
  await admin(page,context,d=>{calls.push(d);return{projects,cursor:'25'};});
- await page.evaluate(`document.getElementById('project-search').value='Project';cataloguePage(true)`);
- expect(calls.at(-1).search).toBe("Account");expect(calls.at(-1).cursor).toBeUndefined();expect(await page.evaluate('state.projects.length')).toBe(25);
+ await page.locator('[data-admin-view=projects]').click();
+ await page.locator('#project-search').fill('Project');
+ await page.evaluate(`cataloguePage(true)`);
+ expect(calls.at(-1).search).toBe("Project");expect(calls.at(-1).cursor).toBeUndefined();expect(await page.evaluate('state.projects.length')).toBe(25);
 });
 
 test('newly loaded catalogue project stays selectable when a complete metadata cache exists',async({page,context})=>{

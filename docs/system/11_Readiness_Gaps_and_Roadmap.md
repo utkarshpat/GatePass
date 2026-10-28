@@ -5,12 +5,13 @@
 ## Status matrix
 | Area | Current status | Remaining acceptance |
 |---|---|---|
+| Frontend | Six React/TSX page views with native React models and interactions | Print/offline HTML retained; corporate/device acceptance |
 | Public/employee forms | Local actual SQL/private photos | Corporate SSO/MFA/directory and devices |
 | Exact office/account authorization | Implemented services/migrations | Trustworthy entitlement feed/lifecycle sync |
 | Guard cards/duties/movement | Local account presence/common verification | Physical camera, language/users and reconciliation operations |
 | Reception preview/print/reprint | Audited/retry-aware local implementation | Physical printer/media; historical SQL 547 investigation |
 | Admin accounts/leads/common areas | Scoped local UI | Current scoped UI complete for local workflows; corporate provider/deployment acceptance |
-| Report/audit/staff backends | Service/SQL contracts | Production exposure/permission review and required screens |
+| Report/audit/staff backends | Service/SQL contracts | Production exposure and organizational permission review |
 | Email/status/host workflow | Code and confirmed personal test delivery | Organization Graph/mailbox, company delivery, reachable deployed links |
 | Native Outlook | Code/SQL tests; disabled by default | Provider/Entra/public HTTPS/stable identity/client onboarding |
 | PWA | Manifest/icons/public-only offline shell | Install/device acceptance; no offline entry |
@@ -37,3 +38,11 @@ Passing unit tests, local pages or a source candidate is not production certific
 ## Account host policy update
 
 See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+
+## Pre-pentest status
+
+See [the 28 October security audit](../93_Pre_Pentest_Security_Audit_28_October_2026.md) for a fixed SQL runtime admission gap, measured local security evidence and the remaining production/staging blockers. Corporate identity/device controls and complete production composition remain pending. No source/local test result constitutes independent pentest approval.
+
+## Additional risk hardening
+
+[Report 94](../94_Pentest_Risk_Hardening_28_October_2026.md) adds reviewed SQL procedure-grant admission, database-user impersonation and server-permission rejection, bounded public/total pending work, explicit production mode/credential checks and rejection of legacy short local passwords in production. Production web/identity implementation, Linux key deployment and actual staging acceptance remain required; these fixes do not mark those items complete.

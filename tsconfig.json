@@ -9,8 +9,22 @@
     "allowJs": true,
     "checkJs": false,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "jsx": "react-jsx"
   },
-  "include": ["src/**/*.ts", "src/**/*.mjs", "tools/*.ts", "playwright.config.ts", "tests/browser/**/*.ts"],
-  "exclude": ["node_modules", "output", "tmp"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.mjs",
+    "tools/*.ts",
+    "playwright.config.ts",
+    "tests/browser/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "output",
+    "tmp"
+  ]
 }

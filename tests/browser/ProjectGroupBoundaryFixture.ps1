@@ -1,5 +1,5 @@
 #Requires -Version 7.0
-[CmdletBinding()]param([Parameter(Mandatory)][guid]$RunId,[ValidateSet('Create','ProjectOnly','Expire','Inspect','Cleanup')][string]$Action)
+[CmdletBinding()]param([Parameter(Mandatory)][guid]$RunId,[ValidateSet('Create','ProjectOnly','Expire','Inspect','AuthState','Cleanup')][string]$Action)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if($Action -eq 'Cleanup'){& "$PSScriptRoot/AdminConsoleFixture.ps1" -RunId $RunId -Action Cleanup;exit}
 $root=Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -8,6 +8,9 @@ $prefix='GP02-'+$RunId.ToString('N').Substring(0,20).ToUpperInvariant()
 if($Action -eq 'Create'){$f=(& "$PSScriptRoot/AdminConsoleFixture.ps1" -RunId $RunId -Action Create)|ConvertFrom-Json}
 $db=Open-GatePassLocalSql -TrustLocalServerCertificate
 try{
+ # Match the SQL-owned identity subject exactly, including its GUID character case.
+ # IdentitySubject is case-sensitive; a PowerShell-uppercase reconstruction can create no credentials.
+ $prefix=if($Action -eq 'Create'){$f.prefix}else{Invoke-GatePassScalar $db "SELECT 'GP02-'+LEFT(REPLACE(CONVERT(varchar(36),@run),'-',''),20);" @{run=$RunId}}
  if($Action -eq 'Create'){
   $raw=[Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($RunId.ToString('N')+':group-boundary'))
   $extra=(Invoke-GatePassScalar $db @'
@@ -33,6 +36,18 @@ FOR JSON PATH,WITHOUT_ARRAY_WRAPPER;
   $f|Add-Member -NotePropertyName guardLogin -NotePropertyValue ($prefix.ToLowerInvariant()+'-guard@example.invalid')
   $f|Add-Member -NotePropertyName receptionLogin -NotePropertyValue ($prefix.ToLowerInvariant()+'-reception@example.invalid')
   $f|ConvertTo-Json -Compress
+ }elseif($Action -eq 'AuthState'){
+  # Owned test identities and numeric budget state only: no hashes, passwords, tokens or real users.
+  Invoke-GatePassScalar $db @'
+SELECT (SELECT COUNT(*) FROM gp.GuardCredentials c JOIN gp.Users u ON u.UserId=c.UserId WHERE u.IdentityIssuer='gatepass-phase02-fixture' AND u.IdentitySubject LIKE @prefix+':%') credentials,
+(SELECT COUNT(*) FROM gp.GuardCredentials c JOIN gp.Users u ON u.UserId=c.UserId WHERE u.IdentityIssuer='gatepass-phase02-fixture' AND u.IdentitySubject LIKE @prefix+':%' AND gp._StaffLocalIdentityEligible(u.UserId,SYSUTCDATETIME())=1 AND c.IsEnabled=1 AND c.MustChangePassword=0 AND(c.LockedUntilUtc IS NULL OR c.LockedUntilUtc<=SYSUTCDATETIME())) eligibleCredentials,
+(SELECT MAX(s.RequestCount) FROM gp.GuardAuthSources s JOIN gp.GuardLoginAttempts a ON a.SourceHash=s.SourceHash JOIN gp.Users u ON u.UserId=a.UserId WHERE u.IdentityIssuer='gatepass-phase02-fixture' AND u.IdentitySubject LIKE @prefix+':%') sourceRequests,
+(SELECT MAX(DATEDIFF(second,SYSUTCDATETIME(),DATEADD(second,61,s.WindowStartUtc))) FROM gp.GuardAuthSources s JOIN gp.GuardLoginAttempts a ON a.SourceHash=s.SourceHash JOIN gp.Users u ON u.UserId=a.UserId WHERE u.IdentityIssuer='gatepass-phase02-fixture' AND u.IdentitySubject LIKE @prefix+':%') sourceResetInSeconds,
+-- Before this fixture's first login there is no owned attempt to identify its source.
+-- Read only the maximum remaining saturated window; never expose a source hash or reset limits.
+(SELECT MAX(DATEDIFF(second,SYSUTCDATETIME(),DATEADD(second,61,WindowStartUtc))) FROM gp.GuardAuthSources WHERE RequestCount=20 AND WindowStartUtc>DATEADD(second,-60,SYSUTCDATETIME())) saturatedResetInSeconds
+FOR JSON PATH,WITHOUT_ARRAY_WRAPPER;
+'@ @{prefix=$prefix}
  }elseif($Action -eq 'Inspect'){
   Invoke-GatePassScalar $db @'
 SELECT (SELECT COUNT(*) FROM gp.AccessEvents e JOIN gp.VisitRequests v ON v.VisitRequestId=e.VisitRequestId WHERE v.PublicReference LIKE @prefix+'-%') accessEvents,

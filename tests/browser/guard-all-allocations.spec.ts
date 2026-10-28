@@ -37,10 +37,10 @@ test('overlapping pages do not duplicate cards or assignment choices in all allo
 for(const width of [390,1366])test(`all allocations combines authorized paged results and binds detail to a chosen allocation at ${width}px`,async({page,context})=>{
  await page.setViewportSize({width,height:900});const fixture=await setup(page,context);await all(page);await expect(page.locator('.guard-id-card')).toHaveCount(4);
  await expect(page.locator('.guard-card-person strong')).toHaveText(['Arjun Rao','Asha Mehta','Nikhil Shah','Saima Khan']);
- const arjun=page.locator('.guard-id-card').filter({has:page.locator('strong',{hasText:'Arjun Rao'})});await expect(arjun.locator('.guard-card-projects')).toHaveText('Projects: Project Alpha · Project Beta');
+ const arjun=page.locator('.guard-id-card').filter({has:page.locator('strong',{hasText:'Arjun Rao'})});await expect(arjun.locator('.guard-card-projects')).toHaveText('Accounts: Project Alpha · Project Beta');
  await arjun.click();await expect(page.locator('#allocation-dialog')).toBeVisible();expect(fixture.calls.filter(c=>c.action==='detail')).toHaveLength(0);
- await page.locator('#allocation-select-trigger').click();await page.getByRole('option',{name:'Project Beta · Project',exact:true}).click();await page.locator('#allocation-form').getByRole('button',{name:'Continue',exact:true}).click();
- await expect(page.locator('#person-name')).toHaveText('Arjun Rao');await expect(page.locator('#pass-fields')).toContainText('Project Beta · Project');await expect(page.locator('#mark-entry')).toBeVisible();
+ await page.locator('#allocation-select-trigger').click();await page.getByRole('option',{name:'Project Beta · Account',exact:true}).click();await page.locator('#allocation-form').getByRole('button',{name:'Continue',exact:true}).click();
+ await expect(page.locator('#person-name')).toHaveText('Arjun Rao');await expect(page.locator('#pass-fields')).toContainText('Project Beta · Account');await expect(page.locator('#mark-entry')).toBeVisible();
  expect(fixture.calls.filter(c=>c.action==='detail').at(-1)?.body).toMatchObject({dutyKind:'PROJECT',dutyId:'2',visitRequestId:shared});
  await page.locator('#close-pass').click();await page.getByRole('tab',{name:'Inside',exact:true}).click();await expect(page.locator('.guard-id-card')).toHaveCount(2);
  expect(fixture.calls.filter(c=>c.action==='visitors'&&c.body.queue==='INSIDE').every(c=>c.body.dutyKind==='PROJECT')).toBe(true);
@@ -53,14 +53,14 @@ test('combined view preserves search language and requires a concrete allocation
  await page.locator('#scan-fab').click();await expect(page.locator('#allocation-dialog')).toBeVisible();await expect(page.locator('#scanner-dialog')).not.toBeVisible();await page.locator('#allocation-cancel').click();expect(f.calls.filter(c=>c.action==='verify')).toHaveLength(0);
  for(const [label,translation] of [['English + हिन्दी','सारी ड्यूटी'],['English + ಕನ್ನಡ','ಎಲ್ಲಾ ಡ್ಯೂಟಿಗಳು'],['English + தமிழ்','எல்லா டியூட்டிகளும்'],['English + मराठी','सर्व ड्युटी']]){
   await page.locator('#account-toggle').click();await page.locator('#language-menu').click();await page.getByRole('menuitemradio',{name:label,exact:true}).click();
-  await expect(page.locator('#project-filter-trigger')).toContainText(translation);await expect(page.locator('.guard-card-projects')).toContainText('Projects / ');
+  await expect(page.locator('#project-filter-trigger')).toContainText(translation);await expect(page.locator('.guard-card-projects')).toContainText('Accounts / ');
   expect(await page.locator('#project-filter-trigger span').evaluate(span=>span.scrollWidth<=span.clientWidth+1)).toBe(true);
   await page.locator('#account-toggle').click();
  }
 });
 test('a late combined response cannot replace a new individual filter and a denied allocation clears the union',async({page,context})=>{
  const f=await setup(page,context,{delayed:true});await all(page);await expect.poll(()=>f.calls.some(c=>c.action==='visitors'&&c.body.dutyId==='2')).toBe(true);
- await page.locator('#project-filter-trigger').click();await page.getByRole('option',{name:'Project Alpha · Project',exact:true}).click();await expect(page.locator('#project-filter-trigger')).toHaveText('Project Alpha · Project');
+ await page.locator('#project-filter-trigger').click();await page.getByRole('option',{name:'Project Alpha · Account',exact:true}).click();await expect(page.locator('#project-filter-trigger')).toHaveText('Project Alpha · Account');
  // Reads are coalesced: release the obsolete request before the latest one dispatches.
  f.release();await expect(page.locator('.guard-id-card')).toHaveCount(2);await expect(page.locator('#recent-scans')).not.toContainText('Nikhil Shah');
  f.deny();await all(page);await expect(page.locator('#recent-status')).toContainText('Visitors unavailable');await expect(page.locator('.guard-id-card')).toHaveCount(0);

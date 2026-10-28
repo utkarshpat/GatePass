@@ -16,6 +16,8 @@ Visitor stays start today and may extend through a selected final day within pol
 
 ## Local setup
 
+The six main frontend pages now render with React + TypeScript. Existing CSS and workflows are preserved; all six pages now use native React state, components and event handlers. New UI work belongs in `src/frontend`. Print/offline documents remain HTML. See [migration and development policy](docs/92_React_Frontend_Migration_28_October_2026.md).
+
 Use the supported Node range and locked dependencies in package.json, PowerShell 7, local SQL Server and existing Windows private-storage setup:
 
 ```text
@@ -50,6 +52,7 @@ Photos, OAuth token caches, password hashes and key rings remain database/privat
 ```text
 npm run typecheck
 npm run lint
+npm run build:frontend
 npm run check:migrations
 npm run test:ci
 npm run test:browser
@@ -65,3 +68,5 @@ Run SQL fault/locking suites sequentially and separately from browser workloads 
 - [Release evidence and limitations](docs/88_Documentation_And_Release_28_October_2026.md)
 
 Account terminology and the new approved-host policy are described in [the 28 October update](docs/89_Accounts_And_Approved_Hosts_28_October_2026.md). Configure approved hosts per account-office before using hosted registration.
+
+Pentest preparation and subsequent fixes: [security audit](docs/93_Pre_Pentest_Security_Audit_28_October_2026.md) and [risk hardening with verification limits](docs/94_Pentest_Risk_Hardening_28_October_2026.md).

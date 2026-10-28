@@ -37,6 +37,8 @@ test('preview concurrency stays at three and queued work pauses when the project
  const calls=await setup(page,context,{onLead:async route=>{active++;maximum=Math.max(maximum,active);await gate;active--;await route.fulfill({json:{leads:[],cursor:null}});}});
  await page.locator('[data-admin-view="projects"]').click();await page.evaluate(()=>document.querySelector('#workspace')!.scrollTop=300);await expect.poll(()=>calls.length).toBe(3);
  await page.locator('[data-admin-view="overview"]').click();release();await expect.poll(()=>active).toBe(0);await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>resolve())));expect(calls).toHaveLength(3);expect(maximum).toBe(3);
+ await page.locator('[data-admin-view=projects]').click();await expect(page.locator('#projects .project-card').first()).toContainText('No account lead assigned');await expect.poll(()=>page.evaluate('leadPreview.active===0&&leadPreview.queue.length===0')).toBe(true);
+ const beforeRefresh=calls.length;await page.locator('#refresh').click();await expect.poll(()=>calls.length).toBeGreaterThan(beforeRefresh);await expect.poll(()=>page.evaluate('leadPreview.active===0&&leadPreview.queue.length===0')).toBe(true);expect(calls.length-beforeRefresh).toBeLessThan(20);
 });
 test('a new office never reuses a pending read or paints the previous office lead',async({page,context})=>{
  let release=()=>{};const gate=new Promise<void>(resolve=>release=resolve);

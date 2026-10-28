@@ -15,6 +15,8 @@ Local SQL currently uses Windows Integrated Security against `localhost\SQLEXPRE
 Use pinned Node range >=26.8.0 and <27 (CI selects 26.8.2), locked npm dependencies, an approved dedicated SQL test instance and PowerShell 7 for the existing Windows SQL/storage adapters. Development is on Windows; planned Ubuntu deployment requires separate platform acceptance. Private SQL/media/key files stay outside source/OneDrive.
 
 ## Existing configured laptop
+
+The local runner builds six React/TSX page bundles at startup. Use `npm run build:frontend` to verify a production frontend build independently; restart the runner after source changes. CI also runs this build. Print/offline HTML and existing CSS remain in use. See [frontend policy and migration](../92_React_Frontend_Migration_28_October_2026.md).
 From repository root, run npm.cmd ci, then npm.cmd run storage:init, then npm.cmd run dev:sso. The first installs locked dependencies, the second checks/opens protected storage and the third starts the explicit local development host. None provisions a complete fresh production environment.
 
 Open http://localhost:8443/ for staff, or /office/noida for public intake. Despite port 8443, this runner uses HTTP. HTTPS against it produces SSL protocol errors. Stop its owning process cleanly and restart after asset/source changes; do not terminate unrelated listeners by guessed process/port. Ordinary startup must not reset passwords or reinstate revoked grants.

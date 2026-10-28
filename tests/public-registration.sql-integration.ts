@@ -34,13 +34,17 @@ async function call(path:string,body:any={},method='POST') {
   return response;
 }
 async function check(name:string,work:()=>Promise<void>){try{await writeFile(new URL('../tmp/registration-audit-progress.txt',import.meta.url),name);await work();checks.push(name);}catch(error){throw new Error(name+': '+((error as Error).stack??String(error)));}}
+async function reactCode(html:string,page:string){
+ const bootstrap=/id="app-config"[^>]*>([\s\S]*?)<\/script>/u.exec(html);assert.ok(bootstrap,'React configuration missing');assert.equal(JSON.parse(bootstrap[1]).page,page);
+ const script=/<script nonce="[^"]+" src="(\/assets\/react\/[^"]+)" defer><\/script>/u.exec(html);assert.ok(script,'Nonced React bundle missing');const asset=await call(script[1],{},'GET');assert.equal(asset.status,200);assert.match(asset.headers['cache-control'],/immutable/u);new Script(asset.body);return asset.body as string;
+}
 async function start(type:string){assert.equal((await call('/api/registration/reset')).status,200);assert.equal((await call('/api/registration/start',{requestType:type})).status,200);const result=await call('/api/registration/options');assert.equal(result.status,200,JSON.stringify(result.body));return result.body;}
 async function submit(body:any){clientKeys.add(body.clientKey);return call('/api/registration/submit',body);}
 try {
   await new Promise<void>((resolve,reject)=>{let output='';const timer=setTimeout(()=>reject(new Error('LISTENER_TIMEOUT')),30000);child.stdout.on('data',part=>{output+=part;if(output.includes('GatePass employee portal:')){clearTimeout(timer);resolve();}});child.on('error',reject);child.on('exit',()=>{clearTimeout(timer);reject(new Error('LISTENER_EXIT'));});});
   await check('office entry serves shared original Noida background, two flow choices and nonce-protected scripts',async()=>{
-    const page=await call('/office/noida',{},'GET');assert.equal(page.status,200);assert.match(page.body,/SSI Employee/u);assert.match(page.body,/Visitor/u);assert.ok(!page.body.includes('__APP_STYLES__'));assert.ok(!page.body.includes('__OFFICE_NAME__'));assert.match(page.body,/--gp-canvas/u);
-    new Script(/<script nonce="[^"]+">([\s\S]*?)<\/script>/u.exec(page.body)![1]);
+    const page=await call('/office/noida',{},'GET');assert.equal(page.status,200);const code=await reactCode(page.body,'self-service');assert.match(code,/SSI Employee/u);assert.match(code,/Visitor/u);assert.ok(!page.body.includes('__APP_STYLES__'));assert.ok(!page.body.includes('__OFFICE_NAME__'));assert.match(page.body,/--gp-canvas/u);
+
     assert.equal(page.headers['permissions-policy'],'camera=(self), microphone=(), geolocation=()');assert.match(page.headers['content-security-policy'],/img-src 'self'/u);
     const asset=await call('/assets/office-background.png',{},'GET');assert.equal(asset.status,200);assert.equal(digest(asset.raw),digest(await readFile(new URL('../assets/locations/office-background.png',import.meta.url))));
   });
@@ -127,7 +131,7 @@ try {
     const guard=JSON.parse(await readFile(join(homedir(),'.gatepass','development-logins','guards.json'),'utf8')).find((r:any)=>r.guardId==='GRD001');assert.ok(guard);
     const login=await call('/api/staff/login',{login:guard.loginId,password:guard.password});assert.equal(login.status,200,JSON.stringify(login.body));assert.ok(login.body.workspaces.some((w:any)=>w.path==='/guard'));
     const ctx=await call('/api/guard/context');assert.equal(ctx.status,200,JSON.stringify(ctx.body));assert.equal(ctx.body.locations.length,1);assert.equal(ctx.body.locations[0].locationName,'Noida');
-    const page=await call('/guard',{},'GET');assert.equal(page.status,200);assert.equal(page.headers['permissions-policy'],'camera=(self), microphone=(), geolocation=()');assert.ok(page.body.includes('id="scan-video"'));new Script(/<script nonce="[^"]+">([\s\S]*?)<\/script>/u.exec(page.body)![1]);
+    const page=await call('/guard',{},'GET');assert.equal(page.status,200);assert.equal(page.headers['permissions-policy'],'camera=(self), microphone=(), geolocation=()');assert.ok((await reactCode(page.body,'guard')).includes('scan-video'));
     const projects=await call('/api/guard/projects',{locationId:ctx.body.locations[0].locationId});assert.equal(projects.status,200,JSON.stringify(projects.body));assert.ok(projects.body.projects.length>1);assert.equal(projects.body.canHandleDigitalId,true);
     assert.equal((await call('/api/guard/projects',{locationId:ctx.body.locations[0].locationId===1?2:1})).status,403);
     assert.equal((await call('/api/admin/context')).status,403);
@@ -164,7 +168,7 @@ try {
   let receptionContext:any,receptionVisit:any;
   await check('common staff entry opens reception with a local scoped staff account',async()=>{
     const deep=await call('/reception',{},'GET');assert.equal(deep.status,303);assert.equal(deep.headers.location,'/');
-    const page=await call('/',{},'GET');assert.equal(page.status,200);assert.match(page.body,/Email or Staff ID/u);assert.ok(!page.body.includes('SSI Employee'));assert.ok(!page.body.includes('__SCRIPT__'));new Script(/<script nonce="[^"]+">([\s\S]*?)<\/script>/u.exec(page.body)![1]);
+    const page=await call('/',{},'GET');assert.equal(page.status,200);assert.match(await reactCode(page.body,'staff'),/Email or Staff ID/u);assert.ok(!page.body.includes('SSI Employee'));assert.ok(!page.body.includes('__SCRIPT__'));
     const login=await call('/api/staff/login',{login:receptionAccount.loginId,password:receptionAccount.password});assert.equal(login.status,200,JSON.stringify(login.body));assert.equal(login.body.workspaces[0].path,'/reception');assert.ok(login.body.grants.some((g:any)=>g.roleCode==='RECEPTION'&&g.scopeName==='Noida'));assert.ok(jar.has('gp-staff-session'));assert.ok(!Object.hasOwn(login.body,'sessionToken'));
     const me=await call('/api/reception/me');assert.equal(me.status,200,JSON.stringify(me.body));receptionContext=me.body;assert.equal(me.body.locations.length,1);assert.equal(me.body.locations[0].locationCode,'NOIDA');assert.equal(me.body.locations[0].canPrint,true);
     assert.equal((await call('/api/staff/me',{role:'INDIA_ADMIN'})).status,400);
@@ -196,7 +200,7 @@ try {
   });
    let approval:any,denial:any,externalLink:string;
    await check('email approval link GET is inert and forwarded links do not grant host authority',async()=>{
-     const page=await call('/approval/'+visits[0],{},'GET');assert.equal(page.status,200);new Script(/<script nonce="[^"]+">([\s\S]*?)<\/script>/u.exec(page.body)![1]);assert.match(page.headers['cache-control'],/no-store/u);assert.match(page.body,/Visit approval|email-request|Request details/u);assert(!page.body.includes('My Requests'));
+     const page=await call('/approval/'+visits[0],{},'GET');assert.equal(page.status,200);const code=await reactCode(page.body,'email');assert.match(page.headers['cache-control'],/no-store/u);assert.match(code,/Visit approval|Request details/u);assert(!page.body.includes('My Requests'));
      const directory=JSON.parse(await readFile(new URL('../database/development/directory-fixtures.json',import.meta.url),'utf8'));
      const wrong=directory.employees.find((p:any)=>p.isActive&&p.employeeId!==host.employeeId);assert.equal((await call('/api/dev/sso/login',{email:wrong.officialEmail,password:'Sopra@123'})).status,200);
      assert.equal((await call('/api/email/host/detail',{visitRequestId:visits[0]})).status,403);

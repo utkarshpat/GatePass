@@ -6,6 +6,8 @@ The running local app uses real SQL and private media. Corporate identity/direct
 
 ## Current contracts
 
+- Six main views render through React/TSX. All six pages use native React models, components and event handlers; the compatibility controller adapter has been removed. Print/offline stay HTML. See [migration and new UI policy](../92_React_Frontend_Migration_28_October_2026.md).
+
 - One visitor per registration, private office-wide host search and intake-authorized downloadable card without email.
 - Today-started visitor stay with inclusive final day; still-valid multi-day visits remain in operational queues. Employee requests stay same-day.
 - Calendar-day pass labels show final date 23:59; actual authorization uses exclusive midnight.
@@ -40,6 +42,7 @@ The running local app uses real SQL and private media. Corporate identity/direct
 - [Accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md)
 - [Retained demo hosts and live acceptance](../90_Retained_Demo_Host_Acceptance_28_October_2026.md)
 - [Shared publication and NHS draft preservation](../91_Shared_Account_Host_Release_28_October_2026.md)
+- [React migration, new UI policy and local validation](../92_React_Frontend_Migration_28_October_2026.md)
 
 ## Source references
 
@@ -48,3 +51,5 @@ The running local app uses real SQL and private media. Corporate identity/direct
 - [Source hashes](Source-Snapshot.json)
 
 These are source inventories, not live database/provider attestations. Actual .env, private keys, photos, token caches and authenticated browser artifacts are excluded from source publication.
+
+Latest security follow-up: [pentest risk hardening](../94_Pentest_Risk_Hardening_28_October_2026.md), including fixed code/configuration gaps and remaining implementation/staging gates.

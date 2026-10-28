@@ -51,7 +51,7 @@ stages:
             displayName: Install locked dependencies
           - script: npm audit --audit-level=high
             displayName: Block known high/critical dependency vulnerabilities
-          - script: npm run typecheck && npm run lint && npm run check:migrations
+          - script: npm run typecheck && npm run lint && npm run check:migrations && npm run build:frontend
             displayName: Type safety, lint and migration integrity
           - script: npm run test:ci
             displayName: Unit/contract tests with JUnit and coverage

@@ -3,14 +3,15 @@
 > Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 ## Precedence
-This handbook is the consolidated local baseline dated 22 October 2026. Earlier numbered documents are historical increments. Resolve conflict using latest approved requirements, executable source/migrations and applicable current evidence; update the handbook when behavior changes. Historical reports are not current environment attestations.
+This handbook is the maintained local source baseline; the current revision date appears above. Earlier numbered documents and exported packages are historical increments. Resolve conflict using latest approved requirements, executable source/migrations and applicable current evidence; update the handbook when behavior changes. Historical reports are not current environment attestations.
 
 The package contains current chapters, source-derived inventories and existing Markdown references. History is retained for traceability instead of being rewritten as newly verified. Source-Snapshot.json records base commit and working-tree hashes; it is not a signed release or live database catalog.
 
 ## Source map
 | Topic | Read first |
 |---|---|
-| Current presentation/release evidence | docs/55_Presentation_Rehearsal_23_October_2026.md |
+| Current frontend policy and verification | docs/92_React_Frontend_Migration_28_October_2026.md |
+| Previous account/host publication | docs/91_Shared_Account_Host_Release_28_October_2026.md |
 | Local staff onboarding/audit | docs/54_Local_Staff_Onboarding_And_Audit.md |
 | Reception all-date lookup/return correction | docs/53_Reception_Lookup_And_Return_Correction.md |
 | Admin visit register | docs/52_Admin_Visit_Register.md |
@@ -24,7 +25,7 @@ The package contains current chapters, source-derived inventories and existing M
 | Print/reception audit | docs/37_Reception_Audit.md |
 | Private storage | docs/database/22_Private_Photos_and_QR_Key_Storage.md |
 | CI/cost controls | azure-pipelines.yml; tools/ci; docs/31_CI_Checks_and_Limits.md |
-| UI | docs/13_Product_UX_Standards.md; docs/14_Global_Design_System.md |
+| UI | src/frontend; docs/92_React_Frontend_Migration_28_October_2026.md; docs/13_Product_UX_Standards.md; docs/14_Global_Design_System.md |
 
 Paths are repository-relative. Package retains the Markdown reference tree; executable application code is not duplicated into the shareable ZIP. External specifications linked in historical docs are references, not freshly revalidated vendor guidance.
 

@@ -1,3 +1,4 @@
+import {buildFrontend} from '../frontend-build.mjs';
 import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, writeFile, cp, lstat, rm } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
@@ -16,12 +17,15 @@ await mkdir(destination, { recursive: true });
 // Explicit source allowlist: no .git, test fixtures, dummy login entrypoint,
 // node_modules, validation exports, credentials or private photo directories.
 const allowed = ['src', 'assets', 'database/migrations', 'database/migrations.sha256.json',
-  'package.json', 'package-lock.json', '.env.example', 'tools/start-api.ts', 'tools/start-email-worker.ts', 'tools/check-configuration.ts', 'tools/PrivateStorage.Windows.ps1'];
+  'package.json', 'package-lock.json', '.env.example', 'tools/start-api.ts', 'tools/start-email-worker.ts', 'tools/check-configuration.ts', 'tools/PrivateStorage.Windows.ps1','tools/frontend-build.mjs'];
 for (const path of allowed) {
   await cp(join(root, path), join(destination, path), {
     recursive: true, filter: source => !relative(root, source).replaceAll(sep, '/').startsWith('src/development')
   });
 }
+const frontend=await buildFrontend();
+for(const [url,script]of frontend.assets){if(!/^\/assets\/react\/[a-z-]+-[A-Z0-9]+\.js$/u.test(url))throw Error('INVALID_FRONTEND_ASSET');const path=join(destination,'public',url.slice(1));await mkdir(join(destination,'public','assets','react'),{recursive:true});await writeFile(path,script);}
+await writeFile(join(destination,'public','frontend-manifest.json'),JSON.stringify(frontend.pages,null,2)+'\n');
 const hashes = {};
 async function walk(folder) {
   for (const item of await readdir(folder, { withFileTypes: true })) {

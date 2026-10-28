@@ -38,7 +38,8 @@
     "mail:disconnect": "node tools/connect-personal-outlook.ts disconnect",
     "mail:dev": "node tools/start-development-email.ts",
     "mail:scenario": "node tools/create-email-test.ts",
-    "mail:outlook-preview": "node tools/preview-outlook-approval.ts"
+    "mail:outlook-preview": "node tools/preview-outlook-approval.ts",
+    "build:frontend": "node tools/frontend-build.mjs --write"
   },
   "engines": {
     "node": ">=26.8.0 <27"
@@ -49,11 +50,14 @@
   "dependencies": {
     "@azure/msal-node": "7.1.0",
     "@zxing/library": "0.23.0",
+    "esbuild": "0.28.2",
     "flag-icons": "7.6.0",
     "jose": "6.2.13",
     "libphonenumber-js": "1.13.15",
     "mssql": "12.7.10",
-    "qrcode": "1.5.4"
+    "qrcode": "1.5.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
@@ -62,7 +66,10 @@
     "@types/mssql": "12.3.0",
     "@types/node": "26.6.5",
     "@types/qrcode": "1.5.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "eslint": "10.13.0",
+    "prettier": "3.9.10",
     "sharp": "0.35.5",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.0"

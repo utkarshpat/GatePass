@@ -1,6 +1,6 @@
 # 10. Testing, CI and evidence
 
-> Latest execution: [24 October final browser verification and push](../67_Final_Browser_Verification_And_Presentation.md). The earlier 23 October counts below are historical. [Report 66](../66_Final_E2E_Counts_And_Edge_Cases_24_October_2026.md) distinguishes live SQL workflows from controlled UI fixtures, reconciles totals and lists remaining deployment/hardware/concurrency checks. That run is historical; current migration integrity covers **118** files.
+> Current React migration execution and its explicit verification limits are recorded in [28 October native React migration evidence](../92_React_Frontend_Migration_28_October_2026.md). The [24 October browser/presentation report](../67_Final_Browser_Verification_And_Presentation.md) and the 23 October counts below are historical. Current migration integrity covers **121** files.
 
 > Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
@@ -23,6 +23,8 @@ The 22 October reception audit records 376 unit tests with coverage, 55 actual S
 The screenshot package mixes actual UI with some intercepted synthetic responses. Populated cards/approval buttons prove rendering only; its source index distinguishes fixtures from live reads/test-account screens.
 
 ## Default pipeline
+
+The React migration adds `npm run build:frontend` to quality checks. Browser-only `src/frontend/**` is excluded from backend Node coverage; Playwright covers its behavior, resource cleanup and existing workflow parity separately. Backend coverage percentages must not be presented as full frontend coverage. See [migration evidence](../92_React_Frontend_Migration_28_October_2026.md).
 azure-pipelines.yml runs Quality on main pushes/PRs, excluding docs/** and root README.md. Ubuntu 24.04/UseNode@1 26.8.2 runs redacted history secret scan, cached npm ci, npm audit high/critical threshold, typecheck, lint, migration integrity, unit/JUnit/coverage and allowlisted release-candidate packaging. Gates are 90% lines, 80% branches, 90% functions over included TypeScript source.
 
 Dependency vulnerability results change; an old green run is not a current npm audit guarantee. Documentation makes no dependency upgrades/purchases.
@@ -48,3 +50,17 @@ The final configuration/validity unit run has 633 tests: 632 pass, one platform 
 ## Account host policy update
 
 See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+
+## 28 October native React completion evidence
+
+All six primary pages now use native React state/components. The latest unit/contract run has 639 tests: 638 passed, one platform skip and zero failures. Included backend coverage is 97.39% lines / 89.96% branches / 94.05% functions; browser-only React files are not included in those percentages. The complete 355-case browser sweep recorded 353 passes, one opt-in skip and one initial-sign-in failure in the group-authority harness. After correcting source-budget pacing before either owned login, its four-case file passed, and three further repetitions passed 12/12 cases including an observed saturated-window wait. This combined evidence must not be described as a clean 355-case full-run result.
+
+Actual public/employee HTTP+SQL passed 25 cases and Reception manual HTTP+SQL passed seven, with SQL artifacts verified and owned fixtures cleaned. Typecheck, ESLint, 121 migration hashes, production bundle/release checks, zero-vulnerability dependency audit and the earlier redacted history/candidate secret scans passed. The final candidate-scan repeat was blocked by a scanner-download network timeout and is not counted as passed; final integrity hashes were verified. All 12 phone/laptop baseline screenshots retain the same dimensions; 11 have no changes above a 12 RGB-level threshold and desktop Admin has 12 minor pixels above that threshold. Baselines cover primary states, not every possible page state. Detailed limits and local evidence paths are in [report 92](../92_React_Frontend_Migration_28_October_2026.md). Corporate provider, managed-device and physical-printer acceptance remain pending.
+
+## Pre-pentest audit — 28 October
+
+[Report 93](../93_Pre_Pentest_Security_Audit_28_October_2026.md) records the current source/local security review, final publication-source/history/release secret scans and staging blockers. An actual SQL reproduction found that extra direct object permissions could pass runtime identity admission. The probe is hardened and 18 SQL admission cases pass, including all seven intended clean runtime roles. Staff authentication passes 29 SQL cases; scoped host/group SQL suites and the corrected 15-case browser security selection pass. Four browser cases explicitly verify hostile HTML/event-handler input remains text at phone/laptop widths; workbook tests verify formula-looking values remain inline strings. These are selected regressions, not independent pentest certification or deployed infrastructure acceptance.
+
+## Pentest risk hardening — 28 October
+
+[Report 94](../94_Pentest_Risk_Hardening_28_October_2026.md) supersedes the earlier local audit counts. Final Node verification has 654 cases: 653 passed and one platform skip, with included backend coverage 97.44% / 90.20% / 94.11% (lines/branches/functions). A full 359-case browser run passed 358 and skipped one; the later login/setup admission classification follow-up has focused transport/auth/config and fresh HTTP+SQL verification, rather than a second full browser run. SQL identity admission passes 21 actual cases. Public/employee and manual Reception HTTP+SQL pass 25 and seven. The report distinguishes fixed SQL/admission/config/password gaps from unimplemented production composition/identities and staging/infrastructure acceptance.

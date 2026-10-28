@@ -46,6 +46,6 @@ test('project admin falls back to its assigned project and cannot see office-wid
  if(action==='summary-range')return route.fulfill({json:summaryRange(d,{visits:{total:'1',pending:'1',approved:'0',denied:'0',cancelled:'0'},recordedPresence:{projectVisitsInside:'0',digitalIdsInside:'0'}})});
  return route.fulfill({json:{users:[],grants:[],hasMore:false}});});
  await page.goto('/admin');await expect(page.locator('#summary-cards')).toContainText('Registered');await expect(page.locator('#console-project')).toHaveValue('10');await expect(page.locator('[data-admin-view="audit"]')).toBeHidden();await expect(page.locator('.area-card')).toHaveCount(0);expect(requests.find(x=>x.action==='summary-range')).toMatchObject({locationId:1,projectLocationId:'10'});
- await page.locator('[data-admin-view="staff"]').click();await expect(page.locator('#staff-role option')).toHaveCount(1);await expect(page.locator('#staff-role')).toContainText('Project admin');
+ await page.locator('[data-admin-view="staff"]').click();await expect(page.locator('#staff-role option')).toHaveCount(1);await expect(page.locator('#staff-role')).toContainText('Account admin');
  await expect(page.locator('#add-staff-open')).toBeHidden();await expect(page.locator('#add-guard-open')).toBeHidden();await expect(page.locator('#reset-staff-setup')).toBeHidden();await expect(page.locator('#console-project option[value=""]')).toHaveCount(0);await page.locator('#refresh').click();await expect(page.locator('#admin-staff')).toBeVisible();await expect(page.locator('#console-project')).toHaveValue('10');
 });

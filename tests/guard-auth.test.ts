@@ -113,3 +113,10 @@ test('invalid reset and invalid cookie tokens never reach SQL', async () => {
   assert.deepEqual(await service.sessionAction('logout', 'bad', 'bad'), { ok: false });
   assert.equal(repo.calls.length, 0);
 });
+
+test('production rejects legacy short demo passwords before SQL for guard and generic staff domains',async()=>{
+ const previous=process.env.NODE_ENV;process.env.NODE_ENV='production';try{
+  for(const domain of ['Guard','Staff'] as const){const repo=repository(),service=await GuardAuthService.create(repo.source,domain);for(const weak of ['Sopra@123','x'.repeat(14),'\ud800'.repeat(16)])assert.deepEqual(await service.signIn('guard1',weak,context),{ok:false,message:'Unable to sign in.'});assert.equal(repo.calls.length,0);}
+  const repo=repository(),service=await GuardAuthService.create(repo.source);assert((await service.signIn('guard1',password,context)).ok);assert.equal(repo.calls.length,2);
+ }finally{if(previous===undefined)delete process.env.NODE_ENV;else process.env.NODE_ENV=previous;}
+});

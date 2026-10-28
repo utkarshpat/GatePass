@@ -1,4 +1,4 @@
-import {loadRuntimeEnvironment,requireServiceConfiguration} from '../src/runtime/Environment.ts';
+import {loadRuntimeEnvironment,requireServiceConfiguration,requestLimitsFromEnvironment} from '../src/runtime/Environment.ts';
 import {pathToFileURL} from 'node:url';
 import {isAbsolute} from 'node:path';
 import { createServer } from 'node:https';
@@ -19,7 +19,7 @@ try {
   let emailLinks;const linkModule=process.env.GATEPASS_EMAIL_LINKS_MODULE;
   if(linkModule){if(!isAbsolute(linkModule))throw new Error('INVALID_EMAIL_KEY_MODULE');const module=await import(pathToFileURL(linkModule).href);emailLinks=await module.createEmailLinks();}
   const outlook=await loadOutlookActions(process.env,origin);
-  const app = await composeApi({ origin, sourceKey,emailLinks,...(outlook?{outlook:{...outlook,database:{...common,user:required('GATEPASS_OUTLOOK_DB_USER'),password:required('GATEPASS_OUTLOOK_DB_PASSWORD')}}}:{}),
+  const app = await composeApi({ origin, sourceKey,limits:requestLimitsFromEnvironment(),emailLinks,...(outlook?{outlook:{...outlook,database:{...common,user:required('GATEPASS_OUTLOOK_DB_USER'),password:required('GATEPASS_OUTLOOK_DB_PASSWORD')}}}:{}),
     api: { ...common, user: required('GATEPASS_API_DB_USER'), password: required('GATEPASS_API_DB_PASSWORD') },
     auth: { ...common, user: required('GATEPASS_AUTH_DB_USER'), password: required('GATEPASS_AUTH_DB_PASSWORD') } });
   server.on('request', app.handler);

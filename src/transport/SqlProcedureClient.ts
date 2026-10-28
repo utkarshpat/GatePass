@@ -15,6 +15,9 @@ export const procedureRoles = {
     'GetStaffAccessContext', 'LookupReceptionVisits','CorrectReceptionReturn','CreateLocalStaffAccount','ReissueLocalStaffSetup','ReturnReceptionPass', 'GetReceptionContext', 'RemindVisitHost', 'GetReceptionEmployeeTimeline', 'AuditReceptionRegistration', 'ListReceptionVisits', 'ListVisits', 'GetVisitDetail', 'VerifyGuardPass', 'ReissuePass', 'RequestPassPrint', 'GetPassPrintJob', 'ListGuardWorkContexts', 'CancelVisit',
     'AllocateGuard', 'GrantStaffRole', 'RevokeStaffRole', 'ListAdminProjectLocations', 'ListAdminGuards', 'SearchStaffSubjects', 'ListStaffRoles', 'GetOperationalSummary','GetOperationalSummaryRange','ReadGuardQueue','ReadReceptionQueue','ReadActionCentre','RemindPendingApproval', 'ListScopedAuditEvents'],
 } as const;
+export const runtimeRoleNames = {outlook:'gp_outlook_runtime',api:'gp_api_runtime',auth:'gp_guard_auth_runtime',staffAuth:'gp_staff_auth_runtime',worker:'gp_worker_runtime',render:'gp_render_runtime',media:'gp_media_runtime'} as const;
+// The worker's separately scheduled maintenance grant is not a public/client RPC.
+export function runtimeAdmissionProcedures(role: keyof typeof procedureRoles) { return [...procedureRoles[role], ...(role === 'worker' ? ['PurgeGuardAuthTransient'] : [])].map(name => 'gp.' + name); }
 type Pool = { request(): { input(name: string, type: unknown, value: unknown): unknown; execute(name: string): Promise<any> }; close(): Promise<void> };
 
 /** Separate pool per least-privilege SQL identity. No global pool, query(), retries or caller SQL. */
@@ -60,9 +63,9 @@ export async function connectSql(identity: DatabaseIdentity, role: keyof typeof 
     await pool.connect();
     // Fixed startup introspection only: fail closed on elevated or combined identities.
     // Runtime callers never receive a query API or control this SQL text.
-    const expected = {outlook:'gp_outlook_runtime',api:'gp_api_runtime',auth:'gp_guard_auth_runtime',staffAuth:'gp_staff_auth_runtime',worker:'gp_worker_runtime',render:'gp_render_runtime',media:'gp_media_runtime'}[role];
+    const expected = runtimeRoleNames[role];
     const admissionSql = await readFile(new URL('./runtime-identity.sql', import.meta.url), 'utf8');
-    const check = await pool.request().input('ExpectedRole', sql.NVarChar(128), expected).query(admissionSql);
+    const check = await pool.request().input('ExpectedRole', sql.NVarChar(128), expected).input('AllowedProceduresJson', sql.NVarChar(sql.MAX), JSON.stringify(runtimeAdmissionProcedures(role))).query(admissionSql);
     if (check.recordset?.[0]?.allowed !== 1) throw new Error('UNSAFE_DATABASE_IDENTITY');
     return new SqlProcedureClient(pool, role);
   }

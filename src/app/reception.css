@@ -950,6 +950,7 @@
  .reception-page .status.unprinted,.reception-page .status.expired { color:#4a576b; }
  .reception-page .avatar { color:#435168; }
  .reception-page .btn.primary,.reception-page .fab { background:#c60035; color:white; }
+ .reception-page .btn.outline:hover { color:#c60035; }
  .reception-page .info { min-width:0; }
  .reception-page .info dd { margin:4px 0 0; overflow-wrap:anywhere; }
  .reception-page .cell-secondary { white-space:normal; overflow-wrap:anywhere; }

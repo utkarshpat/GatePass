@@ -23,3 +23,9 @@ Production email uses `GATEPASS_GRAPH_TENANT_ID`, `GATEPASS_GRAPH_CLIENT_ID`, `G
 ## Pending integrations
 
 The commented Entra/directory/Google entries in `.env.example` are reserved names, not completed adapters. Filling them does not enable corporate SSO, directory access or Google station login. Full production application composition and the previously documented deployment work remain required. Local SQL continues using the existing restricted Windows-authenticated bridge rather than pretending that the production SQL fields configure the development helper.
+
+## Pentest hardening additions
+
+Production modes must be explicit: API uses corporate SSO mode and API directory mode; email uses API directory mode and application Graph authentication. All configured API/auth/worker/Outlook database usernames must be separate. Obvious demo secrets and repeated-byte source keys are rejected; this does not prove an arbitrary chosen secret is strong. Local guard/staff sign-in additionally enforces the current passphrase policy in production, so short development passwords cannot remain usable there.
+
+Request admission settings in `.env.example` default to 32 pending API requests, eight pending public requests and 300 public requests per minute per keyed direct socket source. Public capacity must remain below the total; invalid or noncanonical limits fail configuration validation. The policy is process-local and forwarding headers do not change source identity. Tune for office NAT/load and provision edge protection; these limits are not distributed DDoS protection. Details and limits are in [the risk-hardening report](94_Pentest_Risk_Hardening_28_October_2026.md).

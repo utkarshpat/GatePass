@@ -165,14 +165,18 @@ function renderProjects() {
 async function beginFlow(mode) {
   if(manualReception&&mode!=='visitor')throw new Error('Employee verification required.');
   reset();state.mode=mode;
+  const version=flowVersion;
   $('visitor-project-field').hidden=mode==='visitor';$('project').required=mode==='employee';$('flow-title').textContent=mode==='employee'?'Digital ID':'Visitor registration';
   $('employee-summary').hidden=$('employee-fields').hidden=mode!=='employee';$('visitor-fields').hidden=mode!=='visitor';
   if(mode==='employee') {state.people[0].name=state.employee.displayName;setEmployee(state.employee);} else renderPeople();
   screen('flow');renderStep(0);busy(true,{initializing:true});
   try {
     await send('/api/registration/reset');
+    if(version!==flowVersion)return;
     await send('/api/registration/start',{requestType:mode==='employee'?'DIGITAL_ID':'EXTERNAL'});
+    if(version!==flowVersion)return;
     state.options=await send('/api/registration/options');
+    if(version!==flowVersion)return;
     if(state.options.locationCode!==document.querySelector('meta[name="gp-office"]').content)throw new Error('Office changed. Reload this page.');
     $('visit-date').value=$('visit-date').min=state.options.currentDate;$('visit-date').max=state.options.maxVisitDate;
     renderProjects();
@@ -182,8 +186,8 @@ async function beginFlow(mode) {
       $('toggle-access').textContent=state.options.digitalIdEligible?'+ Request access to another account':'+ Request account access';
       if(!state.options.digitalIdEligible){$('employee-projects').textContent='Access to this office requires host approval.';notify('Select a account and local host to request access.');}
     }
-  } catch(error) {screen('landing');notify(error.message,'error');}
-  finally {busy(false);}
+  } catch(error) {if(version===flowVersion){screen('landing');notify(error.message,'error');}}
+  finally {if(version===flowVersion)busy(false);}
 }
 
 function renderStep(step) {
