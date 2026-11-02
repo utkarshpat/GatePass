@@ -1,3 +1,4 @@
+import {sessionTokenDigest} from '../security/SessionProof.ts';
 import {visitorDetails} from '../registration/VisitorDetails.ts';
 import { employeeProjectSummary } from './EmployeeProjectSummary.ts';
 import { createHash, timingSafeEqual } from 'node:crypto';
@@ -25,14 +26,7 @@ const object = (value: unknown, keys: string[]) => {
   const row = value as Record<string, unknown>; input(Object.keys(row).every(key => keys.includes(key))); return row;
 };
 const parameter = (type: ReadParameter['type'], value: ReadParameter['value']): ReadParameter => ({ type, value });
-function token(value: unknown): Buffer {
-  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{43}$/u.test(value)) throw new VisitReadError('NOT_AUTHORIZED');
-  const bytes = Buffer.from(value, 'base64url');
-  try {
-    if (bytes.length !== 32 || bytes.toString('base64url') !== value) throw new VisitReadError('NOT_AUTHORIZED');
-    return createHash('sha256').update(bytes).digest();
-  } finally { bytes.fill(0); }
-}
+function token(value: unknown): Buffer {return sessionTokenDigest(value,()=>new VisitReadError('NOT_AUTHORIZED'));}
 function identity(context: ReadContext) {
   input(['OWN', 'HOST', 'GUARD', 'RECEPTION', 'ADMIN'].includes(context.view));
   return { SessionHash: parameter('binary', token(context.sessionToken)), CsrfHash: parameter('binary', token(context.csrfToken)), View: parameter('text', context.view) };

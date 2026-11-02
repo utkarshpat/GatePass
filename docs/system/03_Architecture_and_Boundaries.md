@@ -1,14 +1,14 @@
 # 03. Architecture and boundaries
 
-> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 ## Components
 | Component | Responsibility | Source |
 |---|---|---|
-| Browser UI | Six React/TSX page views with native state and event handlers; existing CSS | src/frontend; src/app |
+| Browser UI | Seven React/TSX page views with native state and event handlers; existing CSS | src/frontend; src/app |
 | Development host | Loopback pages/dummy identity with real SQL/media | tools/start-dummy-sso.ts |
 | Production API entry | Direct HTTPS, separated SQL identities | tools/start-api.ts; src/transport/Composition.ts |
-| Services | Typed input validation and SQL orchestration | src/registration, visits, reception, administration |
+| Services | Typed input validation and SQL orchestration | src/registration, visits, reception, administration, planning |
 | SQL Server | Authorization, state, replay, occupancy, audit, outbox | database/migrations |
 | Media/renderer | Private photo access, encrypted QR recovery, cards | src/storage, registration, printing |
 | Email worker | Lease, relevance check, provider dispatch, acknowledgement | src/email/NotificationEmailWorker.ts |
@@ -48,3 +48,7 @@ Sources: src/transport/Composition.ts; src/transport/ApiHandler.ts; tools/start-
 ## Account host policy update
 
 See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+
+## Code dependency and SOLID rules
+
+Business services use application-owned SQL/session/mail contracts. Planning request/projection policy, mail rendering/dispatch and Admin presentation sections are separated. Browser/server display helpers live in the shared pure layer. `npm run check:architecture` rejects outward business imports, browser/backend imports and runtime cycles; explicit override/casing/fallthrough compiler checks and stricter lint apply. See [the maintenance guide](../ARCHITECTURE.md) and [audit evidence](../103_OOP_SOLID_Architecture_Audit_02_November_2026.md). SQL remains the authorization/transaction authority.

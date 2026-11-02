@@ -1,5 +1,5 @@
-import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
-import {receptionIdentity} from '../reception/ReceptionService.ts';
+import type {SqlParameter} from '../contracts/Sql.ts';
+import {sessionIdentity} from '../security/SessionProof.ts';
 import {isUuid,isUtc} from '../visits/SqlVisitReadRepository.ts';
 import {StaffAdministrationError} from './StaffAdministrationService.ts';
 type Session={sessionToken:string;csrfToken:string};
@@ -13,7 +13,7 @@ export class AccountHostService{
   check(input&&typeof input==='object'&&!Array.isArray(input)&&[Object.prototype,null].includes(Object.getPrototypeOf(input)));
   const d=input as Record<string,unknown>,read=action==='account-hosts';
   check(Object.keys(d).every(k=>(read?['projectLocationId','search']:['projectLocationId','employeeId','action','revision','reason','clientKey']).includes(k))&&big(d.projectLocationId));
-  const p:Record<string,SqlParameter>={...receptionIdentity(session),ProjectLocationId:{type:'bigint',value:d.projectLocationId as string}};
+  const p:Record<string,SqlParameter>={...sessionIdentity(session),ProjectLocationId:{type:'bigint',value:d.projectLocationId as string}};
   if(read){check(d.search===undefined||text(d.search,80)&&(d.search as string).trim().length>=2);p.Search={type:'text',value:d.search===undefined?null:(d.search as string).trim()};}
   else{
    check(text(d.employeeId,64)&&['ADD','REMOVE'].includes(d.action as string)&&Number.isInteger(d.revision)&&Number(d.revision)>=0&&Number(d.revision)<2147483647&&text(d.reason,300)&&isUuid(d.clientKey));

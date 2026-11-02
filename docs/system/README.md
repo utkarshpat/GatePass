@@ -1,12 +1,12 @@
 # GatePass system documentation
 
-Current source handbook — **28 October 2026 · migrations 001–121**.
+Current source handbook — **2 November 2026 · migrations 001–132**.
 
 The running local app uses real SQL and private media. Corporate identity/directory/mail, Google station login and production composition remain pending. Earlier exported PDFs, screenshots and dated reports remain historical, not current deployment certificates.
 
 ## Current contracts
 
-- Six main views render through React/TSX. All six pages use native React models, components and event handlers; the compatibility controller adapter has been removed. Print/offline stay HTML. See [migration and new UI policy](../92_React_Frontend_Migration_28_October_2026.md).
+- Seven main views, including Visit Coordination, render through React/TSX. All seven pages use native React models, components and event handlers; the compatibility controller adapter has been removed. Print/offline stay HTML. See [migration and new UI policy](../92_React_Frontend_Migration_28_October_2026.md).
 
 - One visitor per registration, private office-wide host search and intake-authorized downloadable card without email.
 - Today-started visitor stay with inclusive final day; still-valid multi-day visits remain in operational queues. Employee requests stay same-day.
@@ -53,3 +53,13 @@ The running local app uses real SQL and private media. Corporate identity/direct
 These are source inventories, not live database/provider attestations. Actual .env, private keys, photos, token caches and authenticated browser artifacts are excluded from source publication.
 
 Latest security follow-up: [pentest risk hardening](../94_Pentest_Risk_Hardening_28_October_2026.md), including fixed code/configuration gaps and remaining implementation/staging gates.
+
+Visit Coordination follow-up (1 November 2026): [SQL/API persistence and native React workspace](../98_Visit_Coordination_Persistence_01_November_2026.md). Migrations 122–127 are applied locally. Scoped configuration, plans, approvals, arrangements and threads are usable; planning email dispatch and automatic handoff to the existing registration/card flow remain pending. A separate gate cutover is outside the clarified scope. [Foundation report](../97_Visit_Coordination_Foundation_01_November_2026.md) is the historical first milestone.
+
+[Cross-account invitation correction](../99_Location_Sponsored_Cross_Account_Invitations_01_November_2026.md): an approved source-office host may select other account/project destinations at that office, with independent destination approvals.
+
+Coordination is an additive host/facilities pre-planning workspace. It contains invitations, project approvals, arrangements, VIP/FYI recipients, discussion and activity. QR card allocation, reception, guard scanning, entry/exit and returned badges use their existing workflows. No manual invitation linking or separate planned gate is exposed. See [coordination-only scope correction](../101_Coordination_Only_Scope_02_November_2026.md).
+
+- [Coordination email routing, privacy and test evidence](../102_Coordination_Email_Notifications_02_November_2026.md)
+
+- [Architecture/SOLID maintenance rules](../ARCHITECTURE.md) and [2 November review evidence](../103_OOP_SOLID_Architecture_Audit_02_November_2026.md)

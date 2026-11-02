@@ -1,9 +1,9 @@
 import {ProjectGroupService} from './ProjectGroupService.ts';
 import {provisionLocalStaff} from './LocalStaffOnboarding.ts';
 import {readAdminRegister} from './AdminRegister.ts';
-import {receptionIdentity} from '../reception/ReceptionService.ts';
+import {sessionIdentity} from '../security/SessionProof.ts';
 import {StaffAdministrationError} from './StaffAdministrationService.ts';
-import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
+import type {SqlParameter} from '../contracts/Sql.ts';
 import {isUuid,isUtc,isDate} from '../visits/SqlVisitReadRepository.ts';
 type Session={sessionToken:string;csrfToken:string};
 const big=(v:unknown):v is string=>typeof v==='string'&&/^[1-9][0-9]{0,18}$/u.test(v)&&BigInt(v)<=9223372036854775807n;
@@ -17,7 +17,7 @@ export class AdminConsoleService{
  register(session:Session,d:Record<string,unknown>){return readAdminRegister(this.#client,session,d);}
  async read(session:Session,action:'scope'|'assignments',d:Record<string,unknown>){
   check(Object.keys(d).every(k=>(action==='scope'?['locationId','projectLocationId']:['projectLocationId','afterAssignmentId']).includes(k)));
-  check(d.projectLocationId===undefined||big(d.projectLocationId));const p:Record<string,SqlParameter>={...receptionIdentity(session),ProjectLocationId:{type:'bigint',value:d.projectLocationId as string??null}};
+  check(d.projectLocationId===undefined||big(d.projectLocationId));const p:Record<string,SqlParameter>={...sessionIdentity(session),ProjectLocationId:{type:'bigint',value:d.projectLocationId as string??null}};
   if(action==='scope'){check(Number.isInteger(d.locationId)&&Number(d.locationId)>0&&Number(d.locationId)<=2147483647);p.LocationId={type:'int',value:Number(d.locationId)};}
   else{check(big(d.projectLocationId)&&(d.afterAssignmentId===undefined||big(d.afterAssignmentId)));p.AfterAssignmentId={type:'bigint',value:d.afterAssignmentId as string??null};}
   let r:any;try{

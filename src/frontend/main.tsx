@@ -8,11 +8,11 @@ class PageErrorBoundary extends Component<
   { children: ReactNode },
   { failed: boolean }
 > {
-  state = { failed: false };
+  override state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  render() {
+  override render() {
     return this.state.failed ? (
       <main className="entry-layout">
         <section className="reception-login" role="alert">

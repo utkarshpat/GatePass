@@ -1,6 +1,6 @@
 import type { AdminModel } from "./model.ts";
 import { dateTime, human, shiftDay, type Failure } from "./types.ts";
-import { passValidityLabel } from "../../printing/ValidityDisplay.ts";
+import { passValidityLabel } from "../../shared/ValidityDisplay.ts";
 export type RegisterRow = Record<string, string | null | undefined> & {
   visitRequestId: string;
   personName: string;

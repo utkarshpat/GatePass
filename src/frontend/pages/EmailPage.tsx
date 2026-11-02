@@ -7,7 +7,7 @@ import {
 } from "react";
 import type { PageProps } from "../types.ts";
 import { createEmailModel } from "../emailModel.ts";
-import { passValidityLabel } from "../../printing/ValidityDisplay.ts";
+import { passValidityLabel } from "../../shared/ValidityDisplay.ts";
 const deviceLabels: Record<string, string> = {
   LAPTOP: "Laptop",
   TABLET: "Tablet / iPad",

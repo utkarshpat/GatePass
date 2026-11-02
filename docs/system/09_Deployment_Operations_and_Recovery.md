@@ -1,6 +1,6 @@
 # 09. Deployment, operations and recovery
 
-> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 ## Target and boundary
 Agreed target: private Ubuntu Server 24.04 LTS x86-64 VM for UI/API, worker, SQL Server Express and private media, with protected off-VM backups. This is intended topology, not deployed evidence or a fresh vendor compatibility/licensing assessment. Windows DPAPI-protected files cannot simply be copied to Linux and assumed operational.
@@ -55,3 +55,5 @@ Sources: docs/database/22_Private_Photos_and_QR_Key_Storage.md; docs/37_Receptio
 ## Account host policy update
 
 See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+
+Planning and registration mail share the configured email service but drain independent queues. Apply migration 132 before using the new worker. Planning failures stop after six attempts; investigate redacted error codes and current directory/recipient scope before an approved repair. SENT establishes Graph acceptance only. Local selected-plan preview sends nothing and does not drain or reset jobs. See [planning mail operations](../102_Coordination_Email_Notifications_02_November_2026.md).

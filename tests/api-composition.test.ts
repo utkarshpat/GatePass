@@ -9,7 +9,14 @@ function fixture() {
   const actions = createServiceActions({ async callProcedure(name, parameters) { calls.push({ name, parameters }); throw { number: 52001 }; } });
   return { calls, actions };
 }
-test('45 protected routes bind only implemented services', () => { const f = fixture(); assert.equal(f.actions.size, 45); assert.equal(f.actions.has('/api/sql'), false); assert.equal(f.actions.has('/api/registration/submit'), false); });
+test('52 protected routes bind only implemented services', () => { const f = fixture(); assert.equal(f.actions.size, 52); assert.equal(f.actions.has('/api/sql'), false); assert.equal(f.actions.has('/api/registration/submit'), false); });
+
+test('coordination dashboard is additive and exposes no separate reception or guard access workflow', () => {
+  const {actions}=fixture();
+  for(const action of ['options','list','detail','thread','create','change','manage']) assert.equal(actions.has('/api/coordination/'+action),true);
+  for(const action of ['options','link','duties','queue','detail','move']) assert.equal(actions.has('/api/coordination/access-'+action),false);
+  for(const route of ['/api/guard/movement','/api/reception/queue','/api/host/visits/detail']) assert.equal(actions.has(route),true);
+});
 test('route-owned view is bound to typed SQL without accepting a client actor', async () => {
   const f = fixture();
   await assert.rejects(f.actions.get('/api/guard/visits/list')!(session, { locationId: 1 }), /NOT_AUTHORIZED/u);

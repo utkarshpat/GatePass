@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-type Workspace = { code: "GUARD" | "ADMIN" | "RECEPTION"; name: string };
+type Workspace = { code: "GUARD" | "ADMIN" | "RECEPTION" | "COORDINATION"; name: string };
 type Context = { displayName: string; workspaces: Workspace[] };
 const destinations = {
   GUARD: "/guard",
   ADMIN: "/admin",
   RECEPTION: "/reception",
+  COORDINATION: "/coordination",
 };
 const csrf = () =>
   document.cookie
@@ -84,7 +85,13 @@ export function useStaffModel() {
       )
     )
       throw new Failure(503);
-    if (c.workspaces.length === 1) {
+    const params=new URLSearchParams(location.search);
+    if(params.get('next')==='coordination' && c.workspaces.some(w=>w.code==='COORDINATION')) {
+      const visit=params.get('visit'); location.replace('/coordination'+(visit && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(visit)?'#visit='+visit:''));return;
+    }
+    const operational=c.workspaces.filter(w=>w.code!=='COORDINATION');
+    if(!params.has('choose') && operational.length===1 && c.workspaces.length>1){location.replace(destinations[operational[0].code]);return;}
+    if (c.workspaces.length === 1 && !params.has('choose')) {
       location.replace(destinations[c.workspaces[0].code]);
       return;
     }

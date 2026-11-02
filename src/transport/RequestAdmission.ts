@@ -11,6 +11,7 @@ type Admission = { allowed: false; retryAfter: number } | { allowed: true; relea
 export class RequestAdmission {
   #active = 0;
   #publicActive = 0;
+  #authActive = 0;
   #sources = new Map<string, { started: number; requests: number }>();
   #cleanupAt = 0;
   #limits: Required<RequestLimits>;
@@ -46,6 +47,16 @@ export class RequestAdmission {
     this.#active++; if (isPublic) this.#publicActive++;
     let released = false;
     return { allowed: true, release: () => { if (released) return; released = true; this.#active--; if (isPublic) this.#publicActive--; } };
+  }
+  /** Verify credentials without reading a caller-controlled body or granting
+   * protected capacity. Checks share the total ceiling but have their own small
+   * ceiling, independent of slow public bodies. Do not release a pending check
+   * merely because its caller disconnects. */
+  authenticate(): Admission {
+    if (this.#active >= this.#limits.maxInFlight || this.#authActive >= this.#limits.maxPublicInFlight) return { allowed: false, retryAfter: 1 };
+    this.#active++; this.#authActive++;
+    let released = false;
+    return { allowed: true, release: () => { if (released) return; released = true; this.#active--; this.#authActive--; } };
   }
 }
 export const publicRequestPath = (path: string) => path.startsWith('/api/registration/') || path.startsWith('/api/email/external/') || ['/api/auth/login','/api/auth/setup','/api/staff/login','/api/staff/setup','/api/dev/sso/login'].includes(path);

@@ -1,7 +1,7 @@
-import {receptionIdentity} from '../reception/ReceptionService.ts';
+import {sessionIdentity} from '../security/SessionProof.ts';
 import {isUuid} from './SqlVisitReadRepository.ts';
 import {GuardDutyError} from './GuardDutyService.ts';
-import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
+import type {SqlParameter} from '../contracts/Sql.ts';
 import type {PrivatePhotoReader} from './VisitReadService.ts';
 import type {PhotoThumbnails} from './PhotoThumbnails.ts';
 type Client={callProcedure(name:string,parameters:Record<string,SqlParameter>):Promise<string>};
@@ -12,7 +12,7 @@ export class GuardThumbnailService{
  async read(session:{sessionToken:string;csrfToken:string},value:unknown){
   const d=value as Record<string,unknown>;
   if(!d||typeof d!=='object'||Array.isArray(d)||Object.keys(d).some(k=>!['locationId','dutyKind','dutyId','visitRequestId'].includes(k))||!Number.isInteger(d.locationId)||Number(d.locationId)<=0||Number(d.locationId)>2147483647||!['PROJECT','COMMON'].includes(String(d.dutyKind))||typeof d.dutyId!=='string'||!/^[1-9][0-9]{0,18}$/u.test(d.dutyId)||BigInt(d.dutyId)>9223372036854775807n||!isUuid(d.visitRequestId))throw new GuardDutyError('INVALID_INPUT');
-  const parameters={...receptionIdentity(session),LocationId:{type:'int' as const,value:Number(d.locationId)},DutyKind:{type:'text' as const,value:d.dutyKind as string},DutyId:{type:'bigint' as const,value:d.dutyId},VisitRequestId:{type:'guid' as const,value:d.visitRequestId as string}};
+  const parameters={...sessionIdentity(session),LocationId:{type:'int' as const,value:Number(d.locationId)},DutyKind:{type:'text' as const,value:d.dutyKind as string},DutyId:{type:'bigint' as const,value:d.dutyId},VisitRequestId:{type:'guid' as const,value:d.visitRequestId as string}};
   const read=async()=>{
    let p;try{p=JSON.parse(await this.#client.callProcedure('gp.ReadGuardPhotoSource',parameters));}catch(e){throw new GuardDutyError([52801,52001].includes(Number((e as any)?.number))?'NOT_AUTHORIZED':'UNAVAILABLE');}
    const ext:Record<string,string>={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};

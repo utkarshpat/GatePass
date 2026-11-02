@@ -1,7 +1,7 @@
-import {receptionIdentity} from '../reception/ReceptionService.ts';
+import {sessionIdentity} from '../security/SessionProof.ts';
 import {StaffAdministrationError} from './StaffAdministrationService.ts';
 import {isUuid,isDate,isUtc} from '../visits/SqlVisitReadRepository.ts';
-import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
+import type {SqlParameter} from '../contracts/Sql.ts';
 
 // The SQL projection and UI use the same public business fields. Never accept a SQL expression.
 export const registerFields=['localVisitDate','submittedAtUtc','personName','employeeId','personEmail','personPhone','companyName','deviceTypes','locationName','projectName','hostName','hostEmail','requestType','reason','publicReference','publicPassNumber','status','passStatus','presence','printStatus','returnedAtUtc','validFromUtc','validUntilUtc','firstEntryAtUtc','lastEntryAtUtc','lastExitAtUtc'] as const;
@@ -28,7 +28,7 @@ export async function readAdminRegister(client:{callProcedure(n:string,p:Record<
   if(!registerFields.includes(key as any)||typeof v!=='string'||!v.length||v!==v.trim()||v.length>200||!v.isWellFormed()||/[\u0000-\u001f\u007f]/u.test(v)||choices[key]&&!choices[key].includes(v))invalid();
  }
  let r:any;
- try{r=JSON.parse(await client.callProcedure('gp.ReadAdminVisitRegister',{...receptionIdentity(session),LocationId:{type:'int',value:Number(d.locationId)},ProjectLocationId:{type:'bigint',value:d.projectLocationId as string??null},FromDate:{type:'date',value:String(d.from)},ToDate:{type:'date',value:String(d.to)},FiltersJson:{type:'text',value:JSON.stringify(filters)},Sort:{type:'text',value:String(sort)},Direction:{type:'text',value:String(direction)},Page:{type:'int',value:Number(page)},ForExport:{type:'bit',value:d.export===true},PageSize:{type:'int',value:d.export===true?200:50},...(d.snapshot===true?{CreateExportSnapshot:{type:'bit' as const,value:d.snapshotId===undefined},ExportSnapshotId:{type:'guid' as const,value:d.snapshotId as string??null},FinishExport:{type:'bit' as const,value:d.finishExport===true},CancelExport:{type:'bit' as const,value:d.cancelExport===true}}:{})}));}
+ try{r=JSON.parse(await client.callProcedure('gp.ReadAdminVisitRegister',{...sessionIdentity(session),LocationId:{type:'int',value:Number(d.locationId)},ProjectLocationId:{type:'bigint',value:d.projectLocationId as string??null},FromDate:{type:'date',value:String(d.from)},ToDate:{type:'date',value:String(d.to)},FiltersJson:{type:'text',value:JSON.stringify(filters)},Sort:{type:'text',value:String(sort)},Direction:{type:'text',value:String(direction)},Page:{type:'int',value:Number(page)},ForExport:{type:'bit',value:d.export===true},PageSize:{type:'int',value:d.export===true?200:50},...(d.snapshot===true?{CreateExportSnapshot:{type:'bit' as const,value:d.snapshotId===undefined},ExportSnapshotId:{type:'guid' as const,value:d.snapshotId as string??null},FinishExport:{type:'bit' as const,value:d.finishExport===true},CancelExport:{type:'bit' as const,value:d.cancelExport===true}}:{})}));}
  catch(e){const n=Number((e as any)?.number);throw new StaffAdministrationError(n===52001?'NOT_AUTHORIZED':n===52002?'INVALID_INPUT':n===52003?'CONFLICT':'UNAVAILABLE');}
  const bad=()=>{throw new StaffAdministrationError('UNAVAILABLE');};
  if(d.cancelExport===true){if(!r||typeof r.cancelled!=='boolean')bad();return{cancelled:r.cancelled};}

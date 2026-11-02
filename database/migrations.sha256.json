@@ -119,5 +119,16 @@
   "118_preserve_visitor_device_memory_bounds.sql": "15fecdfafb563be2e9705df1c459f0a6412a95ca067f84411b86cf3f432ab0b4",
   "119_account_host_allowlists.sql": "d7c97f60c214f33eacffe760c67e099ad2e7cb9c7353ead065ae6d6d321ec8ee",
   "120_account_host_management_visibility.sql": "b2b42b47e2ca5a4502aa7b75993ca35b3a3d5f133312659e03ddb2722f387c58",
-  "121_account_host_audit_details.sql": "e8f810acdbdaa40842cd4f1199435c61eab212e80dab4702e84fcfd6cc715c3a"
+  "121_account_host_audit_details.sql": "e8f810acdbdaa40842cd4f1199435c61eab212e80dab4702e84fcfd6cc715c3a",
+  "122_sub_project_planning_catalogue.sql": "48a695a5e35ddb8df00093f380b9571e365489f14168ee0576ee725873d2cb9f",
+  "123_visit_coordination_foundation.sql": "b159f98a2d1edfeb84dd71a40d50e4def52f24e7e40a8f6aed336b55eb20f429",
+  "124_visit_coordination_permissions.sql": "87678853ebb29b1d72988d33a246c967aeee42de46a992530b9386e46988c0ff",
+  "125_visit_planning_management.sql": "52b6c81b041230c4e687964160875f44372da9a30f3f758094d1806e05fb8d46",
+  "126_visit_coordination_commands.sql": "5699ede2801c69c518ea4fa7b069e2f9a19f47ea2b705bfecc9f578244fdf946",
+  "127_visit_coordination_reads.sql": "6e3fec9e7b18fc06c047ba26cbdf011c59e5c5bc5822e52f6334d644ce3d8d91",
+  "128_location_sponsored_cross_account_planning.sql": "140659d326bf6a7dc85b8d94698fcfcb157bc9e3c63d30da3736b09810ce6706",
+  "129_planned_pass_binding_and_sub_project_movement.sql": "46d6fdc04da50de0a4b270db7e9ec2c98f18988cfa80831f2df0faeae5905db2",
+  "130_planned_pass_cancellation_lifecycle.sql": "9a4ddfd448af2cc42a3ae029b5ba08f3889cc2ec150f385d82beb3862a92ee82",
+  "131_coordination_only_restore_operational_flow.sql": "251b3a48bd31c0f8e9371d75eefbc9ec992965440624d4a0ce36e105bc90c17c",
+  "132_coordination_notification_dispatch.sql": "b45aa02ba8e0ee36183c4f59edf603d66a8787043f5eb85b639dd2f69a8ca369"
 }

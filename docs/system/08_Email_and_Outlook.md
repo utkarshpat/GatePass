@@ -1,6 +1,6 @@
 # 08. Email, Graph and Outlook
 
-> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 Current request/approval details and notification rendering include optional visitor company and declared device types. Host Approve/Reject stays disabled while sign-in details/photo loading is still in progress, preventing an ignored early click. The retained rehearsal verifies real host decisions in the browser; queued notifications do not establish mailbox delivery. It sends no real messages.
 
@@ -43,3 +43,9 @@ Production Graph sender, tenant/client ID and client secret are configured throu
 ## Account host policy update
 
 See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+
+## Coordination email notifications
+
+Migration 132 adds a planning-only outbox and scoped dispatch through the existing Graph service. Approval authorities, facilities, configured ordinary/VIP FYI recipients and authorized mentions receive reduced recipient-specific content; updates/cancellation use published visit details. Drafts do not notify, and historical notices are not backfilled. Current directory/role checks, bounded retries and fenced claims apply. Emails open authenticated Coordination; they do not allocate a pass or authorize entry. See [routing, preview commands, privacy and evidence](../102_Coordination_Email_Notifications_02_November_2026.md). No real planning mail was sent during verification; corporate delivery acceptance remains pending.
+
+Coordination is an additive host/facilities pre-planning workspace. It contains invitations, project approvals, arrangements, VIP/FYI recipients, discussion and activity. QR card allocation, reception, guard scanning, entry/exit and returned badges use their existing workflows. No manual invitation linking or separate planned gate is exposed. See [coordination-only scope correction](../101_Coordination_Only_Scope_02_November_2026.md).

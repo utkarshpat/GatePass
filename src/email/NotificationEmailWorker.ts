@@ -8,10 +8,10 @@ import {notificationEmailLayout} from './NotificationEmailLayout.ts';
 import {photoTemplates} from './NotificationPhotoService.ts';
 import type {MailPhoto,NotificationPhotos} from './NotificationPhotoService.ts';
 const deviceLabels:Record<string,string>={LAPTOP:'Laptop',TABLET:'Tablet / iPad',PEN_DRIVE:'Pen Drive',CAMERA:'Camera',OTHER:'Other'};
-export type MailMessage={notificationId:string;to:string;subject:string;html:string;inlineLogo?:string;personPhoto?:{mimeType:MailPhoto['mimeType'];contentBytes:string}};
-export interface MailTransport{send(message:MailMessage):Promise<{providerMessageId?:string}>}
-export interface MailDirectory{getEmployee(id:string):Promise<{isActive:boolean;officialEmail:string}|null>;getManager(id:string):Promise<{isActive:boolean;officialEmail:string}|null>}
-export class MailFailure extends Error{code:string;constructor(code:string){super(code);this.code=code;}}
+import {MailFailure} from './MailContracts.ts';
+import type {MailMessage,MailTransport,MailDirectory} from './MailContracts.ts';
+export {MailFailure} from './MailContracts.ts';
+export type {MailMessage,MailTransport,MailDirectory} from './MailContracts.ts';
 const email=(s:unknown):s is string=>typeof s==='string'&&s.length<=320&&/^[^\s<>\x00-\x1f\x7f@]+@[^\s<>\x00-\x1f\x7f@]+\.[^\s<>\x00-\x1f\x7f@]+$/u.test(s);
 const templates=['HOST_APPROVAL_REQUEST','TEMP_ID_MANAGER_NOTICE','VISIT_DECIDED','PASS_DELIVERY','PASS_REISSUED','REQUEST_RECEIVED'];
 const validId=(v:unknown):v is number=>Number.isSafeInteger(v)&&Number(v)>0;

@@ -1,6 +1,6 @@
-import {receptionIdentity} from '../reception/ReceptionService.ts';
+import {sessionIdentity} from '../security/SessionProof.ts';
 import {isUuid,isUtc} from '../visits/SqlVisitReadRepository.ts';
-import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
+import type {SqlParameter} from '../contracts/Sql.ts';
 import {StaffAdministrationError} from './StaffAdministrationService.ts';
 
 type Session={sessionToken:string;csrfToken:string};
@@ -14,7 +14,7 @@ export class ProjectGroupService{
  #client:Client;
  constructor(client:Client){this.#client=client;}
  async #call(session:Session,name:string,p:Record<string,SqlParameter>){
-  try{const value:unknown=JSON.parse(await this.#client.callProcedure(name,{...receptionIdentity(session),...p}));check(value&&typeof value==='object'&&!Array.isArray(value),true);return value as Record<string,any>;}
+  try{const value:unknown=JSON.parse(await this.#client.callProcedure(name,{...sessionIdentity(session),...p}));check(value&&typeof value==='object'&&!Array.isArray(value),true);return value as Record<string,any>;}
   catch(e){if(e instanceof StaffAdministrationError)throw e;const n=Number((e as any)?.number);throw new StaffAdministrationError(n===52001?'NOT_AUTHORIZED':n===52002?'INVALID_INPUT':[52003,52004,52005].includes(n)?'CONFLICT':'UNAVAILABLE');}
  }
  async execute(session:Session,action:'project-groups'|'project-group'|'project-group-guard',value:unknown){

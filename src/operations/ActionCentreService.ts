@@ -1,5 +1,5 @@
-import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
-import {receptionIdentity} from '../reception/ReceptionService.ts';
+import type {SqlParameter} from '../contracts/Sql.ts';
+import {sessionIdentity} from '../security/SessionProof.ts';
 import {isDate,isUtc,isUuid} from '../visits/SqlVisitReadRepository.ts';
 type Session={sessionToken:string;csrfToken:string};
 export class ActionCentreError extends Error{code:'INVALID_INPUT'|'NOT_AUTHORIZED'|'CONFLICT'|'UNAVAILABLE';constructor(code:ActionCentreError['code']){super(code);this.code=code;}}
@@ -12,7 +12,7 @@ export class ActionCentreService{
  async remind(session:Session,d:Record<string,unknown>){
   input(Object.keys(d).every(k=>['workspace','locationId','dutyKind','dutyId','visitRequestId','clientKey'].includes(k))&&['GUARD','RECEPTION','ADMIN'].includes(String(d.workspace))&&Number.isInteger(d.locationId)&&Number(d.locationId)>0&&Number(d.locationId)<=2147483647&&isUuid(d.visitRequestId)&&(d.clientKey===undefined||isUuid(d.clientKey)));
   input(d.workspace==='GUARD'?['COMMON','PROJECT'].includes(String(d.dutyKind))&&typeof d.dutyId==='string'&&/^[1-9][0-9]{0,18}$/u.test(d.dutyId)&&BigInt(d.dutyId)<=9223372036854775807n:d.dutyKind==='OFFICE'&&d.dutyId==='0');
-  let r:any;try{r=JSON.parse(await this.client.callProcedure('gp.RemindPendingApproval',{...receptionIdentity(session),Workspace:{type:'text',value:String(d.workspace)},LocationId:{type:'int',value:Number(d.locationId)},DutyKind:{type:'text',value:String(d.dutyKind)},DutyId:{type:'bigint',value:String(d.dutyId)},VisitRequestId:{type:'guid',value:String(d.visitRequestId)},ClientKey:{type:'guid',value:d.clientKey as string??null}}));}
+  let r:any;try{r=JSON.parse(await this.client.callProcedure('gp.RemindPendingApproval',{...sessionIdentity(session),Workspace:{type:'text',value:String(d.workspace)},LocationId:{type:'int',value:Number(d.locationId)},DutyKind:{type:'text',value:String(d.dutyKind)},DutyId:{type:'bigint',value:String(d.dutyId)},VisitRequestId:{type:'guid',value:String(d.visitRequestId)},ClientKey:{type:'guid',value:d.clientKey as string??null}}));}
   catch(error){throw new ActionCentreError([52001,53501].includes(Number((error as any)?.number))?'NOT_AUTHORIZED':Number((error as any)?.number)===52002?'INVALID_INPUT':[52003,52004].includes(Number((error as any)?.number))?'CONFLICT':'UNAVAILABLE');}
   output(r&&['STATUS','QUEUED','ALREADY_QUEUED','COOLDOWN'].includes(r.outcome)&&['QUEUED','SENT','FAILED','CANCELLED'].includes(r.mailStatus)&&typeof r.eligible==='boolean'&&isUtc(r.lastQueuedAtUtc)&&isUtc(r.nextReminderAtUtc));
   return{outcome:r.outcome,mailStatus:r.mailStatus,eligible:r.eligible,lastQueuedAtUtc:r.lastQueuedAtUtc,nextReminderAtUtc:r.nextReminderAtUtc};
@@ -24,7 +24,7 @@ export class ActionCentreService{
   const category=d.category??'PENDING';input(['PENDING','EXPIRED_INSIDE','UNRETURNED'].includes(String(category)));
   if(d.workspace==='GUARD'&&category==='UNRETURNED')throw new ActionCentreError('NOT_AUTHORIZED');
   const cursor=d.cursor as any;input(cursor===undefined||cursor&&typeof cursor==='object'&&Object.keys(cursor).sort().join('|')==='submittedAtUtc|visitRequestId'&&isUtc(cursor.submittedAtUtc)&&isUuid(cursor.visitRequestId));
-  let r:any;try{r=JSON.parse(await this.client.callProcedure('gp.ReadActionCentre',{...receptionIdentity(session),Workspace:{type:'text',value:String(d.workspace)},LocationId:{type:'int',value:Number(d.locationId)},DutyKind:{type:'text',value:String(d.dutyKind)},DutyId:{type:'bigint',value:String(d.dutyId)},Category:{type:'text',value:String(category)},AfterSubmittedAtUtc:{type:'datetime',value:cursor?.submittedAtUtc??null},AfterVisitRequestId:{type:'guid',value:cursor?.visitRequestId??null},Take:{type:'int',value:take}}));}
+  let r:any;try{r=JSON.parse(await this.client.callProcedure('gp.ReadActionCentre',{...sessionIdentity(session),Workspace:{type:'text',value:String(d.workspace)},LocationId:{type:'int',value:Number(d.locationId)},DutyKind:{type:'text',value:String(d.dutyKind)},DutyId:{type:'bigint',value:String(d.dutyId)},Category:{type:'text',value:String(category)},AfterSubmittedAtUtc:{type:'datetime',value:cursor?.submittedAtUtc??null},AfterVisitRequestId:{type:'guid',value:cursor?.visitRequestId??null},Take:{type:'int',value:take}}));}
   catch(error){if(error instanceof ActionCentreError)throw error;throw new ActionCentreError([52001,53501].includes(Number((error as any)?.number))?'NOT_AUTHORIZED':Number((error as any)?.number)===52002?'INVALID_INPUT':'UNAVAILABLE');}
   output(r&&r.category===category&&isUtc(r.checkedAtUtc)&&r.counts&&['pending','expiredInside','unreturned'].every(k=>Number.isSafeInteger(r.counts[k])&&r.counts[k]>=0)&&Array.isArray(r.items)&&r.items.length<=take&&typeof r.hasMore==='boolean');
   output(d.workspace!=='GUARD'||r.counts.unreturned===0);

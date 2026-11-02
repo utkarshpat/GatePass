@@ -57,12 +57,12 @@ test('authenticated requests reach explicit service action', async () => { const
 test('query URLs and arbitrary procedure endpoints absent', async () => { for (const path of ['/api/test?token=secret', '/api/sql', '/api/auth/sso']) assert.equal((await send(path)).status, 404); });
 test('GET and OPTIONS do not execute actions', async () => { for (const method of ['GET', 'OPTIONS']) assert.equal((await send('/api/test', { method })).status, 405); });
 test('only JSON objects with supported encoding accepted', async () => {
-  assert.equal((await send('/api/test', { raw: '[' })).status, 400);
-  assert.equal((await send('/api/test', { body: [] })).status, 400);
-  assert.equal((await send('/api/test', { headers: { 'content-type': 'text/plain' } })).status, 415);
-  assert.equal((await send('/api/test', { headers: { 'content-encoding': 'gzip' } })).status, 415);
+  assert.equal((await send('/api/test', { headers: authenticated(), raw: '[' })).status, 400);
+  assert.equal((await send('/api/test', { headers: authenticated(), body: [] })).status, 400);
+  assert.equal((await send('/api/test', { headers: { ...authenticated(), 'content-type': 'text/plain' } })).status, 415);
+  assert.equal((await send('/api/test', { headers: { ...authenticated(), 'content-encoding': 'gzip' } })).status, 415);
 });
-test('body limit enforced', async () => { assert.equal((await send('/api/test', { raw: JSON.stringify({ text: 'x'.repeat(65536) }) })).status, 413); });
+test('body limit enforced', async () => { assert.equal((await send('/api/test', { headers: authenticated(), raw: JSON.stringify({ text: 'x'.repeat(65536) }) })).status, 413); });
 test('errors are redacted; authorization errors remain distinct', async () => {
   const r = await send('/api/error', { headers: authenticated() }); assert.equal(r.status, 503); assert.equal(r.text, '{"error":"UNAVAILABLE"}');
   assert.equal((await send('/api/denied', { headers: authenticated() })).status, 403);

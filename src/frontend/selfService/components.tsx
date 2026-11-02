@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import { Phone } from "./Phone.tsx";
 import type { SelfServiceModel } from "./model.ts";
 import { deviceLabels } from "../reception/types.ts";
-import { passValidityLabel } from "../../printing/ValidityDisplay.ts";
+import { passValidityLabel } from "../../shared/ValidityDisplay.ts";
 export function VisitorDetails({ model }: { model: SelfServiceModel }) {
   const p = model.state.people[0];
   const locked =

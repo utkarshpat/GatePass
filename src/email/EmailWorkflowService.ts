@@ -1,15 +1,14 @@
-import {createHash} from 'node:crypto';
-import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
-import type {Session} from '../transport/ApiHandler.ts';
+import type {SqlParameter} from '../contracts/Sql.ts';
+import {sessionIdentity} from '../security/SessionProof.ts';
+import type {Session} from '../security/SessionProof.ts';
 import {normalizeVisitRow} from '../visits/VisitReadService.ts';
 import {visitorDetails} from '../registration/VisitorDetails.ts';
 import {isUuid,isUtc} from '../visits/SqlVisitReadRepository.ts';
-import {token} from '../transport/ApiHandler.ts';
 import type {EmailLinkCodec} from './EmailLinkCodec.ts';
 export type EmailSql={callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>};
 export class EmailWorkflowError extends Error{code:string;constructor(code:string){super(code);this.code=code;}}
 const input=(ok:unknown)=>{if(!ok)throw new EmailWorkflowError('INVALID_INPUT');};
-export function emailIdentity(s:Session){if(!token(s.sessionToken)||!token(s.csrfToken))throw new EmailWorkflowError('NOT_AUTHORIZED');return{SessionHash:{type:'binary' as const,value:createHash('sha256').update(Buffer.from(s.sessionToken,'base64url')).digest()},CsrfHash:{type:'binary' as const,value:createHash('sha256').update(Buffer.from(s.csrfToken,'base64url')).digest()}};}
+export function emailIdentity(s:Session){return sessionIdentity(s,()=>new EmailWorkflowError('NOT_AUTHORIZED'));}
 function body(v:unknown,keys:string[]){input(v&&typeof v==='object'&&!Array.isArray(v));const r=v as Record<string,unknown>;input(Object.keys(r).every(k=>keys.includes(k)));return r;}
 export class EmailWorkflowService{
  #client:EmailSql;#links:EmailLinkCodec|undefined;

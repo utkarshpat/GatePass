@@ -1,5 +1,5 @@
 export type PageName =
-  "staff" | "self-service" | "guard" | "reception" | "admin" | "email";
+  "staff" | "self-service" | "guard" | "reception" | "admin" | "email" | "coordination";
 export type PageConfig = {
   page: PageName;
   companyLogo: string;

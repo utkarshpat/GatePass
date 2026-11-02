@@ -1,13 +1,16 @@
 """Refresh non-secret source inventories. Does not access SQL, mail or credentials."""
 from pathlib import Path
-import hashlib,json,re,subprocess
+import hashlib,json,re,subprocess,argparse
+from datetime import date
+
+args=argparse.ArgumentParser();args.add_argument("--date",default=date.today().isoformat());document_date=date.fromisoformat(args.parse_args().date);display_date=f"{document_date.day} {document_date:%B %Y}"
 
 root=Path(__file__).resolve().parent.parent
 def relative(p):return p.relative_to(root).as_posix()
 def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 out=root/'docs/system'
 migrations=sorted((root/'database/migrations').glob('*.sql'))
-lines=['# SQL source catalogue','',f'Updated 28 October 2026; {len(migrations)} forward migration files. Declaration provenance is lexical source evidence, not a live catalogue or permission audit. Dynamic ALTER migrations may preserve/change existing definitions without a new literal declaration.','','## Migration hashes','','| Migration | SHA-256 |','|---|---|']
+lines=['# SQL source catalogue','',f'Updated {display_date}; {len(migrations)} forward migration files. Declaration provenance is lexical source evidence, not a live catalogue or permission audit. Dynamic ALTER migrations may preserve/change existing definitions without a new literal declaration.','','## Migration hashes','','| Migration | SHA-256 |','|---|---|']
 objects={}
 for p in migrations:
  lines.append(f'| [{p.name}](../../database/migrations/{p.name}) | `{digest(p)}` |')
@@ -19,9 +22,9 @@ files=sorted([*list((root/'src').rglob('*.ts')),*list((root/'src').rglob('*.tsx'
 routes={};env={}
 for p in files:
  for n,line in enumerate(p.read_text(encoding='utf8').splitlines(),1):
-  for route in re.findall(r'''['"](/(?:api/|office/|approval/|request/|reception|guard|admin|pwa/)[A-Za-z0-9_./:{}-]*)['"]''',line):routes.setdefault(route,[]).append((relative(p),n))
+  for route in re.findall(r'''['"](/(?:api/|office/|approval/|request/|reception|guard|admin|coordination|pwa/)[A-Za-z0-9_./:{}-]*)['"]''',line):routes.setdefault(route,[]).append((relative(p),n))
   for name in re.findall(r'\b(?:GATEPASS_[A-Z0-9_]+|NODE_ENV)\b',line):env.setdefault(name,set()).add(relative(p))
-lines=['# Routes and runtime configuration','','Updated 28 October 2026. Literal source inventory; dynamic/regex routes require checking their handlers. Not an OpenAPI schema. Names only: no live environment file or secret value is read.','','## Runtime setup','','Root `.env` is private and ignored; `.env.example` is the empty tracked template. API/email startup validates production settings. Existing process variables take precedence. Reserved corporate/Google fields do not enable unfinished adapters. See [configuration](../86_Runtime_Environment_Configuration.md).','','## Literal routes','','| Route/prefix | Source | Line |','|---|---|---|']
+lines=['# Routes and runtime configuration','',f'Updated {display_date}. Literal source inventory; dynamic/regex routes require checking their handlers. Not an OpenAPI schema. Names only: no live environment file or secret value is read.','','## Runtime setup','','Root `.env` is private and ignored; `.env.example` is the empty tracked template. API/email startup validates production settings. Existing process variables take precedence. Reserved corporate/Google fields do not enable unfinished adapters. See [configuration](../86_Runtime_Environment_Configuration.md).','','## Literal routes','','| Route/prefix | Source | Line |','|---|---|---|']
 for route,locations in sorted(routes.items()):
  for file,n in sorted(set(locations)):lines.append(f'| `{route}` | [{file}](../../{file}) | {n} |')
 lines+=['','## Configuration names','','| Name | Source files |','|---|---|']
@@ -30,9 +33,9 @@ for name,paths in sorted(env.items()):lines.append(f'| `{name}` | '+', '.join(f'
 names=subprocess.check_output(['git','ls-files','--cached','--others','--exclude-standard'],cwd=root,text=True).splitlines()
 selected=[]
 for name in sorted(set(names)):
- if name.startswith(('src/','tools/','tests/','assets/','database/migrations/')) or name in ['package.json','package-lock.json','azure-pipelines.yml','.env.example','database/migrations.sha256.json']:
+ if name.startswith(('src/','tools/','tests/','assets/','database/migrations/')) or name in ['package.json','package-lock.json','azure-pipelines.yml','.env.example','database/migrations.sha256.json','tsconfig.json','eslint.config.mjs']:
   p=root/name
   if p.is_file():selected.append({'path':name,'sha256':digest(p)})
-snapshot={'documentDate':'2026-10-28','timezone':'Asia/Calcutta','gitBaseCommit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),'snapshot':'Reviewed working-tree source before release commit; excludes actual .env, runtime data and private artifacts','migrationCount':len(migrations),'sqlDeclarationCounts':{kind:sum(k[0]==kind for k in objects) for kind in ['TABLE','PROCEDURE','ROLE','VIEW','FUNCTION']},'sourceFiles':selected}
+snapshot={'documentDate':document_date.isoformat(),'timezone':'Asia/Calcutta','gitBaseCommit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),'snapshot':'Reviewed working-tree source before release commit; excludes actual .env, runtime data and private artifacts','migrationCount':len(migrations),'sqlDeclarationCounts':{kind:sum(k[0]==kind for k in objects) for kind in ['TABLE','PROCEDURE','ROLE','VIEW','FUNCTION']},'sourceFiles':selected}
 (out/'Source-Snapshot.json').write_text(json.dumps(snapshot,indent=2)+'\n',encoding='utf8')
 print(f'Updated {len(migrations)} migration hashes, {len(routes)} literal route/prefix entries, {len(env)} configuration names and {len(selected)} source hashes.')

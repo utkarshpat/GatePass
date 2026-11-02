@@ -1,6 +1,6 @@
 # Routes and runtime configuration
 
-Updated 28 October 2026. Literal source inventory; dynamic/regex routes require checking their handlers. Not an OpenAPI schema. Names only: no live environment file or secret value is read.
+Updated 2 November 2026. Literal source inventory; dynamic/regex routes require checking their handlers. Not an OpenAPI schema. Names only: no live environment file or secret value is read.
 
 ## Runtime setup
 
@@ -12,46 +12,50 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 |---|---|---|
 | `/admin` | [src/app/staff-entry.js](../../src/app/staff-entry.js) | 7 |
 | `/admin` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 29 |
-| `/admin` | [src/frontend/pages/AdminPage.tsx](../../src/frontend/pages/AdminPage.tsx) | 52 |
+| `/admin` | [src/frontend/pages/AdminPage.tsx](../../src/frontend/pages/AdminPage.tsx) | 67 |
 | `/admin` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 6 |
-| `/admin` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 151 |
-| `/admin` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 152 |
-| `/admin` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 156 |
-| `/admin/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 151 |
-| `/admin/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 152 |
-| `/admin/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 156 |
+| `/admin` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
+| `/admin` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
+| `/admin` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 159 |
+| `/admin/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
+| `/admin/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
+| `/admin/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 159 |
 | `/api/` | [src/app/admin.js](../../src/app/admin.js) | 41 |
 | `/api/` | [src/app/guard.js](../../src/app/guard.js) | 13 |
 | `/api/` | [src/app/service-worker.js](../../src/app/service-worker.js) | 20 |
 | `/api/` | [src/frontend/admin/model.ts](../../src/frontend/admin/model.ts) | 159 |
 | `/api/` | [src/frontend/guard/model.ts](../../src/frontend/guard/model.ts) | 176 |
-| `/api/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 75 |
-| `/api/admin/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 70 |
-| `/api/admin/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 97 |
-| `/api/admin/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 113 |
-| `/api/admin/common-duties` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 96 |
-| `/api/admin/common-duty` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 98 |
+| `/api/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 78 |
+| `/api/admin/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 73 |
+| `/api/admin/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 100 |
+| `/api/admin/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 116 |
+| `/api/admin/common-duties` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 99 |
+| `/api/admin/common-duty` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 101 |
 | `/api/admin/create-staff` | [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) | 95 |
 | `/api/admin/register` | [tools/load-stress/ExportPressure.ts](../../tools/load-stress/ExportPressure.ts) | 12 |
-| `/api/admin/staff/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 116 |
-| `/api/admin/summary-range` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 114 |
+| `/api/admin/staff/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 119 |
+| `/api/admin/summary-range` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 117 |
 | `/api/admin/summary-range` | [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts) | 56 |
-| `/api/auth/login` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 48 |
-| `/api/auth/login` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 55 |
-| `/api/auth/login` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 51 |
-| `/api/auth/logout` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 48 |
-| `/api/auth/logout` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 70 |
-| `/api/auth/setup` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 48 |
-| `/api/auth/setup` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 62 |
-| `/api/auth/setup` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 51 |
-| `/api/auth/touch` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 48 |
-| `/api/auth/touch` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 70 |
+| `/api/auth/login` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 50 |
+| `/api/auth/login` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 54 |
+| `/api/auth/login` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 72 |
+| `/api/auth/login` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 62 |
+| `/api/auth/logout` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 50 |
+| `/api/auth/logout` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 85 |
+| `/api/auth/setup` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 50 |
+| `/api/auth/setup` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 54 |
+| `/api/auth/setup` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 79 |
+| `/api/auth/setup` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 62 |
+| `/api/auth/touch` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 50 |
+| `/api/auth/touch` | [src/transport/ApiHandler.ts](../../src/transport/ApiHandler.ts) | 85 |
+| `/api/coordination/` | [src/frontend/coordination/client.ts](../../src/frontend/coordination/client.ts) | 32 |
+| `/api/coordination/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 72 |
 | `/api/dev/sso/` | [src/app/employee-portal.js](../../src/app/employee-portal.js) | 55 |
 | `/api/dev/sso/` | [src/frontend/selfService/model.ts](../../src/frontend/selfService/model.ts) | 165 |
 | `/api/dev/sso/login` | [src/app/email-request.js](../../src/app/email-request.js) | 67 |
 | `/api/dev/sso/login` | [src/development/DummySsoRoutes.ts](../../src/development/DummySsoRoutes.ts) | 11 |
 | `/api/dev/sso/login` | [src/frontend/emailModel.ts](../../src/frontend/emailModel.ts) | 381 |
-| `/api/dev/sso/login` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 51 |
+| `/api/dev/sso/login` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 62 |
 | `/api/dev/sso/login` | [tools/create-email-test.ts](../../tools/create-email-test.ts) | 41 |
 | `/api/dev/sso/login` | [tools/create-email-test.ts](../../tools/create-email-test.ts) | 54 |
 | `/api/dev/sso/logout` | [src/development/DummySsoRoutes.ts](../../src/development/DummySsoRoutes.ts) | 11 |
@@ -59,9 +63,9 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/api/dev/sso/touch` | [src/development/DummySsoRoutes.ts](../../src/development/DummySsoRoutes.ts) | 11 |
 | `/api/email/` | [src/app/email-request.js](../../src/app/email-request.js) | 19 |
 | `/api/email/` | [src/frontend/emailModel.ts](../../src/frontend/emailModel.ts) | 155 |
-| `/api/email/external/` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 51 |
+| `/api/email/external/` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 62 |
 | `/api/email/external/` | [tools/check-presentation-links.ts](../../tools/check-presentation-links.ts) | 27 |
-| `/api/email/external/detail` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 110 |
+| `/api/email/external/detail` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 113 |
 | `/api/email/external/detail` | [src/transport/EmailPublicRoutes.ts](../../src/transport/EmailPublicRoutes.ts) | 15 |
 | `/api/email/external/detail` | [tools/create-email-test.ts](../../tools/create-email-test.ts) | 49 |
 | `/api/email/external/detail` | [tools/create-email-test.ts](../../tools/create-email-test.ts) | 53 |
@@ -73,47 +77,47 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/api/email/external/session` | [src/transport/EmailPublicRoutes.ts](../../src/transport/EmailPublicRoutes.ts) | 17 |
 | `/api/email/host/decide` | [src/app/email-request.js](../../src/app/email-request.js) | 68 |
 | `/api/email/host/decide` | [src/frontend/emailModel.ts](../../src/frontend/emailModel.ts) | 414 |
-| `/api/email/host/decide` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 107 |
+| `/api/email/host/decide` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 110 |
 | `/api/email/host/decide` | [tools/create-email-test.ts](../../tools/create-email-test.ts) | 59 |
-| `/api/email/host/detail` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 106 |
+| `/api/email/host/detail` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 109 |
 | `/api/email/host/detail` | [tools/check-presentation-links.ts](../../tools/check-presentation-links.ts) | 23 |
 | `/api/email/host/detail` | [tools/check-presentation-links.ts](../../tools/check-presentation-links.ts) | 24 |
 | `/api/email/host/detail` | [tools/create-email-test.ts](../../tools/create-email-test.ts) | 42 |
 | `/api/email/host/detail` | [tools/create-email-test.ts](../../tools/create-email-test.ts) | 55 |
 | `/api/email/host/photo` | [src/app/email-request.js](../../src/app/email-request.js) | 57 |
 | `/api/email/host/photo` | [src/frontend/emailModel.ts](../../src/frontend/emailModel.ts) | 302 |
-| `/api/email/request/detail` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 108 |
-| `/api/email/request/revoke` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 109 |
+| `/api/email/request/detail` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 111 |
+| `/api/email/request/revoke` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 112 |
 | `/api/employee/digital-id/detail` | [src/development/EmployeeDigitalIdRoutes.ts](../../src/development/EmployeeDigitalIdRoutes.ts) | 15 |
 | `/api/employee/digital-id/image` | [src/app/employee-portal.js](../../src/app/employee-portal.js) | 409 |
 | `/api/employee/digital-id/image` | [src/development/EmployeeDigitalIdRoutes.ts](../../src/development/EmployeeDigitalIdRoutes.ts) | 15 |
 | `/api/employee/digital-id/image` | [src/development/EmployeeDigitalIdRoutes.ts](../../src/development/EmployeeDigitalIdRoutes.ts) | 27 |
 | `/api/employee/digital-id/image` | [src/frontend/selfService/model.ts](../../src/frontend/selfService/model.ts) | 674 |
-| `/api/guard/context` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 83 |
-| `/api/guard/contexts` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 88 |
-| `/api/guard/detail` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 100 |
-| `/api/guard/duties` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 93 |
-| `/api/guard/movement` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 105 |
+| `/api/guard/context` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 86 |
+| `/api/guard/contexts` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 91 |
+| `/api/guard/detail` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 103 |
+| `/api/guard/duties` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 96 |
+| `/api/guard/movement` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 108 |
 | `/api/guard/movement` | [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts) | 72 |
 | `/api/guard/movement` | [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts) | 77 |
 | `/api/guard/movement` | [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts) | 91 |
 | `/api/guard/movement` | [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts) | 104 |
-| `/api/guard/queue` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 94 |
+| `/api/guard/queue` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 97 |
 | `/api/guard/queue` | [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts) | 57 |
-| `/api/guard/verify` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 99 |
-| `/api/guard/visitors` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 95 |
+| `/api/guard/verify` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 102 |
+| `/api/guard/visitors` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 98 |
 | `/api/operations/actions` | [src/app/action-centre.js](../../src/app/action-centre.js) | 68 |
 | `/api/operations/actions` | [src/development/ActionCentreRoutes.ts](../../src/development/ActionCentreRoutes.ts) | 12 |
 | `/api/operations/actions` | [src/frontend/shared/ActionCentre.tsx](../../src/frontend/shared/ActionCentre.tsx) | 129 |
-| `/api/operations/actions` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 72 |
+| `/api/operations/actions` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 75 |
 | `/api/operations/actions` | [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts) | 58 |
 | `/api/operations/remind` | [src/app/action-centre.js](../../src/app/action-centre.js) | 54 |
 | `/api/operations/remind` | [src/development/ActionCentreRoutes.ts](../../src/development/ActionCentreRoutes.ts) | 12 |
 | `/api/operations/remind` | [src/development/ActionCentreRoutes.ts](../../src/development/ActionCentreRoutes.ts) | 19 |
 | `/api/operations/remind` | [src/frontend/shared/ActionCentre.tsx](../../src/frontend/shared/ActionCentre.tsx) | 301 |
-| `/api/operations/remind` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 73 |
+| `/api/operations/remind` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 76 |
 | `/api/outlook/decision` | [src/email/OutlookApprovalCard.ts](../../src/email/OutlookApprovalCard.ts) | 15 |
-| `/api/outlook/decision` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 51 |
+| `/api/outlook/decision` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 52 |
 | `/api/outlook/decision` | [src/transport/OutlookActionHandler.ts](../../src/transport/OutlookActionHandler.ts) | 12 |
 | `/api/reception/` | [src/app/reception.js](../../src/app/reception.js) | 13 |
 | `/api/reception/` | [src/development/ReceptionRoutes.ts](../../src/development/ReceptionRoutes.ts) | 14 |
@@ -125,7 +129,7 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/api/reception/manual/` | [src/frontend/selfService/model.ts](../../src/frontend/selfService/model.ts) | 118 |
 | `/api/reception/manual/submit` | [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) | 54 |
 | `/api/reception/queue` | [src/development/ReceptionRoutes.ts](../../src/development/ReceptionRoutes.ts) | 42 |
-| `/api/reception/queue` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 71 |
+| `/api/reception/queue` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 74 |
 | `/api/reception/queue` | [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts) | 59 |
 | `/api/reception/remind-host` | [src/development/ReceptionRoutes.ts](../../src/development/ReceptionRoutes.ts) | 41 |
 | `/api/reception/return` | [src/development/ReceptionRoutes.ts](../../src/development/ReceptionRoutes.ts) | 40 |
@@ -133,7 +137,7 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/api/registration/` | [src/development/ReceptionRegistrationRoutes.ts](../../src/development/ReceptionRegistrationRoutes.ts) | 28 |
 | `/api/registration/` | [src/frontend/selfService/model.ts](../../src/frontend/selfService/model.ts) | 116 |
 | `/api/registration/` | [src/frontend/selfService/model.ts](../../src/frontend/selfService/model.ts) | 118 |
-| `/api/registration/` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 51 |
+| `/api/registration/` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 62 |
 | `/api/registration/card` | [src/app/employee-portal.js](../../src/app/employee-portal.js) | 409 |
 | `/api/registration/card` | [src/frontend/selfService/model.ts](../../src/frontend/selfService/model.ts) | 673 |
 | `/api/registration/card` | [src/transport/RegistrationHttpRoutes.ts](../../src/transport/RegistrationHttpRoutes.ts) | 12 |
@@ -169,17 +173,18 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/api/registration/submit` | [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) | 58 |
 | `/api/registration/submit` | [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) | 61 |
 | `/api/staff/` | [src/app/staff-entry.js](../../src/app/staff-entry.js) | 5 |
-| `/api/staff/` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 54 |
+| `/api/staff/` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 55 |
 | `/api/staff/login` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 10 |
-| `/api/staff/login` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 51 |
+| `/api/staff/login` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 62 |
 | `/api/staff/login` | [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts) | 53 |
 | `/api/staff/logout` | [src/app/reception.js](../../src/app/reception.js) | 206 |
 | `/api/staff/logout` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 10 |
+| `/api/staff/logout` | [src/frontend/pages/CoordinationPage.tsx](../../src/frontend/pages/CoordinationPage.tsx) | 458 |
 | `/api/staff/logout` | [src/frontend/reception/model.ts](../../src/frontend/reception/model.ts) | 1287 |
 | `/api/staff/me` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 10 |
 | `/api/staff/setup` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 10 |
-| `/api/staff/setup` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 51 |
-| `/api/visits/cancel` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 111 |
+| `/api/staff/setup` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 62 |
+| `/api/visits/cancel` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 114 |
 | `/api/workspace/events` | [src/app/live-refresh.js](../../src/app/live-refresh.js) | 29 |
 | `/api/workspace/events` | [src/development/WorkspaceEventRoutes.ts](../../src/development/WorkspaceEventRoutes.ts) | 13 |
 | `/api/workspace/events` | [src/frontend/shared/liveRefresh.ts](../../src/frontend/shared/liveRefresh.ts) | 117 |
@@ -192,17 +197,27 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/approval/` | [tools/check-presentation-links.ts](../../tools/check-presentation-links.ts) | 21 |
 | `/approval/` | [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) | 66 |
 | `/approval/` | [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) | 91 |
+| `/coordination` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 29 |
+| `/coordination` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 8 |
+| `/coordination` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 90 |
+| `/coordination` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
+| `/coordination` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
+| `/coordination` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 159 |
+| `/coordination` | [tools/test-coordination-server.ts](../../tools/test-coordination-server.ts) | 86 |
+| `/coordination/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
+| `/coordination/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
+| `/coordination/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 159 |
 | `/guard` | [src/app/staff-entry.js](../../src/app/staff-entry.js) | 7 |
 | `/guard` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 29 |
 | `/guard` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 5 |
-| `/guard` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 151 |
-| `/guard` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 152 |
+| `/guard` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
 | `/guard` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
-| `/guard` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 156 |
-| `/guard/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 151 |
-| `/guard/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 152 |
+| `/guard` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 158 |
+| `/guard` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 159 |
+| `/guard/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
 | `/guard/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
-| `/guard/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 156 |
+| `/guard/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 158 |
+| `/guard/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 159 |
 | `/office/` | [src/development/AdminRoutes.ts](../../src/development/AdminRoutes.ts) | 70 |
 | `/office/bengaluru` | [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) | 61 |
 | `/office/noida` | [tools/create-email-test.ts](../../tools/create-email-test.ts) | 28 |
@@ -223,17 +238,17 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/reception` | [src/app/staff-entry.js](../../src/app/staff-entry.js) | 7 |
 | `/reception` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 29 |
 | `/reception` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 7 |
-| `/reception` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 151 |
-| `/reception` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 152 |
+| `/reception` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
 | `/reception` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
-| `/reception/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 151 |
-| `/reception/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 152 |
+| `/reception` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 158 |
+| `/reception/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
 | `/reception/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
+| `/reception/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 158 |
 | `/reception/print` | [src/app/reception.js](../../src/app/reception.js) | 197 |
 | `/reception/print` | [src/frontend/reception/printing.ts](../../src/frontend/reception/printing.ts) | 131 |
-| `/reception/print` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 151 |
 | `/reception/print` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
-| `/reception/print` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 156 |
+| `/reception/print` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 157 |
+| `/reception/print` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 159 |
 | `/reception/register/` | [src/app/reception.js](../../src/app/reception.js) | 239 |
 | `/reception/register/` | [src/frontend/pages/ReceptionPage.tsx](../../src/frontend/pages/ReceptionPage.tsx) | 1088 |
 | `/request/` | [src/email/NotificationEmailWorker.ts](../../src/email/NotificationEmailWorker.ts) | 30 |
@@ -261,7 +276,7 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `GATEPASS_DEV_TLS_KEY_FILE` | [src/development/DevelopmentTls.ts](../../src/development/DevelopmentTls.ts) |
 | `GATEPASS_DEV_TLS_PASSWORD_FILE` | [src/development/DevelopmentTls.ts](../../src/development/DevelopmentTls.ts) |
 | `GATEPASS_DEV_TLS_PFX_FILE` | [src/development/DevelopmentTls.ts](../../src/development/DevelopmentTls.ts) |
-| `GATEPASS_DIRECTORY_MODE` | [src/development/DummyEmployeeSso.ts](../../src/development/DummyEmployeeSso.ts), [src/integrations/directory/DirectoryGateway.ts](../../src/integrations/directory/DirectoryGateway.ts), [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [src/transport/RegistrationHttpRoutes.ts](../../src/transport/RegistrationHttpRoutes.ts), [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts), [tools/profile-worker-bursts.ts](../../tools/profile-worker-bursts.ts), [tools/seed-development-guard-logins.ts](../../tools/seed-development-guard-logins.ts), [tools/seed-development-staff-logins.ts](../../tools/seed-development-staff-logins.ts), [tools/set-development-test-passwords.ts](../../tools/set-development-test-passwords.ts), [tools/start-development-email.ts](../../tools/start-development-email.ts), [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts), [tools/start-email-worker.ts](../../tools/start-email-worker.ts) |
+| `GATEPASS_DIRECTORY_MODE` | [src/development/DummyEmployeeSso.ts](../../src/development/DummyEmployeeSso.ts), [src/integrations/directory/DirectoryGateway.ts](../../src/integrations/directory/DirectoryGateway.ts), [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [src/transport/RegistrationHttpRoutes.ts](../../src/transport/RegistrationHttpRoutes.ts), [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts), [tools/planning-mail.ts](../../tools/planning-mail.ts), [tools/profile-worker-bursts.ts](../../tools/profile-worker-bursts.ts), [tools/seed-development-guard-logins.ts](../../tools/seed-development-guard-logins.ts), [tools/seed-development-staff-logins.ts](../../tools/seed-development-staff-logins.ts), [tools/set-development-test-passwords.ts](../../tools/set-development-test-passwords.ts), [tools/start-development-email.ts](../../tools/start-development-email.ts), [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts), [tools/start-email-worker.ts](../../tools/start-email-worker.ts), [tools/test-coordination-server.ts](../../tools/test-coordination-server.ts), [tools/test-coordination.mjs](../../tools/test-coordination.mjs), [tools/test-planning-mail.ts](../../tools/test-planning-mail.ts) |
 | `GATEPASS_DUMMY_PORT` | [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts), [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) |
 | `GATEPASS_EMAIL_LINKS_MODULE` | [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [tools/start-api.ts](../../tools/start-api.ts), [tools/start-email-worker.ts](../../tools/start-email-worker.ts) |
 | `GATEPASS_GRAPH_CLIENT_ID` | [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [tools/connect-personal-outlook.ts](../../tools/connect-personal-outlook.ts), [tools/start-email-worker.ts](../../tools/start-email-worker.ts) |
@@ -289,10 +304,10 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `GATEPASS_RETAIN_DEMO` | [tools/check-presentation-links.ts](../../tools/check-presentation-links.ts), [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) |
 | `GATEPASS_SHARP_PATH` | [src/development/AdminRoutes.ts](../../src/development/AdminRoutes.ts), [tools/build-pwa-icons.mjs](../../tools/build-pwa-icons.mjs), [tools/build-redesigned-card-preview.ts](../../tools/build-redesigned-card-preview.ts), [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts), [tools/preview-print-cards.ts](../../tools/preview-print-cards.ts), [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) |
 | `GATEPASS_SOURCE_KEY` | [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [tools/start-api.ts](../../tools/start-api.ts) |
-| `GATEPASS_SSO_MODE` | [src/development/DummyEmployeeSso.ts](../../src/development/DummyEmployeeSso.ts), [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [src/transport/RegistrationHttpRoutes.ts](../../src/transport/RegistrationHttpRoutes.ts), [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts), [tools/profile-worker-bursts.ts](../../tools/profile-worker-bursts.ts), [tools/start-api.ts](../../tools/start-api.ts), [tools/start-development-email.ts](../../tools/start-development-email.ts), [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts), [tools/start-email-worker.ts](../../tools/start-email-worker.ts) |
+| `GATEPASS_SSO_MODE` | [src/development/DummyEmployeeSso.ts](../../src/development/DummyEmployeeSso.ts), [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [src/transport/RegistrationHttpRoutes.ts](../../src/transport/RegistrationHttpRoutes.ts), [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts), [tools/planning-mail.ts](../../tools/planning-mail.ts), [tools/profile-worker-bursts.ts](../../tools/profile-worker-bursts.ts), [tools/start-api.ts](../../tools/start-api.ts), [tools/start-development-email.ts](../../tools/start-development-email.ts), [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts), [tools/start-email-worker.ts](../../tools/start-email-worker.ts), [tools/test-coordination-server.ts](../../tools/test-coordination-server.ts), [tools/test-coordination.mjs](../../tools/test-coordination.mjs), [tools/test-planning-mail.ts](../../tools/test-planning-mail.ts) |
 | `GATEPASS_TEST_STORAGE_ROOT` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) |
 | `GATEPASS_TLS_CERT_FILE` | [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [tools/start-api.ts](../../tools/start-api.ts) |
 | `GATEPASS_TLS_KEY_FILE` | [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [tools/start-api.ts](../../tools/start-api.ts) |
 | `GATEPASS_WORKER_DB_PASSWORD` | [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [tools/start-email-worker.ts](../../tools/start-email-worker.ts) |
 | `GATEPASS_WORKER_DB_USER` | [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [tools/start-email-worker.ts](../../tools/start-email-worker.ts) |
-| `NODE_ENV` | [src/development/DummyEmployeeSso.ts](../../src/development/DummyEmployeeSso.ts), [src/development/LocalDevelopmentApiClient.ts](../../src/development/LocalDevelopmentApiClient.ts), [src/development/LocalNameReadings.ts](../../src/development/LocalNameReadings.ts), [src/email/NotificationEmailWorker.ts](../../src/email/NotificationEmailWorker.ts), [src/integrations/directory/DirectoryGateway.ts](../../src/integrations/directory/DirectoryGateway.ts), [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [src/security/GuardAuthService.ts](../../src/security/GuardAuthService.ts), [src/storage/LocalPrivateStorage.ts](../../src/storage/LocalPrivateStorage.ts), [src/transport/RegistrationHttpRoutes.ts](../../src/transport/RegistrationHttpRoutes.ts), [tools/create-email-test.ts](../../tools/create-email-test.ts), [tools/frontend-build.mjs](../../tools/frontend-build.mjs), [tools/launch-dummy-sso.mjs](../../tools/launch-dummy-sso.mjs), [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts), [tools/preview-email.ts](../../tools/preview-email.ts), [tools/profile-worker-bursts.ts](../../tools/profile-worker-bursts.ts), [tools/seed-development-guard-logins.ts](../../tools/seed-development-guard-logins.ts), [tools/seed-development-staff-logins.ts](../../tools/seed-development-staff-logins.ts), [tools/set-development-test-passwords.ts](../../tools/set-development-test-passwords.ts), [tools/start-api.ts](../../tools/start-api.ts), [tools/start-development-email.ts](../../tools/start-development-email.ts), [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) |
+| `NODE_ENV` | [src/development/DummyEmployeeSso.ts](../../src/development/DummyEmployeeSso.ts), [src/development/LocalDevelopmentApiClient.ts](../../src/development/LocalDevelopmentApiClient.ts), [src/development/LocalNameReadings.ts](../../src/development/LocalNameReadings.ts), [src/email/NotificationEmailWorker.ts](../../src/email/NotificationEmailWorker.ts), [src/email/PlanningMailRenderer.ts](../../src/email/PlanningMailRenderer.ts), [src/integrations/directory/DirectoryGateway.ts](../../src/integrations/directory/DirectoryGateway.ts), [src/runtime/Environment.ts](../../src/runtime/Environment.ts), [src/security/GuardAuthService.ts](../../src/security/GuardAuthService.ts), [src/storage/LocalPrivateStorage.ts](../../src/storage/LocalPrivateStorage.ts), [src/transport/RegistrationHttpRoutes.ts](../../src/transport/RegistrationHttpRoutes.ts), [tools/create-email-test.ts](../../tools/create-email-test.ts), [tools/frontend-build.mjs](../../tools/frontend-build.mjs), [tools/launch-dummy-sso.mjs](../../tools/launch-dummy-sso.mjs), [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts), [tools/planning-mail.ts](../../tools/planning-mail.ts), [tools/preview-email.ts](../../tools/preview-email.ts), [tools/profile-worker-bursts.ts](../../tools/profile-worker-bursts.ts), [tools/seed-development-guard-logins.ts](../../tools/seed-development-guard-logins.ts), [tools/seed-development-staff-logins.ts](../../tools/seed-development-staff-logins.ts), [tools/set-development-test-passwords.ts](../../tools/set-development-test-passwords.ts), [tools/start-api.ts](../../tools/start-api.ts), [tools/start-development-email.ts](../../tools/start-development-email.ts), [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts), [tools/test-coordination-server.ts](../../tools/test-coordination-server.ts), [tools/test-coordination.mjs](../../tools/test-coordination.mjs), [tools/test-planning-mail.ts](../../tools/test-planning-mail.ts) |

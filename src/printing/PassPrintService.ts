@@ -1,3 +1,4 @@
+import {sessionTokenDigest} from '../security/SessionProof.ts';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { prepareReplacementQrEnvelope, recoverQrCredential } from '../registration/QrCredentialEnvelope.ts';
 import { isUtc, isUuid } from '../visits/SqlVisitReadRepository.ts';
@@ -21,12 +22,7 @@ const object = (value: unknown, keys: string[]) => {
   input(!!value && typeof value === 'object' && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value)));
   const result = value as Record<string, unknown>; input(Object.keys(result).every(key => keys.includes(key))); return result;
 };
-function hashToken(value: unknown) {
-  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{43}$/u.test(value)) throw new PassPrintError('NOT_AUTHORIZED');
-  const bytes = Buffer.from(value, 'base64url');
-  try { if (bytes.length !== 32 || bytes.toString('base64url') !== value) throw new PassPrintError('NOT_AUTHORIZED'); return createHash('sha256').update(bytes).digest(); }
-  finally { bytes.fill(0); }
-}
+function hashToken(value: unknown) {return sessionTokenDigest(value,()=>new PassPrintError('NOT_AUTHORIZED'));}
 const auth = (session: PrintSession) => ({ SessionHash: parameter('binary', hashToken(session.sessionToken)), CsrfHash: parameter('binary', hashToken(session.csrfToken)) });
 async function call(repository: PassPrintRepository, name: string, parameters: Record<string, PrintParameter>) {
   try { return await repository.execute(name, parameters); }

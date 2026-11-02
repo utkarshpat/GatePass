@@ -1,3 +1,4 @@
+import {sessionTokenDigest} from '../security/SessionProof.ts';
 import {visitorDetails} from './VisitorDetails.ts';
 import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
@@ -33,12 +34,7 @@ const uuid = (value: unknown): string => {
 const outputUuid = (value: unknown): string => {
   try { return uuid(value); } catch { throw new RegistrationError('UNAVAILABLE'); }
 };
-const tokenHash = (value: unknown): Buffer => {
-  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{43}$/u.test(value)) throw new RegistrationError('NOT_AUTHORIZED');
-  const bytes = Buffer.from(value, 'base64url');
-  if (bytes.length !== 32 || bytes.toString('base64url') !== value) throw new RegistrationError('NOT_AUTHORIZED');
-  return digest(bytes);
-};
+const tokenHash = (value: unknown): Buffer => sessionTokenDigest(value,()=>new RegistrationError('NOT_AUTHORIZED'));
 const string = (value: unknown, maximum: number, optional = false): string | null => {
   if (optional && (value === undefined || value === null)) return null;
   requireInput(typeof value === 'string' && value.isWellFormed() && value.length > 0 && value.length <= maximum && value.trim().length > 0 && !value.includes('\0'));

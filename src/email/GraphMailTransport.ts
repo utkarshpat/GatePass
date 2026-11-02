@@ -1,6 +1,6 @@
 import {isUuid} from '../visits/SqlVisitReadRepository.ts';
-import {MailFailure} from './NotificationEmailWorker.ts';
-import type {MailMessage,MailTransport} from './NotificationEmailWorker.ts';
+import {MailFailure} from './MailContracts.ts';
+import type {MailMessage,MailTransport} from './MailContracts.ts';
 export class GraphMailFailure extends MailFailure{
  readonly httpStatus:number;readonly providerCode:string;
  constructor(code:string,status:number,providerCode:string){super(code);this.httpStatus=status;this.providerCode=providerCode;}

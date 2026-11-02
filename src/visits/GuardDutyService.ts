@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
-import { receptionIdentity } from '../reception/ReceptionService.ts';
+import {sessionIdentity} from '../security/SessionProof.ts';
 import { guardVisitors } from './GuardWorkspaceService.ts';
 import { normalizeVisitRow } from './VisitReadService.ts';
 import { isUtc,isUuid } from './SqlVisitReadRepository.ts';
-import type { SqlParameter } from '../transport/SqlProcedureClient.ts';
+import type { SqlParameter } from '../contracts/Sql.ts';
 
 type Session = {sessionToken:string;csrfToken:string};
 type Client = {callProcedure(name:string,parameters:Record<string,SqlParameter>):Promise<string>};
@@ -28,7 +28,7 @@ export class GuardDutyService {
   #client:Client;
   constructor(client:Client){this.#client=client;}
   async #call(session:Session,name:string,parameters:Record<string,SqlParameter>){
-    try{const r:unknown=JSON.parse(await this.#client.callProcedure(name,{...receptionIdentity(session),...parameters}));output(r&&typeof r==='object'&&!Array.isArray(r));return r as Record<string,unknown>;}
+    try{const r:unknown=JSON.parse(await this.#client.callProcedure(name,{...sessionIdentity(session),...parameters}));output(r&&typeof r==='object'&&!Array.isArray(r));return r as Record<string,unknown>;}
     catch(e){if(e instanceof GuardDutyError)throw e;const n=Number((e as {number?:number})?.number);throw new GuardDutyError(n===52001||n===52801?'NOT_AUTHORIZED':n===52002?'INVALID_INPUT':[52003,52004,52005].includes(n)?'CONFLICT':'UNAVAILABLE');}
   }
   async duties(session:Session,value:unknown){const d=body(value,['locationId']);input(office(d.locationId));

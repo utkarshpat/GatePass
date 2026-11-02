@@ -1,3 +1,6 @@
+import {PlanningMailRenderer} from '../src/email/PlanningMailRenderer.ts';
+import {PlanningNotificationWorker} from '../src/email/PlanningNotificationWorker.ts';
+import {CombinedNotificationWorker} from '../src/email/CombinedNotificationWorker.ts';
 import {loadRuntimeEnvironment,requireServiceConfiguration} from '../src/runtime/Environment.ts';
 import {readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
@@ -27,6 +30,7 @@ try{
  sql=await connectSql({server:required('GATEPASS_DB_SERVER'),port:Number(required('GATEPASS_DB_PORT')),database:required('GATEPASS_DB_NAME'),user:required('GATEPASS_WORKER_DB_USER'),password:required('GATEPASS_WORKER_DB_PASSWORD')},'worker');
  const outlook=await loadOutlookActions(process.env,origin);
  const photos=new NotificationPhotoService(sql,new FilePhotoStore(await PrivateDirectory.create(required('GATEPASS_MAIL_PHOTOS_ROOT'),[process.cwd()])));
- const worker=new NotificationEmailWorker(sql,directory,transport,links,origin,await readFile(new URL('../assets/brand/sopra-steria-logo.png',import.meta.url)),outlook?.card,photos);process.once('SIGINT',()=>{stopping=true;});process.once('SIGTERM',()=>{stopping=true;});
+ const logo=await readFile(new URL('../assets/brand/sopra-steria-logo.png',import.meta.url));
+ const worker=new CombinedNotificationWorker([{channel:'registration',worker:new NotificationEmailWorker(sql,directory,transport,links,origin,logo,outlook?.card,photos)},{channel:'planning',worker:new PlanningNotificationWorker(sql,transport,new PlanningMailRenderer(origin,logo))}]);process.once('SIGINT',()=>{stopping=true;});process.once('SIGTERM',()=>{stopping=true;});
  await runNotificationWorker(worker,{once:process.argv.includes('--once'),stopping:()=>stopping,onBatch:results=>console.log(JSON.stringify({batch:results})),onRetry:()=>console.error('EMAIL_WORKER_RETRY: batch unavailable; retrying with bounded backoff.')});
 }catch{console.error('EMAIL_WORKER_UNAVAILABLE: verify Graph mailbox/app, approved directory/link-key adapters, protected mail-photo root and dedicated worker SQL identity.');process.exitCode=1;}finally{await sql?.close();}

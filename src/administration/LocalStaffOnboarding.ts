@@ -1,9 +1,9 @@
 import {createHash} from 'node:crypto';
-import {receptionIdentity} from '../reception/ReceptionService.ts';
+import {sessionIdentity} from '../security/SessionProof.ts';
 import {normalizeGuardLogin} from '../security/GuardAuthService.ts';
 import {isUuid,isUtc} from '../visits/SqlVisitReadRepository.ts';
 import {StaffAdministrationError} from './StaffAdministrationService.ts';
-import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
+import type {SqlParameter} from '../contracts/Sql.ts';
 type Client={callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>};
 type Session={sessionToken:string;csrfToken:string};
 const roles=['GUARD','RECEPTION','LOCATION_ADMIN','INDIA_ADMIN','PLATFORM_ADMIN'];
@@ -12,7 +12,7 @@ function check(ok:unknown,output=false):asserts ok {if(!ok)throw new StaffAdmini
 function setupHash(v:unknown){check(typeof v==='string'&&/^[A-Za-z0-9_-]{43}$/u.test(v));const bytes=Buffer.from(v,'base64url');try{check(bytes.length===32&&bytes.toString('base64url')===v);return createHash('sha256').update(bytes).digest();}finally{bytes.fill(0);}}
 export async function provisionLocalStaff(client:Client,session:Session,d:Record<string,unknown>,reset=false){
  check(Object.keys(d).every(k=>(reset?['targetUserId','setupToken','clientKey','reason']:['displayName','loginId','roleCode','locationId','projectLocationId','capabilities','setupToken','clientKey','reason']).includes(k))&&isUuid(d.clientKey)&&validText(d.reason,300));
- const p:Record<string,SqlParameter>={...receptionIdentity(session),ClientKey:{type:'guid',value:d.clientKey},SetupTokenHash:{type:'binary',value:setupHash(d.setupToken)},Reason:{type:'text',value:String(d.reason).trim()}};
+ const p:Record<string,SqlParameter>={...sessionIdentity(session),ClientKey:{type:'guid',value:d.clientKey},SetupTokenHash:{type:'binary',value:setupHash(d.setupToken)},Reason:{type:'text',value:String(d.reason).trim()}};
  if(reset){check(isUuid(d.targetUserId));p.TargetUserId={type:'guid',value:d.targetUserId};}
  else{
   const login=normalizeGuardLogin(d.loginId);check(validText(d.displayName,200)&&login&&roles.includes(String(d.roleCode))&&Number.isInteger(d.locationId)&&Number(d.locationId)>0&&Number(d.locationId)<=2147483647);

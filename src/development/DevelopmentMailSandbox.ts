@@ -2,7 +2,7 @@ import {spawn} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {requireDummySso} from './DummyEmployeeSso.ts';
 import {resolvePowerShell} from '../runtime/PowerShellRuntime.mjs';
-import type {MailTransport,MailMessage} from '../email/NotificationEmailWorker.ts';
+import type {MailTransport,MailMessage} from '../email/MailContracts.ts';
 import type {EmailSql} from '../email/EmailWorkflowService.ts';
 import {isUuid} from '../visits/SqlVisitReadRepository.ts';
 

@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { basename } from "node:path";
 const components = {
+  coordination: "CoordinationPage",
   staff: "StaffPage",
   "self-service": "SelfServicePage",
   guard: "GuardPage",
@@ -63,7 +64,7 @@ export async function buildFrontend({ testMode = false } = {}) {
     )?.[1];
     if (meta?.entryPoint) pages[meta.entryPoint.split(":").at(-1)] = url;
   }
-  if (Object.keys(pages).length !== 6)
+  if (Object.keys(pages).length !== Object.keys(components).length)
     throw Error("Incomplete React page build");
   return { assets, pages };
 }

@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import type { AdminModel } from "./model.ts";
 import { dateTime, human } from "./types.ts";
 import { registerCell, registerChoices, registerColumns } from "./register.ts";
-import { passValidityLabel } from "../../printing/ValidityDisplay.ts";
+import { passValidityLabel } from "../../shared/ValidityDisplay.ts";
 import { deviceLabels } from "../reception/types.ts";
 import { Row } from "./StaffView.tsx";
 const tone: Record<string, string> = {

@@ -3,7 +3,7 @@ import type { GuardModel } from "./model.ts";
 import type { Visit } from "./types.ts";
 import { GuardLanguage } from "./language.tsx";
 import { PersonName } from "./readings.tsx";
-import { passValidityLabel } from "../../printing/ValidityDisplay.ts";
+import { passValidityLabel } from "../../shared/ValidityDisplay.ts";
 export const shortPass = (value?: string) =>
   value?.replace(/^GP-/iu, "").slice(0, 6).toUpperCase() ?? "";
 export function projectDescription(v: Visit, model: GuardModel) {

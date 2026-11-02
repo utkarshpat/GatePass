@@ -17,5 +17,16 @@ export default [
       // Public boundary errors deliberately redact SQL, path and credential causes.
       'preserve-caught-error': 'off'
     }
+  },
+  {
+    files: ['src/contracts/**/*.ts', 'src/shared/**/*.ts', 'src/security/SessionProof.ts',
+      'src/planning/**/*.ts', 'src/email/MailContracts.ts', 'src/email/PlanningMail*.ts',
+      'src/email/PlanningNotificationWorker.ts', 'src/frontend/admin/views/*.tsx'],
+    plugins: {'@typescript-eslint': tseslint.plugin},
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/consistent-type-imports': ['error', {prefer: 'type-imports', fixStyle: 'separate-type-imports'}],
+      '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_', varsIgnorePattern: '^_'}]
+    }
   }
 ];

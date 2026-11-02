@@ -1,6 +1,7 @@
 import type { PageConfig, PageName } from "../frontend/types.ts";
 import { pwaHead } from "./PwaAssets.ts";
 const titles: Record<PageName, string> = {
+  coordination: "Visit Coordination \u00b7 GatePass",
   staff: "Sign in · Sopra Steria GatePass",
   "self-service": "GatePass · Sopra Steria",
   guard: "Guard · Sopra Steria",
@@ -9,6 +10,7 @@ const titles: Record<PageName, string> = {
   email: "GatePass",
 };
 const classes: Record<PageName, string> = {
+  coordination: "coordination-page",
   staff: "staff-entry-page",
   "self-service": "",
   guard: "guard-app",

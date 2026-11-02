@@ -1,6 +1,6 @@
 # 02. Identity, roles and access
 
-> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 Local staff onboarding requires both permitted role delegation and staff credential-management authority. Account administrators cannot create local password accounts; internal account leads remain directory employees. New local accounts use a one-use, 15-minute setup link and the existing 15–128 character password policy. Reset revokes prior credentials/sessions/setup links. Admin audit metadata displays safe actor/target/role/scope/reason fields and excludes password/setup-token material. See [the onboarding contract](../54_Local_Staff_Onboarding_And_Audit.md).
 
@@ -49,3 +49,10 @@ Sources: docs/database/29_Staff_Identity_and_Delegation.md; migrations 027-035; 
 ## Account host policy update
 
 See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+
+
+## Source-office sponsorship and destination approval
+
+An active internal approved account-office host, or explicitly approved location-planning host, can request all active configured sub-project destinations in that eligible office. The inviter need not be a member or approved host of the destination account. The authenticated invitation catalogue is intentionally office-wide for these approved hosts; public visitor host lookup remains unchanged. Each destination's assigned internal authority and the office baseline still decide independently. Selection and READY planning status do not issue a pass or grant entry. Removing every current source grant blocks new requests/readiness; destination management and private threads retain their scoped checks. See [current rule and evidence](../99_Location_Sponsored_Cross_Account_Invitations_01_November_2026.md).
+
+Coordination is an additive host/facilities pre-planning workspace. It contains invitations, project approvals, arrangements, VIP/FYI recipients, discussion and activity. QR card allocation, reception, guard scanning, entry/exit and returned badges use their existing workflows. No manual invitation linking or separate planned gate is exposed. See [coordination-only scope correction](../101_Coordination_Only_Scope_02_November_2026.md).

@@ -1,11 +1,11 @@
 # 04. Data, state and transactions
 
-> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 Approval, current pass validity, account presence and printed-card return are separate dimensions. A returned visit may retain `APPROVED` while its pass is `REVOKED`, the holder is outside and the printed-card control shows Returned. Return correction is receipt/pass-bound and audited; a replacement request/pass may fence correction. Optional `CompanyName` and canonical `DeviceTypesJson` belong to each individual visit snapshot. Migration 084 keeps the same five-code canonical order without an unbounded LOB sort. Migration 085 compares audit-window duration without overflowing far-future datetime values.
 
 ## Baseline and domains
-Source contains forward migrations 001–121. The generated SQL catalog records hashes/object declarations, not a fresh live-database drift attestation. Compare deployment ledger and approved artifacts before startup. Never rewrite an applied migration to change behavior.
+Source contains forward migrations 001–132. The generated SQL catalog records hashes/object declarations, not a fresh live-database drift attestation. Compare deployment ledger and approved artifacts before startup. Never rewrite an applied migration to change behavior.
 
 | Domain | Records/relationships |
 |---|---|
@@ -51,3 +51,13 @@ Sources: migrations 003-020, 048-062; docs/database/05_State_and_Transaction_Con
 ## Account host policy update
 
 See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+
+## Visit Coordination
+
+Migrations 122–127 add scoped project hosts/policies, versioned plans, independent decisions, arrangement owners, private threads/replies/mentions, events, replay receipts and notice intents. Four execute-only API procedures own configuration, read projections and writes. No direct table access or movement grants are added. [Current contract](../98_Visit_Coordination_Persistence_01_November_2026.md).
+
+Migration 128 separates source-office sponsorship from destination host rosters, retaining active/fresh destination checks and existing independent approvals. See [current sponsorship contract](../99_Location_Sponsored_Cross_Account_Invitations_01_November_2026.md).
+
+Coordination is an additive host/facilities pre-planning workspace. It contains invitations, project approvals, arrangements, VIP/FYI recipients, discussion and activity. QR card allocation, reception, guard scanning, entry/exit and returned badges use their existing workflows. No manual invitation linking or separate planned gate is exposed. See [coordination-only scope correction](../101_Coordination_Only_Scope_02_November_2026.md).
+
+Migration 132 adds a separate transactional planning mail queue with worker-only fenced claims, live recipient/content projections, bounded retry and completion audit. Only new notice inserts queue mail; existing historical notices are not backfilled. See [the planning mail contract](../102_Coordination_Email_Notifications_02_November_2026.md).

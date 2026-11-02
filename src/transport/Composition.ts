@@ -1,4 +1,5 @@
 import type {RequestLimits} from './RequestAdmission.ts';
+import {PlanningService} from '../planning/PlanningService.ts';
 import {AccountHostService} from '../administration/AccountHostService.ts';
 import {ProjectGroupService} from '../administration/ProjectGroupService.ts';
 import {ReceptionService} from '../reception/ReceptionService.ts';
@@ -67,6 +68,8 @@ export function createServiceActions(api: ReadSqlClient,links?:EmailLinkCodec): 
     const reception=new ReceptionService(api);
     const actionCentre=new ActionCentreService(api);
     const actions = new Map<string, ApiAction>();
+    const planning=new PlanningService(api);
+    for(const action of ['options','list','detail','thread','create','change','manage'] as const)actions.set('/api/coordination/'+action,(session,body)=>planning.execute(session,action,body));
     for(const action of ['account-hosts','account-host'] as const)actions.set('/api/admin/'+action,(session,body)=>hosts.execute(session,action,body));
     actions.set('/api/reception/queue',(session,body)=>reception.queue(session,body as Record<string,unknown>));
     actions.set('/api/operations/actions',(session,body)=>actionCentre.read(session,body as Record<string,unknown>));

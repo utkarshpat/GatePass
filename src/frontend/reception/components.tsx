@@ -8,7 +8,7 @@ import {
   deviceLabels,
   type ReceptionVisit as Visit,
 } from "./types.ts";
-import { passValidityLabel } from "../../printing/ValidityDisplay.ts";
+import { passValidityLabel } from "../../shared/ValidityDisplay.ts";
 export function Badge({ value }: { value: string }) {
   if (!value) return null;
   return (

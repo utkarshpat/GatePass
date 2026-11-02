@@ -1,6 +1,7 @@
+import {sessionIdentity} from '../security/SessionProof.ts';
 import {visitorDetails} from '../registration/VisitorDetails.ts';
 import {createHash} from 'node:crypto';
-import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
+import type {SqlParameter} from '../contracts/Sql.ts';
 import {isDate,isUtc,isUuid} from '../visits/SqlVisitReadRepository.ts';
 import {employeeProjectSummary} from '../visits/EmployeeProjectSummary.ts';
 export class ReceptionError extends Error{code:'INVALID_INPUT'|'NOT_AUTHORIZED'|'CONFLICT'|'INSIDE_PROJECT'|'UNAVAILABLE';constructor(code:ReceptionError['code']){super(code);this.code=code;}}
@@ -8,10 +9,7 @@ const requireInput=(v:unknown)=>{if(!v)throw new ReceptionError('INVALID_INPUT')
 const requireOutput=(v:unknown)=>{if(!v)throw new ReceptionError('UNAVAILABLE');};
 const text=(v:unknown,max:number)=>typeof v==='string'&&v.length>0&&v.length<=max&&!/[\u0000-\u001f\u007f]/u.test(v);
 const int=(v:unknown)=>Number.isInteger(v)&&Number(v)>0&&Number(v)<=2147483647;
-export function receptionIdentity(session:{sessionToken:string;csrfToken:string}){
- const hash=(v:string)=>{if(typeof v!=='string'||!/^[A-Za-z0-9_-]{43}$/u.test(v))throw new ReceptionError('NOT_AUTHORIZED');const bytes=Buffer.from(v,'base64url');try{if(bytes.length!==32||bytes.toString('base64url')!==v)throw new ReceptionError('NOT_AUTHORIZED');return createHash('sha256').update(bytes).digest();}finally{bytes.fill(0);}};
- return {SessionHash:{type:'binary',value:hash(session.sessionToken)},CsrfHash:{type:'binary',value:hash(session.csrfToken)}} as Record<string,SqlParameter>;
-}
+export function receptionIdentity(session:{sessionToken:string;csrfToken:string}){return sessionIdentity(session,()=>new ReceptionError('NOT_AUTHORIZED'));}
 export class ReceptionService{
  #client:{callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>};
  constructor(client:{callProcedure(name:string,p:Record<string,SqlParameter>):Promise<string>}){this.#client=client;}

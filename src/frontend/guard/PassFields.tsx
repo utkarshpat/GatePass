@@ -4,7 +4,7 @@ import { PersonName } from "./readings.tsx";
 import type { GuardModel } from "./model.ts";
 import type { Visit } from "./types.ts";
 import { shortPass, projectDescription } from "./Cards.tsx";
-import { passValidityLabel } from "../../printing/ValidityDisplay.ts";
+import { passValidityLabel } from "../../shared/ValidityDisplay.ts";
 export function PassFields({
   visit: v,
   model,

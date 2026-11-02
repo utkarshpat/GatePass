@@ -1,6 +1,6 @@
 # 01. Product and workflows
 
-> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 The current visitor flow collects optional company and device types independently for each person. Reception-assisted intake uses the same form in an isolated staff-authorized frame. Final printed-pass return requires the holder to be outside and every declared device to be confirmed; a mistaken return can be corrected with a reason while retaining both audit records. Administration now includes local account onboarding, office/account rosters, a scoped visit register/Excel download and movement timelines. Today's presentation dataset is retained rather than cleaned after its rehearsal.
 
@@ -41,7 +41,7 @@ A Noida employee does not gain Bengaluru access because the same account operate
 ## Approval and status
 External/account requests queue host notices. Ordinary email links open authenticated detail; GET/mail scanners never approve. Explicit POST binds current host authorization, immutable snapshot and retry key. Native Outlook actions are a separate optional implementation, disabled pending organization onboarding.
 
-Temporary ID manager notices are informational. Internal holders reopen authenticated request links; external holders receive signed expiring individual fragment capabilities. Reference numbers alone cannot authorize reads. No employee/host workspace is introduced.
+Temporary ID manager notices are informational. Internal holders reopen authenticated request links; external holders receive signed expiring individual fragment capabilities. Reference numbers alone cannot authorize reads. These existing walk-in flows do not require an employee/host dashboard. The new pre-planned Visit Coordination workspace is a separate workflow; it does not replace ordinary walk-in host approval.
 
 ## Explicit exclusions
 No floors/zones/checkpoint inventory, face recognition, lost-card replacement portal, mandatory Redis, offline entry decisions or proof of physical printer success in v1. Admin exposes overview, accounts/areas/groups, staff permissions, guard assignments, office QR, visit register/export, audit and the action centre. Production wiring and corporate provider acceptance remain incomplete.
@@ -51,3 +51,14 @@ Sources: docs/33_Employee_Office_Authorization.md; docs/34_Guard_Duties_and_Proj
 ## Account host policy update
 
 See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+
+## Pre-planned visits
+
+Explicitly authorized internal hosts can create future office/sub-project plans. Admin-managed policies determine independent office/project approval, internal client coordination, arrangements and VIP FYI. Scope-filtered discussions have a dedicated page. Readiness does not grant entry; mail dispatch and invitation/pass/guard integration remain separate pending work. [Implementation and guide](../98_Visit_Coordination_Persistence_01_November_2026.md).
+
+
+## Source-office sponsorship and destination approval
+
+An active internal approved account-office host, or explicitly approved location-planning host, can request all active configured sub-project destinations in that eligible office. The inviter need not be a member or approved host of the destination account. The authenticated invitation catalogue is intentionally office-wide for these approved hosts; public visitor host lookup remains unchanged. Each destination's assigned internal authority and the office baseline still decide independently. Selection and READY planning status do not issue a pass or grant entry. Removing every current source grant blocks new requests/readiness; destination management and private threads retain their scoped checks. See [current rule and evidence](../99_Location_Sponsored_Cross_Account_Invitations_01_November_2026.md).
+
+Coordination is an additive host/facilities pre-planning workspace. It contains invitations, project approvals, arrangements, VIP/FYI recipients, discussion and activity. QR card allocation, reception, guard scanning, entry/exit and returned badges use their existing workflows. No manual invitation linking or separate planned gate is exposed. See [coordination-only scope correction](../101_Coordination_Only_Scope_02_November_2026.md).

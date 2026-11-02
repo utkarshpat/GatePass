@@ -1,11 +1,11 @@
 # 11. Readiness, gaps and roadmap
 
-> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
 ## Status matrix
 | Area | Current status | Remaining acceptance |
 |---|---|---|
-| Frontend | Six React/TSX page views with native React models and interactions | Print/offline HTML retained; corporate/device acceptance |
+| Frontend | Seven React/TSX page views with native React models and interactions | Print/offline HTML retained; corporate/device acceptance |
 | Public/employee forms | Local actual SQL/private photos | Corporate SSO/MFA/directory and devices |
 | Exact office/account authorization | Implemented services/migrations | Trustworthy entitlement feed/lifecycle sync |
 | Guard cards/duties/movement | Local account presence/common verification | Physical camera, language/users and reconciliation operations |
@@ -14,6 +14,7 @@
 | Report/audit/staff backends | Service/SQL contracts | Production exposure and organizational permission review |
 | Email/status/host workflow | Code and confirmed personal test delivery | Organization Graph/mailbox, company delivery, reachable deployed links |
 | Native Outlook | Code/SQL tests; disabled by default | Provider/Entra/public HTTPS/stable identity/client onboarding |
+| Visit Coordination | Scoped host/facilities dashboard: invitations, approvals, arrangements, discussions and activity; existing operational flows preserved | Automatic handoff to the existing registration/card flow; corporate configuration and real mail acceptance (scoped planning dispatch is implemented) |
 | PWA | Manifest/icons/public-only offline shell | Install/device acceptance; no offline entry |
 | Media/keys | Windows ACL/DPAPI | Linux protector, reference-aware cleanup, retention/recovery |
 | CI | Quality and opt-in integration/probe | Current remote run, branch rules and minutes policy |
@@ -33,7 +34,7 @@ Root `.env` loading/template/startup validation are implemented. Organization cr
 ## Open decisions
 Organization API/app/mailbox permissions, Linux protector, hosting/proxy contract, retention durations, backup destination/RPO/RTO, capacity targets and required broader admin/reporting screens require approved inputs. Documentation does not silently decide them.
 
-Passing unit tests, local pages or a source candidate is not production certification. No commit/push, mail, approval, grant, migration or deployment is part of this documentation task.
+Passing unit tests, local pages or a source candidate is not production certification. The dated evidence distinguishes source changes, local migrations, synthetic approvals and production/provider actions. The 1 November planning implementation applied additive local migrations; no real planning mail, commit or push was performed.
 
 ## Account host policy update
 

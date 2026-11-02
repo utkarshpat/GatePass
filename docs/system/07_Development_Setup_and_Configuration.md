@@ -1,8 +1,8 @@
 # 07. Development setup and configuration
 
-> Current source documentation: **28 October 2026**, migrations **001–121**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
 
-Apply missing forward migrations in order using `database/setup/Apply-LocalTransactionCore.ps1`; never rewrite/reapply an existing ledger version. Current source migrations end at 121; this development database has applied 121. Use `Apply-LocalForwardMigration.ps1 -Version NNN` for later versions beyond the older fixed-list setup helper. Before Node decoder tests, set `GATEPASS_SHARP_PATH` to the installed `node_modules/sharp` package and `GATEPASS_PWSH_PATH` to PowerShell 7. `npm.cmd run dev` serves port 8443. The opt-in retained browser rehearsal is documented separately and uses port 18448 by default. Run SQL fault/locking suites separately from browser rehearsals.
+Apply missing forward migrations in order using `database/setup/Apply-LocalTransactionCore.ps1`; never rewrite/reapply an existing ledger version. Current source migrations end at 127; the local GatePass development database was advanced from 121 to 127 on 1 November 2026. Use `Apply-LocalForwardMigration.ps1 -Version NNN` for later versions beyond the older fixed-list setup helper. Before Node decoder tests, set `GATEPASS_SHARP_PATH` to the installed `node_modules/sharp` package and `GATEPASS_PWSH_PATH` to PowerShell 7. `npm.cmd run dev` serves port 8443. The opt-in retained browser rehearsal is documented separately and uses port 18448 by default. Run SQL fault/locking suites separately from browser rehearsals.
 
 ## .env configuration
 Copy `.env.example` to root `.env`; the existing local file retains development/dummy/mock mode. API/email worker and Node dev launcher load it before startup. Populate production SQL identities, HTTPS origin/TLS paths, source key, Graph sender/app credentials and approved adapter/storage paths only on the production VM. Keep `.env` out of Git, public hosting and personal sync; restrict filesystem access.
@@ -16,7 +16,7 @@ Use pinned Node range >=26.8.0 and <27 (CI selects 26.8.2), locked npm dependenc
 
 ## Existing configured laptop
 
-The local runner builds six React/TSX page bundles at startup. Use `npm run build:frontend` to verify a production frontend build independently; restart the runner after source changes. CI also runs this build. Print/offline HTML and existing CSS remain in use. See [frontend policy and migration](../92_React_Frontend_Migration_28_October_2026.md).
+The local runner builds seven React/TSX page bundles at startup. Use `npm run build:frontend` to verify a production frontend build independently; restart the runner after source changes. CI also runs this build. Print/offline HTML and existing CSS remain in use. See [frontend policy and migration](../92_React_Frontend_Migration_28_October_2026.md).
 From repository root, run npm.cmd ci, then npm.cmd run storage:init, then npm.cmd run dev:sso. The first installs locked dependencies, the second checks/opens protected storage and the third starts the explicit local development host. None provisions a complete fresh production environment.
 
 Open http://localhost:8443/ for staff, or /office/noida for public intake. Despite port 8443, this runner uses HTTP. HTTPS against it produces SSL protocol errors. Stop its owning process cleanly and restart after asset/source changes; do not terminate unrelated listeners by guessed process/port. Ordinary startup must not reset passwords or reinstate revoked grants.
@@ -73,3 +73,7 @@ Sources: package.json; tools/Start-DummySso.ps1; tools/start-api.ts; tools/start
 ## Account host policy update
 
 See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+
+`npm run test:coordination` creates its own marked SQL database, applies every migration, runs persistence/browser checks and removes only its owned database. Requires Windows SQL, PowerShell 7, the approved ScriptDom parser and pinned Playwright Chromium. It refuses an existing owned-fixture pointer. It never seeds the retained application database or connects to Outlook.
+
+Planning mail has a selected-plan read-only preview: `npm run mail:planning -- <selected-plan-uuid>`. It writes protected files without opening Outlook or Graph. The separate `--send-to` test option requires an explicit test-recipient request and consumes only the selected synthetic plan queue; it never drains global or normal visitor notifications. See [full commands and limits](../102_Coordination_Email_Notifications_02_November_2026.md).

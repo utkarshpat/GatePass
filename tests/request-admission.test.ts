@@ -45,7 +45,7 @@ test('invalid admission policy and raw/unbounded source identifiers fail closed'
 const origin = 'https://gatepass.example.invalid';
 const session = Buffer.alloc(32, 3).toString('base64url'), csrf = Buffer.alloc(32, 4).toString('base64url');
 const authenticated = { cookie: `__Host-gp-session=${session}; __Host-gp-csrf=${csrf}`, 'x-csrf-token': csrf };
-const auth = { async signIn() { return { ok: false as const, message: 'Unable to sign in.' as const }; }, async completeSetup() { return { ok: false }; }, async sessionAction() { return { ok: false }; } };
+const auth = { async signIn() { return { ok: false as const, message: 'Unable to sign in.' as const }; }, async completeSetup() { return { ok: false }; }, async sessionAction() { return { ok: true }; } };
 function request(path: string, headers: Record<string, string> = {}, raw = '{}') {
   return Object.assign(Readable.from([Buffer.from(raw)]), { method: 'POST', url: path, socket: { encrypted: true, remoteAddress: '127.0.0.1' }, headers: { host: new URL(origin).host, origin, 'content-type': 'application/json', ...headers } }) as any;
 }

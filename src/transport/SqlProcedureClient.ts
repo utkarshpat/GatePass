@@ -2,16 +2,17 @@ import sql from 'mssql';
 import { readFile } from 'node:fs/promises';
 import {isCanonicalSqlDate, isCanonicalSqlTimestamp} from './SqlDateValidation.ts';
 
-export type SqlParameter = { type: 'binary' | 'text' | 'bit' | 'guid' | 'int' | 'bigint' | 'datetime' | 'date'; value: Buffer | string | boolean | number | null };
+import type {SqlParameter,SqlProcedurePort} from '../contracts/Sql.ts';
+export type {SqlParameter} from '../contracts/Sql.ts';
 export type DatabaseIdentity = { server: string; port: number; database: string; user: string; password: string };
 export const procedureRoles = {
   outlook: ['DecideOutlookVisit'],
   auth: ['BeginGuardLogin', 'CompleteGuardLogin', 'InspectGuardSetup', 'CompleteGuardSetup', 'TouchGuardSession', 'RevokeGuardSession'],
   staffAuth: ['ResolveStaffLoginIdentity','BeginStaffLogin','CompleteStaffLogin','InspectStaffSetup','CompleteStaffSetup','TouchStaffSession','RevokeStaffSession'],
-  worker: ['ClaimNotifications','GetNotificationDispatch','GetNotificationEmail','ResolveNotificationPhoto','RenewNotificationLease','CompleteNotification'],
+  worker: ['ClaimPlanningNotifications','GetPlanningNotification','RenewPlanningNotificationLease','CompletePlanningNotification','PreviewPlanningNotifications','ClaimNotifications','GetNotificationDispatch','GetNotificationEmail','ResolveNotificationPhoto','RenewNotificationLease','CompleteNotification'],
   render: ['GetOwnDigitalIdCard','GetEmployeeRequestCard','GetEmailRequestCard','GetPublicRegistrationCard','GetReceptionCardSource','BeginPassRender','FinishPassRender','DispatchPassPrint','FailPassPrint'],
   media: ['ResolveVisitPhoto','ReadGuardPhotoSource'],
-  api: ['ReadAccountHosts','ManageAccountHost','GetAdminProjectGroups','ManageProjectGroup','ManageProjectGroupGuard','ReadEmailRequest','RevokeEmailRequest','ListGuardDuties','ReadGuardDutyPass','ListGuardDutyVisitors','RecordGuardDutyMovement','GetCommonDutyAdministration','ManageCommonDuty','FindGuardPass','GetGuardWorkspaceContext','ListGuardVisitors','ListGuardRecentScans','ReadAdminVisitRegister','GetAdminConsoleScope','ListAdminGuardAssignments','CreateScopedProject','GetAdminWorkspaceContext','ListLeadProjects','SearchProjectLeadCandidates','ListProjectHeads','ManageStaffCredential','DecideVisit', 'RecordMovement', 'DeallocateGuard', 'ManageGuardCredential', 'CreateRegistrationIntake', 'RecordRegistrationPhoto', 'SubmitRegistration', 'ListRegistrationLocations', 'GetRegistrationOptions',
+  api: ['ReadVisitCoordination','ManageVisitPlanning','CreatePlannedVisit','ChangePlannedVisit','ReadAccountHosts','ManageAccountHost','GetAdminProjectGroups','ManageProjectGroup','ManageProjectGroupGuard','ReadEmailRequest','RevokeEmailRequest','ListGuardDuties','ReadGuardDutyPass','ListGuardDutyVisitors','RecordGuardDutyMovement','GetCommonDutyAdministration','ManageCommonDuty','FindGuardPass','GetGuardWorkspaceContext','ListGuardVisitors','ListGuardRecentScans','ReadAdminVisitRegister','GetAdminConsoleScope','ListAdminGuardAssignments','CreateScopedProject','GetAdminWorkspaceContext','ListLeadProjects','SearchProjectLeadCandidates','ListProjectHeads','ManageStaffCredential','DecideVisit', 'RecordMovement', 'DeallocateGuard', 'ManageGuardCredential', 'CreateRegistrationIntake', 'RecordRegistrationPhoto', 'SubmitRegistration', 'ListRegistrationLocations', 'GetRegistrationOptions',
     'GetStaffAccessContext', 'LookupReceptionVisits','CorrectReceptionReturn','CreateLocalStaffAccount','ReissueLocalStaffSetup','ReturnReceptionPass', 'GetReceptionContext', 'RemindVisitHost', 'GetReceptionEmployeeTimeline', 'AuditReceptionRegistration', 'ListReceptionVisits', 'ListVisits', 'GetVisitDetail', 'VerifyGuardPass', 'ReissuePass', 'RequestPassPrint', 'GetPassPrintJob', 'ListGuardWorkContexts', 'CancelVisit',
     'AllocateGuard', 'GrantStaffRole', 'RevokeStaffRole', 'ListAdminProjectLocations', 'ListAdminGuards', 'SearchStaffSubjects', 'ListStaffRoles', 'GetOperationalSummary','GetOperationalSummaryRange','ReadGuardQueue','ReadReceptionQueue','ReadActionCentre','RemindPendingApproval', 'ListScopedAuditEvents'],
 } as const;
@@ -21,7 +22,7 @@ export function runtimeAdmissionProcedures(role: keyof typeof procedureRoles) { 
 type Pool = { request(): { input(name: string, type: unknown, value: unknown): unknown; execute(name: string): Promise<any> }; close(): Promise<void> };
 
 /** Separate pool per least-privilege SQL identity. No global pool, query(), retries or caller SQL. */
-export class SqlProcedureClient {
+export class SqlProcedureClient implements SqlProcedurePort {
   #pool: Pool; #allowed: Set<string>;
   constructor(pool: Pool, role: keyof typeof procedureRoles) {
     this.#pool = pool; this.#allowed = new Set(procedureRoles[role].map(name => 'gp.' + name));

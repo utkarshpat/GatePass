@@ -1,16 +1,14 @@
+import {sessionTokenDigest} from '../security/SessionProof.ts';
 import {createHash,timingSafeEqual} from 'node:crypto';
 import {recoverQrCredential} from '../registration/QrCredentialEnvelope.ts';
 import type {QrKeySource} from '../registration/QrCredentialEnvelope.ts';
 import type {PrivatePhotoReader} from '../visits/VisitReadService.ts';
 import type {PassCardData,PassCardRenderer} from './PassCardRenderer.ts';
-import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
+import type {SqlParameter} from '../contracts/Sql.ts';
 import {isUuid} from '../visits/SqlVisitReadRepository.ts';
 export class OwnCardError extends Error {status:number;constructor(status:number){super('CARD_UNAVAILABLE');this.status=status;}}
 interface CardClient {callProcedure(name:string,parameters:Record<string,SqlParameter>):Promise<string>}
-function digest(token:string){
- if(typeof token!=='string'||!/^[A-Za-z0-9_-]{43}$/u.test(token))throw new OwnCardError(403);
- const bytes=Buffer.from(token,'base64url');try{if(bytes.length!==32||bytes.toString('base64url')!==token)throw new OwnCardError(403);return createHash('sha256').update(bytes).digest();}finally{bytes.fill(0);}
-}
+function digest(token:string){return sessionTokenDigest(token,()=>new OwnCardError(403));}
 const requireOutput=(valid:unknown)=>{if(!valid)throw new OwnCardError(503);};
 /** Render source remains internal; only the authorized PNG crosses the HTTP boundary. */
 export class OwnDigitalIdCardService {

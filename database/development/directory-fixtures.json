@@ -3,7 +3,7 @@
   "projects": [
     {
       "projectCode": "DEMO-PRJ-001",
-      "projectName": "Project 1",
+      "projectName": "Accounts 1",
       "isActive": true,
       "locationCodes": [
         "NOIDA",
@@ -14,7 +14,7 @@
     },
     {
       "projectCode": "DEMO-PRJ-002",
-      "projectName": "Project 2",
+      "projectName": "Accounts 2",
       "isActive": true,
       "locationCodes": [
         "NOIDA",
@@ -24,7 +24,7 @@
     },
     {
       "projectCode": "DEMO-PRJ-003",
-      "projectName": "Project 3",
+      "projectName": "Accounts 3",
       "isActive": true,
       "locationCodes": [
         "NOIDA",
@@ -33,7 +33,7 @@
     },
     {
       "projectCode": "DEMO-PRJ-004",
-      "projectName": "Project 4",
+      "projectName": "Accounts 4",
       "isActive": true,
       "locationCodes": [
         "BENGALURU"
@@ -41,7 +41,7 @@
     },
     {
       "projectCode": "DEMO-PRJ-005",
-      "projectName": "Project 5",
+      "projectName": "Accounts 5",
       "isActive": true,
       "locationCodes": [
         "CHENNAI",
@@ -50,7 +50,7 @@
     },
     {
       "projectCode": "DEMO-PRJ-006",
-      "projectName": "Project 6",
+      "projectName": "Accounts 6",
       "isActive": true,
       "locationCodes": [
         "NOIDA",

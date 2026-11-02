@@ -12,7 +12,7 @@ const config = (page: PageName): PageConfig => ({
   qrDecoderUrl: "/assets/qr.js",
   exportWorkerUrl: "/assets/export.js",
 });
-test("six React documents retain public context, nonce/CSP compatibility and page-owned bundles", () => {
+test("seven React documents retain public context, nonce/CSP compatibility and page-owned bundles", () => {
   for (const page of [
     "staff",
     "self-service",
@@ -20,6 +20,7 @@ test("six React documents retain public context, nonce/CSP compatibility and pag
     "reception",
     "admin",
     "email",
+    "coordination",
   ] as const) {
     const html = reactDocument(
       config(page),

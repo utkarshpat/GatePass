@@ -51,8 +51,8 @@ stages:
             displayName: Install locked dependencies
           - script: npm audit --audit-level=high
             displayName: Block known high/critical dependency vulnerabilities
-          - script: npm run typecheck && npm run lint && npm run check:migrations && npm run build:frontend
-            displayName: Type safety, lint and migration integrity
+          - script: npm run typecheck && npm run lint && npm run check:architecture && npm run check:migrations && npm run build:frontend
+            displayName: Type safety, dependency architecture, lint and migration integrity
           - script: npm run test:ci
             displayName: Unit/contract tests with JUnit and coverage
             env:
@@ -123,6 +123,12 @@ stages:
                 CI: 'true'
                 NODE_ENV: test
                 GATEPASS_TEST_SQL_SERVER: $(GatePassTestSqlServer)
+            - script: npm run test:coordination
+              displayName: Visit coordination SQL, private threads and responsive UI
+              env:
+                CI: 'true'
+                NODE_ENV: test
+                GATEPASS_TEST_SQL_SERVER: $(GatePassTestSqlServer)
             - task: PublishTestResults@2
               condition: succeededOrFailed()
               inputs:
@@ -130,6 +136,7 @@ stages:
                 testResultsFiles: |
                   output/test-results/sql.xml
                   output/test-results/browser.xml
+                  output/test-results/coordination-browser.xml
                 failTaskOnFailedTests: true
                 failTaskOnMissingResultsFile: true
                 publishRunAttachments: false

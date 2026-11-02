@@ -2,7 +2,7 @@
 
 Visitor registration, temporary employee identity, hosted account access, reception printing/returns and guard verification/movement, with scoped administration for Noida, Bengaluru, Chennai and Pune.
 
-Current source documentation: **28 October 2026 · migrations 001–121**. Start with the [system handbook](docs/system/README.md) and [release evidence](docs/88_Documentation_And_Release_28_October_2026.md). Earlier dated exports/reports remain historical; local checks are not production certification.
+Current source documentation: **2 November 2026 · migrations 001–132**. Start with the [system handbook](docs/system/README.md) and [release evidence](docs/88_Documentation_And_Release_28_October_2026.md). Earlier dated exports/reports remain historical; local checks are not production certification.
 
 ## Current workflows
 
@@ -16,7 +16,7 @@ Visitor stays start today and may extend through a selected final day within pol
 
 ## Local setup
 
-The six main frontend pages now render with React + TypeScript. Existing CSS and workflows are preserved; all six pages now use native React state, components and event handlers. New UI work belongs in `src/frontend`. Print/offline documents remain HTML. See [migration and development policy](docs/92_React_Frontend_Migration_28_October_2026.md).
+The seven main frontend pages now render with React + TypeScript. Existing CSS and workflows are preserved; all seven pages now use native React state, components and event handlers. New UI work belongs in `src/frontend`. Print/offline documents remain HTML. See [migration and development policy](docs/92_React_Frontend_Migration_28_October_2026.md).
 
 Use the supported Node range and locked dependencies in package.json, PowerShell 7, local SQL Server and existing Windows private-storage setup:
 
@@ -70,3 +70,11 @@ Run SQL fault/locking suites sequentially and separately from browser workloads 
 Account terminology and the new approved-host policy are described in [the 28 October update](docs/89_Accounts_And_Approved_Hosts_28_October_2026.md). Configure approved hosts per account-office before using hosted registration.
 
 Pentest preparation and subsequent fixes: [security audit](docs/93_Pre_Pentest_Security_Audit_28_October_2026.md) and [risk hardening with verification limits](docs/94_Pentest_Risk_Hardening_28_October_2026.md).
+
+Visit Coordination now has a native React workspace with scoped SQL persistence. See [implementation and remaining integrations](docs/98_Visit_Coordination_Persistence_01_November_2026.md). Planning email dispatch is implemented; corporate delivery acceptance and automatic handoff to the existing registration/card flow remain pending. See [notification scope and evidence](docs/102_Coordination_Email_Notifications_02_November_2026.md).
+
+Visit planning separates [source-office hosting from destination approval](docs/99_Location_Sponsored_Cross_Account_Invitations_01_November_2026.md). An approved host can request other accounts/projects at the same office; selecting them never grants access.
+
+The [coordination-only scope](docs/101_Coordination_Only_Scope_02_November_2026.md) preserves existing QR card allocation, reception and guard workflows. The separate linking/gate extension from report 100 was withdrawn.
+
+Architecture and maintenance: [dependency/SOLID rules](docs/ARCHITECTURE.md) and [2 November code audit](docs/103_OOP_SOLID_Architecture_Audit_02_November_2026.md). Run `npm run check:architecture` with typecheck, lint and tests; CI enforces the same source boundaries.

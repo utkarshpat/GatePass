@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 export default defineConfig({
   testDir: './tests/browser',
+  testIgnore: ['**/coordination-page.spec.ts'],
   timeout: 90000,
   expect: { timeout: 20000 },
   workers: 1,

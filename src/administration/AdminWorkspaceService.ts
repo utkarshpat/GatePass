@@ -1,6 +1,6 @@
 import {AccountHostService} from './AccountHostService.ts';
-import type {SqlParameter} from '../transport/SqlProcedureClient.ts';
-import {receptionIdentity} from '../reception/ReceptionService.ts';
+import type {SqlParameter} from '../contracts/Sql.ts';
+import {sessionIdentity} from '../security/SessionProof.ts';
 import {isUuid} from '../visits/SqlVisitReadRepository.ts';
 import {StaffAdministrationError} from './StaffAdministrationService.ts';
 type Session={sessionToken:string;csrfToken:string};
@@ -20,7 +20,7 @@ export class AdminWorkspaceService{
   valid(big(r.projectId)&&big(r.projectLocationId)&&r.locationId===d.locationId,true);
   return{projectId:r.projectId,projectLocationId:r.projectLocationId,locationId:r.locationId};
  }
- async #call(session:Session,name:string,p:Record<string,SqlParameter>={}){try{const r=JSON.parse(await this.#client.callProcedure(name,{...receptionIdentity(session),...p}));valid(r&&typeof r==='object'&&!Array.isArray(r),true);return r;}catch(e){if(e instanceof StaffAdministrationError)throw e;const n=Number((e as any)?.number);throw new StaffAdministrationError(n===52001?'NOT_AUTHORIZED':n===52002?'INVALID_INPUT':n===52003?'CONFLICT':'UNAVAILABLE');}}
+ async #call(session:Session,name:string,p:Record<string,SqlParameter>={}){try{const r=JSON.parse(await this.#client.callProcedure(name,{...sessionIdentity(session),...p}));valid(r&&typeof r==='object'&&!Array.isArray(r),true);return r;}catch(e){if(e instanceof StaffAdministrationError)throw e;const n=Number((e as any)?.number);throw new StaffAdministrationError(n===52001?'NOT_AUTHORIZED':n===52002?'INVALID_INPUT':n===52003?'CONFLICT':'UNAVAILABLE');}}
  async read(session:Session,action:string,d:Record<string,unknown>){
   if(action==='context'){valid(Object.keys(d).length===0);const r=await this.#call(session,'gp.GetAdminWorkspaceContext');valid(text(r.displayName,200)&&Array.isArray(r.locations)&&r.locations.length>0&&r.locations.length<=50,true);const locations=r.locations.map((l:any)=>{valid(Number.isInteger(l.locationId)&&l.locationId>0&&text(l.locationName,150)&&text(l.locationCode,16),true);return{locationId:l.locationId,locationName:l.locationName,locationCode:l.locationCode,canManageCommonAreas:l.canManageCommonAreas===true,canCreateProject:l.canCreateProject===true};});return{displayName:r.displayName,locations};}
   valid(['projects','leads','candidates'].includes(action));valid(Object.keys(d).every(k=>(action==='projects'?['locationId','cursor','search']:action==='leads'?['projectLocationId','cursor']:['projectLocationId','search']).includes(k)));
