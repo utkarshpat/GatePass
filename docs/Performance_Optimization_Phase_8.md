@@ -1,3 +1,5 @@
+> Documentation status: historical performance/design evidence. Review the [current handbook](system/README.md) and its evidence limits before applying earlier counts or tuning conclusions.
+
 # Cost-aware live workspace invalidations
 
 Implemented on **24 October 2026**, following [phase 7](Performance_Optimization_Phase_7.md). The objective is to improve entry visibility while reducing repeated full-list work, using the existing local Node/SQL host. There is no new paid service, broker, dependency, database table/migration, SQL trigger or notification worker.

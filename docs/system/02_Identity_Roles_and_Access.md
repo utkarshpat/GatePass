@@ -1,58 +1,41 @@
 # 02. Identity, roles and access
 
-> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
-Local staff onboarding requires both permitted role delegation and staff credential-management authority. Account administrators cannot create local password accounts; internal account leads remain directory employees. New local accounts use a one-use, 15-minute setup link and the existing 15–128 character password policy. Reset revokes prior credentials/sessions/setup links. Admin audit metadata displays safe actor/target/role/scope/reason fields and excludes password/setup-token material. See [the onboarding contract](../54_Local_Staff_Onboarding_And_Audit.md).
+## Identity and scope
 
-## Identity model
-`gp.Users` is the application identity. Internal employees resolve through `gp.Employees` and trusted SSO provenance. External security/reception/admin staff use `gp.StaffProfiles` and individual local credentials without requiring employee numbers/company mailboxes. SQL resolves authentication provider; an email-shaped username is not proof of SSO.
+`gp.Users` is the application identity. Internal employees resolve through trusted directory records and intended corporate SSO provenance. External security/reception/admin staff can use individual local credentials without an employee number or corporate mailbox. SQL selects the authentication provider; an email-shaped username does not prove SSO. Directory data alone is not authentication.
 
-Internal account leads use employee SSO. Internal admins can use SSO; eligible external admins use local credentials with their scoped roles. Employee identities cannot acquire staff-password sessions to bypass corporate authentication. Directory data is not authentication.
+Corporate Entra SSO/MFA remains production integration work; local employee sign-in is explicitly dummy. Eligible internal admins/Hosts use the employee provider; external admins use governed local credentials. An employee cannot use a staff password as a corporate-authentication bypass.
 
-Staff enter at `/`; authorized login resolves their workspace. Public intake opens through office QR. HttpOnly sessions, CSRF and current SQL checks remain necessary even if self-service omits Sign out. A simpler UI does not imply stateless trust.
+Staff sign-in resolves an authorized landing section directly. Coordination-only users get three folder sidebar links; Admin users retain their original sidebar with coordination nested below it. Server session, CSRF, current grants and per-operation checks remain authoritative.
 
-## Agreed Google station model — pending implementation
-Each organization-managed Android guard tablet/station will use an IT-configured Google account; guards will not receive its password. Admin will map the approved account to location, gate/station and duty scope. Staff turnover does not change the station account. Audit will identify the station account, not automatically the individual guard. Reception retains local ID/password. This is an agreed design: Google OAuth linking/sign-in is not implemented, and strict physical-device restriction requires additional managed-device controls.
-
-## Delegation matrix
-| Actor | Authority with explicit capability | Restriction |
+| Actor | Authority, when explicitly granted | Limit |
 |---|---|---|
-| Platform Admin / PLATFORM | Supported roles across application, including India/platform administration | Cannot change own role through delegation |
-| India Admin / INDIA | Location admins, account heads, guard/reception within India | Cannot create Platform or peer India Admin |
-| Location Admin / LOCATION | Guard/reception locally; heads at local account-location | Cannot grant account-wide authority from a local grant |
-| Account Admin / PROJECT | Internal co-leads in that account/subsets | No broader office authority |
-| Account Admin / PROJECT_LOCATION | Internal co-leads at that exact pair | No other account/location |
-| Reception | Scoped search, card preview and print handoff | Printing is not host approval or account entry |
-| Guard | Verify/perform allowed movements for assigned duties | No administrative authority from role label |
-| Host | Decide own assigned individual requests | Current exact account-office eligibility/freshness required |
-| Employee | Eligible own temporary ID and hosted access request | Not all-office membership |
+| Platform Admin / PLATFORM | Supported application-wide administration | No self-delegation bypass |
+| India Admin / INDIA | Delegable location/account/staff grants in India | Cannot create Platform or peer India authority |
+| Location Admin / LOCATION | Local account heads and eligible staff/duties | Cannot create account-wide authority from a location-only grant |
+| Account Admin / PROJECT or PROJECT_LOCATION | Delegable co-leads and approved-host/configuration changes within the account or exact account-office | No unrelated account/location authority or local-password provisioning |
+| Visit owner | Creates and coordinates an eligible invitation, owns draft/revisions | Cannot independently approve their own request or grant destination access |
+| Host | Decides an assigned ordinary request or destination project approval | Current eligible internal identity, exact scope, snapshot and deadline required |
+| Reception | Granted-office registration/lookup/print/return controls | Printing is not approval or entry |
+| Guard | Assigned-duty verification and allowed explicit movement | No admin power from a label or QR scan |
+| Coordinator / participant / FYI recipient | Only assigned tasks, permitted discussions or notification | Notification does not grant workspace, decision or entry rights |
 
-SQL checks active identity/session, role, capability, scope, directory freshness, allocation, pass state and operation. UI dropdown values never authorize. Guard/Reception are separate duties and can coexist with independent grants. Guard/Admin combinations are rejected by role management. Lead targets must be active internal employees. Grant/revoke retains reasons, history and stable retry keys; replay rechecks current authority.
+One person can be an approved Host and become Visit owner when creating an invitation. In coordination, legacy `hostId`/`hostName` refer to that creator. The optional preparation `visitOwnerId` is only an additional FYI contact; it does not transfer ownership. See the [terminology contract](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md).
 
-## Credentials and sessions
-Argon2id verification uses independently salted hashes. Generic staff credentials share the existing credential/version/lockout store rather than duplicating password data. A dedicated auth SQL role verifies credentials. Disable/reset invalidates applicable sessions. `STAFF_CREDENTIALS_MANAGE` is separate; account leads cannot reset staff passwords, SSO passwords are not changed by GatePass, and administrative self-reset is denied.
+## Host and group management
 
-## Development accounts only
-| Login pattern | Local purpose |
-|---|---|
-| employee1@example.com to employee24@example.com | Synthetic employee/dummy SSO |
-| gaurd1@example.com to gaurd12@example.com | Individual security; requested fixture spelling |
-| reception1@example.com to reception4@example.com | Noida, Bengaluru, Chennai, Pune respectively |
-| platformadmin1@example.com | Platform fixture |
-| admin1@example.com | India fixture |
-| admin2@example.com to admin5@example.com | Noida, Bengaluru, Chennai, Pune fixtures |
+Account-office Host lists are explicit; directory membership alone is insufficient. Project hosts must meet the approved account-office eligibility rules. Office/India/platform admins manage office groups within scope; account admins manage only groups for their authorized projects. Visit owners inspect and select groups but cannot amend them. Raw email/distribution-list members are notification-only; internal assigned members may approve.
 
-The user-approved current manual-test password is `Sopra@123` for active synthetic accounts. It is not production policy. Retired admin6-admin11 are not re-enabled; account leads use employee identities. Protected inventories remain under the user's `.gatepass/development-logins`, outside the repository. Never copy inventories, hashes, tokens or secrets into documentation.
+Role delegation, credential management and guard allocation are separate capabilities. Guard/Reception can coexist with independent grants; Guard/Admin combinations are rejected by role management. Current role/scope checks also apply to retries and private reads.
 
-Sources: docs/database/29_Staff_Identity_and_Delegation.md; migrations 027-035; src/security; src/administration.
+## Credentials
 
-## Account host policy update
+Local credentials use salted Argon2id hashes, credential versions, lockout and session fencing. Permitted onboarding issues a one-use, 15-minute setup link; reset revokes applicable credentials/sessions/links. The production password policy is 15–128 characters. The explicitly approved short synthetic test password is development-only and is not a production credential policy.
 
-See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+Example local IDs include `admin1@example.com`, `employee1@example.com`, `reception1@example.com` and the intentionally spelled `gaurd1@example.com`. Latest acceptance used admin1 as Platform Admin. Older seed reports map aliases differently: inspect current authenticated Admin scope rather than inferring authority from an ID number. Startup must not reset accounts/grants. Private credential inventories and hashes are excluded from docs.
 
+## Google station identity — agreed, unimplemented
 
-## Source-office sponsorship and destination approval
-
-An active internal approved account-office host, or explicitly approved location-planning host, can request all active configured sub-project destinations in that eligible office. The inviter need not be a member or approved host of the destination account. The authenticated invitation catalogue is intentionally office-wide for these approved hosts; public visitor host lookup remains unchanged. Each destination's assigned internal authority and the office baseline still decide independently. Selection and READY planning status do not issue a pass or grant entry. Removing every current source grant blocks new requests/readiness; destination management and private threads retain their scoped checks. See [current rule and evidence](../99_Location_Sponsored_Cross_Account_Invitations_01_November_2026.md).
-
-Coordination is an additive host/facilities pre-planning workspace. It contains invitations, project approvals, arrangements, VIP/FYI recipients, discussion and activity. QR card allocation, reception, guard scanning, entry/exit and returned badges use their existing workflows. No manual invitation linking or separate planned gate is exposed. See [coordination-only scope correction](../101_Coordination_Only_Scope_02_November_2026.md).
+IT-owned Android station/tablet accounts will map to location and duty scope; rotating guards will not receive the Google password. Reception retains local ID/password. Audit identifies the station, not automatically the person on shift. Google OAuth and account mapping are not implemented. Strict physical-device enforcement requires an additional approved managed-device control; a signed-in Google account alone is insufficient.

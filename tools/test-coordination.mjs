@@ -52,6 +52,7 @@ try {
     "test",
     "--config",
     "tests/coordination-browser.config.ts",
+    ...process.argv.slice(2),
   ]);
 } catch (error) {
   console.error(

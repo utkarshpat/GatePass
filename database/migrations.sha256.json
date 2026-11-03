@@ -130,5 +130,9 @@
   "129_planned_pass_binding_and_sub_project_movement.sql": "46d6fdc04da50de0a4b270db7e9ec2c98f18988cfa80831f2df0faeae5905db2",
   "130_planned_pass_cancellation_lifecycle.sql": "9a4ddfd448af2cc42a3ae029b5ba08f3889cc2ec150f385d82beb3862a92ee82",
   "131_coordination_only_restore_operational_flow.sql": "251b3a48bd31c0f8e9371d75eefbc9ec992965440624d4a0ce36e105bc90c17c",
-  "132_coordination_notification_dispatch.sql": "b45aa02ba8e0ee36183c4f59edf603d66a8787043f5eb85b639dd2f69a8ca369"
+  "132_coordination_notification_dispatch.sql": "b45aa02ba8e0ee36183c4f59edf603d66a8787043f5eb85b639dd2f69a8ca369",
+  "133_visit_preparation_and_additional_people.sql": "04e8033fcd6c27b328c165ae54f95f14279a5c93f3661b4581627d039ab949fc",
+  "134_scoped_planning_routing_and_preparation_reads.sql": "ab18ce82989f99f8f6689220ff4f6e37cc94cdc489c313163fbadd642aac7bb6",
+  "135_visit_routing_groups.sql": "f0feccab80a8accf30b7b7360227e3df62a3c9e0a01f000f670ebf1c0789374c",
+  "136_visit_group_catalogue_and_notifications.sql": "3457d1ce16a80bbf119ec7e4f6404225b5e81e83e028a80ebfa46fc95f5feba2"
 }

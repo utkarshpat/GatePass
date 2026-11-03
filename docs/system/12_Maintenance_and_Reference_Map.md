@@ -1,66 +1,48 @@
 # 12. Maintenance and reference map
 
-> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
-## Precedence
-This handbook is the maintained local source baseline; the current revision date appears above. Earlier numbered documents and exported packages are historical increments. Resolve conflict using latest approved requirements, executable source/migrations and applicable current evidence; update the handbook when behavior changes. Historical reports are not current environment attestations.
+## Documentation authority
 
-The package contains current chapters, source-derived inventories and existing Markdown references. History is retained for traceability instead of being rewritten as newly verified. Source-Snapshot.json records base commit and working-tree hashes; it is not a signed release or live database catalog.
+This handbook is the maintained narrative source baseline dated 3 November 2026. Approved user requirements and executable source/immutable migrations determine behavior; documentation must be corrected when they differ. Source review, dated local tests and organizational acceptance are separate kinds of evidence.
+
+The [full documentation index](../DOCUMENTATION_INDEX.md) classifies every Markdown guide. Dated numbered reports, database phase notes, previous exports and screenshots remain historical implementation/evidence records. They are not silently rewritten into current test or deployment certificates. Read the current handbook and latest glossary before following older examples.
+
+The report-100 planned-pass linking/gate extension is withdrawn. Old Host-for-creator terminology is superseded: Visit owner creates an invitation; destination account/project reviewers are Hosts. Ordinary pass Host labels retain their existing meaning.
 
 ## Source map
-| Topic | Read first |
+
+| Topic | Primary maintained/reference entry |
 |---|---|
-| Current frontend policy and verification | docs/92_React_Frontend_Migration_28_October_2026.md |
-| Previous account/host publication | docs/91_Shared_Account_Host_Release_28_October_2026.md |
-| Local staff onboarding/audit | docs/54_Local_Staff_Onboarding_And_Audit.md |
-| Reception all-date lookup/return correction | docs/53_Reception_Lookup_And_Return_Correction.md |
-| Admin visit register | docs/52_Admin_Visit_Register.md |
-| Visitor company/devices/camera | docs/51_Visitor_Company_Devices_And_Camera.md |
-| Original domain/ER/dictionary | docs/database/00_READ_ME_FIRST.md, 01_Domain_and_Design_Decisions.md, 03_Data_Dictionary.md |
-| Identity/delegation | docs/database/29_Staff_Identity_and_Delegation.md |
-| Office policy | docs/33_Employee_Office_Authorization.md |
-| Duties/account presence | docs/34_Guard_Duties_and_Project_Presence.md |
-| Email/status | docs/35_Email_Driven_Request_Workflow.md |
-| Native Outlook | docs/36_Outlook_Direct_Approvals.md |
-| Print/reception audit | docs/37_Reception_Audit.md |
-| Private storage | docs/database/22_Private_Photos_and_QR_Key_Storage.md |
-| CI/cost controls | azure-pipelines.yml; tools/ci; docs/31_CI_Checks_and_Limits.md |
-| UI | src/frontend; docs/92_React_Frontend_Migration_28_October_2026.md; docs/13_Product_UX_Standards.md; docs/14_Global_Design_System.md |
-
-Paths are repository-relative. Package retains the Markdown reference tree; executable application code is not duplicated into the shareable ZIP. External specifications linked in historical docs are references, not freshly revalidated vendor guidance.
-
-## Maintainer checklist
-For behavior changes update workflow, route/RPC, scope, date/state, retries, migrations and acceptance evidence. New roles/providers require identity matrix/composition updates; storage changes require recovery/retention updates. Mark samples as development-only. Never copy live personal data/secrets into examples.
-
-Regenerate inventories from reviewed source while preserving source-declaration versus live-catalog distinction. Rebuild PDF/HTML after Markdown edits and inspect long tables, code and page breaks visually. Do not claim fresh tests unless actually run.
+| Workflows and scope | [Chapter 01](01_Product_and_Workflows.md) |
+| Roles, credentials and planned station identity | [Chapter 02](02_Identity_Roles_and_Access.md) |
+| Dependency/OOP/SOLID rules | [Architecture rules](../ARCHITECTURE.md) and [chapter 03](03_Architecture_and_Boundaries.md) |
+| SQL/state and legacy identifiers | [Chapter 04](04_Data_State_and_Transactions.md) and [generated catalogue](REFERENCE_SQL_Catalog.md) |
+| HTTP contracts | [Chapter 05](05_HTTP_and_API_Reference.md), request validators and generated route inventory |
+| Admin setup/sidebar/invitation | [Chapter 06](06_UI_PWA_and_User_Guide.md), [layout contract](../108_Account_Setup_and_Coordination_Navigation_02_November_2026.md) |
+| Runtime .env | [Configuration guide](../86_Runtime_Environment_Configuration.md), `.env.example`, chapter 07 |
+| Mail/provider boundaries | [Chapter 08](08_Email_and_Outlook.md) |
+| Deployment/retention/recovery | [Chapter 09](09_Deployment_Operations_and_Recovery.md) |
+| Actual scoped test evidence | [Chapter 10](10_Testing_CI_and_Evidence.md) and dated reports |
+| Completion and organization dependencies | [Chapter 11](11_Readiness_Gaps_and_Roadmap.md), [organization inputs](../87_Organization_Production_Requirements.md) |
+| Visit owner/Host and legacy wire keys | [Terminology contract](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md) |
 
 ## Glossary
-| Term | Meaning |
-|---|---|
-| Office | Server-bound location, not a user-chosen entitlement |
-| Account-location | Exact authorization pair |
-| Primary office | Trusted directory field, not complete entitlement set |
-| Digital ID | Same-day employee identity credential |
-| Hosted visit | Individually approved temporary account-office permission |
-| Duty | Guard PROJECT or COMMON allocation |
-| Common area | Office verification without movement |
-| Presence | Account occupancy, distinct from decision/pass |
-| Capability | Explicit role permission, or narrow signed bearer authority depending on context |
-| Snapshot | Immutable submitted approval data |
-| Idempotency key | Stable identity of a logical retryable operation |
-| Outbox/lease/fence | Durable notice and bounded worker ownership |
-| DISPATCHED | Server print handoff, not physical output |
-| Provider accepted | Graph 202, not inbox delivery |
-| Local adapter | Development composition, not corporate SSO |
 
-## Current change map
-- Individual visitor intake/host privacy/card/multi-day queues: report 85; migrations 116–118.
-- Inclusive pass expiry labels: `ValidityDisplay.ts`, `validity-display.js`; data/authorization timestamps unchanged.
-- Runtime `.env`: report 86; `Environment.ts`, `.env.example`, `check:config`.
-- Organization inputs and planned station identity: report 87.
-- Current pre-push checks and documentation snapshot: report 88, regenerated source/route/SQL references.
-- Reports 83–84 preserve the prior performance/group verification findings. Dated PDFs, screenshots and prior validation reports remain historical artifacts.
+Office is server-bound context, not entitlement. Account-office is the exact operational authorization pair. Projects are subparts of accounts; coordination approvals are per selected project. Common areas use verification without account movement. Guard account groups bundle duties; approval/notification groups route planning work/mail.
 
-## Account host policy update
+Visit owner is the authenticated invitation creator. Host is the assigned account/project permission reviewer. Coordinator owns support tasks; an additional FYI contact is not a second Visit owner. Snapshot/revision describes immutable submitted data; an idempotency key identifies one logical retryable operation. Outbox/lease/fence controls durable delivery ownership. DISPATCHED is server print handoff; Graph acceptance is not inbox delivery. Local adapters are not corporate integration.
 
-See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+## Maintainer procedure
+
+Update applicable workflow, identity/scope, API/RPC, state/retry, UI/mail and deployment/acceptance chapters with behavior changes. Keep release/evidence claims dated. Never edit an applied migration; use reviewed forward scripts and integrity manifests. Preserve current privacy/scope semantics when refactoring.
+
+Regenerate non-secret source inventories with:
+
+```powershell
+python tools/update-documentation-references.py --date 2026-11-03
+```
+
+Use the actual review date on future runs. This reads reviewed source names/hashes, not SQL, .env, token caches or mail. Source-Snapshot records the base commit plus working-tree hashes; it is not a signed release or live catalogue.
+
+Validate Markdown local links, encoding and whitespace after editing. Regenerate and visually verify any Word/PDF/HTML export **only when producing that export**; old exports remain historical until rebuilt. Do not silently present an old file as the current handbook. Never package real .env, passwords/hashes, keys, private photos, sessions or authenticated artifacts with documentation.

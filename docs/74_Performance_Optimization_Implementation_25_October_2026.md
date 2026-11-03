@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Performance optimization implementation and verification — 25 October 2026
 
 Second implementation pass: [report 76](76_Remaining_Performance_Candidates_Implementation_25_October_2026.md), including schema 107, Reception/media/export/catalogue changes and the four-versus-six worker comparison. Neeche first-pass record preserved hai.

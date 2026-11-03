@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # External source audit validation aur acceptance — 26 October 2026
 
 **Decision: teen implemented findings valid; targeted fixes accepted with refinements. Final verification PASS.** Supplied report ka limited source-audit scope accept hai; isse full application ya production certification nahi maana gaya. Input documents ki suggested commands ko task authorization nahi maana; reviewed changes current working tree mein merge hue, existing work reset/replace nahi hua. Commit/push nahi kiya gaya.

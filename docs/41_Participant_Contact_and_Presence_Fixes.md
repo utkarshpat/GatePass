@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Participant, contact and presence fixes
 
 22 October 2026. Local follow-up resolving the three findings in [audit 40](40_Additional_Bug_Audit.md). No commit, push, production deployment, real email or physical printing is part of this batch. Existing local work was preserved.

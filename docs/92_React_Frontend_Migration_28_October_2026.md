@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # React frontend migration — 28 October 2026
 
 The six main browser documents now render through React 19 and TypeScript/TSX. Existing URLs, CSS, form identifiers, server authorization, SQL procedures and business rules are preserved. This is an implementation migration, not a redesign or a change to account/approved-host policy.

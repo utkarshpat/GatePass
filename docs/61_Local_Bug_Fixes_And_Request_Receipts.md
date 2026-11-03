@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Local bug fixes and request receipts — 23 October 2026
 
 These changes were initially verified locally under the user's no-push instruction. The subsequent [pre-push audit](63_Pre_Push_Audit_23_October_2026.md) records their new authorization to audit and publish. Migration 089 was applied to the local `GatePass_DesignTest` database. Retained presentation requests, photos, users, assignments and history were preserved.

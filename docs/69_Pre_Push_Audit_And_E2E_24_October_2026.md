@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Pre-push audit and regression verification — 24 October 2026
 
 This reviews the complete pending change set after revision 97fea7c: range summaries, paged guard/reception queues, private thumbnails, deferred QR loading, Action centre categories/notifications and gesture image previews. The user explicitly requested fixes, E2E coverage and a final push. Earlier no-push notes describe previous task boundaries.

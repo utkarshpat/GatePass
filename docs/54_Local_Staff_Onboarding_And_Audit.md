@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Local guard/staff onboarding and audit
 
 Implemented in the local application on 23 October 2026. Current presentation verification and release status are recorded in [the 23 October rehearsal](55_Presentation_Rehearsal_23_October_2026.md).

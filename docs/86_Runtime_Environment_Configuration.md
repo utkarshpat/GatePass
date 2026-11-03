@@ -1,6 +1,8 @@
 # Runtime configuration through .env
 
-The API, production email worker and local Node launcher load the repository-root `.env` before initializing services. No new dotenv dependency is needed: the existing Node runtime parses the file. `.env.example` is the tracked, empty production template; `.env` is ignored by Git. The current local `.env` retains development mode and contains no invented organization credentials.
+> Maintained guide reviewed 3 November 2026. See the [current system handbook](system/README.md) for completion and acceptance status.
+
+The API, production email worker and local Node launcher load the repository-root `.env` before initializing services. No new dotenv dependency is needed: the existing Node runtime parses the file. `.env.example` is the tracked, empty production template; `.env` is ignored by Git. Actual private `.env` values are not read or published by a documentation review.
 
 ## Production VM
 

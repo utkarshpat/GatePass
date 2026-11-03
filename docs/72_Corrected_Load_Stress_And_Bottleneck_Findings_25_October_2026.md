@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Corrected load/stress run and bottleneck findings — 25 October 2026
 
 Final measured run: **FAIL**. 1200 benchmark requests mein **0 unexpected HTTP/transport failures**, owned-server SQL 1205 observations **0**. **2 p95 guard breaches** hain. Performance guard FAIL hai. Raw report ki exact status aur phase results authoritative hain.

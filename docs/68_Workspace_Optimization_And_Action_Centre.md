@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Workspace optimization, Action centre and full size images
 
 Local implementation: 24 October 2026. This continues [report 67](67_Final_Browser_Verification_And_Presentation.md). Shift handover was removed after the user clarified that staff hand over organization-provided devices. No handover table, permission transfer or acknowledgement workflow was installed.

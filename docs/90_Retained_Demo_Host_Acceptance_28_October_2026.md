@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Retained demo hosts — 28 October 2026
 
 The user requested adding example hosts and testing them. Three approvals were added through the running application's authenticated Noida administrator API, not direct table writes, and remain configured for manual testing.

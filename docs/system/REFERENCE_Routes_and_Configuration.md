@@ -1,6 +1,6 @@
 # Routes and runtime configuration
 
-Updated 2 November 2026. Literal source inventory; dynamic/regex routes require checking their handlers. Not an OpenAPI schema. Names only: no live environment file or secret value is read.
+Updated 3 November 2026. Literal source inventory; dynamic/regex routes require checking their handlers. Not an OpenAPI schema. Names only: no live environment file or secret value is read.
 
 ## Runtime setup
 
@@ -12,8 +12,8 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 |---|---|---|
 | `/admin` | [src/app/staff-entry.js](../../src/app/staff-entry.js) | 7 |
 | `/admin` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 29 |
-| `/admin` | [src/frontend/pages/AdminPage.tsx](../../src/frontend/pages/AdminPage.tsx) | 67 |
-| `/admin` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 6 |
+| `/admin` | [src/frontend/pages/AdminPage.tsx](../../src/frontend/pages/AdminPage.tsx) | 102 |
+| `/admin` | [src/frontend/staffAccess.ts](../../src/frontend/staffAccess.ts) | 2 |
 | `/admin` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
 | `/admin` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
 | `/admin` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 159 |
@@ -23,7 +23,7 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/api/` | [src/app/admin.js](../../src/app/admin.js) | 41 |
 | `/api/` | [src/app/guard.js](../../src/app/guard.js) | 13 |
 | `/api/` | [src/app/service-worker.js](../../src/app/service-worker.js) | 20 |
-| `/api/` | [src/frontend/admin/model.ts](../../src/frontend/admin/model.ts) | 159 |
+| `/api/` | [src/frontend/admin/model.ts](../../src/frontend/admin/model.ts) | 161 |
 | `/api/` | [src/frontend/guard/model.ts](../../src/frontend/guard/model.ts) | 176 |
 | `/api/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 78 |
 | `/api/admin/` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 73 |
@@ -173,15 +173,16 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/api/registration/submit` | [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) | 58 |
 | `/api/registration/submit` | [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) | 61 |
 | `/api/staff/` | [src/app/staff-entry.js](../../src/app/staff-entry.js) | 5 |
-| `/api/staff/` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 55 |
+| `/api/staff/` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 52 |
 | `/api/staff/login` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 10 |
 | `/api/staff/login` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 62 |
 | `/api/staff/login` | [tools/load-stress/Runner.ts](../../tools/load-stress/Runner.ts) | 53 |
 | `/api/staff/logout` | [src/app/reception.js](../../src/app/reception.js) | 206 |
 | `/api/staff/logout` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 10 |
-| `/api/staff/logout` | [src/frontend/pages/CoordinationPage.tsx](../../src/frontend/pages/CoordinationPage.tsx) | 458 |
+| `/api/staff/logout` | [src/frontend/pages/CoordinationPage.tsx](../../src/frontend/pages/CoordinationPage.tsx) | 515 |
 | `/api/staff/logout` | [src/frontend/reception/model.ts](../../src/frontend/reception/model.ts) | 1287 |
 | `/api/staff/me` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 10 |
+| `/api/staff/me` | [src/frontend/shared/StaffNavigation.tsx](../../src/frontend/shared/StaffNavigation.tsx) | 119 |
 | `/api/staff/setup` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 10 |
 | `/api/staff/setup` | [src/transport/RequestAdmission.ts](../../src/transport/RequestAdmission.ts) | 62 |
 | `/api/visits/cancel` | [src/transport/Composition.ts](../../src/transport/Composition.ts) | 114 |
@@ -198,18 +199,18 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/approval/` | [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) | 66 |
 | `/approval/` | [tools/run-presentation-demo.ts](../../tools/run-presentation-demo.ts) | 91 |
 | `/coordination` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 29 |
-| `/coordination` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 8 |
-| `/coordination` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 90 |
+| `/coordination` | [src/frontend/staffAccess.ts](../../src/frontend/staffAccess.ts) | 5 |
+| `/coordination` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 86 |
 | `/coordination` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
 | `/coordination` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
 | `/coordination` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 159 |
-| `/coordination` | [tools/test-coordination-server.ts](../../tools/test-coordination-server.ts) | 86 |
+| `/coordination` | [tools/test-coordination-server.ts](../../tools/test-coordination-server.ts) | 88 |
 | `/coordination/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
 | `/coordination/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
 | `/coordination/` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 159 |
 | `/guard` | [src/app/staff-entry.js](../../src/app/staff-entry.js) | 7 |
 | `/guard` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 29 |
-| `/guard` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 5 |
+| `/guard` | [src/frontend/staffAccess.ts](../../src/frontend/staffAccess.ts) | 4 |
 | `/guard` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
 | `/guard` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
 | `/guard` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 158 |
@@ -237,7 +238,7 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/pwa/offline.html` | [src/app/service-worker.js](../../src/app/service-worker.js) | 3 |
 | `/reception` | [src/app/staff-entry.js](../../src/app/staff-entry.js) | 7 |
 | `/reception` | [src/development/StaffEntryRoutes.ts](../../src/development/StaffEntryRoutes.ts) | 29 |
-| `/reception` | [src/frontend/staffModel.ts](../../src/frontend/staffModel.ts) | 7 |
+| `/reception` | [src/frontend/staffAccess.ts](../../src/frontend/staffAccess.ts) | 3 |
 | `/reception` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 154 |
 | `/reception` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 155 |
 | `/reception` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 158 |
@@ -250,7 +251,7 @@ Root `.env` is private and ignored; `.env.example` is the empty tracked template
 | `/reception/print` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 157 |
 | `/reception/print` | [tools/start-dummy-sso.ts](../../tools/start-dummy-sso.ts) | 159 |
 | `/reception/register/` | [src/app/reception.js](../../src/app/reception.js) | 239 |
-| `/reception/register/` | [src/frontend/pages/ReceptionPage.tsx](../../src/frontend/pages/ReceptionPage.tsx) | 1088 |
+| `/reception/register/` | [src/frontend/pages/ReceptionPage.tsx](../../src/frontend/pages/ReceptionPage.tsx) | 1090 |
 | `/request/` | [src/email/NotificationEmailWorker.ts](../../src/email/NotificationEmailWorker.ts) | 30 |
 | `/request/` | [src/email/NotificationEmailWorker.ts](../../src/email/NotificationEmailWorker.ts) | 33 |
 | `/request/` | [tools/check-presentation-links.ts](../../tools/check-presentation-links.ts) | 27 |

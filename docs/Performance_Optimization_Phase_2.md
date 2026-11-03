@@ -1,3 +1,5 @@
+> Documentation status: historical performance/design evidence. Review the [current handbook](system/README.md) and its evidence limits before applying earlier counts or tuning conclusions.
+
 # Digital-card performance: development SSO worker reuse
 
 Implemented locally on 23 October 2026, following [phase 1](Performance_Optimization_Phase_1.md). This batch targets the measured process-start overhead in the explicitly enabled dummy SSO adapter. Production SSO and its typed SQL driver are unchanged. No new dependency, paid service, database migration or index is required.

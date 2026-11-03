@@ -1,64 +1,44 @@
 # 01. Product and workflows
 
-> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
-The current visitor flow collects optional company and device types independently for each person. Reception-assisted intake uses the same form in an isolated staff-authorized frame. Final printed-pass return requires the holder to be outside and every declared device to be confirmed; a mistaken return can be corrected with a reason while retaining both audit records. Administration now includes local account onboarding, office/account rosters, a scoped visit register/Excel download and movement timelines. Today's presentation dataset is retained rather than cleaned after its rehearsal.
+## Application surfaces
 
-## Purpose and scope
-GatePass manages visitor requests, temporary employee identity, host-authorized account visits, online pass verification, account entry/exit and reception printing. The local application uses actual SQL and private media storage. Corporate authentication and directory integration remain development adapters. A working local application is not a completed production deployment.
+GatePass serves Self-service, Reception, Guard, Admin and the additive Visit coordination workspace. These are business surfaces, not a count of routes or React bundles. Seven primary page bundles include staff entry and email detail. The ordinary employee/pass/Host-review flows do not require a separate employee dashboard or Host inbox.
 
-Office contexts are Noida, Bengaluru, Chennai and Pune. The office QR opens `/office/<office-code>` and binds office context on the server. Users do not choose an office inside the form. The supplied Noida photograph is currently reused for every office by product decision.
+Offices are Noida, Bengaluru, Chennai and Pune. Public `/office/<code>` entry binds office context on the server. An office QR is not proof of an employee's entitlement.
 
-There are four interfaces: Self-service, Reception, Guard and Admin. Employee and Host remain identities and authorization actors, without separate dashboards, profile pages or approval inboxes. Email links lead to minimal status/approval pages.
+## Ordinary requests
 
-## Request types
-| Type | Who requests | Decision | Date and scope |
-|---|---|---|---|
-| DIGITAL_ID | Authenticated employee with forgotten/lost card | Auto-approved when currently eligible | Current India office day; office and memberships rechecked |
-| EMPLOYEE_PROJECT | Authenticated employee visiting another account/office | Assigned eligible host | Current day; exact requested account-location |
-| EXTERNAL | External visitor, one visitor per registration | Assigned host, independently per person | Starts today; visitor selects inclusive final day; host routing is private |
+| Request | Flow | Decision and scope |
+|---|---|---|
+| Temporary employee Digital ID | Employee signs in, reason, camera photo, review, current card | Auto-approved only when currently eligible; same office day, explicit entitlement and reuse checks |
+| Employee account access | Authenticated employee chooses an account-office, eligible Host and purpose | Independent Host approval for that exact pair; same-day request |
+| External visitor | One person's details, Valid until, office Host lookup, purpose, camera photo, review | Independent approval; starts today through the inclusive selected final day |
 
-Employee date input is rejected by the service, not merely hidden. Calendar calculations use Asia/Kolkata. Validity ends at the next local midnight as an exclusive boundary; all pass validity labels display the final included date at 23:59, without changing the stored expiry. External date bounds come from server options, not a client-invented booking limit.
+Company and device **types** are optional. No gallery upload, device make/model, ID-proof collection or signature requirement is implemented. Contractor/support-staff purposes are supported. Every visitor registers separately; grouped submissions and public account filters are rejected.
 
-## Employee flow
-1. Scan office QR and choose SSI Employee.
-2. Authenticate. Corporate SSO/MFA is intended; the current adapter uses an employee test email/password.
-3. Fetch identity, primary office, eligible offices and exact account-location memberships from trusted data.
-4. For temporary ID, select reason and capture a photo using the live camera. Review, submit, display the digital card and download PNG.
-5. For another account, open Add account access, select account, search eligible host by name/email and enter purpose. Host must match the exact requested account-office. This creates an independent approval request.
-6. Backend checks reuse an eligible same-day ID. Stale or unauthorized replay cannot bypass revoked entitlement.
+Public Host lookup searches the QR office by name/email without returning account/project assignments. SQL privately resolves an eligible route; its deterministic routing is not a public account selector. Employee account requests retain their authenticated selector.
 
-A Noida employee does not gain Bengaluru access because the same account operates there. Primary office is directory-supplied, not inferred from the QR/array order. Office membership is explicit. Hosted access does not create permanent directory membership.
+Submission can show/download an intake-authorized visitor card without email. A pending card stays pending. After the intake expires, applicable signed email links or authorized reception lookup are the retrieval paths; a visible reference number is never authorization.
 
-## Visitor flow
-1. Open office QR and choose Visitor Check-in.
-2. Enter name, country-aware mobile and optional email. Flags are local assets; installed phone-library validation does not call a public country API.
-3. Each visitor registers separately. Add/remove participant controls and multi-person photo selection are removed; API and SQL reject grouped submissions.
-4. Select Valid until, search/select a host in the QR office by name/email, and enter purpose. No public account catalogue/filter is returned. SQL privately resolves the host route; multiple eligible account routes use the lowest account-location key consistently.
-5. Capture and adjust the visitor photo using the camera, then review. Desktop places Valid until and Host on one row; mobile stacks them.
-6. Submit one independent request and display/download its digital card without requiring email. Pending cards do not bypass approval. The current intake authorizes the card; after intake expiry, supplied-email links or reception lookup remain the retrieval paths.
+Calendar-day pass labels show **23:59 on the final included date**. Authorization still uses the stored exclusive next-midnight boundary. Current queues retain still-valid multi-day visitors. A Noida employee does not gain Bengaluru access merely because the same account exists there.
 
-## Approval and status
-External/account requests queue host notices. Ordinary email links open authenticated detail; GET/mail scanners never approve. Explicit POST binds current host authorization, immutable snapshot and retry key. Native Outlook actions are a separate optional implementation, disabled pending organization onboarding.
+## Operational handling
 
-Temporary ID manager notices are informational. Internal holders reopen authenticated request links; external holders receive signed expiring individual fragment capabilities. Reference numbers alone cannot authorize reads. These existing walk-in flows do not require an employee/host dashboard. The new pre-planned Visit Coordination workspace is a separate workflow; it does not replace ordinary walk-in host approval.
+Reception performs scoped lookup, manual individual intake, card viewing/printing and final-return/correction. A return requires the holder to be outside every relevant account and declared devices to be confirmed. Return/correction retain both audit records. Guard verification is separate from explicit account entry/exit. Common-area verification creates no account movement or building-occupancy guarantee.
 
-## Explicit exclusions
-No floors/zones/checkpoint inventory, face recognition, lost-card replacement portal, mandatory Redis, offline entry decisions or proof of physical printer success in v1. Admin exposes overview, accounts/areas/groups, staff permissions, guard assignments, office QR, visit register/export, audit and the action centre. Production wiring and corporate provider acceptance remain incomplete.
+Ordinary Host approval/status links use the existing minimal authenticated/capability pages. GET and mail scanning do not approve. Temporary ID manager notices are informational. These flows are unchanged by coordination.
 
-Sources: docs/33_Employee_Office_Authorization.md; docs/34_Guard_Duties_and_Project_Presence.md; docs/35_Email_Driven_Request_Workflow.md; src/registration/RegistrationDates.ts; src/app/employee-portal.js.
+## Pre-planning and coordination
 
-## Account host policy update
+1. An eligible internal person creates an invitation and becomes its **Visit owner**. Existing approved-host eligibility controls who may initiate it.
+2. Choose one visitor, an eligible source office, dates, purpose and zero or more configured destination projects at that office. No projects means a location-only plan.
+3. Review each destination's Hosts/approval routing and people to notify. Add authorized internal approval/notification recipients or select visible admin-managed groups.
+4. Record preparation, optional services/stay, coordinator, additional FYI contact and alternate receiver. The additional contact cannot become the Visit owner.
+5. Review and save a draft. Explicit submission starts configured approvals, tasks and scoped notifications. A draft sends no invitation email.
+6. Hosts decide their assigned destination approvals; facilities/task owners coordinate support. Authorized participants use scoped threads, remarks/replies/mentions and activity. Revision/rescheduling can require fresh approval.
 
-See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+An approved source-office host may request other accounts/projects at that office without destination membership. Each project and office baseline still applies independently. Location/VIP notifications and selected groups add recipients/reviews; they do not replace mandatory rules.
 
-## Pre-planned visits
-
-Explicitly authorized internal hosts can create future office/sub-project plans. Admin-managed policies determine independent office/project approval, internal client coordination, arrangements and VIP FYI. Scope-filtered discussions have a dedicated page. Readiness does not grant entry; mail dispatch and invitation/pass/guard integration remain separate pending work. [Implementation and guide](../98_Visit_Coordination_Persistence_01_November_2026.md).
-
-
-## Source-office sponsorship and destination approval
-
-An active internal approved account-office host, or explicitly approved location-planning host, can request all active configured sub-project destinations in that eligible office. The inviter need not be a member or approved host of the destination account. The authenticated invitation catalogue is intentionally office-wide for these approved hosts; public visitor host lookup remains unchanged. Each destination's assigned internal authority and the office baseline still decide independently. Selection and READY planning status do not issue a pass or grant entry. Removing every current source grant blocks new requests/readiness; destination management and private threads retain their scoped checks. See [current rule and evidence](../99_Location_Sponsored_Cross_Account_Invitations_01_November_2026.md).
-
-Coordination is an additive host/facilities pre-planning workspace. It contains invitations, project approvals, arrangements, VIP/FYI recipients, discussion and activity. QR card allocation, reception, guard scanning, entry/exit and returned badges use their existing workflows. No manual invitation linking or separate planned gate is exposed. See [coordination-only scope correction](../101_Coordination_Only_Scope_02_November_2026.md).
+Planning readiness is not a credential. QR allocation, ordinary registration, reception, guard checks, entry/exit and returns keep their current flow. The separate manual-link/planned-gate extension from report 100 was withdrawn. Automatic data transfer into the existing registration flow is not implemented and is not a new entry-control requirement.

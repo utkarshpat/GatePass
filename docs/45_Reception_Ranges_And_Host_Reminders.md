@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Reception ranges and scoped host reminders
 
 Current inline notification behavior is documented in [the 24 October pre-push audit](69_Pre_Push_Audit_And_E2E_24_October_2026.md). Migration 096 adds a separate Action centre reminder operation for current project/common-area guard duties and authorized reception/admin scopes. The legacy detail-dialog reminder restrictions described below remain unchanged.

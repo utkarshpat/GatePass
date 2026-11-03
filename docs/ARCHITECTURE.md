@@ -1,5 +1,7 @@
 # Code architecture and maintenance rules
 
+> Maintained guide reviewed 3 November 2026. See the [current system handbook](system/README.md) for completion and acceptance status.
+
 GatePass uses composition, small interfaces and pure policies. Classes own stateful services/adapters; React function components and pure validation functions remain functions. More inheritance or a class around every object is not a quality target.
 
 ## Dependency direction

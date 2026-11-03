@@ -19,5 +19,12 @@ try{
  const first=await worker.runOnce(fixture.planId.toLowerCase()),second=await worker.runOnce(fixture.planId.toLowerCase()),third=await worker.runOnce(fixture.planId.toLowerCase());
  assert.equal(first.length+second.length,6);assert.equal(third.length,0);assert([...first,...second].every(r=>r.status==='SENT'));assert.equal(sent.length,6);assert.equal(new Set(sent.map(m=>m.header)).size,6);
  assert.deepEqual(sent.map(m=>m.to).sort(),preview.messages.map((r:any)=>r.job.recipientEmail).sort());
+ const groupFixture=JSON.parse(await readFile(new URL('../tmp/planning-group-mail-fixture.json',import.meta.url),'utf8'));
+ assert.equal(groupFixture.database,pointer.database);assert.equal(groupFixture.createdBy,'VisitGroupPersistenceCases');
+ const groupPreview=JSON.parse(await client.callProcedure('gp.PreviewPlanningNotifications',{PlanId:{type:'guid',value:groupFixture.planId}}));
+ const emailJobs=groupPreview.messages.filter((row:any)=>row.job.recipientEmail==='group-mail@example.invalid');assert.equal(emailJobs.length,1);assert.equal(emailJobs[0].job.canReview,false);assert.equal(emailJobs[0].job.audience,'FYI');
+ assert(!worker.render(emailJobs[0].job).html.includes('href='));
+ const before=sent.length;const groupResult=await worker.runOnce(groupFixture.planId);assert(groupResult.every(row=>row.status==='SENT'));assert.equal(sent.slice(before).filter(row=>row.to==='group-mail@example.invalid').length,1);assert.equal((await worker.runOnce(groupFixture.planId)).length,0);
+ console.log('PASS: explicit group notification email dispatched once through real worker and Graph adapter with a mock provider, without identity, review link or project data.');
  console.log('PASS: six scoped planning messages rendered, dispatched through the real worker/SQL/Graph adapter with a mock HTTP provider, and acknowledged once; a second pass sends nothing. No network email was sent.');
 }finally{await client.close();}

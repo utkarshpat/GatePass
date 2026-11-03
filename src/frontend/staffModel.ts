@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-type Workspace = { code: "GUARD" | "ADMIN" | "RECEPTION" | "COORDINATION"; name: string };
-type Context = { displayName: string; workspaces: Workspace[] };
-const destinations = {
-  GUARD: "/guard",
-  ADMIN: "/admin",
-  RECEPTION: "/reception",
-  COORDINATION: "/coordination",
-};
+import {
+  parseStaffAccess,
+  staffLanding,
+  type StaffAccess as Context,
+} from "./staffAccess.ts";
 const csrf = () =>
   document.cookie
     .split("; ")
@@ -73,26 +70,29 @@ export function useStaffModel() {
     }
   };
   const display = (input: unknown) => {
-    const c = input as Context;
-    if (
-      !c ||
-      typeof c.displayName !== "string" ||
-      !Array.isArray(c.workspaces) ||
-      c.workspaces.length > 5 ||
-      c.workspaces.some(
-        (w) =>
-          !Object.hasOwn(destinations, w.code) || typeof w.name !== "string",
-      )
-    )
+    let c: Context;
+    try {
+      c = parseStaffAccess(input);
+    } catch {
       throw new Failure(503);
-    const params=new URLSearchParams(location.search);
-    if(params.get('next')==='coordination' && c.workspaces.some(w=>w.code==='COORDINATION')) {
-      const visit=params.get('visit'); location.replace('/coordination'+(visit && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(visit)?'#visit='+visit:''));return;
     }
-    const operational=c.workspaces.filter(w=>w.code!=='COORDINATION');
-    if(!params.has('choose') && operational.length===1 && c.workspaces.length>1){location.replace(destinations[operational[0].code]);return;}
-    if (c.workspaces.length === 1 && !params.has('choose')) {
-      location.replace(destinations[c.workspaces[0].code]);
+    const params = new URLSearchParams(location.search);
+    if (
+      params.get("next") === "coordination" &&
+      c.workspaces.some((w) => w.code === "COORDINATION")
+    ) {
+      const visit = params.get("visit");
+      location.replace(
+        "/coordination" +
+          (visit && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(visit)
+            ? "#visit=" + visit
+            : ""),
+      );
+      return;
+    }
+    const destination = staffLanding(c);
+    if (destination) {
+      location.replace(destination);
       return;
     }
     setContext(c);
@@ -247,7 +247,6 @@ export function useStaffModel() {
     passwordRef,
     submit,
     submitSetup,
-    destinations,
     signInInstead: () => {
       version.current++;
       token.current = null;

@@ -28,6 +28,11 @@ async function api(context: BrowserContext, action: string, data: unknown) {
   expect(response.status(), await response.text()).toBe(200);
   return response.json();
 }
+async function wizardStep(page:Page,target:number){
+ const dialog=page.getByRole('dialog');let current=Number(await dialog.locator('[aria-current="step"] span').textContent());
+ if(target<current){await dialog.getByRole('navigation',{name:'Invitation progress'}).getByRole('button',{name:new RegExp('^'+target+' ')}).click();return;}
+ while(current<target){await dialog.getByRole('button',{name:'Next',exact:true}).click();await expect(dialog.locator('[aria-current="step"] span')).toHaveText(String(current+1));current++;}
+}
 async function fit(page: Page) {
   expect(
     await page.evaluate(() => getComputedStyle(document.body).fontFamily),
@@ -100,15 +105,18 @@ for (const width of [390, 1366])
     await page
       .getByLabel("Company (optional)", { exact: true })
       .fill("Synthetic company");
+    await wizardStep(page,2);
     await page
       .getByRole("checkbox", { name: "Synthetic client / Alpha", exact: true })
       .check();
     await page
       .getByLabel("Purpose", { exact: true })
       .fill("Visitor planning rehearsal");
+    await wizardStep(page,5);
     await page
       .getByRole("checkbox", { name: /Stay arrangement required/ })
       .check();
+    await wizardStep(page,6);
     await page.getByRole("button", { name: "Save draft", exact: true }).click();
     await expect(
       page.getByRole("heading", { name, exact: true }),
@@ -321,19 +329,17 @@ test("scoped settings create a real sub-project and reject office-policy escalat
 }) => {
   await login(context, 4);
   await page.goto("/coordination");
-  await page
-    .getByRole("button", { name: "Planning settings", exact: true })
-    .click();
+  await page.goto("/coordination?settings=planning");
   const name = "UI project " + randomUUID().slice(0, 8);
   await page
     .getByRole("combobox", { name: "Account / office", exact: true })
     .selectOption("1");
-  await page.getByLabel("Sub-project name", { exact: true }).fill(name);
+  await page.getByLabel("Project name", { exact: true }).fill(name);
   await page
     .getByLabel("Reason", { exact: true })
     .fill("Owned browser project creation");
   await page
-    .getByRole("button", { name: "Create sub-project", exact: true })
+    .getByRole("button", { name: "Create project", exact: true })
     .click();
   await expect(page.getByText(name, { exact: true })).toBeVisible();
   await fit(page);
@@ -344,9 +350,7 @@ test("scoped settings create a real sub-project and reject office-policy escalat
     await login(limited, 10);
     const p = await limited.newPage();
     await p.goto("/coordination");
-    await p
-      .getByRole("button", { name: "Planning settings", exact: true })
-      .click();
+    await p.goto("/coordination?settings=planning");
     await p
       .getByRole("button", { name: "Policies & responsibilities", exact: true })
       .click();
@@ -401,20 +405,23 @@ test("a lost create response retries the same operation without creating a secon
     .getByRole("button", { name: "Invite visitor", exact: true })
     .click();
   await page.getByLabel("Visitor name", { exact: true }).fill(name);
+  await wizardStep(page,2);
   await page
     .getByRole("checkbox", { name: "Synthetic client / Alpha", exact: true })
     .check();
   await page
     .getByLabel("Purpose", { exact: true })
     .fill("Ambiguous network response rehearsal");
-  await page.getByRole("button", { name: "Save draft", exact: true }).click();
+  await wizardStep(page,6);
+    await page.getByRole("button", { name: "Save draft", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Save draft", exact: true }),
   ).toBeEnabled();
   await expect(page.getByLabel("Visitor name", { exact: true })).toHaveValue(
     name,
   );
-  await page.getByRole("button", { name: "Save draft", exact: true }).click();
+  await wizardStep(page,6);
+    await page.getByRole("button", { name: "Save draft", exact: true }).click();
   await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
   expect(keys).toHaveLength(2);
   expect(keys[0]).toBe(keys[1]);
@@ -441,9 +448,7 @@ test("settings persist policy and reversible approved-host changes through the R
     },
   });
   await page.goto("/coordination");
-  await page
-    .getByRole("button", { name: "Planning settings", exact: true })
-    .click();
+  await page.goto("/coordination?settings=planning");
   await page
     .getByRole("button", { name: "Policies & responsibilities", exact: true })
     .click();
@@ -455,7 +460,7 @@ test("settings persist policy and reversible approved-host changes through the R
     .fill("Internal project authority");
   await page
     .getByRole("listbox", {
-      name: "Authorized internal approvers",
+      name: "Who must approve?",
       exact: true,
     })
     .selectOption(id(5));
@@ -464,7 +469,7 @@ test("settings persist policy and reversible approved-host changes through the R
     .fill("Configure reviewed authority");
   await page.getByRole("button", { name: "Save policy", exact: true }).click();
   await expect(
-    page.getByText("Planning settings saved.", { exact: false }),
+    page.getByText("Visit setup saved.", { exact: false }),
   ).toBeVisible();
   let options = await api(context, "options", {});
   expect(
@@ -507,9 +512,7 @@ test("settings persist policy and reversible approved-host changes through the R
   expect(host.active).toBe(true);
   expect(host.revision).toBe(3);
   await page.reload();
-  await page
-    .getByRole("button", { name: "Planning settings", exact: true })
-    .click();
+  await expect(page.getByRole('heading',{name:'Projects & visit hosts',exact:true})).toBeVisible();
   await page
     .getByRole("button", { name: "Policies & responsibilities", exact: true })
     .click();
@@ -643,12 +646,14 @@ test("late evening stay defaults follow arrival and changing dates preserves val
   await page
     .getByLabel("Visitor name", { exact: true })
     .fill("Late evening stay rehearsal");
+  await wizardStep(page,2);
   await page
     .getByRole("checkbox", { name: "Synthetic client / Alpha", exact: true })
     .check();
   await page
     .getByLabel("Purpose", { exact: true })
     .fill("Verify midnight and future arrival dates");
+  await wizardStep(page,5);
   await page
     .getByRole("checkbox", { name: "Stay arrangement required", exact: true })
     .check();
@@ -667,6 +672,7 @@ test("late evening stay defaults follow arrival and changing dates preserves val
     new Date(Date.now() + 3 * 86400000 + 330 * 60000)
       .toISOString()
       .slice(0, 10) + "T10:00";
+  await wizardStep(page,2);
   await page.getByLabel("Expected arrival", { exact: true }).fill(later);
   await expect(page.getByLabel("Check-in date", { exact: true })).toHaveValue(
     later.slice(0, 10),
@@ -681,7 +687,8 @@ test("late evening stay defaults follow arrival and changing dates preserves val
       .getByLabel("Expected departure", { exact: true })
       .inputValue()) > later,
   ).toBe(true);
-  await page.getByRole("button", { name: "Save draft", exact: true }).click();
+  await wizardStep(page,6);
+    await page.getByRole("button", { name: "Save draft", exact: true }).click();
   await expect(
     page.getByRole("heading", {
       name: "Late evening stay rehearsal",
@@ -705,10 +712,12 @@ test("source host selects cross-account destinations and each authority independ
   await page.goto("/coordination");
   await page.getByRole("button", { name: "Invite visitor", exact: true }).click();
   await page.getByLabel("Visitor name", { exact: true }).fill(name);
+  await wizardStep(page,2);
   await page.getByRole("checkbox", { name: "Synthetic client / Alpha", exact: true }).check();
   await page.getByRole("checkbox", { name: "Other client / Beta-private", exact: true }).check();
   await page.getByLabel("Purpose", { exact: true }).fill("Cross-account visit with independent authority review");
-  await page.getByRole("button", { name: "Save draft", exact: true }).click();
+  await wizardStep(page,6);
+    await page.getByRole("button", { name: "Save draft", exact: true }).click();
   await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
   const planId = decodeURIComponent(new URL(page.url()).hash.split("=")[1]);
   await page.getByRole("button", { name: "Submit visit plan", exact: true }).click();
@@ -738,4 +747,85 @@ test("source host selects cross-account destinations and each authority independ
     data: { clientKey: randomUUID(), draft: { locationId: 2, subProjectIds: [id(101)], visitorName: name, purpose: "Outside source office", startsAtUtc: new Date(Date.now() + 86400000).toISOString(), untilUtc: new Date(Date.now() + 2 * 86400000).toISOString(), vip: false } },
   });
   expect(denied.status()).toBe(403);
+});
+
+for(const width of [390,1366])test(`invitation shows routing names, adds people and persists preparation at ${width}px`,async({page,context})=>{
+ await login(context,1);await page.setViewportSize({width,height:900});await page.goto('/coordination');
+ await page.getByRole('button',{name:'Invite visitor',exact:true}).click();
+ const dialog=page.getByRole('dialog');const name='Preparation UI '+randomUUID().slice(0,8);
+ await dialog.getByLabel('Visitor name',{exact:true}).fill(name);
+ await wizardStep(page,2);
+ await dialog.getByLabel('Purpose',{exact:true}).fill('VIP coordination rehearsal');
+ await dialog.getByRole('checkbox',{name:'Synthetic client / Alpha',exact:true}).check();
+ await wizardStep(page,3);
+ await expect(dialog.locator('.cp-routing-names').filter({hasText:'Alpha permission'})).toContainText('Unassigned employee');
+ await dialog.getByRole('button',{name:'Add approval / notify · Synthetic client / Alpha',exact:false}).click();
+ await dialog.getByLabel('Add person · Synthetic client / Alpha',{exact:true}).fill('Leadership');
+ await dialog.getByRole('button',{name:/Leadership FYI.*planning06/}).click();
+ await dialog.getByRole('combobox',{name:'Send as',exact:true}).selectOption('APPROVAL');
+ await dialog.getByRole('button',{name:'Add person',exact:true}).click();
+ await expect(dialog.locator('.cp-person-chips')).toContainText('Required approval');
+ await dialog.getByRole('button',{name:'Add approval / notify · Whole visit',exact:false}).click();
+ await dialog.getByLabel('Add person · Whole visit',{exact:true}).fill('Beta authority');
+ await dialog.getByRole('button',{name:/Beta authority.*planning08/}).click();
+ await dialog.getByRole('button',{name:'Add person',exact:true}).click();
+ await wizardStep(page,4);
+ await dialog.getByRole('combobox',{name:'Visitor category',exact:true}).selectOption('CLIENT');
+ await dialog.getByLabel('Meeting location (optional)',{exact:true}).fill('Room 2');
+ await dialog.getByLabel('Agenda / itinerary (optional)',{exact:true}).fill('Welcome and site tour');
+ await wizardStep(page,5);
+ await dialog.getByRole('checkbox',{name:'Ground transport / transfers',exact:true}).check();
+ await dialog.getByLabel('Visit coordinator',{exact:true}).fill('Synthetic facilities');
+ await dialog.getByRole('button',{name:/Synthetic facilities.*planning03/}).click();
+ await fit(page);await accessible(page);
+ await page.screenshot({path:`output/preparation-invitation-${width}.png`,fullPage:true});
+ await wizardStep(page,6);
+ await dialog.getByRole('button',{name:'Save draft',exact:true}).click();
+ await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();
+ await expect(page.getByRole('region',{name:'Visit preparation',exact:true})).toContainText('Welcome and site tour');
+ await expect(page.getByRole('region',{name:'Visit preparation',exact:true})).toContainText('Leadership FYI');
+ await page.getByRole('button',{name:'Edit draft',exact:true}).click();
+ await expect(page.getByLabel('Meeting location (optional)',{exact:true})).toHaveValue('Room 2');
+ await expect(page.locator('.cp-person-chips').filter({hasText:'Leadership FYI'})).toContainText('Required approval');
+ await wizardStep(page,6);
+ await page.getByLabel('Reason for revision',{exact:true}).fill('Verify edit preservation');
+ await page.getByRole('button',{name:'Save revised draft',exact:true}).click();
+ await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Submit visit plan',exact:true}).click();
+ await expect(page.getByText('Submitted',{exact:true})).toBeVisible();
+ await expect(page.locator('.cp-approval').filter({hasText:'Additional approval'})).toContainText('Leadership FYI');
+ await fit(page);await accessible(page);await page.screenshot({path:`output/preparation-detail-${width}.png`,fullPage:true});
+});
+
+for(const width of [390,1366])test(`admin creates visit groups and host reviews selected recipients at ${width}px`,async({page,context,browser})=>{
+ await login(context,4);await page.setViewportSize({width,height:900});await page.goto('/coordination?settings=groups&office=1');
+ await page.getByRole('button',{name:'Create visit group',exact:false}).click();
+ const name='Noida VIP UI '+randomUUID().slice(0,8);
+ await page.getByLabel('Group name',{exact:true}).fill(name);
+ await page.getByRole('checkbox',{name:'Show this group for VIP visits only',exact:true}).check();
+ await page.getByLabel('Group employee',{exact:true}).fill('Unassigned');
+ await page.getByRole('button',{name:/Unassigned employee.*planning05/}).click();
+ await page.getByRole('combobox',{name:'Member role',exact:true}).selectOption('APPROVAL');
+ await page.getByRole('button',{name:'Add employee to group',exact:true}).click();
+ await page.getByLabel('Notification email',{exact:true}).fill('vip-ui@example.invalid');
+ await page.getByLabel('Email display name (optional)',{exact:true}).fill('VIP operations list');
+ await page.getByRole('button',{name:'Add notification email',exact:true}).click();
+ await page.getByLabel('Reason for group change',{exact:true}).fill('VIP reception coordination');
+ await page.getByRole('button',{name:'Save visit group',exact:true}).click();
+ const card=page.locator('article.cp-group-card').filter({has:page.getByRole('heading',{name,exact:true})});await expect(card).toBeVisible();await expect(card).toContainText('Unassigned employee');await expect(card).toContainText('vip-ui@example.invalid');await accessible(page);await fit(page);
+ await page.screenshot({path:`output/visit-groups-admin-${width}.png`,fullPage:true});
+ const host=await browser.newContext({viewport:{width,height:900}});try{await login(host,1);const visitor=await host.newPage();await visitor.goto('/coordination');await visitor.getByRole('button',{name:'Invite visitor',exact:true}).click();const dialog=visitor.getByRole('dialog');
+ await dialog.getByLabel('Visitor name',{exact:true}).fill('Group selected visitor '+randomUUID().slice(0,8));await wizardStep(visitor,2);await dialog.getByLabel('Purpose',{exact:true}).fill('Leadership coordination');await dialog.getByRole('checkbox',{name:'Synthetic client / Alpha',exact:true}).check();
+ await expect(dialog.getByRole('checkbox',{name,exact:true})).toHaveCount(0);await dialog.getByRole('checkbox',{name:/Leadership \/ VIP visit/}).check();await wizardStep(visitor,3);
+ const choice=dialog.getByRole('checkbox',{name,exact:false});await expect(choice).toBeVisible();const row=dialog.locator('.cp-group-card').filter({hasText:name});await expect(row).toContainText('Approval required (all)');await expect(row).toContainText('Unassigned employee');await expect(row).toContainText('vip-ui@example.invalid');await choice.check();
+ await accessible(visitor);await fit(visitor);await visitor.screenshot({path:`output/visit-groups-host-${width}.png`,fullPage:true});
+ await wizardStep(visitor,6);await dialog.getByRole('button',{name:'Save draft',exact:true}).click();await expect(visitor.getByRole('region',{name:'Selected visit groups',exact:true})).toContainText(name);await visitor.getByRole('button',{name:'Submit visit plan',exact:true}).click();await expect(visitor.getByText('Submitted',{exact:true})).toBeVisible();await expect(visitor.locator('.cp-approval').filter({hasText:'Group approval'})).toContainText('Unassigned employee');
+ }finally{await host.close();}
+});
+
+test('numbered invitation validates steps, preserves values and requires an explicit save after review',async({page,context})=>{
+ await login(context,1);let creates=0;page.on('request',request=>{if(request.url().endsWith('/api/coordination/create'))creates++;});await page.goto('/coordination');await page.getByRole('button',{name:'Invite visitor',exact:true}).click();const dialog=page.getByRole('dialog'),progress=dialog.getByRole('navigation',{name:'Invitation progress'});
+ await expect(progress.getByRole('button')).toHaveCount(6);await dialog.getByRole('button',{name:'Next',exact:true}).click();await expect(dialog.getByRole('alert')).toBeVisible();await expect(dialog.locator('[aria-current="step"] span')).toHaveText('1');await dialog.getByLabel('Visitor name',{exact:true}).fill('Step validation rehearsal');await wizardStep(page,2);
+ const arrival=dialog.getByLabel('Expected arrival',{exact:true});const value=await arrival.inputValue();await arrival.fill('');await dialog.getByRole('button',{name:'Next',exact:true}).click();await expect(dialog.locator('[aria-current="step"] span')).toHaveText('2');await expect(page.getByText('Unable to open this page',{exact:true})).toHaveCount(0);await arrival.fill(value);await dialog.getByLabel('Purpose',{exact:true}).fill('Preserve steps');await dialog.getByRole('checkbox',{name:'Synthetic client / Alpha',exact:true}).check();await wizardStep(page,6);
+ await expect(dialog.getByRole('button',{name:'Save draft',exact:true})).toBeVisible();expect(creates).toBe(0);await expect(dialog.locator('.cp-invitation-review')).toContainText('Step validation rehearsal');await wizardStep(page,1);await expect(dialog.getByLabel('Visitor name',{exact:true})).toHaveValue('Step validation rehearsal');await wizardStep(page,2);await arrival.fill('');await progress.getByRole('button',{name:/^6 Review/}).click();await expect(dialog.locator('[aria-current="step"] span')).toHaveText('2');expect(creates).toBe(0);await dialog.getByRole('button',{name:'Cancel',exact:true}).click();
 });

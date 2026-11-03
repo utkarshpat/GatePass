@@ -1,3 +1,4 @@
+import {StaffNavigationToggle} from "../shared/StaffNavigation.tsx";
 import { useState, useRef, useEffect } from "react";
 import { useModel } from "../shared/model.ts";
 import { createReceptionModel } from "../reception/model.ts";
@@ -76,6 +77,7 @@ export default function ReceptionPage({ config }: PageProps) {
       <header className="reception-header">
         {"\n  "}
         <div className="shell">
+<StaffNavigationToggle/>
           {"\n    "}
           <div className="identity">
             {"\n      "}

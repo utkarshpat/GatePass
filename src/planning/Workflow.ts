@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { accessScope, activeInternal, actor, boundedText, buildVersion, currentPolicyMatches, distinct, hostEligible, liveApprover, liveTaskOwner, parseDraft, projectManager, record, requireInput, timestamp, uuid } from './Policy.ts';
 import { PlanningError } from './Types.ts';
-import type { ApprovalStep, DiscussionThread, PlanningCommand, PlanningContext, PlanningNotice, PlanningOperation, VisitPlan } from './Types.ts';
+import type { PlanVersion, ApprovalStep, DiscussionThread, PlanningCommand, PlanningContext, PlanningNotice, PlanningOperation, VisitPlan } from './Types.ts';
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
@@ -66,6 +66,10 @@ function participantIds(plan: VisitPlan, context: PlanningContext) {
 function appendNotices(plan: VisitPlan, kind: PlanningNotice['kind'], recipients: string[], context: PlanningContext, targetId?: string) {
   const eventSequence = plan.events.length;
   for (const recipientId of new Set(recipients)) if (activeInternal(context, recipientId) && !plan.notices.some(notice => notice.eventSequence === eventSequence && notice.recipientId === recipientId && notice.kind === kind && notice.targetId === targetId)) plan.notices.push({ eventSequence, recipientId, kind, ...(targetId ? { targetId } : {}) });
+}
+function appendGroupEmails(plan:VisitPlan,source:PlanVersion,kind:PlanningNotice['kind'],context:PlanningContext){
+ const emails=(source.groups??[]).flatMap(snapshot=>snapshot.members.filter(member=>member.kind==='NOTIFY'&&member.email&&!member.userId&&(context.groups??[]).some(group=>group.id===snapshot.id&&group.active&&group.members.some(current=>current.kind==='NOTIFY'&&!current.userId&&current.email?.toLowerCase()===member.email?.toLowerCase()))).map(member=>member.email!.toLowerCase()));
+ for(const recipientEmail of new Set(emails))if(!plan.notices.some(notice=>notice.eventSequence===plan.events.length&&notice.recipientEmail===recipientEmail&&notice.kind===kind))plan.notices.push({eventSequence:plan.events.length,recipientEmail,kind});
 }
 function authorize(plan: VisitPlan, input: PlanningCommand, userId: string, context: PlanningContext) {
   const scope = accessScope(plan, userId, context);
@@ -157,12 +161,16 @@ export function changeVisitPlan(original: VisitPlan, raw: unknown, userId: strin
     for (const step of version.approvals) appendNotices(plan, 'APPROVAL', step.approverIds.filter(id => id !== plan.hostId), context, step.id);
     for (const task of version.tasks) appendNotices(plan, 'ARRANGEMENT', task.ownerIds, context, task.id);
     appendNotices(plan, 'FYI', [...version.locationPolicy.notifyIds, ...(version.draft.vip ? version.locationPolicy.vipNotifyIds : [])], context);
+    appendNotices(plan,'FYI',[...(version.draft.additionalPeople??[]).filter(person=>person.kind==='NOTIFY').map(person=>person.userId),...[version.draft.preparation?.visitOwnerId,version.draft.preparation?.alternateReceiverId].filter((id):id is string=>!!id&&id!==plan.hostId)],context);
+    appendNotices(plan,'FYI',(version.groups??[]).flatMap(group=>group.members.filter(member=>member.kind==='NOTIFY'&&member.userId).map(member=>member.userId!)),context);
+    appendGroupEmails(plan,version,'FYI',context);
   } else if (input.kind === 'COMMENT') appendNotices(plan, 'DISCUSSION', input.mentionIds.filter(id => id !== userId), context, input.threadId);
   else if (input.kind === 'CANCEL' || input.kind === 'REVISE') {
     const publishedNumber = original.events.findLast(event => event.kind === 'SUBMIT')?.version;
     const published = [...original.history, original.current].find(item => item.number === publishedNumber);
     if (published) {
-      const informed = original.notices.filter(notice => notice.kind === 'FYI').map(notice => notice.recipientId);
+      const informed = original.notices.filter(notice => notice.kind === 'FYI').map(notice => notice.recipientId).filter((id):id is string=>!!id);
+      appendGroupEmails(plan,published,input.kind === 'CANCEL' ? 'CANCELLED' : 'UPDATE',context);
       appendNotices(plan, input.kind === 'CANCEL' ? 'CANCELLED' : 'UPDATE', [...participantIds({ ...original, current: published }, context), ...informed], context);
     }
   } else if (input.kind === 'DECIDE' || input.kind === 'ARRANGE') appendNotices(plan, 'UPDATE', [plan.hostId], context, targetId);
@@ -174,6 +182,7 @@ export function readVisitPlan(plan: VisitPlan, userId: string, context: Planning
   const scope = accessScope(plan, userId, context), version = plan.current;
   return {
     id: plan.id, revision: plan.revision, state: plan.state, version: version.number,
+    ...(version.draft.preparation && (scope.owner || scope.manager || scope.officeParticipant || scope.projectIds.length) ? {preparation: structuredClone(version.draft.preparation)} : version.draft.preparation && version.tasks.some(task => scope.taskIds.includes(task.id) && task.kind === 'OTHER') ? {preparation: {services: [...version.draft.preparation.services], meetingLocation: version.draft.preparation.meetingLocation, requirements: version.draft.preparation.requirements}} : {}),
     visitorName: version.draft.visitorName, locationId: version.draft.locationId, startsAtUtc: version.draft.startsAtUtc, untilUtc: version.draft.untilUtc, vip: version.draft.vip,
     ...(scope.owner || scope.manager || scope.officeParticipant || scope.projectIds.length > 0 ? { purpose: version.draft.purpose } : {}),
     ...(scope.owner || scope.manager || scope.officeParticipant ? { visitorEmail: version.draft.visitorEmail } : {}),

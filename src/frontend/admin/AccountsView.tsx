@@ -72,9 +72,20 @@ function LeadPreview({
     </div>
   );
 }
-export function AccountCards({ model }: { model: AdminModel }) {
+export function AccountCards({
+  model,
+  kind,
+  onProjects,
+}: {
+  model: AdminModel;
+  kind?: "area" | "project";
+  onProjects?: (accountId: string) => void;
+}) {
   const a = model.accounts,
-    entries = a.matches().slice(0, a.renderLimit);
+    entries = a
+      .matches()
+      .filter((entry) => !kind || entry.kind === kind)
+      .slice(0, a.renderLimit);
   if (!model.scope) return null;
   return entries.length ? (
     entries.map((entry) => {
@@ -169,6 +180,16 @@ export function AccountCards({ model }: { model: AdminModel }) {
             )}
           </div>
           <LeadPreview model={model} project={project} />
+          {onProjects && project.canManageHosts && (
+            <button
+              type="button"
+              className="secondary"
+              disabled={model.writing}
+              onClick={() => onProjects(project.projectLocationId)}
+            >
+              Projects & visit hosts
+            </button>
+          )}
           <div className="project-card-actions">
             <button
               type="button"

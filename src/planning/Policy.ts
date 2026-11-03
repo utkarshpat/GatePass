@@ -1,3 +1,6 @@
+import {parseGroupReferences} from './VisitGroups.ts';
+import {parsePreparation,parseAdditionalPeople,preparationRuleId} from './Preparation.ts';
+import {preparationServices} from '../shared/VisitPreparation.ts';
 import { PlanningError } from './Types.ts';
 import type { ApprovalRule, ApprovalStep, ArrangementTask, PlanVersion, PlanningContext, PlanningPerson, VisitPlan, VisitPlanDraft } from './Types.ts';
 
@@ -26,7 +29,7 @@ export function actor(context: PlanningContext, userId: string): PlanningPerson 
   return context.people.find(person => person.userId === userId)!;
 }
 export function parseDraft(value: unknown): VisitPlanDraft {
-  const data = record(value, ['locationId', 'subProjectIds', 'visitorName', 'visitorEmail', 'company', 'purpose', 'startsAtUtc', 'untilUtc', 'vip', 'stay']);
+  const data = record(value, ['locationId', 'subProjectIds', 'visitorName', 'visitorEmail', 'company', 'purpose', 'startsAtUtc', 'untilUtc', 'vip', 'stay', 'preparation', 'additionalPeople', 'groups']);
   requireInput(Number.isSafeInteger(data.locationId) && Number(data.locationId) > 0 && Number(data.locationId) <= 2147483647);
   requireInput(Array.isArray(data.subProjectIds) && data.subProjectIds.length <= 10 && data.subProjectIds.every(uuid) && distinct(data.subProjectIds));
   requireInput(boundedText(data.visitorName, 200) && boundedText(data.purpose, 1000) && typeof data.vip === 'boolean');
@@ -42,6 +45,9 @@ export function parseDraft(value: unknown): VisitPlanDraft {
     requireInput(Date.parse(stay.checkInDate + 'T00:00:00+05:30') < Date.parse(data.untilUtc) && Date.parse(stay.checkOutDate + 'T00:00:00+05:30') > Date.parse(data.startsAtUtc));
     requireInput(Date.parse(stay.checkOutDate) - Date.parse(stay.checkInDate) <= 366 * 86400000);
   }
+  if(data.groups!==undefined)data.groups=parseGroupReferences(data.groups);
+  if(data.preparation!==undefined)data.preparation=parsePreparation(data.preparation);
+  if(data.additionalPeople!==undefined)data.additionalPeople=parseAdditionalPeople(data.additionalPeople,data.subProjectIds as string[]);
   return structuredClone(data) as VisitPlanDraft;
 }
 function validateRule(rule: ApprovalRule, hostId: string, context: PlanningContext) {
@@ -81,13 +87,31 @@ export function buildVersion(value: unknown, hostId: string, context: PlanningCo
   const rules = [...policy.approvalRules.map(rule => ({ ...structuredClone(rule), subProjectId: null })), ...projects.flatMap(project => project.approvalRules.map(rule => ({ ...structuredClone(rule), subProjectId: project.subProjectId })))];
   requirePolicy(rules.length > 0 && rules.length <= 50 && distinct(rules.map(rule => rule.id)));
   rules.forEach(rule => validateRule(rule, hostId, context));
+  for(const person of draft.additionalPeople??[]){
+    requireInput(activeInternal(context,person.userId)&&person.userId!==hostId);
+    if(person.kind==='APPROVAL')rules.push({id:preparationRuleId('approval',person.userId,person.subProjectId),name:'Additional approval',kind:'PROJECT',mode:'ALL',approverIds:[person.userId],subProjectId:person.subProjectId??null});
+  }
+  for(const contact of [draft.preparation?.coordinatorId,draft.preparation?.visitOwnerId,draft.preparation?.alternateReceiverId])if(contact)requireInput(activeInternal(context,contact));
+  const groups=(draft.groups??[]).map(ref=>{
+    const current=(context.groups??[]).filter(group=>group.id===ref.id);
+    if(current.length!==1||!current[0].active||current[0].revision!==ref.revision)throw new PlanningError('CONFLICT');
+    const group=current[0];
+    if(group.locationId!==draft.locationId||group.vipOnly&&!draft.vip||group.subProjectId&&!draft.subProjectIds.includes(group.subProjectId))throw new PlanningError('NOT_AUTHORIZED');
+    requirePolicy(group.members.length>0&&group.members.length<=20);
+    for(const member of group.members){if(member.userId)requirePolicy(activeInternal(context,member.userId));else requirePolicy(member.kind==='NOTIFY'&&!!member.email&&/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/u.test(member.email));
+      if(member.kind==='APPROVAL'){requireInput(member.userId!==hostId);const ruleId=preparationRuleId('group',member.userId!,group.subProjectId);if(!rules.some(rule=>rule.id===ruleId))rules.push({id:ruleId,name:'Group approval',kind:'PROJECT',mode:'ALL',approverIds:[member.userId!],subProjectId:group.subProjectId??null});}}
+    return structuredClone(group);
+  });
   const tasks = policy.arrangements.filter(rule => rule.kind !== 'STAY' || !!draft.stay).map(rule => {
     requirePolicy(uuid(rule.id) && boundedText(rule.name, 120) && ['STAY', 'OTHER'].includes(rule.kind) && typeof rule.mandatoryForEntry === 'boolean' && rule.ownerIds.length > 0 && rule.ownerIds.length <= 20 && distinct(rule.ownerIds) && rule.ownerIds.every(id => uuid(id) && activeInternal(context, id)));
     return { ...structuredClone(rule), status: 'REQUESTED' as const, remark: '' };
   });
-  requirePolicy(tasks.length <= 20 && distinct(tasks.map(task => task.id)) && (!draft.stay || tasks.some(task => task.kind === 'STAY')));
+  for(const service of draft.preparation?.services??[]){
+    tasks.push({id:preparationRuleId('service',draft.preparation!.coordinatorId!,service),name:preparationServices[service],kind:'OTHER',mandatoryForEntry:true,ownerIds:[draft.preparation!.coordinatorId!],status:'REQUESTED',remark:''});
+  }
+  requirePolicy(tasks.length <= 30 && distinct(tasks.map(task => task.id)) && (!draft.stay || tasks.some(task => task.kind === 'STAY')));
   for (const recipients of [policy.receptionIds, policy.securityIds, policy.notifyIds, ...(draft.vip ? [policy.vipNotifyIds] : [])]) requirePolicy(recipients.length <= 100 && distinct(recipients) && recipients.every(id => uuid(id) && activeInternal(context, id)));
-  const version: PlanVersion = { number, draft, locationPolicy: structuredClone(policy), projects, approvals: rules.map(rule => ({ ...rule, decisions: [] })), tasks, threads: [] };
+  const version: PlanVersion = { number, draft, groups, locationPolicy: structuredClone(policy), projects, approvals: rules.map(rule => ({ ...rule, decisions: [] })), tasks, threads: [] };
   if (!hostEligible(hostId, version, context)) throw new PlanningError('NOT_AUTHORIZED');
   return version;
 }
@@ -99,12 +123,15 @@ export function projectManager(person: PlanningPerson, version: PlanVersion, sub
 }
 export function currentPolicyMatches(version: PlanVersion, context: PlanningContext) {
   const policies = context.locations.filter(policy => policy.locationId === version.draft.locationId);
-  return policies.length === 1 && policies[0].active && policies[0].revision === version.locationPolicy.revision && version.projects.every(snapshot => {
+  return (version.groups??[]).every(snapshot=>(context.groups??[]).some(group=>group.id===snapshot.id&&group.revision===snapshot.revision&&group.active)) && policies.length === 1 && policies[0].active && policies[0].revision === version.locationPolicy.revision && version.projects.every(snapshot => {
     const projects = context.projects.filter(project => project.subProjectId === snapshot.subProjectId);
     return projects.length === 1 && projects[0].active && projects[0].locationId === snapshot.locationId && projects[0].accountOfficeId === snapshot.accountOfficeId && projects[0].revision === snapshot.revision;
   });
 }
 export function liveApprover(version: PlanVersion, step: ApprovalStep, userId: string, context: PlanningContext) {
+  if((version.groups??[]).some(group=>step.id===preparationRuleId('group',userId,group.subProjectId)&&group.members.some(member=>member.userId===userId&&member.kind==='APPROVAL')))return activeInternal(context,userId)&&(version.groups??[]).some(snapshot=>step.id===preparationRuleId('group',userId,snapshot.subProjectId)&&(context.groups??[]).some(group=>group.id===snapshot.id&&group.active&&group.revision===snapshot.revision&&group.members.some(member=>member.userId===userId&&member.kind==='APPROVAL')));
+
+  if((version.draft.additionalPeople??[]).some(person=>person.kind==='APPROVAL'&&person.userId===userId&&(person.subProjectId??null)===step.subProjectId&&step.id===preparationRuleId('approval',person.userId,person.subProjectId)))return activeInternal(context,userId)&&step.approverIds.includes(userId);
   const definitions = step.subProjectId === null
     ? context.locations.filter(policy => policy.locationId === version.draft.locationId && policy.active).flatMap(policy => policy.approvalRules)
     : context.projects.filter(project => project.subProjectId === step.subProjectId && project.locationId === version.draft.locationId && project.active).flatMap(project => project.approvalRules);
@@ -112,6 +139,7 @@ export function liveApprover(version: PlanVersion, step: ApprovalStep, userId: s
   return activeInternal(context, userId) && step.approverIds.includes(userId) && matches.length === 1 && matches[0].approverIds.includes(userId);
 }
 export function liveTaskOwner(version: PlanVersion, task: ArrangementTask, userId: string, context: PlanningContext) {
+  if(version.draft.preparation?.coordinatorId===userId&&version.draft.preparation.services.some(service=>task.id===preparationRuleId('service',userId,service)))return activeInternal(context,userId)&&task.ownerIds.includes(userId);
   const definitions = context.locations.filter(policy => policy.locationId === version.draft.locationId && policy.active).flatMap(policy => policy.arrangements).filter(rule => rule.id === task.id);
   return activeInternal(context, userId) && task.ownerIds.includes(userId) && definitions.length === 1 && definitions[0].ownerIds.includes(userId);
 }

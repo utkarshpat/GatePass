@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Project group management location — 26 October 2026
 
 Group create/edit/archive ab **Projects & areas → Project groups** mein hai. **Guard assignments → Assign guard → Project group** se existing group ko guard assign hota hai; group duty chip se assignment remove hota hai. Individual project assignment ka existing flow available hai.

@@ -1,389 +1,19 @@
+import { VisitGroupManager } from "./VisitGroupManager.tsx";
 import { useState, type FormEvent } from "react";
-import type { Contact, Definition, Options, Rule } from "./types.ts";
+import type { Options } from "./types.ts";
+import { PolicyEditor } from "./PolicyEditor.tsx";
+export { PeopleSelect } from "./PeopleSelect.tsx";
 import { projectLabel } from "./types.ts";
-export function PeopleSelect({
-  label,
-  people,
-  value,
-  onChange,
-  required = false,
-}: {
-  label: string;
-  people: Contact[];
-  value: string[];
-  onChange: (value: string[]) => void;
-  required?: boolean;
-}) {
-  return (
-    <label>
-      {label}
-      <select
-        multiple
-        required={required}
-        value={value}
-        onChange={(e) =>
-          onChange([...e.currentTarget.selectedOptions].map((o) => o.value))
-        }
-      >
-        {value
-          .filter((id) => !people.some((p) => p.userId === id))
-          .map((id) => (
-            <option value={id} key={id}>
-              Configured contact (outside current search)
-            </option>
-          ))}
-        {people.map((p) => (
-          <option value={p.userId} key={p.userId}>
-            {p.name}
-            {p.email ? " · " + p.email : ""}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-const blankRule = (location: boolean): Rule => ({
-  id: crypto.randomUUID(),
-  name: location ? "Office security" : "Project authority",
-  kind: location ? "SECURITY" : "PROJECT",
-  mode: "ALL",
-  approverIds: [],
-});
-function PolicyEditor({
-  location,
-  initial,
-  busy,
-  people,
-  onSave,
-}: {
-  location: boolean;
-  initial?: Definition;
-  busy: boolean;
-  people: Contact[];
-  onSave: (definition: Definition, reason: string) => Promise<void>;
-}) {
-  const [definition, setDefinition] = useState<Definition>(() =>
-      structuredClone(
-        initial ?? {
-          approvalRules: [blankRule(location)],
-          ...(location
-            ? {
-                arrangements: [],
-                receptionIds: [],
-                securityIds: [],
-                notifyIds: [],
-                vipNotifyIds: [],
-                maximumAdvanceDays: 90,
-                maximumVisitDays: 30,
-              }
-            : {}),
-        },
-      ),
-    ),
-    [reason, setReason] = useState("");
-  const set = (patch: Partial<Definition>) =>
-    setDefinition((d) => ({ ...d, ...patch }));
-  async function submit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!busy && e.currentTarget.reportValidity())
-      await onSave(definition, reason.trim()).catch(() => {});
-  }
-  return (
-    <form className="cp-form" onSubmit={submit}>
-      <p className="cp-muted">
-        Office requirements always apply. ALL needs every assigned authority;
-        ANY closes on the first assigned decision. The invitation host cannot
-        independently approve their own request.
-      </p>
-      {definition.approvalRules.map((r, index) => (
-        <fieldset key={r.id}>
-          <legend>Approval step {index + 1}</legend>
-          <div className="cp-grid">
-            <label>
-              Step name
-              <input
-                required
-                maxLength={120}
-                value={r.name}
-                onChange={(e) =>
-                  set({
-                    approvalRules: definition.approvalRules.map((x) =>
-                      x.id === r.id ? { ...x, name: e.target.value } : x,
-                    ),
-                  })
-                }
-              />
-            </label>
-            <label>
-              Responsibility
-              <select
-                value={r.kind}
-                onChange={(e) =>
-                  set({
-                    approvalRules: definition.approvalRules.map((x) =>
-                      x.id === r.id
-                        ? { ...x, kind: e.target.value as Rule["kind"] }
-                        : x,
-                    ),
-                  })
-                }
-              >
-                <option value="PROJECT">Project authority</option>
-                <option value="SECURITY">Security</option>
-                <option value="CLIENT_CONFIRMATION">
-                  Internal client coordinator
-                </option>
-              </select>
-            </label>
-            <label>
-              Decision rule
-              <select
-                value={r.mode}
-                onChange={(e) =>
-                  set({
-                    approvalRules: definition.approvalRules.map((x) =>
-                      x.id === r.id
-                        ? { ...x, mode: e.target.value as Rule["mode"] }
-                        : x,
-                    ),
-                  })
-                }
-              >
-                <option value="ALL">All must approve</option>
-                <option value="ANY">Any one decides</option>
-              </select>
-            </label>
-            <PeopleSelect
-              label="Authorized internal approvers"
-              people={people}
-              value={r.approverIds}
-              required
-              onChange={(approverIds) =>
-                set({
-                  approvalRules: definition.approvalRules.map((x) =>
-                    x.id === r.id ? { ...x, approverIds } : x,
-                  ),
-                })
-              }
-            />
-          </div>
-          {definition.approvalRules.length > 1 && (
-            <button
-              type="button"
-              className="quiet"
-              onClick={() =>
-                set({
-                  approvalRules: definition.approvalRules.filter(
-                    (x) => x.id !== r.id,
-                  ),
-                })
-              }
-            >
-              Remove step
-            </button>
-          )}
-        </fieldset>
-      ))}
-      <button
-        type="button"
-        className="secondary"
-        disabled={busy || definition.approvalRules.length >= 50}
-        onClick={() =>
-          set({
-            approvalRules: [...definition.approvalRules, blankRule(location)],
-          })
-        }
-      >
-        Add approval step
-      </button>
-      {location && (
-        <>
-          <div className="cp-grid">
-            <label>
-              Maximum advance days
-              <input
-                type="number"
-                min={1}
-                max={366}
-                required
-                value={definition.maximumAdvanceDays}
-                onChange={(e) =>
-                  set({ maximumAdvanceDays: Number(e.target.value) })
-                }
-              />
-            </label>
-            <label>
-              Maximum visit days
-              <input
-                type="number"
-                min={1}
-                max={366}
-                required
-                value={definition.maximumVisitDays}
-                onChange={(e) =>
-                  set({ maximumVisitDays: Number(e.target.value) })
-                }
-              />
-            </label>
-          </div>
-          {(definition.arrangements ?? []).map((t) => (
-            <fieldset key={t.id}>
-              <legend>Arrangement responsibility</legend>
-              <div className="cp-grid">
-                <label>
-                  Name
-                  <input
-                    required
-                    maxLength={120}
-                    value={t.name}
-                    onChange={(e) =>
-                      set({
-                        arrangements: definition.arrangements!.map((x) =>
-                          x.id === t.id ? { ...x, name: e.target.value } : x,
-                        ),
-                      })
-                    }
-                  />
-                </label>
-                <label>
-                  Type
-                  <select
-                    value={t.kind}
-                    onChange={(e) =>
-                      set({
-                        arrangements: definition.arrangements!.map((x) =>
-                          x.id === t.id
-                            ? { ...x, kind: e.target.value as "STAY" | "OTHER" }
-                            : x,
-                        ),
-                      })
-                    }
-                  >
-                    <option value="STAY">Stay — when requested</option>
-                    <option value="OTHER">Other — every visit</option>
-                  </select>
-                </label>
-                <PeopleSelect
-                  label="Assigned arrangement owners"
-                  people={people}
-                  value={t.ownerIds}
-                  required
-                  onChange={(ownerIds) =>
-                    set({
-                      arrangements: definition.arrangements!.map((x) =>
-                        x.id === t.id ? { ...x, ownerIds } : x,
-                      ),
-                    })
-                  }
-                />
-                <label className="cp-check">
-                  <input
-                    type="checkbox"
-                    checked={t.mandatoryForEntry}
-                    onChange={(e) =>
-                      set({
-                        arrangements: definition.arrangements!.map((x) =>
-                          x.id === t.id
-                            ? { ...x, mandatoryForEntry: e.target.checked }
-                            : x,
-                        ),
-                      })
-                    }
-                  />
-                  Required for planning readiness
-                </label>
-              </div>
-              <button
-                className="quiet"
-                type="button"
-                onClick={() =>
-                  set({
-                    arrangements: definition.arrangements!.filter(
-                      (x) => x.id !== t.id,
-                    ),
-                  })
-                }
-              >
-                Remove arrangement
-              </button>
-            </fieldset>
-          ))}
-          <button
-            className="secondary"
-            type="button"
-            disabled={busy || (definition.arrangements?.length ?? 0) >= 20}
-            onClick={() =>
-              set({
-                arrangements: [
-                  ...(definition.arrangements ?? []),
-                  {
-                    id: crypto.randomUUID(),
-                    name: "Stay arrangement",
-                    kind: "STAY",
-                    mandatoryForEntry: false,
-                    ownerIds: [],
-                  },
-                ],
-              })
-            }
-          >
-            Add arrangement responsibility
-          </button>
-          <fieldset>
-            <legend>Participants and people to inform</legend>
-            <p className="cp-muted">
-              FYI recipients receive a notice; they do not gain workspace or
-              discussion access.
-            </p>
-            <div className="cp-grid">
-              {(
-                [
-                  "receptionIds",
-                  "securityIds",
-                  "notifyIds",
-                  "vipNotifyIds",
-                ] as const
-              ).map((key, index) => (
-                <PeopleSelect
-                  key={key}
-                  label={
-                    [
-                      "Reception participants",
-                      "Security participants",
-                      "Standard FYI recipients",
-                      "Leadership / VIP FYI recipients",
-                    ][index]
-                  }
-                  people={people}
-                  value={definition[key] ?? []}
-                  onChange={(ids) => set({ [key]: ids })}
-                />
-              ))}
-            </div>
-          </fieldset>
-        </>
-      )}
-      <label>
-        Reason for policy change
-        <input
-          required
-          maxLength={500}
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-        />
-      </label>
-      <button className="primary" disabled={busy}>
-        Save policy
-      </button>
-    </form>
-  );
-}
 export function PlanningSettings({
   options,
   busy,
   onSave,
   onSearch,
+  section: fixedSection,
+  accountId,
 }: {
+  section?: "projects" | "hosts" | "policies" | "groups";
+  accountId?: string;
   options: Options;
   busy: boolean;
   onSave: (action: string, payload: unknown) => Promise<void>;
@@ -412,11 +42,36 @@ export function PlanningSettings({
         subProjectId: p.subProjectId,
       })),
   ];
-  const [target, setTarget] = useState(targets[0]?.key ?? ""),
-    [section, setSection] = useState("projects"),
+  const [target, setTarget] = useState(
+      (accountId
+        ? targets.find(
+            (t) =>
+              t.subProjectId &&
+              options.projects.some(
+                (p) =>
+                  p.subProjectId === t.subProjectId &&
+                  p.accountOfficeId === accountId,
+              ),
+          )?.key
+        : undefined) ??
+        targets[0]?.key ??
+        "",
+    ),
+    [section, setSection] = useState<string>(
+      fixedSection ??
+        (new URLSearchParams(location.search).get("settings") === "groups"
+          ? "groups"
+          : "projects"),
+    ),
     [name, setName] = useState(""),
     [account, setAccount] = useState(
-      options.accounts.find((a) => a.canManage)?.accountOfficeId ?? "",
+      (options.accounts.some(
+        (a) => a.accountOfficeId === accountId && a.canManage,
+      )
+        ? accountId
+        : undefined) ??
+        options.accounts.find((a) => a.canManage)?.accountOfficeId ??
+        "",
     ),
     [editProject, setEditProject] = useState(""),
     [active, setActive] = useState(true),
@@ -480,24 +135,53 @@ export function PlanningSettings({
   }
   return (
     <section className="cp-card">
-      <h2>Planning settings</h2>
-      <nav className="cp-tabs" aria-label="Planning settings">
-        {[
-          ["projects", "Sub-projects"],
-          ["hosts", "Approved hosts"],
-          ["policies", "Policies & responsibilities"],
-        ].map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            className={section === key ? "selected" : ""}
-            onClick={() => setSection(key)}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      {section === "projects" ? (
+      <h3>
+        {section === "groups"
+          ? "Approval & notification groups"
+          : section === "policies"
+            ? "Approvals & responsibilities"
+            : "Projects & visit hosts"}
+      </h3>
+      {!fixedSection && (
+        <nav className="cp-tabs" aria-label="Visit setup">
+          {[
+            ["projects", "Sub-projects"],
+            ["hosts", "Approved hosts"],
+            ["policies", "Policies & responsibilities"],
+            ["groups", "Visit groups"],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              className={section === key ? "selected" : ""}
+              onClick={() => setSection(key)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+      )}
+      {fixedSection === "projects" && (
+        <nav className="cp-tabs" aria-label="Account project setup">
+          {[
+            ["projects", "Projects"],
+            ["hosts", "Project / office hosts"],
+          ].map(([key, label]) => (
+            <button
+              type="button"
+              key={key}
+              aria-pressed={section === key}
+              className={section === key ? "selected" : ""}
+              onClick={() => setSection(key)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+      )}
+      {section === "groups" ? (
+        <VisitGroupManager options={options} busy={busy} onSave={onSave} />
+      ) : section === "projects" ? (
         <>
           <form className="cp-form" onSubmit={project}>
             <div className="cp-grid">
@@ -507,7 +191,10 @@ export function PlanningSettings({
                   value={account}
                   disabled={!!editProject}
                   required
-                  onChange={(e) => setAccount(e.target.value)}
+                  onChange={(e) => {
+                    setAccount(e.target.value);
+                    setReason("");
+                  }}
                 >
                   <option value="">Select account</option>
                   {options.accounts
@@ -525,7 +212,7 @@ export function PlanningSettings({
                 </select>
               </label>
               <label>
-                Sub-project name
+                Project name
                 <input
                   required
                   maxLength={200}
@@ -552,7 +239,7 @@ export function PlanningSettings({
               </label>
             </div>
             <button className="primary" disabled={busy || !account}>
-              {editProject ? "Update sub-project" : "Create sub-project"}
+              {editProject ? "Update project" : "Create project"}
             </button>
             {editProject && (
               <button
@@ -570,7 +257,10 @@ export function PlanningSettings({
           </form>
           <div className="cp-list">
             {options.projects
-              .filter((p) => p.canManage)
+              .filter(
+                (p) =>
+                  p.canManage && (!account || p.accountOfficeId === account),
+              )
               .map((p) => (
                 <div key={p.subProjectId} className="cp-row">
                   <span>
@@ -590,6 +280,18 @@ export function PlanningSettings({
                       · {p.active ? "Active" : "Inactive"}
                     </small>
                   </span>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => {
+                      setTarget(p.subProjectId);
+                      setSection("hosts");
+                      setUser("");
+                      setReason("");
+                    }}
+                  >
+                    Manage visit hosts
+                  </button>
                   <button
                     type="button"
                     className="secondary"
@@ -616,11 +318,23 @@ export function PlanningSettings({
                 onChange={(e) => setTarget(e.target.value)}
               >
                 <option value="">Select scope</option>
-                {targets.map((t) => (
-                  <option key={t.key} value={t.key}>
-                    {t.name}
-                  </option>
-                ))}
+                {targets
+                  .filter(
+                    (t) =>
+                      !fixedSection ||
+                      fixedSection !== "projects" ||
+                      !t.subProjectId ||
+                      options.projects.some(
+                        (p) =>
+                          p.subProjectId === t.subProjectId &&
+                          p.accountOfficeId === account,
+                      ),
+                  )
+                  .map((t) => (
+                    <option key={t.key} value={t.key}>
+                      {t.name}
+                    </option>
+                  ))}
               </select>
             </label>
             <form
@@ -669,8 +383,9 @@ export function PlanningSettings({
                 <p className="cp-muted">
                   Sub-project hosts must also be currently eligible, approved
                   account-office hosts. Adding a host does not grant project
-                  entry or administrator access. This roster does not restrict an approved
-                    office host from requesting visits to other destinations.
+                  entry or administrator access. This roster does not restrict
+                  an approved office host from requesting visits to other
+                  destinations.
                 </p>
                 <form className="cp-form" onSubmit={host}>
                   <div className="cp-grid">

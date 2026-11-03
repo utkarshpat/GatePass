@@ -1,3 +1,5 @@
+> Documentation status: historical performance/design evidence. Review the [current handbook](system/README.md) and its evidence limits before applying earlier counts or tuning conclusions.
+
 # Digital-card performance: first implementation batch
 
 Implemented locally on 23 October 2026 after the performance findings review. Earlier optimized brand assets and guard display changes remain in the working tree. This batch adds no dependencies, paid services, database migrations or SQL indexes.

@@ -104,6 +104,15 @@ test("planning worker claims, renders, renews and rechecks scope before Graph tr
   assert.equal(f.calls.at(-1)!.p.ProviderMessageId.value, "accepted-id");
   assert.equal(f.sent[0].notificationId, "planning-" + notice);
 });
+
+test("planning emails identify the invitation creator as Visit owner, including FYI contact guidance",async()=>{
+  for (const audience of ["APPROVAL","FYI"]) {
+    const f=fixture();f.set(job(audience));await f.worker.runOnce(plan);
+    assert.match(f.sent[0].html,/>Visit owner<\/td>/u);
+    assert.doesNotMatch(f.sent[0].html,/>Host<\/td>/u);
+    if(audience==="FYI")assert.match(f.sent[0].html,/Contact the visit owner/u);
+  }
+});
 test("draft creation has no send side effect and invalid selected-plan IDs never claim globally", async () => {
   const f = fixture();
   assert.equal(f.sent.length, 0);

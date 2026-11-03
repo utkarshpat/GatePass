@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Reception lookup and return correction
 
 The heading now provides an office-scoped search between Reception and History, with live matching as you type (no separate Search button). The QR scanner is an icon-only floating button at the bottom right; Manual registration sits below it. This search covers all retained registrations rather than only the dashboard's selected day. The existing table search still filters that day's list.

@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # GatePass PWA
 
 The current local web UI provides a root-scoped manifest and service worker on staff entry, reception and office QR entry pages. The print window does not register a worker. Installed launch opens `/`; public office QR links retain their office context and registration flow. Installation does not grant permissions or extend sessions.

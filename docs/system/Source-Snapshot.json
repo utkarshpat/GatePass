@@ -1,15 +1,15 @@
 {
-  "documentDate": "2026-11-02",
+  "documentDate": "2026-11-03",
   "timezone": "Asia/Calcutta",
-  "gitBaseCommit": "d893aa424ca9ba8afdfee71ca195353d8229ff42",
+  "gitBaseCommit": "c0ff201a839f96ba096bf2a802c63ee74dc28493",
   "snapshot": "Reviewed working-tree source before release commit; excludes actual .env, runtime data and private artifacts",
-  "migrationCount": 132,
+  "migrationCount": 136,
   "sqlDeclarationCounts": {
-    "TABLE": 72,
-    "PROCEDURE": 136,
+    "TABLE": 78,
+    "PROCEDURE": 138,
     "ROLE": 7,
     "VIEW": 1,
-    "FUNCTION": 40
+    "FUNCTION": 42
   },
   "sourceFiles": [
     {
@@ -58,7 +58,7 @@
     },
     {
       "path": "database/migrations.sha256.json",
-      "sha256": "01853d33da207d750649282c54f7340ac63a70b2963ab9222d67c0b64458588c"
+      "sha256": "e2a0e865827b4fe5b32310978334569fc39e3c5a696a722bb2d7284c77e53a9f"
     },
     {
       "path": "database/migrations/001_individual_visit_baseline.sql",
@@ -589,6 +589,22 @@
       "sha256": "755603c1d08c1f1f4163edcf7c720a0a3968bb92be7bb9330b5144303494b258"
     },
     {
+      "path": "database/migrations/133_visit_preparation_and_additional_people.sql",
+      "sha256": "f4d97bf17a4a0344de23ee6fb6757ae58eeb377f52a04cb72a40a9723bec1013"
+    },
+    {
+      "path": "database/migrations/134_scoped_planning_routing_and_preparation_reads.sql",
+      "sha256": "c9c5deacce840e0ccf0ca60c605023219a6c2a418554c87acbe79307b0b2b6ca"
+    },
+    {
+      "path": "database/migrations/135_visit_routing_groups.sql",
+      "sha256": "f0feccab80a8accf30b7b7360227e3df62a3c9e0a01f000f670ebf1c0789374c"
+    },
+    {
+      "path": "database/migrations/136_visit_group_catalogue_and_notifications.sql",
+      "sha256": "3457d1ce16a80bbf119ec7e4f6404225b5e81e83e028a80ebfa46fc95f5feba2"
+    },
+    {
       "path": "eslint.config.mjs",
       "sha256": "4797a6739f8f008eae31039c1ad76fd237a6a19966c780e0520e1d096ae7fade"
     },
@@ -650,7 +666,7 @@
     },
     {
       "path": "src/app/admin.css",
-      "sha256": "fe6c601c248fa409f9044ed9f3352766459db3b879428c4aa009517d8cdaf5cb"
+      "sha256": "b8b45c2630b44596061313b4bedcea2e464685f2bfc066ef8eafb94838b982fa"
     },
     {
       "path": "src/app/admin.html",
@@ -802,7 +818,7 @@
     },
     {
       "path": "src/app/workspace-shell.css",
-      "sha256": "c561ec264899a58c65ee518a6f5a4947e1c2c7871c6e9194847c3c6140163537"
+      "sha256": "0859da074f9af1460cd7b9acd6d5d281f58bd14a4c7d8cf579a4565556c2408c"
     },
     {
       "path": "src/contracts/Sql.ts",
@@ -870,7 +886,7 @@
     },
     {
       "path": "src/development/PlanningRoutes.ts",
-      "sha256": "4ee0e371be29fce911e3a1cdd76d7624c6b87bed8faf6303d5cd0e22765c84e4"
+      "sha256": "a02d9829bd9ca6f752ce05febf1920c47acdb92d2a2afc723cbc49c926d0739a"
     },
     {
       "path": "src/development/PowerShellRuntime.mjs",
@@ -970,11 +986,11 @@
     },
     {
       "path": "src/email/PlanningMailContent.ts",
-      "sha256": "6335b6a65f477ec7af8efdc2bdbbb6f042e96125cfdc5c3cea8e64010a632239"
+      "sha256": "3fd7231d7fd109b3ff00cf0b1a9979e7909600700a5f7ac568c5037ba15aee30"
     },
     {
       "path": "src/email/PlanningMailRenderer.ts",
-      "sha256": "9f9bd35b336613b6e72af0df3691c6f41eae6d3af705b5b8583c9d7d7178bd33"
+      "sha256": "622298e9f791d606c8792bc10f154dc3eaef5901f0890778de184273ab06fb5f"
     },
     {
       "path": "src/email/PlanningNotificationWorker.ts",
@@ -982,7 +998,7 @@
     },
     {
       "path": "src/frontend/admin/AccountsView.tsx",
-      "sha256": "cfe543197d7effec70c50ccf08875eb45559fb2339bfdb68520e619cb26708df"
+      "sha256": "1e527ec789bf1c7176c41c06680d5c250f973e38688de525a57a1b978ae78a02"
     },
     {
       "path": "src/frontend/admin/Overview.tsx",
@@ -1010,7 +1026,7 @@
     },
     {
       "path": "src/frontend/admin/model.ts",
-      "sha256": "0d1f13b888ef4e06d278779abd6d90d44cafb078498b77de7fd1e63cd33af814"
+      "sha256": "aacd2e4fd8cb8aa04979e37577491dab0a54803826115156bccf56cb718fba5d"
     },
     {
       "path": "src/frontend/admin/poster.ts",
@@ -1046,7 +1062,7 @@
     },
     {
       "path": "src/frontend/admin/views/AccountAreasView.tsx",
-      "sha256": "f4ac660d45e48e03bf4996fe63309fe27f9602d0d6a17574430684f9df2b4b43"
+      "sha256": "c2d4e8c036acc2f7482d0d51d09515f800699779af3aef68fba048fea0260212"
     },
     {
       "path": "src/frontend/admin/views/AccountLeadDialog.tsx",
@@ -1114,7 +1130,11 @@
     },
     {
       "path": "src/frontend/coordination.css",
-      "sha256": "20ae696895f46d0f7ec3d973363e52934a57a761cd52b19477452db5f72b8088"
+      "sha256": "4469b0693704114b97fd8519689379187a8301247ca0ae2f265efe2873fdff96"
+    },
+    {
+      "path": "src/frontend/coordination/AdditionalPeopleEditor.tsx",
+      "sha256": "c0d6dc6f3ee51da29759ec8a1f43eb554c21c22b638eb49d0904e9db69fe6d6e"
     },
     {
       "path": "src/frontend/coordination/Icons.tsx",
@@ -1122,23 +1142,63 @@
     },
     {
       "path": "src/frontend/coordination/InvitationForm.tsx",
-      "sha256": "c3329a3926f4fa8e3816d9b0d3aba59ea020ca94e98b2f2d0a863d2321d89bf2"
+      "sha256": "7c165ec2fda10fbd366e5791f0ddc7951140ec686c4b335c480f09a69eea4ffc"
+    },
+    {
+      "path": "src/frontend/coordination/InvitationReview.tsx",
+      "sha256": "6f9e31c6755d96a9a723a51a58b6e4d5bcfb8710e2737defb6f2cc45b7691af1"
+    },
+    {
+      "path": "src/frontend/coordination/PeopleSelect.tsx",
+      "sha256": "32305f17ead24e4fb24fb4d1497a29f9c90dd104823de18e6efcd566c2a494a9"
+    },
+    {
+      "path": "src/frontend/coordination/PlanningPeoplePicker.tsx",
+      "sha256": "bc4266c3e757f4f7f2269a3dd39854fae44f9a57094d11a3e0cf5254b2ce8d9b"
+    },
+    {
+      "path": "src/frontend/coordination/PolicyEditor.tsx",
+      "sha256": "8447956fc2b2f845a437e30d1bf0396060c7c3119fbe747f187872d8d8234701"
+    },
+    {
+      "path": "src/frontend/coordination/PreparationFields.tsx",
+      "sha256": "884df454d9abc05dd596dd4e8f7fd33d5e75e3999ba4548891d7490805f697d5"
+    },
+    {
+      "path": "src/frontend/coordination/PreparationSummary.tsx",
+      "sha256": "78fc51abd7017262c0f1039afc133854d1efdf6429cc563202e349985bb19b7a"
+    },
+    {
+      "path": "src/frontend/coordination/RoutingPreview.tsx",
+      "sha256": "784a496b895eb78f73d8eeb494378cb25d573da8a193bae769a3cf1077b9da4a"
     },
     {
       "path": "src/frontend/coordination/Settings.tsx",
-      "sha256": "aa4c838c659da66cb945f1a95374782254291320797c0d3190fbe4faefb521f0"
+      "sha256": "d4410ed41ec6eaa6b1e87ad83167876335bac813b9358a03199bd995fe59efaa"
     },
     {
       "path": "src/frontend/coordination/VisitDetail.tsx",
-      "sha256": "4a17a8df583c6bfabb687285d8f9107b1430cc8d13544e9c1966b8409ffe26ab"
+      "sha256": "5da034cc65a9652918c5f0c451e58ae47a388eceb40b0f0a0c04edb62db7b906"
+    },
+    {
+      "path": "src/frontend/coordination/VisitGroupCatalogue.tsx",
+      "sha256": "f9bb0e59962a868b459a5d4e75b6e0b9ae5174bcae1e8e69911eee3487e22716"
+    },
+    {
+      "path": "src/frontend/coordination/VisitGroupManager.tsx",
+      "sha256": "f7690bf0fb74d3088ae0cc1d48e54c4b82c6e247bcf24378ecb6f34b5ecb75dc"
     },
     {
       "path": "src/frontend/coordination/client.ts",
       "sha256": "7eb29ba71751021e7c92875cda00c0baeb71d3cc5719669c9897eaa4fbfc5899"
     },
     {
+      "path": "src/frontend/coordination/roles.ts",
+      "sha256": "bdc67ce36a8cf6961f917a34c27f9f21973ab3ac4be26184e8532cb90e5c1f4d"
+    },
+    {
       "path": "src/frontend/coordination/types.ts",
-      "sha256": "cb0969b7d6a79f2606a4ba00f124f776f25add23a4021b54ecac369a812dc4f7"
+      "sha256": "e4c6a7e62ae2f8dcd1ae0778aa4c3ac7497114d82419dbd169c88b432ddb3dc2"
     },
     {
       "path": "src/frontend/email.css",
@@ -1178,15 +1238,15 @@
     },
     {
       "path": "src/frontend/main.tsx",
-      "sha256": "c4cf5e41c455a929b1f3e39aa9611ae0840783d0f8c7e4e8c1d6acc830c21190"
+      "sha256": "3ebf39aaea0b37d52cd8b2895f34b2b360dd836e165655481cfed98ba5a94306"
     },
     {
       "path": "src/frontend/pages/AdminPage.tsx",
-      "sha256": "ff27c351de1c4491492b6e734387c3f853f1765ba46f4e3f8625da7d7e707f92"
+      "sha256": "38ec1330f013a09c0eca0c1f68007a9cbdf4623b1a3da6f799f3e23a02d6dc68"
     },
     {
       "path": "src/frontend/pages/CoordinationPage.tsx",
-      "sha256": "5d0c94c6f63da4d650bad4ec5388c25d1a66aaa01ae0967342d46e853d4b782a"
+      "sha256": "b0c72725a3dd964aa00079a3da15b50bde63b238c211bf8c0ffe6ba7802e508f"
     },
     {
       "path": "src/frontend/pages/EmailPage.tsx",
@@ -1194,11 +1254,11 @@
     },
     {
       "path": "src/frontend/pages/GuardPage.tsx",
-      "sha256": "1ddc79374828c7fb948e0f1e36fed7226c694cb9d9eb0a3e57fe38fe098cdd86"
+      "sha256": "621224e5979e88850dc0fdee51ed64c0f4ffe1508224e83f019718917138269a"
     },
     {
       "path": "src/frontend/pages/ReceptionPage.tsx",
-      "sha256": "cd9ec020537a5c883628e3571520dd00a3f6d023c9bad5014db2995d6b5bee8c"
+      "sha256": "c34d90a8533284bb0df4624085a8fa1dc36c3abc06cb257b4ff20cd933797f47"
     },
     {
       "path": "src/frontend/pages/SelfServicePage.tsx",
@@ -1206,7 +1266,7 @@
     },
     {
       "path": "src/frontend/pages/StaffPage.tsx",
-      "sha256": "4630f83933cf1035cfca74cf58e94da2a624878f02f772df038c5cb32e4e1d02"
+      "sha256": "643db03a02bf07b25ae37be2b09bb4565700399705668754789f65966e7d9252"
     },
     {
       "path": "src/frontend/reception/Timeline.tsx",
@@ -1269,6 +1329,10 @@
       "sha256": "16a619bc61ebf3ac799b568edd0d75256dc8ebc0d444469d25176c102a3921a9"
     },
     {
+      "path": "src/frontend/shared/StaffNavigation.tsx",
+      "sha256": "de47017c0694394007178a6e51e921b2552adebe6db6a12b2d9bfee308fa10b1"
+    },
+    {
       "path": "src/frontend/shared/Timeline.tsx",
       "sha256": "7b6be1e8cd6e9fb1944b21f56191064d9bfb1e6286ea48dbe49894af7036c6b2"
     },
@@ -1285,8 +1349,12 @@
       "sha256": "5c3257984fc8786db1dee6dd60970bbcd6c7437da00f244c0fcf7679ddd2252f"
     },
     {
+      "path": "src/frontend/staffAccess.ts",
+      "sha256": "d9852bfc5dfa44213cde33f72d984d3578a819d8bf21f02945270ee26609d75a"
+    },
+    {
       "path": "src/frontend/staffModel.ts",
-      "sha256": "ee5d77a0f24c510f2b1bad118f9c0aec9acb07e1922625f7474b449b063f55e3"
+      "sha256": "40f31a77d6b3bb7a94a2d9337bb428d4bbb9f9e726779568c94cd680e3e8af7f"
     },
     {
       "path": "src/frontend/types.ts",
@@ -1302,11 +1370,11 @@
     },
     {
       "path": "src/planning/PlanningProjection.ts",
-      "sha256": "57345fd01168ad73adb42d5bd648ae98c6046be0d6ee7cffd964b4080f46ed72"
+      "sha256": "7a3c9f714d2819128ab19b4df2666161dc0a982ca0148e4a77e23092fe299e90"
     },
     {
       "path": "src/planning/PlanningRequest.ts",
-      "sha256": "c23b1ddc7de1bd73bcc21e8e45b3a98e7b214702aa41be19b15144ac2de8dad3"
+      "sha256": "8ee30ce30ecf4ad02d6121a546fdbc2523341715d22bc4f9513bbded37b79b29"
     },
     {
       "path": "src/planning/PlanningService.ts",
@@ -1314,15 +1382,23 @@
     },
     {
       "path": "src/planning/Policy.ts",
-      "sha256": "e073b19890631cdae295eae3e332eba1ddf25bdbab4246093ef7676517ebf986"
+      "sha256": "d3d02204c3f384dbcb876ed9ec630de4436c6792cc5ae315bb8ef38f3d3c339f"
+    },
+    {
+      "path": "src/planning/Preparation.ts",
+      "sha256": "5e5f0d8e543284b729ec86c145039b5c596a8274a2fe002ffb61ad6f2308806f"
     },
     {
       "path": "src/planning/Types.ts",
-      "sha256": "16d45ba2b24cf4c79a13cff39072ecf4652bcf431a28e3653b96aeb792a702f6"
+      "sha256": "f6dcb999b4e7a454ea8faff5c23fb278c6ecba98ef18918aced5330cc45bf178"
+    },
+    {
+      "path": "src/planning/VisitGroups.ts",
+      "sha256": "9e7c1d8fa36f38bb5943d71dc9bc6610e98b81c5a0480654d6aa5451d34f525b"
     },
     {
       "path": "src/planning/Workflow.ts",
-      "sha256": "ab535e130d7cca23d9baf19f4870b186aedce0591c9517d1497a76f146ac22a0"
+      "sha256": "085013c1029668306a08912caaf5047fda9d3ba28935b0a6cccd178cb21aa788"
     },
     {
       "path": "src/printing/CardPngRasterizer.ts",
@@ -1413,6 +1489,14 @@
       "sha256": "d0c94c41add0b76d00d0c48aba5e3109c72877a72ce4831e7b81c34c87528963"
     },
     {
+      "path": "src/shared/VisitGroups.ts",
+      "sha256": "85816f6309ff36ecb4a43072e6d434295ef29c6e1e3583a249196d3fe6e45be6"
+    },
+    {
+      "path": "src/shared/VisitPreparation.ts",
+      "sha256": "01d058574f332998ab4f65d9da5d70e3880fc38a0aa57e45e244c0d6fdfe0bd7"
+    },
+    {
       "path": "src/storage/FilePhotoStore.ts",
       "sha256": "d6c1b2e154c3b2bd0ad60866272344cf33c0973f616206355c77983940f8134f"
     },
@@ -1438,7 +1522,7 @@
     },
     {
       "path": "src/transport/Composition.ts",
-      "sha256": "b811c77bd8af5aca3871f3a19962d0e0229f75ce3bb35238d9c33cf16b5867a6"
+      "sha256": "17f4269c8e1abf4bed7662ce592566ced2698feb095b11d651e86f6faf58c53d"
     },
     {
       "path": "src/transport/EmailPublicRoutes.ts",
@@ -1546,7 +1630,7 @@
     },
     {
       "path": "tests/api-composition.test.ts",
-      "sha256": "c8a05547af4cf5573c41344a593fa2ff587a20a9a973bdc25f54be0c567ac183"
+      "sha256": "ab18c4ff38b19a6b9d92b8f35f3a5aaa5cafdd1f79f94268cd013e02b1ccf782"
     },
     {
       "path": "tests/architecture.test.ts",
@@ -1609,12 +1693,20 @@
       "sha256": "3e24f50cc6cb621cf8a11d179406b699a8a2e7de52459c60762466df8a2f9dbf"
     },
     {
+      "path": "tests/browser/admin-account-action-overflow.spec.ts",
+      "sha256": "2dfe23487088eb17aedfcb7b48709698328c969a2e1d0a099a16e352c8d1f469"
+    },
+    {
       "path": "tests/browser/admin-console-live.spec.ts",
       "sha256": "237b0392bd783d9539b0ec0fcc17633542da4fd146fc0f4c651ff42a44e4a487"
     },
     {
       "path": "tests/browser/admin-console.spec.ts",
       "sha256": "d6277587e697ad8f736c451e90034f1623cb1576bcedc58d5522e1f9436a18dd"
+    },
+    {
+      "path": "tests/browser/admin-coordination-embedded.spec.ts",
+      "sha256": "a1de480e538990891e449cef69f2359d7257fc817748c3ba23274c40b4443669"
     },
     {
       "path": "tests/browser/admin-followup-regressions.spec.ts",
@@ -1630,7 +1722,7 @@
     },
     {
       "path": "tests/browser/admin-presentation-live.spec.ts",
-      "sha256": "42267b456d266fc648b87c7f2d0b58ed0895d1910de9cbc073cdd88167463ff8"
+      "sha256": "2b6feab00a0bd4fdd691e2535d139a62f0083129e7132642a69ee395ff23f4fa"
     },
     {
       "path": "tests/browser/admin-project-creation-live.spec.ts",
@@ -1658,11 +1750,11 @@
     },
     {
       "path": "tests/browser/admin-unified-boundaries.spec.ts",
-      "sha256": "60bc6b7ff04dc03ae0cee9e0dacd935a721b0cc31cbe96ea90e9a67c1c66ebee"
+      "sha256": "6c62de62654d4e8d2aa31a7ecd3d66dcec0af514c05bd24d3162704a134e6cb9"
     },
     {
       "path": "tests/browser/admin-unified-workspace.spec.ts",
-      "sha256": "1b45d1e610798f28c900b1b1d19fa74e3e2976a43ceea7315aa0bc7cc21b9083"
+      "sha256": "44a27150f3a6b6c1c38ee85c024455bbccf956e8d68e6adadba8bb892b0e9ca1"
     },
     {
       "path": "tests/browser/admin-users-permissions.spec.ts",
@@ -1670,7 +1762,7 @@
     },
     {
       "path": "tests/browser/admin-writes-live.spec.ts",
-      "sha256": "2436d66b5726ef7c07a2099cef6c6f83244bf474ff8cfe749bf3dd7b91dd1ec0"
+      "sha256": "3f18446d0d93c209acbc24292be9e5fd92c2356189c32dcd1bd93aca303af207"
     },
     {
       "path": "tests/browser/camera.ts",
@@ -1678,7 +1770,11 @@
     },
     {
       "path": "tests/browser/coordination-page.spec.ts",
-      "sha256": "e42dd7318032f96f9d6d8d687b839049ee00dceed9784c4d9681cf1ee567d930"
+      "sha256": "f0ac030b7743601eec17e77a0fd533097a61d908acc27fdf16ce2d3057dc78f1"
+    },
+    {
+      "path": "tests/browser/coordination-role-labels.spec.ts",
+      "sha256": "4773875a8c0b7e3582af2fc086769cede49d5780e774358321b069fcf36b152b"
     },
     {
       "path": "tests/browser/count-consistency.spec.ts",
@@ -1745,12 +1841,16 @@
       "sha256": "e79f595fbebe422b74b0501b80cc86507c92ccc39b5c55963ccc3d8b2040c406"
     },
     {
+      "path": "tests/browser/planning-navigation-setup.spec.ts",
+      "sha256": "dd4ecd5e41c77985f32e0763c5349caf3139c5ed58ea258a0de3fb348beb96c4"
+    },
+    {
       "path": "tests/browser/project-group-authority-live.spec.ts",
       "sha256": "247af8ff349ff1627cf7ca0739aabd2ef6475d535c454732f0dca3555831b740"
     },
     {
       "path": "tests/browser/project-group-location.spec.ts",
-      "sha256": "ce0e7842594fe5c009c5855a28666e26889588da65ca66397c8134f4825a09f0"
+      "sha256": "314c82ac69bd1024003cd2e168dfccab9a459c8c401baf0591baa72f8486e373"
     },
     {
       "path": "tests/browser/project-groups.spec.ts",
@@ -1809,6 +1909,10 @@
       "sha256": "09d4addc6c96cb7aedd9aea2a13bc7fedaf2adec6d4c5a7e51077fd8d5e30804"
     },
     {
+      "path": "tests/browser/staff-navigation.spec.ts",
+      "sha256": "fc2d85ebb421c3ce8b010102b45ed1704451ad5552976d1be738052d8d40d276"
+    },
+    {
       "path": "tests/browser/summary-fixture.ts",
       "sha256": "9e3a4fc2b132b8809e6e8f9f384f53a7808d890ffc12c1c15edb0d010a25c66e"
     },
@@ -1830,7 +1934,7 @@
     },
     {
       "path": "tests/browser/workflows.spec.ts",
-      "sha256": "60cfe10f190196fc85f8f5f940a9213f3b5dbbd6ee0df929edbd6069bf4de2b7"
+      "sha256": "703edfd12d0900883542fe3ca678292d5ad6c494ed2b4f2c8afb3f411cc4f535"
     },
     {
       "path": "tests/browser/workspace-lifecycle-regressions.spec.ts",
@@ -1846,7 +1950,7 @@
     },
     {
       "path": "tests/browser/workspace-sse-live.spec.ts",
-      "sha256": "2a769d2952c283f61eefb5aa77f86012b044d3c84581b22471b9802de610cb88"
+      "sha256": "ebec545d5bc59b44241e53a7f7163b82282acf6539cbef2ceee257c268f7fc94"
     },
     {
       "path": "tests/browser/workspace-sse.spec.ts",
@@ -1867,6 +1971,10 @@
     {
       "path": "tests/coordination-browser.config.ts",
       "sha256": "8ec5d4359b914e4e80f2dbf35ebbc0ce3cbbf288db52ced5cb2adf81140e29b0"
+    },
+    {
+      "path": "tests/coordination-roles.test.ts",
+      "sha256": "ee08697b41b45695bc45eaf9ca2e85c7710d9e2eab864d7246138defcc842ee8"
     },
     {
       "path": "tests/development-api-lifecycle.test.ts",
@@ -2086,11 +2194,11 @@
     },
     {
       "path": "tests/planning-email.test.ts",
-      "sha256": "8d406879bfcfa84258bfc4c9749d236365eb8dc11edd28f8cec89c5f947cface"
+      "sha256": "25f71e195f4d5c5b6f33ca2f91d5f5c880159b21a707211299cc8888083a2a43"
     },
     {
       "path": "tests/planning-service.test.ts",
-      "sha256": "c0ab78b7f3bc5e6da5c9cfb2d6598ff1fc0adc78dbcddbff1a6f81397426048d"
+      "sha256": "1e823afd3bff667fbed517f1e5ad076fdf3a73155d494c1f0b164b4941fc6051"
     },
     {
       "path": "tests/powershell-runtime.test.ts",
@@ -2213,6 +2321,10 @@
       "sha256": "25f688a58a716f255c7c5702185961b6160dfc8306bce3d20e0847b0123ef2a2"
     },
     {
+      "path": "tests/staff-access-navigation.test.ts",
+      "sha256": "d40f2ca730b0f91af998d6c49cf04cce2b1ffb99e5db2efeccb77c5edaae7973"
+    },
+    {
       "path": "tests/staff-administration.sql-integration.ts",
       "sha256": "9a518d5549beaec29382c9025f68492f62ddea27738977a74bcdc569a80f5c01"
     },
@@ -2250,7 +2362,7 @@
     },
     {
       "path": "tests/visit-planning.test.ts",
-      "sha256": "7af0f77f9f493fbcdc8e18181595ef2c0e75ac1096299fbff72567c48a432a91"
+      "sha256": "cfe3724b1a98d1b11e83024536d44b215d22bad2256a4a0e6cbda40413f4d0af"
     },
     {
       "path": "tests/visit-reads.sql-integration.ts",
@@ -2522,7 +2634,7 @@
     },
     {
       "path": "tools/start-dummy-sso.ts",
-      "sha256": "c25b3653a629015fb0c0a9973db6faf6a0a6c0cada0c6c2f835e9a573b427594"
+      "sha256": "4060853e6841a0998545214ed341fae508cd9dbd3d98761bf6264da23a39c48c"
     },
     {
       "path": "tools/start-email-worker.ts",
@@ -2530,15 +2642,15 @@
     },
     {
       "path": "tools/test-coordination-server.ts",
-      "sha256": "cbffb7093c9ae47c15c2932807eda87eb89e448dd8b397abb8c6b6775245649b"
+      "sha256": "378f1aeb136ac5a05cf4f1c3c6d89f1f2abe2ab53b6e631d4305987c77b0fce3"
     },
     {
       "path": "tools/test-coordination.mjs",
-      "sha256": "adfd6d8c15e03bde42d437658d08111b81d7166ea1ea60a4af893a339aef3b5d"
+      "sha256": "9cb53750604d0bfcf3abd881007d86635b2d31090dc6cbed666f396d93174127"
     },
     {
       "path": "tools/test-planning-mail.ts",
-      "sha256": "4b93782e454eebfe9d1b683342c5c76a975bd3dd94794e3c08bbe383f2fd11a2"
+      "sha256": "ee9fac153791064099237e52e770237af58daebdba1c2e7d9e1d1818c52f24b5"
     },
     {
       "path": "tools/update-documentation-references.py",

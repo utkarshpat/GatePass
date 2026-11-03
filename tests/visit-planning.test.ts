@@ -274,3 +274,60 @@ test('command schema prevents actor/recipient injection and invalid resource tar
   rejects('INVALID_INPUT', () => changeVisitPlan(plan, { kind: 'SUBMIT' }, host, { clientKey: 'bad', expectedRevision: 1 }, f.context));
   rejects('CONFLICT', () => f.change(plan, { kind: 'SUBMIT' }));
 });
+
+
+test('extra approval is additive, scoped and cannot replace mandatory reviewers',()=>{
+ const f=fixture();f.draft.additionalPeople=[{userId:stranger,kind:'APPROVAL',subProjectId:pa}];
+ let plan=f.submit();const extra=plan.current.approvals.find(step=>step.approverIds.includes(stranger))!;
+ assert.equal(plan.current.approvals.length,4);assert.equal(readVisitPlan(plan,stranger,f.context).projects.length,1);
+ plan=f.decide(plan,extra.id,stranger);assert.equal(projectReadiness(plan,pa,f.context),'PENDING');
+ plan=f.decide(f.decide(plan,ra,a),rl,security);assert.equal(projectReadiness(plan,pa,f.context),'READY');
+ assert.equal(projectReadiness(plan,pb,f.context),'PENDING');
+ f.draft.additionalPeople=[{userId:host,kind:'APPROVAL'}];rejects('INVALID_INPUT',f.create);
+});
+test('notify-only people receive one notice without dashboard or decision authority',()=>{
+ const f=fixture();f.draft.additionalPeople=[{userId:stranger,kind:'NOTIFY'}];const plan=f.submit();
+ assert.equal(plan.notices.filter(notice=>notice.recipientId===stranger&&notice.kind==='FYI').length,1);
+ rejects('NOT_AUTHORIZED',()=>readVisitPlan(plan,stranger,f.context));
+ rejects('NOT_AUTHORIZED',()=>f.decide(plan,ra,stranger));
+});
+test('requested support has a current named owner, independent tasks and limited preparation visibility',()=>{
+ const f=fixture();f.draft.stay={checkInDate:'2026-11-02',checkOutDate:'2026-11-03'};
+ f.draft.preparation={category:'CLIENT',visitType:'MEETING',services:['MEETING_ROOM','TRANSPORT'],devices:['LAPTOP'],specialAccess:['NETWORK'],coordinatorId:stranger,visitOwnerId:vip,alternateReceiverId:vip,agenda:'PRIVATE_AGENDA',meetingLocation:'Meeting room 2',requirements:'Wheelchair route'};
+ let plan=f.submit();const view=readVisitPlan(plan,stranger,f.context);
+ assert.equal(view.projects.length,0);assert.equal(view.preparation?.agenda,undefined);assert.equal(view.preparation?.meetingLocation,'Meeting room 2');
+ assert.equal(readVisitPlan(plan,facilities,f.context).preparation,undefined);
+ assert.equal(readVisitPlan(plan,host,f.context).preparation?.agenda,'PRIVATE_AGENDA');
+ const tasks=plan.current.tasks.filter(task=>task.ownerIds.includes(stranger));assert.equal(tasks.length,2);
+ plan=f.decide(f.decide(plan,ra,a),rl,security);assert.equal(projectReadiness(plan,pa,f.context),'PENDING');
+ for(const task of tasks){rejects('NOT_AUTHORIZED',()=>f.change(plan,{kind:'ARRANGE',taskId:task.id,status:'CONFIRMED',remark:'Done'},facilities));plan=f.change(plan,{kind:'ARRANGE',taskId:task.id,status:'CONFIRMED',remark:'Confirmed arrangement'},stranger);}
+ assert.equal(projectReadiness(plan,pa,f.context),'READY');
+ f.context.people.find(person=>person.userId===stranger)!.active=false;
+ rejects('NOT_AUTHORIZED',()=>readVisitPlan(plan,stranger,f.context));
+});
+test('preparation and manual contacts reject unsupported, duplicate, external and unselected scopes',()=>{
+ const f=fixture(),preparation={category:'GENERAL',visitType:'MEETING',services:[],devices:[],specialAccess:[]};
+ for(const patch of [{category:'UNKNOWN'},{devices:['LAPTOP','LAPTOP']},{devices:['make/model']},{services:['PARKING']},{coordinatorId:'bad'},{agenda:'a'.repeat(2001)},{photoId:'123'}])rejects('INVALID_INPUT',()=>parseDraft({...f.draft,preparation:{...preparation,...patch}}));
+ for(const additionalPeople of [[{userId:stranger,kind:'ADMIN'}],[{userId:stranger,kind:'NOTIFY',subProjectId:pc}],[{userId:stranger,kind:'NOTIFY'},{userId:stranger,kind:'APPROVAL'}]])rejects('INVALID_INPUT',()=>parseDraft({...f.draft,additionalPeople}));
+ f.draft.additionalPeople=[{userId:stranger,kind:'NOTIFY'}];f.context.people.find(person=>person.userId===stranger)!.internal=false;rejects('INVALID_INPUT',f.create);
+});
+
+test('agenda and support notes retain multiline planning details while rejecting controls',()=>{
+ const f=fixture(),preparation={category:'CLIENT',visitType:'MEETING',services:[],devices:[],specialAccess:[],agenda:'Welcome\nMeeting and site tour',requirements:'Accessible entrance\nGround floor'};
+ assert.equal(parseDraft({...f.draft,preparation}).preparation?.agenda,preparation.agenda);
+ rejects('INVALID_INPUT',()=>parseDraft({...f.draft,preparation:{...preparation,agenda:'bad\u0000text'}}));
+});
+
+test('versioned visit groups add internal approvals, deduplicate FYI and never grant email identity',()=>{
+ const f=fixture();const group={id:id(900),revision:1,locationId:1,subProjectId:pa,name:'Noida VIP group',description:'Leadership',vipOnly:true,active:true,members:[{userId:stranger,kind:'APPROVAL' as const},{userId:vip,kind:'NOTIFY' as const},{email:'leaders@example.invalid',kind:'NOTIFY' as const}]};
+ f.context.groups=[group];f.draft.groups=[{id:group.id,revision:1}];let plan=f.submit();
+ const step=plan.current.approvals.find(review=>review.name==='Group approval')!;assert(step);
+ assert.equal(readVisitPlan(plan,stranger,f.context).projects.length,1);assert.equal(plan.notices.filter(notice=>notice.recipientId===vip&&notice.kind==='FYI').length,1);assert.equal(plan.notices.filter(notice=>notice.recipientEmail==='leaders@example.invalid').length,1);
+ plan=f.decide(plan,step.id,stranger);assert.equal(projectReadiness(plan,pa,f.context),'PENDING');
+ group.revision=2;assert.equal(projectReadiness(plan,pa,f.context),'POLICY_CHANGED');rejects('NOT_AUTHORIZED',()=>readVisitPlan(plan,stranger,f.context));rejects('CONFLICT',f.create);
+});
+test('group selection rejects wrong office, unselected project, non-VIP and self approval',()=>{
+ const f=fixture();const group={id:id(901),revision:1,locationId:1,subProjectId:pa,name:'Leadership',description:'',vipOnly:true,active:true,members:[{userId:stranger,kind:'APPROVAL' as const}]};f.context.groups=[group];f.draft.groups=[{id:group.id,revision:1}];
+ f.draft.vip=false;rejects('NOT_AUTHORIZED',f.create);f.draft.vip=true;group.locationId=2;rejects('NOT_AUTHORIZED',f.create);group.locationId=1;group.subProjectId=pc;rejects('NOT_AUTHORIZED',f.create);group.subProjectId=pa;group.members[0].userId=host;rejects('INVALID_INPUT',f.create);
+ for(const groups of [[{id:group.id,revision:1},{id:group.id,revision:1}],[{id:group.id,revision:0}],[{id:'bad',revision:1}]])rejects('INVALID_INPUT',()=>parseDraft({...f.draft,groups}));
+});

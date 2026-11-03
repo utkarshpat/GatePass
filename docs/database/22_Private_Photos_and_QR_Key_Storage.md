@@ -1,4 +1,4 @@
-> Historical implementation/design record. Current behavior and evidence are maintained in [the system handbook](../system/README.md) and [28 October release notes](../88_Documentation_And_Release_28_October_2026.md). In particular, visitor intake now accepts one person, uses private office-host routing and starts today with an inclusive final date; earlier multi-person/project-picker instructions below are superseded.
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](../system/README.md) and [Visit owner/Host glossary](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
 
 # Private photos and QR key storage — local Windows implementation
 

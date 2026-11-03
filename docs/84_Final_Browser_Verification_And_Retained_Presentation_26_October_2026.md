@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Final browser verification aur retained presentation — 26 October 2026
 
 **Fresh full Chromium suite: 345 passed, 0 failed, 0 skipped, 16.5 minutes.** Single worker, zero automatic retries; retained presentation test enabled tha. Normal app `http://localhost:8443` running rahi. Real SQL journeys, responsive/accessibility checks aur controlled failure/security fixtures full suite ka part hain; har negative/fault scenario ko retained business record mein convert nahi kiya gaya.

@@ -1,3 +1,4 @@
+import {StaffNavigationToggle} from "../shared/StaffNavigation.tsx";
 import { useRef, useMemo, useEffect, useLayoutEffect } from "react";
 import { useModel } from "../shared/model.ts";
 import { createGuardModel } from "../guard/model.ts";
@@ -50,6 +51,7 @@ export default function GuardPage({ config }: PageProps) {
           </a>
           {"\n"}
           <header className="reception-header guard-header">
+<StaffNavigationToggle/>
             <img src={config.companyLogo} width="192" alt="Sopra Steria" />
             <div id="staff-session" hidden={!ui.displayName}>
               <button

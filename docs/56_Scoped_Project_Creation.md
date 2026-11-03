@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Scoped project creation
 
 In **Administration → Projects & areas**, **Add → Project** creates a project in the selected authorized office. Enter its name, unique uppercase code (3–64 letters/numbers/dots/underscores/hyphens), and reason. The modal displays the office without an editable location selector. Successful creation refreshes the project cards and selectors; project leads and guard duties can then be assigned through their existing workflows.

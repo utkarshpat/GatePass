@@ -1,3 +1,5 @@
+> Documentation status: historical performance/design evidence. Review the [current handbook](system/README.md) and its evidence limits before applying earlier counts or tuning conclusions.
+
 # Digital-card performance: smaller opaque PNGs and cold-stage evidence
 
 Implemented locally on 23 October 2026 after [phase 4](Performance_Optimization_Phase_4.md). This is a modest payload improvement. **It does not resolve cold first-card latency.**

@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Performance optimization candidates — 25 October 2026
 
 Implementation follow-up: [document 74](74_Performance_Optimization_Implementation_25_October_2026.md) mein deployed local migration, implemented scope, actual before/after HTTP results aur remaining candidates hain. Neeche original pre-implementation diagnostic record preserved hai.

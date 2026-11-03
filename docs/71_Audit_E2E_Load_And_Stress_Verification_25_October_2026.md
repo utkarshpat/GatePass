@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Corrected E2E, load and stress verification — 25 October 2026
 
 Is document ne pehle ke load-test conclusions supersede kiye hain. Purane report ka SSE saturation result invalid tha: saari subscriptions HTTP 400 thi. Static SVG throughput application API capacity nahi tha, aur load-generator heap se server memory leak ka conclusion nahi nikalta. `1,062 ms` lagbhag 1.06 seconds hai; ise subsecond nahi kehna chahiye.

@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Shared React and security publication — 28 October 2026
 
 The user authorized pushing this shared checkpoint to the private `main` branches of both `utkarshpat/GatePass` and `utkarshpat/NHSGatePass`. Both remotes were fetched and verified at the shared account-host baseline before publication; repository metadata confirms private visibility and push access.

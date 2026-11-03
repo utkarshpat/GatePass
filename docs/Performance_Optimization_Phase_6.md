@@ -1,3 +1,5 @@
+> Documentation status: historical performance/design evidence. Review the [current handbook](system/README.md) and its evidence limits before applying earlier counts or tuning conclusions.
+
 # Admin loading: defer hidden work and share pending lead reads
 
 Implemented locally on **24 October 2026**, following [phase 5](Performance_Optimization_Phase_5.md). This batch targets frontend request volume rather than card encoding or database settings. No dependency, SQL procedure, authorization rule, schema/index or server cache changes.

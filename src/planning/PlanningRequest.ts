@@ -1,3 +1,4 @@
+import { parseGroupMembers } from "./VisitGroups.ts";
 import type { SqlParameter } from "../contracts/Sql.ts";
 import {
   boundedText,
@@ -10,7 +11,16 @@ import {
 } from "./Policy.ts";
 import { parsePlanningCommand } from "./Workflow.ts";
 export type PlanningAction =
-  "options" | "list" | "thread" | "detail" | "create" | "change" | "manage";
+  | "options"
+  | "people"
+  | "groups"
+  | "routing"
+  | "list"
+  | "thread"
+  | "detail"
+  | "create"
+  | "change"
+  | "manage";
 const positive = (v: unknown): v is number =>
   Number.isSafeInteger(v) && Number(v) > 0 && Number(v) <= 2147483647;
 const big = (v: unknown): v is string =>
@@ -101,6 +111,9 @@ export function planningRequest(action: PlanningAction, raw: unknown) {
   requireInput(
     [
       "options",
+      "people",
+      "groups",
+      "routing",
       "list",
       "thread",
       "detail",
@@ -111,8 +124,10 @@ export function planningRequest(action: PlanningAction, raw: unknown) {
   );
   const d = record(
     raw,
-    action === "options"
-      ? ["locationId", "search"]
+    ["options", "people", "groups", "routing"].includes(action)
+      ? action === "routing"
+        ? ["locationId", "subProjectIds"]
+        : ["locationId", "search"]
       : action === "list"
         ? ["locationId", "search", "folder", "offset", "fromUtc", "untilUtc"]
         : action === "detail"
@@ -127,7 +142,37 @@ export function planningRequest(action: PlanningAction, raw: unknown) {
   );
   const p: Record<string, SqlParameter> = {};
   let procedure = "gp.ReadVisitCoordination";
-  if (["options", "list", "detail", "thread"].includes(action)) {
+  if (
+    [
+      "options",
+      "people",
+      "groups",
+      "routing",
+      "list",
+      "detail",
+      "thread",
+    ].includes(action)
+  ) {
+    if (action === "groups")
+      requireInput(
+        positive(d.locationId) &&
+          (d.search === undefined ||
+            (boundedText(d.search, 80) && d.search.trim().length >= 2)),
+      );
+    if (action === "people")
+      requireInput(
+        positive(d.locationId) &&
+          boundedText(d.search, 80) &&
+          d.search.trim().length >= 2,
+      );
+    if (action === "routing")
+      requireInput(
+        positive(d.locationId) &&
+          Array.isArray(d.subProjectIds) &&
+          d.subProjectIds.length <= 10 &&
+          d.subProjectIds.every(uuid) &&
+          distinct(d.subProjectIds),
+      );
     if (d.locationId !== undefined) requireInput(positive(d.locationId));
     if (d.search !== undefined)
       requireInput(
@@ -178,36 +223,51 @@ export function planningRequest(action: PlanningAction, raw: unknown) {
         value: JSON.stringify(parsePlanningCommand(d.command)),
       };
     } else {
-      requireInput(["PROJECT", "HOST", "POLICY"].includes(String(d.action)));
+      requireInput(
+        ["PROJECT", "HOST", "POLICY", "GROUP"].includes(String(d.action)),
+      );
       const kind = String(d.action),
         v = record(
           d.payload,
-          kind === "PROJECT"
+          kind === "GROUP"
             ? [
+                "id",
                 "subProjectId",
                 "locationId",
-                "accountOfficeId",
                 "name",
+                "description",
+                "vipOnly",
                 "active",
+                "members",
                 "revision",
                 "reason",
               ]
-            : kind === "HOST"
+            : kind === "PROJECT"
               ? [
                   "subProjectId",
                   "locationId",
-                  "userId",
+                  "accountOfficeId",
+                  "name",
                   "active",
                   "revision",
                   "reason",
                 ]
-              : [
-                  "subProjectId",
-                  "locationId",
-                  "definition",
-                  "revision",
-                  "reason",
-                ],
+              : kind === "HOST"
+                ? [
+                    "subProjectId",
+                    "locationId",
+                    "userId",
+                    "active",
+                    "revision",
+                    "reason",
+                  ]
+                : [
+                    "subProjectId",
+                    "locationId",
+                    "definition",
+                    "revision",
+                    "reason",
+                  ],
         );
       requireInput(
         Number.isSafeInteger(v.revision) &&
@@ -222,6 +282,19 @@ export function planningRequest(action: PlanningAction, raw: unknown) {
               v.locationId === undefined &&
               v.accountOfficeId === undefined,
       );
+      if (kind === "GROUP") {
+        requireInput(
+          (v.id === undefined || uuid(v.id)) &&
+            boundedText(v.name, 120) &&
+            typeof v.description === "string" &&
+            v.description.length <= 500 &&
+            v.description.isWellFormed() &&
+            !/[\x00-\x1f\x7f]/u.test(v.description) &&
+            typeof v.vipOnly === "boolean" &&
+            typeof v.active === "boolean",
+        );
+        v.members = parseGroupMembers(v.members);
+      }
       if (kind === "PROJECT")
         requireInput(
           (v.subProjectId !== undefined || big(v.accountOfficeId)) &&

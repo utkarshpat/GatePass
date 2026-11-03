@@ -12,10 +12,17 @@ const session = {
   sessionToken: Buffer.alloc(32, 3).toString("base64url"),
   csrfToken: Buffer.alloc(32, 4).toString("base64url"),
 };
-test('unknown planning action fails closed before any RPC can be selected', async () => {
+test("unknown planning action fails closed before any RPC can be selected", async () => {
   let calls = 0;
-  const service = new PlanningService({ async callProcedure() { calls++; return '{}'; } });
-  await assert.rejects(service.execute(session, 'unexpected' as any, {}), { code: 'INVALID_INPUT' });
+  const service = new PlanningService({
+    async callProcedure() {
+      calls++;
+      return "{}";
+    },
+  });
+  await assert.rejects(service.execute(session, "unexpected" as any, {}), {
+    code: "INVALID_INPUT",
+  });
   assert.equal(calls, 0);
 });
 const actor = randomUUID(),
@@ -308,4 +315,82 @@ test("planning routes verify the session before body parsing and never expose ar
   await routes.handle(req(), {} as any);
   f.fail(Object.assign(Error("private"), { number: 52001 }));
   await assert.rejects(routes.handle(req(), {} as any), { status: 403 });
+});
+
+test("people and routing reads use bounded protected read RPC and explicit recipient projections", async () => {
+  const f = fixture();
+  f.set({
+    people: [
+      {
+        userId: actor,
+        name: "Internal employee",
+        email: "employee@example.invalid",
+      },
+    ],
+  });
+  const people = await f.service.execute(session, "people", {
+    locationId: 1,
+    search: "Internal",
+  });
+  assert.equal((people.people as any[])[0].name, "Internal employee");
+  assert.equal(f.calls[0].name, "gp.ReadVisitCoordination");
+  assert.equal(f.calls[0].p.Mode.value, "PEOPLE");
+  for (const body of [
+    { search: "Internal" },
+    { locationId: 1, search: "a" },
+    { locationId: 1, search: "Internal", actorId: actor },
+  ])
+    await assert.rejects(f.service.execute(session, "people", body), {
+      code: "INVALID_INPUT",
+    });
+  f.set({
+    routing: [
+      {
+        locationId: 1,
+        subProjectId: project,
+        approvalSteps: [
+          {
+            id: step,
+            name: "Security",
+            mode: "ALL",
+            approvers: [{ userId: actor, name: "Responsible employee" }],
+          },
+        ],
+        notify: [],
+        vipNotify: [],
+        arrangements: [],
+      },
+    ],
+  });
+  await f.service.execute(session, "routing", {
+    locationId: 1,
+    subProjectIds: [project],
+  });
+  await assert.rejects(
+    f.service.execute(session, "routing", {
+      locationId: 1,
+      subProjectIds: [project, project],
+    }),
+    { code: "INVALID_INPUT" },
+  );
+  f.set({ routing: [{ locationId: 1, definition: { password: "private" } }] });
+  await assert.rejects(
+    f.service.execute(session, "routing", { locationId: 1, subProjectIds: [] }),
+    { code: "UNAVAILABLE" },
+  );
+  f.set({
+    people: [{ userId: actor, name: "Employee", identitySubject: "private" }],
+  });
+  await assert.rejects(
+    f.service.execute(session, "people", { locationId: 1, search: "Internal" }),
+    { code: "UNAVAILABLE" },
+  );
+});
+
+test('group administration rejects raw-email approval, injected identities and excessive selection',async()=>{
+ const f=fixture();const payload={locationId:1,name:'Noida VIP approval and notification',description:'',vipOnly:true,active:true,revision:0,reason:'Configure visitors',members:[{userId:actor,kind:'APPROVAL'},{email:'leaders@example.invalid',name:'Leadership list',kind:'NOTIFY'}]};
+ await f.service.execute(session,'manage',{action:'GROUP',clientKey:randomUUID(),payload});assert.equal(f.calls.at(-1).name,'gp.ManageVisitPlanning');assert.equal(f.calls.at(-1).p.Action.value,'GROUP');
+ for(const members of [[{email:'outside@example.invalid',kind:'APPROVAL'}],[{userId:actor,kind:'APPROVAL',email:'forged@example.invalid'}],[{email:'bad\r\n@example.invalid',kind:'NOTIFY'}]])await assert.rejects(f.service.execute(session,'manage',{action:'GROUP',clientKey:randomUUID(),payload:{...payload,members}}),{code:'INVALID_INPUT'});
+ await assert.rejects(f.service.execute(session,'create',{clientKey:randomUUID(),draft:{...draft,groups:Array.from({length:6},()=>({id:randomUUID(),revision:1}))}}),{code:'INVALID_INPUT'});
+ f.set({groups:[]});await f.service.execute(session,'groups',{locationId:1});await assert.rejects(f.service.execute(session,'groups',{}),{code:'INVALID_INPUT'});
 });

@@ -26,7 +26,7 @@ for(const width of [390,1366])test(`unified Add creates an area and area cards m
   }
   return reply({});
  });
- await page.goto('/admin');await expect(page.locator('#projects .area-card')).toHaveCount(2);expect(offsets).toContain(50);
+ await page.goto('/admin');await page.getByRole('button',{name:'Areas & groups',exact:true}).click();await expect(page.locator('#projects .area-card')).toHaveCount(2);expect(offsets).toContain(50);
  await expect(page.locator('#admin-projects .page-head-actions .primary')).toHaveCount(1);await expect(page.locator('#common-area-new')).toHaveCount(0);await expect(page.locator('#common-duties-open')).toHaveCount(0);
  const lobby=page.locator('.area-card').filter({has:page.getByRole('heading',{name:'Main Lobby',exact:true})});await expect(lobby).toContainText('Neha Saini');await expect(lobby).not.toContainText('Security 0');await expect(lobby.getByRole('button',{name:/lead/iu})).toHaveCount(0);
  await page.getByRole('button',{name:'Add',exact:true}).click();await expect(page.locator('#add-project-dialog').getByLabel('Type',{exact:true}).locator('option')).toHaveCount(2);await page.locator('#add-project-dialog').getByLabel('Type',{exact:true}).selectOption('area');await expect(page.locator('#new-project-code-field')).toBeHidden();await expect(page.locator('#new-project-code')).toBeDisabled();await page.getByLabel('Area name',{exact:true}).fill('Visitor Welcome Lounge');await page.getByLabel('Reason for adding this area',{exact:true}).fill('Dedicated arrival space for scheduled visitors');

@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](../system/README.md) and [Visit owner/Host glossary](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # 06. Security Boundaries, Audit Findings & E2E Verification
 
 > Updated 27 October 2026: current behavior/evidence is in [report 88](../88_Documentation_And_Release_28_October_2026.md). Visitor registration is single-person; employee account flows remain same-day; all calendar-day pass labels end at 23:59. Google station sign-in remains pending.
@@ -66,4 +68,3 @@ Executed on **22 October 2026** against the live local application (`http://loca
 | **Admin Console (All 7 Modules & Modals)** | PASS | PASS | PASS | Verified `Overview`, `Projects & leads`, `Staff & access`, `Guard assignments`, `Common areas` (3 tabs), `Offices & QR`, `Visits & reports`, `Audit log`, and `Admin Profile` |
 
 All synthetic visits, passes, print jobs, movements, decisions, notifications, and intakes created during the live browser session were cleaned from `GatePass_DesignTest` after verification.
-

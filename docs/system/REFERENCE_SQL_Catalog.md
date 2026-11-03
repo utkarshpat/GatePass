@@ -1,6 +1,6 @@
 # SQL source catalogue
 
-Updated 2 November 2026; 132 forward migration files. Declaration provenance is lexical source evidence, not a live catalogue or permission audit. Dynamic ALTER migrations may preserve/change existing definitions without a new literal declaration.
+Updated 3 November 2026; 136 forward migration files. Declaration provenance is lexical source evidence, not a live catalogue or permission audit. Dynamic ALTER migrations may preserve/change existing definitions without a new literal declaration.
 
 ## Migration hashes
 
@@ -138,6 +138,10 @@ Updated 2 November 2026; 132 forward migration files. Declaration provenance is 
 | [130_planned_pass_cancellation_lifecycle.sql](../../database/migrations/130_planned_pass_cancellation_lifecycle.sql) | `9a4ddfd448af2cc42a3ae029b5ba08f3889cc2ec150f385d82beb3862a92ee82` |
 | [131_coordination_only_restore_operational_flow.sql](../../database/migrations/131_coordination_only_restore_operational_flow.sql) | `c5ab735b94bf7fe0b435564510fe31cf3d0b5c3b5519c1afe67cd8d0e056a25a` |
 | [132_coordination_notification_dispatch.sql](../../database/migrations/132_coordination_notification_dispatch.sql) | `755603c1d08c1f1f4163edcf7c720a0a3968bb92be7bb9330b5144303494b258` |
+| [133_visit_preparation_and_additional_people.sql](../../database/migrations/133_visit_preparation_and_additional_people.sql) | `f4d97bf17a4a0344de23ee6fb6757ae58eeb377f52a04cb72a40a9723bec1013` |
+| [134_scoped_planning_routing_and_preparation_reads.sql](../../database/migrations/134_scoped_planning_routing_and_preparation_reads.sql) | `c9c5deacce840e0ccf0ca60c605023219a6c2a418554c87acbe79307b0b2b6ca` |
+| [135_visit_routing_groups.sql](../../database/migrations/135_visit_routing_groups.sql) | `f0feccab80a8accf30b7b7360227e3df62a3c9e0a01f000f670ebf1c0789374c` |
+| [136_visit_group_catalogue_and_notifications.sql](../../database/migrations/136_visit_group_catalogue_and_notifications.sql) | `3457d1ce16a80bbf119ec7e4f6404225b5e81e83e028a80ebfa46fc95f5feba2` |
 
 ## Object declaration provenance
 
@@ -165,6 +169,7 @@ Updated 2 November 2026; 132 forward migration files. Declaration provenance is 
 | FUNCTION | `gp._PlanLiveTaskOwner` | 124 |
 | FUNCTION | `gp._PlanOfficeParticipant` | 124 |
 | FUNCTION | `gp._PlanPolicyFresh` | 124 |
+| FUNCTION | `gp._PlanPreparationRead` | 134 |
 | FUNCTION | `gp._PlanProjectReadable` | 124 |
 | FUNCTION | `gp._PlanReadiness` | 124 |
 | FUNCTION | `gp._PlanStepStatus` | 124 |
@@ -182,6 +187,7 @@ Updated 2 November 2026; 132 forward migration files. Declaration provenance is 
 | FUNCTION | `gp._RoleCapabilityAllowed` | 017, 029, 033 |
 | FUNCTION | `gp._StaffLocalIdentityEligible` | 029, 032, 033 |
 | FUNCTION | `gp._StaffRoleDelegationAllowed` | 033 |
+| FUNCTION | `gp._VisitGroupProjection` | 136 |
 | FUNCTION | `gp._VisitReadAllowed` | 010, 033, 048, 050, 055 |
 | PROCEDURE | `gp.AllocateGuard` | 017, 032, 110 |
 | PROCEDURE | `gp.AuditReceptionRegistration` | 065, 066 |
@@ -256,7 +262,7 @@ Updated 2 November 2026; 132 forward migration files. Declaration provenance is 
 | PROCEDURE | `gp.ManageProjectGroup` | 110 |
 | PROCEDURE | `gp.ManageProjectGroupGuard` | 110 |
 | PROCEDURE | `gp.ManageStaffCredential` | 029 |
-| PROCEDURE | `gp.ManageVisitPlanning` | 125 |
+| PROCEDURE | `gp.ManageVisitPlanning` | 125, 135 |
 | PROCEDURE | `gp.PlannedAccess` | 129, 131 |
 | PROCEDURE | `gp.PreviewPlanningNotifications` | 132 |
 | PROCEDURE | `gp.PurgeGuardAuthTransient` | 006 |
@@ -296,11 +302,13 @@ Updated 2 November 2026; 132 forward migration files. Declaration provenance is 
 | PROCEDURE | `gp._AuditFailure` | 003 |
 | PROCEDURE | `gp._BeginOperation` | 003 |
 | PROCEDURE | `gp._BeginRegistrationOperation` | 008 |
-| PROCEDURE | `gp._BuildVisitPlanVersion` | 125 |
+| PROCEDURE | `gp._BuildVisitPlanBase132` | 133 |
+| PROCEDURE | `gp._BuildVisitPlanVersion` | 125, 133, 135 |
 | PROCEDURE | `gp._CompleteOperation` | 003 |
 | PROCEDURE | `gp._DirectoryCutoff` | 003 |
 | PROCEDURE | `gp._GuardDutyJson` | 054, 059, 060, 063, 099 |
 | PROCEDURE | `gp._GuardSourceBudget` | 006 |
+| PROCEDURE | `gp._ManageVisitRoutingGroup` | 135 |
 | PROCEDURE | `gp._NotificationRelevance` | 004, 011, 048, 049, 061, 074 |
 | PROCEDURE | `gp._PlanningMailJson` | 132 |
 | PROCEDURE | `gp._ReadPrintCardDetails` | 014, 048, 049 |
@@ -384,12 +392,17 @@ Updated 2 November 2026; 132 forward migration files. Declaration provenance is 
 | TABLE | `gp.VisitPlanApprovers` | 123 |
 | TABLE | `gp.VisitPlanDecisions` | 123 |
 | TABLE | `gp.VisitPlanEvents` | 123 |
+| TABLE | `gp.VisitPlanExtraPeople` | 133 |
+| TABLE | `gp.VisitPlanGroupReviewers` | 135 |
+| TABLE | `gp.VisitPlanGroups` | 135 |
 | TABLE | `gp.VisitPlanMentions` | 123 |
 | TABLE | `gp.VisitPlanMessages` | 123 |
-| TABLE | `gp.VisitPlanNotices` | 123 |
+| TABLE | `gp.VisitPlanNotices` | 123, 136 |
 | TABLE | `gp.VisitPlanOperations` | 123 |
 | TABLE | `gp.VisitPlanParticipants` | 123 |
+| TABLE | `gp.VisitPlanPreparation` | 133 |
 | TABLE | `gp.VisitPlanProjects` | 123 |
+| TABLE | `gp.VisitPlanServiceTasks` | 133 |
 | TABLE | `gp.VisitPlanTaskOwners` | 123 |
 | TABLE | `gp.VisitPlanTasks` | 123 |
 | TABLE | `gp.VisitPlanThreads` | 123 |
@@ -398,4 +411,5 @@ Updated 2 November 2026; 132 forward migration files. Declaration provenance is 
 | TABLE | `gp.VisitPlans` | 123 |
 | TABLE | `gp.VisitPresence` | 001 |
 | TABLE | `gp.VisitRequests` | 001, 076, 116 |
+| TABLE | `gp.VisitRoutingGroups` | 135 |
 | VIEW | `gp.StaffLocalCredentials` | 029 |

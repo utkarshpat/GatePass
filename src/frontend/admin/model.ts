@@ -79,6 +79,8 @@ export class AdminModel {
   resets = new Set<() => void>();
   constructor(config: PageConfig) {
     this.config = config;
+    const requested = new URLSearchParams(location.search).get('view');
+    if(requested && ['overview','projects','staff','assignments','offices','reports','audit'].includes(requested))this.view=requested as View;
     this.accounts = new Accounts(this);
     this.staff = new Staff(this);
     this.roster = new Roster(this);

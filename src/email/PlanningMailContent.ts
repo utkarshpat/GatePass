@@ -15,6 +15,7 @@ export type PlanningMailJob = {
   details: {
     visitorName: string;
     locationName: string;
+    /** Legacy SQL projection name for the invitation creator / Visit owner. */
     hostName: string;
     vip: boolean;
     startsAtUtc: string;

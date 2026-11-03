@@ -1,63 +1,39 @@
 # 04. Data, state and transactions
 
-> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
-Approval, current pass validity, account presence and printed-card return are separate dimensions. A returned visit may retain `APPROVED` while its pass is `REVOKED`, the holder is outside and the printed-card control shows Returned. Return correction is receipt/pass-bound and audited; a replacement request/pass may fence correction. Optional `CompanyName` and canonical `DeviceTypesJson` belong to each individual visit snapshot. Migration 084 keeps the same five-code canonical order without an unbounded LOB sort. Migration 085 compares audit-window duration without overflowing far-future datetime values.
+## Source and naming
 
-## Baseline and domains
-Source contains forward migrations 001–132. The generated SQL catalog records hashes/object declarations, not a fresh live-database drift attestation. Compare deployment ledger and approved artifacts before startup. Never rewrite an applied migration to change behavior.
+There are 136 immutable forward migration files. The [generated SQL catalogue](REFERENCE_SQL_Catalog.md) records declaration provenance and hashes, not a new live-database drift attestation. Existing local application and isolated-test migrations through 136 were recorded in the prior implementation evidence; this documentation refresh does not apply SQL.
 
-| Domain | Records/relationships |
+| Domain | Main contract |
 |---|---|
-| Identity/directory | Users, Employees, staff, managers, accounts, locations, exact employee account-location membership |
-| Authorization | Scoped grants/capabilities, guard allocations/common duties, sessions/credential versions |
-| Intake/visits | Intake context, photo assets, independent VisitRequests and immutable approval snapshots |
-| Passes | Access pass lifecycle, credential hash/envelope and replaced lineage |
-| Movement | VisitPresence for requested account visits; separate employee-account Digital ID presence; immutable events |
-| Printing | Requested/dispatched jobs, retry receipts, explicit reprints |
-| Notifications | Outbox, leases/fences, attempts, current relevance and acknowledgement |
-| Audit | Role/credential history, operation correlations and idempotency receipts |
-| Outlook | EmployeeEntraIdentities maps verified tenant/object ID to employee |
+| Identity/directory | Users, employees, staff, managers, exact office/account membership and freshness |
+| Authorization | Scoped grants, capabilities, current sessions and guard duties |
+| Ordinary visits | Independent request snapshots, decisions, pass credentials, presence and movement history |
+| Printing/return | Fenced print jobs/handoffs, final returns and reasoned corrections |
+| Coordination | Projects, approved hosts/policies, versioned plans, approvals/tasks, scoped threads/events/replays |
+| Preparation/groups | Versioned preparation, extra recipients/service tasks, reusable routing groups and selected snapshots |
+| Delivery/audit | Independent registration/planning queues, worker leases/fences and append-only controlled audit |
 
-Historical data dictionary explains columns but later ALTER migrations supersede old counts. The source catalog gives provenance; inspect the deployed catalog for actual latest columns, indexes, constraints and permissions.
+Legacy `gp.Projects` / `gp.ProjectLocations` represent accounts and account-office pairs. Real projects live in `gp.SubProjects`. Legacy operational PROJECT enum/field names remain compatible. Coordination `HostUserId`/domain `hostId` and read/mail `hostName` mean Visit owner. Preparation `visitOwnerId` means additional FYI contact.
 
-## Visitor stay and routing contracts
-Migration 116 accepts exactly one visitor, rejects a public account selection, resolves the eligible host route server-side and permits a today-started stay through the selected final day within policy. SQL stores the end as exclusive next midnight. Display labels subtract one minute only at India calendar-day boundaries; non-midnight ends and authorization comparisons remain unchanged. Migration 117 keeps active multi-day visitors in current operational queues. Migration 118 retains bounded device canonicalization. Historical grouped visits are not deleted or rewritten.
+## Independent state dimensions
 
-## Independent lifecycles
-Decision, credential validity, presence, print job and notification are separate. APPROVED is not Inside. QR verification does not write entry. Printed pending cards do not grant account access. Revocation/cancellation does not silently erase occupancy.
+Approval, credential validity, account presence and printed-card return are separate. A returned request may still show APPROVED while its pass is REVOKED and the holder is outside. Verification does not create movement. A pending card is not entry permission. Common-area verification does not establish account presence or authoritative building occupancy.
 
-Decision states include PENDING, APPROVED, DENIED and CANCELLED. Credential contracts separately distinguish pending/active/revoked/replacement; expiry also follows validity timestamps. Permission cannot be derived from badge color or display text.
+Every state-changing operation locks/rechecks its authorized scope and uses an operation-specific stable replay key. Replacement/cancellation invalidates applicable credentials/render/outbox material while preserving unresolved actual presence for controlled exit/reconciliation. Return correction binds the current pass/return receipt and reason; replacement can fence correction.
 
-## Idempotency and concurrency
-Retain a stable client key for the same uncertain operation. SQL serializes relevant entities and binds replay to actor, payload and snapshot. Retry must not duplicate a request, movement, grant or render dispatch. Deliberate reprint/new operations use new keys. Replay still checks current scope/membership.
+Preview is a read. Print creates an audited job; live status, render fencing and final authorization are separate from an immutable request receipt. DISPATCHED means server handoff, not a physically printed card. Reprint is another job without arbitrarily rotating the pass QR.
 
-A lost response is an unknown outcome, not proof of rollback. Reconcile live state. External email cannot inherit exactly-once SQL semantics: a crash after provider acceptance and before acknowledgement may duplicate mail while business decisions remain idempotent.
+## Coordination versions and privacy
 
-## Account presence
-Digital ID entry requires exact current employee account-office membership. Each selected account has independent presence. A later valid daily card can close an earlier entry using retained employee/account identity, recording original entry and presented visits.
+- 122–128 introduce the project catalogue, scoped policies/hosts, versioned planning, private discussions and source-office sponsorship.
+- 129–130 were an extension; 131 restores the coordination-only operational boundary. Their presence in history does not enable a current planned gate.
+- 132 adds `gp.PlanningMailDispatch` with fenced worker claim/content/renew/complete contracts.
+- 133–134 add preparation, extra people, service-task ownership, scoped routing/contact reads and stable draft round-trip.
+- 135–136 add `gp.VisitRoutingGroups`, per-version selected group snapshots/reviewers and scoped catalogue/notification delivery.
 
-Inside lists current entries recorded by that guard for the selected duty. Another assigned guard may process departure without inheriting roster ownership. Revocation blocks new entry; current occupants retain an authorized departure/reconciliation path. Invalid/cancelled credentials are not silently replaced while their account occupancy remains unresolved.
+Each destination approval is independent and additive to office requirements. Revisions snapshot new rules/people/groups and invalidate obsolete readiness as required. Editing/retiring a selected group can cause POLICY_CHANGED; removed approvers lose current authority and removed FYI recipients are suppressed before dispatch. Raw email members receive no identity, review link or project access.
 
-Common areas are office-scoped verification duties, not fake accounts/campus checkpoints. They have no entry/exit/global occupancy. Pending or approved visitor identity may be verified there according to SQL policy; account entry remains approval-gated.
-
-Migration 064 updates reception/report read models: current Temporary ID occupants come from employee/account presence, including replacement IDs and unclosed overnight entries. Office reports count distinct employee IDs across authorized account duties; a account report counts only its authorized scope. Reception's matching-list Inside metric deduplicates replacement employee IDs. These current presence counts are separate from selected-day request totals and do not represent building occupancy.
-
-## Print lifecycle
-Preview is a read. A keyed print request creates an audited job. Its immutable replay receipt may still say REQUESTED after dispatch, so the UI checks live status. Render is fenced and reauthorizes material; DISPATCHED means server handoff. Popup acknowledges successful image decoding with the exact job ID, origin and opener. Browser display and physical printing are distinct. Explicit reprint creates a separate job without rotating the current pass QR.
-
-Sources: migrations 003-020, 048-062; docs/database/05_State_and_Transaction_Contracts.md; docs/34_Guard_Duties_and_Project_Presence.md; docs/37_Reception_Audit.md.
-
-## Account host policy update
-
-See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
-
-## Visit Coordination
-
-Migrations 122–127 add scoped project hosts/policies, versioned plans, independent decisions, arrangement owners, private threads/replies/mentions, events, replay receipts and notice intents. Four execute-only API procedures own configuration, read projections and writes. No direct table access or movement grants are added. [Current contract](../98_Visit_Coordination_Persistence_01_November_2026.md).
-
-Migration 128 separates source-office sponsorship from destination host rosters, retaining active/fresh destination checks and existing independent approvals. See [current sponsorship contract](../99_Location_Sponsored_Cross_Account_Invitations_01_November_2026.md).
-
-Coordination is an additive host/facilities pre-planning workspace. It contains invitations, project approvals, arrangements, VIP/FYI recipients, discussion and activity. QR card allocation, reception, guard scanning, entry/exit and returned badges use their existing workflows. No manual invitation linking or separate planned gate is exposed. See [coordination-only scope correction](../101_Coordination_Only_Scope_02_November_2026.md).
-
-Migration 132 adds a separate transactional planning mail queue with worker-only fenced claims, live recipient/content projections, bounded retry and completion audit. Only new notice inserts queue mail; existing historical notices are not backfilled. See [the planning mail contract](../102_Coordination_Email_Notifications_02_November_2026.md).
+Drafts do not enqueue planning invitation mail. New notice inserts enqueue delivery; old history is not backfilled. Planning readiness, including required support tasks, is a planning result only. It neither creates a pass nor changes existing movement/return authorization.

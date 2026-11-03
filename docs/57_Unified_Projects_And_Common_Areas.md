@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Unified projects and common areas
 
 **Administration → Projects & areas** now shows projects and common areas together as labelled cards, ordered by name. One **Add** button opens a shared creation form. Its **Type** selector offers only the options authorized for the selected office:

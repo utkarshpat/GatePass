@@ -1,51 +1,39 @@
 # 08. Email, Graph and Outlook
 
-> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
-Current request/approval details and notification rendering include optional visitor company and declared device types. Host Approve/Reject stays disabled while sign-in details/photo loading is still in progress, preventing an ignored early click. The retained rehearsal verifies real host decisions in the browser; queued notifications do not establish mailbox delivery. It sends no real messages.
+## Ordinary registration mail
 
-## Notifications
-New individual requests with a recipient queue REQUEST_RECEIVED. External/account requests separately notify the assigned host. Temporary IDs auto-approve and queue informational TEMP_ID_MANAGER_NOTICE. Decisions independently queue results. Reused IDs/same-key replay must not duplicate receipt records.
+New individual requests with an address queue receipts; external/account requests independently notify the assigned Host. Temporary IDs auto-approve and issue informational manager notices. Decisions queue individual results. Same-key replay/reuse must not duplicate business receipts.
 
-Worker uses dedicated SQL identity, bounded claims and lease/fence ownership. It resolves current directory contacts, obtains authorized content, rechecks relevance near dispatch, sends outside the transaction and acknowledges. Missing manager contact may retry without undoing issuance. Guard authorization reads SQL, not email delivery status.
+Ordinary Host links open minimal authenticated detail and require explicit POST decision bound to current Host, account-office, snapshot and deadline. Internal holder links require authentication; external holder links use expiring individual capability/session authorization. Reference numbers alone are insufficient. GET/link scanners never approve.
 
-## Delivery and test status
-Graph calls fixed Microsoft HTTPS endpoints with explicit sender and saved sent items. Application mode uses the approved mailbox; personal testing uses the delegated signed-in mailbox. HTTP 202 means provider acceptance, not inbox delivery. A crash before SQL acknowledgement may duplicate mail while business decisions remain idempotent.
+## Planning mail — implemented
 
-Personal Outlook-to-personal-mail delivery was confirmed during development. Company delivery was not confirmed and was deferred until organization sender setup. An empty user-visible quarantine view is not proof of acceptance. Do not claim company mail acceptance or repeatedly resend without diagnostics.
+Migration 132 introduces the independent planning queue. Drafts do not notify. Submission, relevant updates/cancellation and permitted mentions generate scoped notifications; old history is not backfilled. Preparation/extra people and selected groups extend recipient routing through migrations 133–136.
 
-Live addresses, tenant-specific credentials, secrets and personal token caches are excluded. Personal connector is a testing bridge, not final organization sender/identity architecture.
+Internal assigned reviewers, facilities/task owners, permitted discussion members and ordinary/VIP FYI contacts receive reduced projections. Raw group email/distribution-list recipients are notification-only, with no login, decision link or project details. Current group/role/directory changes are rechecked before dispatch.
 
-## Ordinary review links
-Normal Approve/Reject/View links open minimal authenticated request detail. Assigned host confirms explicitly; GET/link scanners never decide. SQL checks identity, exact host/account-office, freshness, snapshot, pending state and deadline. Internal status requires ownership. External receipt uses an individually signed expiring fragment capability; public reference is not an access token.
+Planning emails identify the invitation creator as **Visit owner**. Destination approval is a Host responsibility. The legacy `hostName` wire field still supplies the creator name; ordinary visitor emails' Host remains the actual selected Host. Additional contact/alternate recipients do not acquire ownership or approval authority.
 
-## Native Outlook actions
-Optional Action.Http Approve/Reject has View details fallback. The endpoint validates organizational Entra v2 token and separate capability: configured issuer/audience/tenant, object ID, delegated scope, permitted Actions client, signature and time bounds. Personal, app-only, Graph-audience, ID and unsupported legacy tokens do not authorize it.
+The combined worker drains registration/planning queues independently, using bounded claims, lease renewal, relevance checks, transport and fenced completion. It does not keep a database transaction open during provider delivery. A provider acceptance followed by lost SQL acknowledgement can duplicate delivery, although business decisions remain idempotent. Planning retries are bounded; operators investigate controlled error codes rather than blindly resetting/draining queues.
 
-Capability binds individual request/host/snapshot/decision/idempotency. Trusted maintained tenant/object mappings identify the actual host. Forwarding does not transfer authority. A client-supplied email is not a trusted identity binding.
+## Provider and acceptance
 
-## Activation sequence
-1. Approve public HTTPS origin and complete production composition.
-2. Provision organization sender and approved Graph permissions/authentication.
-3. Register organizational Entra API/scope and Actionable Messages provider; complete consent/sender verification.
-4. Populate trusted current employee tenant/object mappings.
-5. Provision isolated Outlook SQL identity and durable protected action keys for API/worker.
-6. Accept compatible clients, actual tokens, delivery, scope denial, repeated/opposite actions and fallback.
-7. Only then enable GATEPASS_OUTLOOK_ACTIONS_ENABLED.
+Graph transport/application-mode configuration is implemented. Production needs an approved no-reply mailbox, restricted app sending authorization, tenant/client credentials and complete directory/key/origin configuration. HTTP 202/SENT means provider acceptance, not inbox delivery.
 
-Implementation expects Entra v2 authentication and embedded unsigned Adaptive Card on the approved sender-verification route. If organizational policy requires signed cards, add/accept the certificate-signing adapter before activation. Local preview/Gmail delivery is not native Outlook approval acceptance. Document 36 contains the detailed contract.
+Personal Outlook-to-personal-mail delivery was previously confirmed in development. Company delivery was not confirmed and was deferred to organization setup. The latest planning tests use a mock Graph provider and send no network email. Organizational delivery, policy, Outlook-client and externally reachable link acceptance remain pending.
 
-Sources: docs/35_Email_Driven_Request_Workflow.md; docs/36_Outlook_Direct_Approvals.md; src/email; migrations 061-062.
+The private personal delegated cache is a development bridge; production uses approved organization application authentication. Never publish caches, secrets, real capability URLs or authenticated mail artifacts.
 
-## Current organization configuration
-Production Graph sender, tenant/client ID and client secret are configured through `.env`, with an organization-approved mailbox-scoped sending permission. The live worker requires application authentication; personal Outlook device-code cache remains development-only. `.env` also configures approved directory/link-key module paths and private mail-photo storage. Native Outlook actions remain separately opt-in and require their provider/token/key configuration. Calendar-day expiry is displayed as the final date at 23:59 in emails and card images. Corporate delivery acceptance remains pending.
+## Native Outlook actions — separate opt-in
 
-## Account host policy update
+The implemented action handler validates organizational Entra v2 bearer identity and a separate signed action capability bound to request/Host/snapshot/decision/retry. Personal, app-only, Graph-audience, ID or unsupported legacy tokens do not authorize it. Forwarding an email does not transfer authority. The ordinary authenticated detail page remains the fallback.
 
-See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+Before enabling: complete public HTTPS/composition, organization sender/Graph approval, Entra API/scope and Actionable Messages onboarding, trusted tenant/object mappings, isolated Outlook SQL identity and durable action keys. Accept real clients/tokens/repeated/opposite actions and delivery. Keep `GATEPASS_OUTLOOK_ACTIONS_ENABLED` off until this is done. Signed-card organization requirements need a separately accepted adapter if required. See [the detailed implementation contract](../36_Outlook_Direct_Approvals.md).
 
-## Coordination email notifications
+## Commands and operation
 
-Migration 132 adds a planning-only outbox and scoped dispatch through the existing Graph service. Approval authorities, facilities, configured ordinary/VIP FYI recipients and authorized mentions receive reduced recipient-specific content; updates/cancellation use published visit details. Drafts do not notify, and historical notices are not backfilled. Current directory/role checks, bounded retries and fenced claims apply. Emails open authenticated Coordination; they do not allocate a pass or authorize entry. See [routing, preview commands, privacy and evidence](../102_Coordination_Email_Notifications_02_November_2026.md). No real planning mail was sent during verification; corporate delivery acceptance remains pending.
+`mail:preview` produces local ordinary preview. `mail:planning -- <selected-plan-uuid>` previews only a selected plan into protected files. Its test send option requires an explicitly authorized recipient/action and does not drain ordinary/global mail. Do not run connect/test/scenario/send commands as part of documentation verification. See [planning command contract](../102_Coordination_Email_Notifications_02_November_2026.md) and [configuration](../86_Runtime_Environment_Configuration.md).
 
-Coordination is an additive host/facilities pre-planning workspace. It contains invitations, project approvals, arrangements, VIP/FYI recipients, discussion and activity. QR card allocation, reception, guard scanning, entry/exit and returned badges use their existing workflows. No manual invitation linking or separate planned gate is exposed. See [coordination-only scope correction](../101_Coordination_Only_Scope_02_November_2026.md).
+Emails do not allocate a pass, authorize entry or replace current SQL decisions. Reception/Guard reminders apply to their existing ordinary request flow; planning has its own notices and discussions.

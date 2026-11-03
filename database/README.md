@@ -1,3 +1,23 @@
+# Database setup and migration guide
+
+> Maintained entry reviewed 3 November 2026; **136 forward migration files**. [Current data/state](../docs/system/04_Data_State_and_Transactions.md), [SQL catalogue](../docs/system/REFERENCE_SQL_Catalog.md), [setup](../docs/system/07_Development_Setup_and_Configuration.md).
+
+## Current workflow
+
+1. Select an approved dedicated synthetic target and migration identity; record its existing ledger and backup requirements. Never use runtime identities for schema deployment.
+2. Verify source with `npm run check:migrations`. Use baseline setup only for its supported empty-test-database stage; it is not a complete current deployment runner.
+3. Apply **only missing** reviewed versions in ascending order using the appropriate helper. Later local additive versions use `database/setup/Apply-LocalForwardMigration.ps1 -Version NNN`; it requires the previous ledger version, verifies the source manifest and refuses reapplication. This helper targets the configured development database, not production.
+4. Do not edit applied migrations, bypass checks, drop retained databases or infer schema drift correctness from table counts alone. Production needs its own reviewed migration/rollback-or-restore deployment contract.
+5. `npm run test:coordination` owns a marked disposable database, applies all current migrations, runs SQL/browser/mock-mail checks, and cleans only its verified owned target. Independent SQL-heavy workloads must run sequentially.
+
+Source files 122–136 implement coordination/catalogue, policies/hosts, versions/threads, preparation/recipients/groups and mail. 131 restores existing operational gates after the withdrawn 129–130 extension. Regular pass/movement behavior is separate from planning readiness. Legacy Projects/ProjectLocations mean accounts/account-office pairs; SubProjects are actual projects. Planning HostUserId is the Visit owner.
+
+No live database, private configuration or credential was accessed/applied by this documentation refresh. Inventories and old test counts are source/dated evidence, not a new deployment attestation.
+
+## Historical phase-by-phase instructions
+
+The original baseline/phase notes follow for traceability. Their small migration/table totals and fixed-list apply examples are historical; do not treat them as the current complete bootstrap sequence.
+
 > Updated 28 October 2026: current source ends at migration **118**. Read [the current setup guide](../docs/system/07_Development_Setup_and_Configuration.md), [migration catalogue](../docs/system/REFERENCE_SQL_Catalog.md) and [release evidence](../docs/88_Documentation_And_Release_28_October_2026.md). The staged examples below are historical; the baseline/fixed-list helpers do not install every current version. Apply missing reviewed versions in order with `database/setup/Apply-LocalForwardMigration.ps1 -Version NNN`; never rewrite applied migrations.
 
 Latest pre-push audit: [bug fixes and complete E2E verification](../docs/69_Pre_Push_Audit_And_E2E_24_October_2026.md).

@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Invitations and Visit Coordination — foundation
 
 > Scope clarified on 2 November 2026: [host/facilities coordination only](101_Coordination_Only_Scope_02_November_2026.md). Existing QR card allocation, reception and guard workflows remain. The reception-linking/separate-gate extension in report 100 was withdrawn; its results below are historical.

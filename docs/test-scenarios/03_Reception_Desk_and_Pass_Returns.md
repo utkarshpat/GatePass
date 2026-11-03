@@ -1,107 +1,20 @@
-# 03. Reception Desk & Printed Pass Returns
+# 03. Reception desk and pass returns
 
-> Updated 27 October 2026: current behavior/evidence is in [report 88](../88_Documentation_And_Release_28_October_2026.md). Visitor registration is single-person; employee account flows remain same-day; all calendar-day pass labels end at 23:59. Google station sign-in remains pending.
+> Maintained manual acceptance catalogue — 3 November 2026. These are test instructions, not newly executed results. [Actual evidence](../system/10_Testing_CI_and_Evidence.md).
 
-> 23 October presentation run: [current evidence and retained demo data](../55_Presentation_Rehearsal_23_October_2026.md). Earlier execution counts/cleanup statements in this catalog describe their dated runs; this presentation dataset is retained.
+Use an authorized reception office. The scanner FAB sits above Manual registration; there is no language option in the profile.
 
-## Surface
-- **Routes**: `/reception`, `/reception/print`, `/reception/register/<office-code>`
-- **APIs**: `/api/reception/me`, `/api/reception/list`, `/api/reception/lookup`, `/api/reception/detail`, `/api/reception/photo`, `/api/reception/preview`, `/api/reception/print/request`, `/api/reception/print/status`, `/api/reception/print/render`, `/api/reception/remind-host`, `/api/reception/return`, `/api/reception/correct-return`, `/api/reception/manual/*`
-- **SQL Procedures**: `gp.GetReceptionContext`, `gp.ListReceptionVisits`, `gp.LookupReceptionVisits`, `gp.GetVisitDetail`, `gp.GetReceptionEmployeeTimeline`, `gp.GetReceptionCardSource`, `gp.RequestPassPrint`, `gp.GetPassPrintJob`, `gp.BeginPassRender`, `gp.FinishPassRender`, `gp.DispatchPassPrint`, `gp.RemindVisitHost`, `gp.ReturnReceptionPass`, `gp.CorrectReceptionReturn`, `gp.AuditReceptionRegistration`
+| Case | Exercise | Expected result |
+|---|---|---|
+| REC-01 | Load/reload/filter queues, including a delayed/failed page. | Matching KPIs derive from complete successful reads; failures do not become zero totals or permanent blank state. |
+| REC-02 | Search name/employee/pass reference and scan an issued QR. | Authorized matching entry opens directly with available actions, history and movement. |
+| REC-03 | Open History and apply valid/invalid date ranges. | Scoped range results, loading/error/retry; no cross-office data. |
+| REC-04 | Tap a row or eye icon to view pass. | Card above details/timeline; Host name/email distinct from visitor; no overlapping row controls. |
+| REC-05 | Print approved/pending printable cards; attempt expired/revoked card print. | Current server print policy enforced; expired cards have no usable print action. |
+| REC-06 | Print/reprint, close/fail decode and retry uncertain transport. | Direct browser print coordinator; correct live job/replay handling; handoff is not physical output. |
+| REC-07 | Open Manual registration, complete one visitor, fail/retry a step and close. | Same functional validation/card flow under isolated staff/intake scope; background focus/scroll restored. |
+| REC-08 | Send a pending-Host reminder or use an ineligible/foreign request. | Server cooldown/current eligibility/scope; reminder cannot change Host or approve. |
+| REC-09 | Try Returned while inside any relevant account or with unconfirmed declared devices. | Return rejected until all current outside/device conditions hold; approved action is audited. |
+| REC-10 | Correct a mistaken return with reason; try stale receipt/pass after replacement. | Reasoned current-receipt correction retained alongside original audit; stale correction fenced. |
 
----
-
-## Test Cases
-
-### TC-REC-01: Reception Sign-In, Profile & Office Switching
-- **Steps**:
-  1. Sign in at `/` with `reception1@example.com` / `Sopra@123`.
-  2. Verify redirect to `/reception` and office badge showing `Noida`.
-  3. Open Account menu -> **Profile**, verify operator name and assigned office capabilities (`View and print` or `View only`).
-  4. Switch office selector (`#reception-location`) if multiple offices are granted.
-- **Expected Result**:
-  - Switching offices resets search/approval/print/type filters, clears previous office rows/KPIs immediately, and loads the selected office's visits.
-
-### TC-REC-02: Interactive KPI Cards & Toolbar Filters
-- **Steps**:
-  1. Verify KPI cards: **Registered** (`#kpi-total`), **Approval pending** (`#kpi-pending`), **Inside (matching)** (`#kpi-inside`), and **Pending return** (`#kpi-returns`).
-  2. Click **Approval pending** KPI -> table filters to live pending requests (`!returnedAtUtc && passStatus === 'PENDING' && validUntilUtc > now`).
-  3. Click **Inside (matching)** KPI -> resets approval filter to `ALL`, toggles `insideOnly`, and shows deduplicated employee/visitor presence.
-  4. Click **Pending return** KPI -> loads office-wide unreturned printed passes (`pendingReturns: true`) across all dates.
-  5. Filter by Print status (`Not printed`, `Printed`, `Pending return`, `Returned`), Type (`Employee`, `Visitor`), Search box, and **Clear** button.
-- **Expected Result**:
-  - All filters and `[data-status]` `aria-pressed` states remain synchronized.
-
-### TC-REC-03: View Pass Details, Card Preview & Movement Timeline
-- **Steps**:
-  1. Click a visitor/employee row or the eye icon button (`View pass for ...`).
-  2. Inspect `#visit-dialog`: Pass ID, Company, Devices, Office, Account / Assigned accounts, Host name & email, Purpose, Valid from/until, Print count, Card status, and Entry/exit timeline.
-- **Expected Result**:
-  - Printable passes (`PENDING` or `APPROVED`, active/pending pass, unreturned, not expired, `canPrint: true`) render the high-res card preview image (`#reception-card img`) and enable `#detail-print`.
-  - Non-printable passes (expired, denied, cancelled, revoked, returned, or view-only operator) render a read-only pass summary without QR credentials and hide `#detail-print`.
-  - Opening a stale row refreshes `status`, `isInside`, `passStatus`, `returnedAtUtc`, `printCount`, `companyName`, and `deviceTypes` on the underlying table row.
-
-### TC-REC-04: Direct Print & Intentional Reprint Handoff
-- **Steps**:
-  1. Click **Print** on a printable row (or **Print pass** inside `#visit-dialog`).
-- **Expected Result**:
-  - Hidden iframe `/reception/print` loads, `ReceptionPrintCoordinator` requests a print job (`gp.RequestPassPrint`), verifies live status (`gp.GetPassPrintJob`), renders and dispatches the card (`gp.BeginPassRender` -> `gp.FinishPassRender` -> `gp.DispatchPassPrint`), and invokes the browser print dialog.
-  - Row badge updates to `Printed`, action button changes to `Reprint`, `#detail-print-count` increments, `#detail-card-status` updates to `Printed — awaiting return`, and **Pending return** KPI increments.
-
-### TC-REC-05: Scoped Host Reminder & 5-Minute Cooldown
-- **Steps**:
-  1. Open `#visit-dialog` for a `PENDING` visitor or `EMPLOYEE_PROJECT` request.
-  2. Verify `#remind-host` button and `#reminder-status` text.
-  3. Click **Remind host**.
-- **Expected Result**:
-  - Calls `gp.RemindVisitHost` with an idempotent `clientKey`.
-  - Enqueues a `HOST_APPROVAL_REQUEST` outbox row (if not already queued or within the 5-minute cooldown), disables `#remind-host`, and displays `Host reminder queued.`.
-
-### TC-REC-06: Manual Visitor Registration (Isolated Iframe Intake)
-- **Steps**:
-  1. Click the floating **Manual registration** button (`#assistedFab`).
-  2. Verify `#assisted-dialog` opens an iframe `/reception/register/<office-code>`.
-  3. Complete Visitor details (Name, Mobile, Email), Account, Host, Purpose (`Contractor` / `Support staff` / `Business meeting`), Photo, Review, and Submit.
-  4. Close the manual dialog.
-- **Expected Result**:
-  - Uses `/api/reception/manual/*` with `gp-reception-intake` cookies (isolated from public `/api/registration/*`).
-  - Records `RECEPTION_MANUAL_REGISTER` in `gp.SecurityAuditEvents` attributed to the reception operator.
-  - Parent reception table automatically refreshes to show the new visitor registration.
-
-### TC-REC-07: Registration History Dialog (Multi-Day Range)
-- **Steps**:
-  1. Click **History** (`#open-history`).
-  2. Select a `From` and `To` date range (within -30 to +90 days) and click **Refresh history**.
-  3. Verify `From > To` validation message (`From date must be on or before To date.`).
-- **Expected Result**:
-  - History dialog paginates through all visits in the range without altering the main dashboard's `#reception-date`.
-
-### TC-REC-08: Final Printed Pass Return & Mandatory Device Verification (`gp.ReturnReceptionPass`, Migrations 076 & 080)
-- **Steps**:
-  1. Locate a row with `printCount > 0` and `returnedAtUtc === null` (either in the daily table or inside `#visit-dialog`).
-  2. Verify that if `isInside === true`, the `Card status for ...` dropdown (`select.card-status-select`) is disabled (`Record every project exit before returning the pass`).
-  3. When `isInside === false`, select `Mark returned…` (`RETURN`) from the `Card status for ...` dropdown:
-     - **Without declared devices**: `#devices-return-dialog` opens with confirmation message and button `Confirm returned`.
-     - **With declared devices (`deviceTypes.length > 0`)**: `#devices-return-dialog` opens listing a required checkbox for every declared device (`Laptop`, `Tablet / iPad`, etc.) and button `Verify devices & mark returned`. Attempting to confirm before checking every box is blocked; checking all boxes submits `/api/reception/return` with `devicesVerified: true`.
-     - Verify that switching offices (`#reception-location`) or navigating away (`pagehide`) closes `#devices-return-dialog` and clears `deviceReturn`.
-- **Expected Result**:
-  - SQL `gp.ReturnReceptionPass` independently enforces `@DevicesVerified = 1` whenever `DeviceTypesJson <> N'[]'` (`54503`) and persists `PassReturns.DevicesVerified`.
-  - Pass status becomes `REVOKED`, delivery links are revoked, in-flight print jobs/notifications are cancelled, card status dropdown updates to `Returned`, Print/Reprint buttons hide, and **Pending return** KPI decrements.
-
-### TC-REC-09: All-Date Scoped Reception Lookup & QR Pass Scan (`gp.LookupReceptionVisits`, Migration 080)
-- **Steps**:
-  1. Type a 2+ character query (name, employee ID, mobile, email, request reference, or pass number) into `#lookup-search` in the Reception header.
-  2. Verify live dropdown results (`#lookup-panel`, 20 rows per batch with `More matches` pagination) across all retained dates in the current office.
-  3. Press `Enter` when a single match exists (or click a match button) to open `#visit-dialog` directly.
-  4. Click the floating QR scanner button (`#lookup-scan`), scan a current printed pass QR (including an already-returned pass QR), and verify `#lookup-scanner` closes, stops camera tracks, hashes the credential at the service boundary, and opens `#visit-dialog`.
-- **Expected Result**:
-  - Lookup is strictly read-only (`RECEPTION_LOOKUP` audit event without logging raw QR/search text) and never records movement or discloses foreign-office/purged visits.
-
-### TC-REC-10: Audited Mistaken-Return Correction (`gp.CorrectReceptionReturn`, Migration 080)
-- **Steps**:
-  1. On a returned pass (`returnedAtUtc !== null`, `isInside === false`), select `Correct mistaken return…` (`CORRECT`) from the `Card status for ...` dropdown (in the table row or `#detail-card-control` inside `#visit-dialog`).
-  2. In `#correct-return-dialog`, verify submitting with fewer than 5 characters is blocked, then enter a reason (5–300 chars) in `#correct-return-reason` and click **Correct return**.
-- **Expected Result**:
-  - Calls `/api/reception/correct-return` with `visitRequestId`, `expectedPassId`, `expectedReturnedAtUtc`, `reason`, and idempotent `clientKey`.
-  - Copies the original return receipt and correction metadata into `gp.PassReturnCorrections`, deletes the active `gp.PassReturns` marker, restores `AccessPasses.Status` (`ACTIVE` for approved, `PENDING` for pending), re-queues a fresh `HOST_APPROVAL_REQUEST` outbox notice if still pending before deadline, and records `PASS_RETURN_CORRECTED` in `gp.SecurityAuditEvents`.
-  - Replaying the original return `clientKey` after correction is rejected with `54503` (`CONFLICT`), and correction is blocked if the person is inside a account (`54504`) or a newer overlapping request exists in the office (`54503`).
+Use synthetic identities/media and an approved test environment. Record the environment, source revision, actor/scope, actual result and sanitized correlation. Do not send real email or mutate production as part of a manual documentation walkthrough.

@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Browser E2E, counts and remaining edge cases — 24 October 2026
 
 > This is the earlier 24 October validation snapshot, completed before commit/push was requested. The later [final browser verification and presentation guide](67_Final_Browser_Verification_And_Presentation.md) records the fresh run, new retained 25 October bookings and final source push. Earlier counts below remain dated evidence.

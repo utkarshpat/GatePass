@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # P0 group boundaries, stable refresh and export memory — 26 October 2026
 
 **Later final browser evidence:** [Report84](84_Final_Browser_Verification_And_Retained_Presentation_26_October_2026.md) records a fresh **345 pass/0 fail/0 skip** full run and15 retained current-day presentation records. Neeche ke earlier broad-run failures historical triage evidence hain.

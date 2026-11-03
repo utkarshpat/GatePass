@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Coordination-only scope correction
 
 Clarified by the user on 2 November 2026: the requested addition is a host/facilities pre-planning and coordination workspace. Existing QR card allocation and the existing reception/guard operational flow must stay in place.

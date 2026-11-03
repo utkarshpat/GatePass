@@ -1,3 +1,5 @@
+import type {VisitGroupReference,VisitRoutingGroup} from '../shared/VisitGroups.ts';
+import type {VisitPreparation,AdditionalPlanningPerson} from '../shared/VisitPreparation.ts';
 /** Trusted directory/policy input. An HTTP caller must never supply this context. */
 export type PlanningPerson = {
   userId: string;
@@ -45,6 +47,7 @@ export type PlanningProject = {
   approvalRules: ApprovalRule[];
 };
 export type PlanningContext = {
+  groups?: VisitRoutingGroup[];
   nowUtc: string;
   people: PlanningPerson[];
   locations: LocationPlanningPolicy[];
@@ -62,6 +65,9 @@ export type VisitPlanDraft = {
   startsAtUtc: string;
   untilUtc: string;
   vip: boolean;
+  groups?: VisitGroupReference[];
+  preparation?: VisitPreparation;
+  additionalPeople?: AdditionalPlanningPerson[];
   /** Hotel check-out date is exclusive; these are office calendar dates. */
   stay?: { checkInDate: string; checkOutDate: string; notes?: string };
 };
@@ -84,6 +90,7 @@ export type DiscussionThread = {
   messages: { id: string; authorId: string; body: string; replyToId: string | null; mentionIds: string[]; atUtc: string }[];
 };
 export type PlanVersion = {
+  groups?: VisitRoutingGroup[];
   number: number;
   draft: VisitPlanDraft;
   locationPolicy: LocationPlanningPolicy;
@@ -95,12 +102,14 @@ export type PlanVersion = {
 export type PlanEvent = { sequence: number; kind: string; actorId: string; version: number; atUtc: string; targetId?: string; reason?: string; remark?: string; status?: ArrangementTask['status']; resolved?: boolean };
 export type PlanningNotice = {
   eventSequence: number;
-  recipientId: string;
+  recipientId?: string;
+  recipientEmail?: string;
   kind: 'APPROVAL' | 'ARRANGEMENT' | 'FYI' | 'DISCUSSION' | 'UPDATE' | 'CANCELLED';
   targetId?: string;
 };
 export type VisitPlan = {
   id: string;
+  /** Persisted legacy name: authenticated invitation creator / Visit owner. */
   hostId: string;
   revision: number;
   state: 'DRAFT' | 'SUBMITTED' | 'CANCELLED';

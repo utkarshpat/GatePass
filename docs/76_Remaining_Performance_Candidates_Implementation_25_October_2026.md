@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Remaining performance candidates — implementation and verification
 
 Second implementation pass for [candidate report 75](75_Additional_Performance_Blocker_Candidates_25_October_2026.md). Changes local/uncommitted hain, base commit `4899a7cd7b054674425e539be19d5c57033c1eee`. Local `GatePass_DesignTest` schema **107** tak apply hua. First-pass results [report 74](74_Performance_Optimization_Implementation_25_October_2026.md) mein preserved hain.

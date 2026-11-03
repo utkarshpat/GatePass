@@ -1,3 +1,4 @@
+import { StaffNavigationProvider } from "./shared/StaffNavigation.tsx";
 import { Resources } from "./shared/model.ts";
 declare const __GATEPASS_UI_TEST__: boolean;
 import { Component, type ReactNode, type ComponentType } from "react";
@@ -39,7 +40,15 @@ function Application({
   Page: ComponentType<PageProps>;
 }) {
   usePwa(config.page !== "email" && !config.manualReception);
-  return <Page config={config} />;
+  return ["admin", "reception", "guard", "coordination"].includes(
+    config.page,
+  ) ? (
+    <StaffNavigationProvider config={config}>
+      <Page config={config} />
+    </StaffNavigationProvider>
+  ) : (
+    <Page config={config} />
+  );
 }
 export function renderPage(Page: ComponentType<PageProps>) {
   const config = JSON.parse(

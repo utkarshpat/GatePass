@@ -1,3 +1,6 @@
+import { coordinationRole } from "./roles.ts";
+import { GroupMembers } from "./VisitGroupCatalogue.tsx";
+import { PreparationSummary } from "./PreparationSummary.tsx";
 import { useState, useRef, useEffect, type FormEvent } from "react";
 import type { Detail, Thread } from "./types.ts";
 import { displayTime } from "./types.ts";
@@ -416,7 +419,8 @@ function ThreadForm({
               .filter((a) => a.canDiscuss)
               .map((a) => (
                 <option key={a.id} value={"APPROVAL:" + a.id}>
-                  Private authority review · {a.name}
+                  Private {a.subProjectId ? "host" : "authority"} review ·{" "}
+                  {a.name}
                 </option>
               ))}
             {detail.tasks
@@ -506,15 +510,7 @@ export function VisitDetail({
   const lastCancellation = detail.activity.find(
     (event) => event.kind === "CANCEL",
   );
-  const role = detail.canEdit
-    ? "Visit host"
-    : detail.canManage
-      ? "Scope administrator"
-      : detail.approvals.some((a) => a.canDecide)
-        ? "Approval reviewer"
-        : detail.tasks.some((t) => t.canUpdate)
-          ? "Arrangement coordinator"
-          : "Visit participant";
+  const role = coordinationRole(detail);
   const tabs: {
     key: string;
     label: string;
@@ -578,7 +574,7 @@ export function VisitDetail({
                 </span>
                 <span>
                   <Icon name="user" size={14} />
-                  Hosted by {detail.hostName}
+                  Visit owner: {detail.hostName}
                 </span>
               </div>
             </div>
@@ -677,7 +673,7 @@ export function VisitDetail({
             <p>
               {detail.canEdit
                 ? "Review the visit details, then submit it for approval."
-                : "The host has not submitted this invitation yet."}
+                : "The visit owner has not submitted this invitation yet."}
             </p>
           </div>
           {detail.canEdit && (
@@ -749,6 +745,19 @@ export function VisitDetail({
             </button>
           </div>
         </form>
+      )}
+      <PreparationSummary detail={detail} />
+      {!!detail.selectedGroups?.length && (
+        <section className="cp-panel" aria-label="Selected visit groups">
+          <h3>Selected approval & notification groups</h3>
+          {detail.selectedGroups.map((group) => (
+            <div key={group.id} className="cp-group-card">
+              <h4>{group.name}</h4>
+              <small>Revision {group.revision}</small>
+              <GroupMembers group={group} />
+            </div>
+          ))}
+        </section>
       )}
       <div className="cp-detail-layout">
         <div className="cp-detail-content">
@@ -825,7 +834,7 @@ export function VisitDetail({
                         <div>
                           <span className="cp-step-kind">
                             {step.subProjectId
-                              ? "Project review"
+                              ? "Host approval"
                               : "Office review"}
                             {step.kind === "CLIENT_CONFIRMATION"
                               ? " · Client permission"
@@ -840,6 +849,16 @@ export function VisitDetail({
                         </div>
                         <PlanningStatus value={step.status} />
                       </div>
+                      {step.approvers && (
+                        <p className="cp-step-rule">
+                          {step.subProjectId
+                            ? "Assigned hosts:"
+                            : "Assigned reviewers:"}{" "}
+                          {step.approvers
+                            .map((person) => person.name)
+                            .join(", ") || "No current active reviewer"}
+                        </p>
+                      )}
                       {step.decisions.map((decision, i) => (
                         <div key={i} className="cp-decision">
                           <span
@@ -1079,7 +1098,7 @@ export function VisitDetail({
                 {initials(detail.hostName)}
               </span>
               <div>
-                <small>Visit host</small>
+                <small>Visit owner</small>
                 <strong>{detail.hostName}</strong>
               </div>
             </div>

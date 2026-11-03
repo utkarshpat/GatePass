@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Final bug review, E2E aur load verification — 26 October 2026
 
 Follow-up: first-burst worker lifecycle candidate ka implementation aur newer verification [report 78](<C:/Users/utpatel/OneDrive - Sopra Steria/Desktop/Gate Pass/docs/78_Development_Worker_Prewarm_And_Burst_Latency_26_October_2026.md>) mein hai. Neeche ke measurements is earlier audit ke historical records hain.

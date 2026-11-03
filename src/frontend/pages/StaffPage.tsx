@@ -216,21 +216,10 @@ export default function StaffPage({ config }: PageProps) {
               className="reception-login"
               hidden={ui.screen !== "access"}
             >
-              <h1>{"Your Workspaces"}</h1>
+              <h1>{"Staff access"}</h1>
               <p id="entry-name" className="user-greeting">
                 {ui.context?.displayName}
               </p>
-              <div id="entry-workspaces" className="workspaces-grid">
-                {ui.context?.workspaces.map((workspace) => (
-                  <a
-                    key={workspace.code}
-                    className="primary"
-                    href={ui.destinations[workspace.code]}
-                  >
-                    {workspace.name}
-                  </a>
-                ))}
-              </div>
               <p
                 id="entry-unavailable"
                 className="hint"

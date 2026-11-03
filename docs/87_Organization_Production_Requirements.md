@@ -1,6 +1,8 @@
 # Organization requirements for production
 
-Agreed request list — 27 October 2026. Organization inputs do not constitute completed production integration.
+> Maintained guide reviewed 3 November 2026. See the [current system handbook](system/README.md) for completion and acceptance status.
+
+Agreed request list, reviewed 3 November 2026. Organization inputs do not constitute completed production integration.
 
 | # | Requirement | What to provide | Why it is needed |
 |---|---|---|---|
@@ -16,7 +18,7 @@ Agreed request list — 27 October 2026. Organization inputs do not constitute c
 - Employee ID, full name, corporate email and active/inactive status.
 - Stable Entra tenant/object identity mapping.
 - Primary office and authorized office locations.
-- Exact project–office assignments with stable project/location IDs.
+- Exact account–office assignments and project catalogue with stable account/project/location IDs.
 - Reporting manager ID/email.
 - Last-updated/freshness data and updates for exits, transfers and assignments; integration support owner.
 
@@ -34,4 +36,6 @@ Production settings belong in a private VM `.env`, using `.env.example` as the e
 
 ## Account terminology and initial host approvals
 
-The previous project assignment fields represent accounts/clients and exact account-office membership. Real sub-projects share that account-office approval. Existing integration field names remain legacy compatibility identifiers. Supply the initial approved-host mapping (employee ID + account + office), or have authorized admins configure it through Manage hosts before launch. Directory membership alone does not grant host authority. See [the account-host policy](89_Accounts_And_Approved_Hosts_28_October_2026.md).
+The previous project assignment fields represent accounts/clients and exact account-office membership. Ordinary pass/access handling retains its account-office approval; pre-planned coordination requires independent approval for each selected project. Existing integration field names remain legacy compatibility identifiers. Supply the initial approved-host mapping (employee ID + account + office), or have authorized admins configure it through Manage hosts before launch. Directory membership alone does not grant host authority. See [the account-host policy](89_Accounts_And_Approved_Hosts_28_October_2026.md).
+
+Supply the authorized Host lists, office/project approval owners, facilities owners and initial custom/VIP approval/notification groups. The invitation creator is the Visit owner; client-facing permission is arranged by the assigned internal Host. These mappings are configuration inputs, not additional provisioned infrastructure.

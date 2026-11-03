@@ -1,3 +1,8 @@
+import type {VisitGroupReference,VisitRoutingGroup} from '../../shared/VisitGroups.ts';
+import type {
+  VisitPreparation,
+  AdditionalPlanningPerson,
+} from "../../shared/VisitPreparation.ts";
 export type Contact = { userId: string; name: string; email?: string };
 export type Rule = {
   id: string;
@@ -76,6 +81,7 @@ export type VisitRow = {
   locationName: string;
   locationId: number;
   vip: boolean;
+  /** Legacy API field: the invitation creator (Visit owner), not a destination host. */
   hostName: string;
   startsAtUtc: string;
   untilUtc: string;
@@ -100,6 +106,11 @@ export type Thread = {
   }[];
 };
 export type Detail = VisitRow & {
+  preparation?: Partial<VisitPreparation> & {
+    contacts?: (Contact & { role: string })[];
+  };
+  additionalPeople?: (AdditionalPlanningPerson & Contact)[];
+  selectedGroups?: Pick<VisitRoutingGroup,'id'|'revision'|'name'|'members'|'subProjectId'|'vipOnly'>[];
   version: number;
   actorId: string;
   canEdit: boolean;
@@ -116,6 +127,7 @@ export type Detail = VisitRow & {
     mode: string;
     subProjectId?: string;
     status: string;
+    approvers?: Contact[];
     canDecide: boolean;
     canDiscuss: boolean;
     decisions: {
@@ -148,6 +160,9 @@ export type Detail = VisitRow & {
     reason?: string;
   }[];
   draft?: {
+    groups?: VisitGroupReference[];
+    preparation?: VisitPreparation;
+    additionalPeople?: AdditionalPlanningPerson[];
     locationId: number;
     subProjects: { value: string }[];
     visitorName: string;

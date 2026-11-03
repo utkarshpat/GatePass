@@ -1,4 +1,12 @@
-import { useEffect, useRef } from "react";
+import CoordinationPage from "./CoordinationPage.tsx";
+import {
+  type VisitFolder,
+  StaffNavigation,
+  StaffNavigationToggle,
+  useStaffAccess,
+  useAdminCoordinationNavigation,
+} from "../shared/StaffNavigation.tsx";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { HostDialog } from "../admin/AccountsView.tsx";
 import {
   action,
@@ -36,6 +44,32 @@ import { Notices } from "../shared/Notices.tsx";
 import type { PageProps } from "../types.ts";
 export default function AdminPage({ config }: PageProps) {
   const [model] = useModel(() => new AdminModel(config));
+  const access = useStaffAccess(),
+    canCoordinate = !!access?.workspaces.some(
+      (workspace) => workspace.code === "COORDINATION",
+    );
+  const [planning, setPlanning] = useState(
+    new URLSearchParams(location.search).get("view") === "coordination",
+  );
+  const [planningInstance, setPlanningInstance] = useState(0);
+  const openPlanning = useCallback(
+    (folder: VisitFolder = "MY") => {
+      setPlanning(true);
+      setPlanningInstance((version) => version + 1);
+      history.replaceState(
+        null,
+        "",
+        "/admin?view=coordination" +
+          "&folder=" +
+          folder +
+          "&office=" +
+          (model.office?.locationId ?? ""),
+      );
+    },
+    [model],
+  );
+  useAdminCoordinationNavigation(openPlanning);
+
   const session = useRef<HTMLDivElement>(null),
     toggle = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -61,6 +95,7 @@ export default function AdminPage({ config }: PageProps) {
       <header className="admin-header">
         {"\n  "}
         <div className="header-brand-group">
+          <StaffNavigationToggle />
           {"\n    "}
           <a
             className="admin-brand"
@@ -75,9 +110,6 @@ export default function AdminPage({ config }: PageProps) {
         </div>
         {"\n\n  "}
         <div className="admin-header-actions">
-          <a className="secondary" href="/?choose=1">
-            Switch workspace
-          </a>
           {"\n    "}
           <div
             id="office-selector"
@@ -287,7 +319,23 @@ export default function AdminPage({ config }: PageProps) {
       {"\n\n"}
       <div className="admin-layout">
         {"\n  "}
-        <nav className="admin-nav" aria-label="Administration">
+        <nav
+          className="admin-nav"
+          aria-label="Administration"
+          onClickCapture={(event) => {
+            const button = (event.target as Element).closest<HTMLButtonElement>(
+              "[data-admin-view]",
+            );
+            if (button) {
+              setPlanning(false);
+              history.replaceState(
+                null,
+                "",
+                "/admin?view=" + button.dataset.adminView,
+              );
+            }
+          }}
+        >
           {"\n    "}
           <div
             className="admin-nav-group"
@@ -306,7 +354,9 @@ export default function AdminPage({ config }: PageProps) {
               disabled={disabled(model, "", false)}
               onClick={() => dataAction(model, "admin-view", "overview")}
               hidden={!model.allowed["overview" as keyof typeof model.allowed]}
-              aria-current={model.view === "overview" ? "page" : "false"}
+              aria-current={
+                !planning && model.view === "overview" ? "page" : "false"
+              }
             >
               {"\n        "}
               <svg
@@ -331,7 +381,9 @@ export default function AdminPage({ config }: PageProps) {
               disabled={disabled(model, "", false)}
               onClick={() => dataAction(model, "admin-view", "projects")}
               hidden={!model.allowed["projects" as keyof typeof model.allowed]}
-              aria-current={model.view === "projects" ? "page" : "false"}
+              aria-current={
+                !planning && model.view === "projects" ? "page" : "false"
+              }
             >
               {"\n        "}
               <svg
@@ -356,7 +408,9 @@ export default function AdminPage({ config }: PageProps) {
               disabled={disabled(model, "", false)}
               onClick={() => dataAction(model, "admin-view", "staff")}
               hidden={!model.allowed["staff" as keyof typeof model.allowed]}
-              aria-current={model.view === "staff" ? "page" : "false"}
+              aria-current={
+                !planning && model.view === "staff" ? "page" : "false"
+              }
             >
               {"\n        "}
               <svg
@@ -383,7 +437,9 @@ export default function AdminPage({ config }: PageProps) {
               hidden={
                 !model.allowed["assignments" as keyof typeof model.allowed]
               }
-              aria-current={model.view === "assignments" ? "page" : "false"}
+              aria-current={
+                !planning && model.view === "assignments" ? "page" : "false"
+              }
             >
               {"\n        "}
               <svg
@@ -408,7 +464,9 @@ export default function AdminPage({ config }: PageProps) {
               disabled={disabled(model, "", false)}
               onClick={() => dataAction(model, "admin-view", "offices")}
               hidden={!model.allowed["offices" as keyof typeof model.allowed]}
-              aria-current={model.view === "offices" ? "page" : "false"}
+              aria-current={
+                !planning && model.view === "offices" ? "page" : "false"
+              }
             >
               {"\n        "}
               <svg
@@ -426,6 +484,11 @@ export default function AdminPage({ config }: PageProps) {
               <span>{"Offices & QR"}</span>
               {"\n      "}
             </button>
+            <StaffNavigation
+              embedded
+              onCoordination={openPlanning}
+              activeSection={planning ? "COORDINATION" : "ADMIN"}
+            />
             {"\n    "}
           </div>
           {"\n    "}
@@ -446,7 +509,9 @@ export default function AdminPage({ config }: PageProps) {
               disabled={disabled(model, "", false)}
               onClick={() => dataAction(model, "admin-view", "reports")}
               hidden={!model.allowed["reports" as keyof typeof model.allowed]}
-              aria-current={model.view === "reports" ? "page" : "false"}
+              aria-current={
+                !planning && model.view === "reports" ? "page" : "false"
+              }
             >
               {"\n        "}
               <svg
@@ -471,7 +536,9 @@ export default function AdminPage({ config }: PageProps) {
               disabled={disabled(model, "", false)}
               onClick={() => dataAction(model, "admin-view", "audit")}
               hidden={!model.allowed["audit" as keyof typeof model.allowed]}
-              aria-current={model.view === "audit" ? "page" : "false"}
+              aria-current={
+                !planning && model.view === "audit" ? "page" : "false"
+              }
             >
               {"\n        "}
               <svg
@@ -497,202 +564,234 @@ export default function AdminPage({ config }: PageProps) {
         <main id="workspace" className="admin-content" tabIndex={-1}>
           {"\n    "}
           <h1 id="admin-title" className="sr-only">
-            {content(model, "admin-title")}
+            {planning ? "Visit coordination" : content(model, "admin-title")}
           </h1>
           {"\n\n    "}
           <p id="page-status" role="status" aria-live="polite">
             {content(model, "page-status")}
           </p>
           {"\n\n    "}
-          <div
-            id="console-scope"
-            hidden={hidden(model, "console-scope")}
-            className={"admin-scope-bar" + (!scoped(model) ? " is-bare" : "")}
-          >
-            {"\n      "}
+          <div hidden={planning}>
             <div
-              id="scope-project-wrap"
-              className="scope-select-wrap"
-              hidden={hidden(model, "scope-project-wrap")}
+              id="console-scope"
+              hidden={hidden(model, "console-scope")}
+              className={"admin-scope-bar" + (!scoped(model) ? " is-bare" : "")}
             >
-              {"\n        "}
-              <label htmlFor="console-project" className="scope-label">
-                {"\n          "}
-                <svg
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  aria-hidden="true"
-                >
-                  <path d="M3 7h18v14H3zM8 7V3h8v4"></path>
-                </svg>
-                {"\n          "}
-                <span>{"Account scope"}</span>
-                {"\n        "}
-              </label>
-              {"\n        "}
-              <select
-                id="console-project"
-                value={value(model, "console-project")}
-                onChange={(event) =>
-                  change(model, "console-project", event.target.value)
-                }
-                disabled={disabled(model, "console-project", false)}
-              >
-                {options(model, "console-project")?.map((option) => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                    disabled={option.disabled}
-                  >
-                    {option.label}
-                  </option>
-                ))}
-              </select>
               {"\n      "}
-            </div>
-            {"\n      "}
-            <p
-              id="scope-hint"
-              className="hint scope-hint-pill"
-              hidden={hidden(model, "scope-hint")}
-            >
-              {content(model, "scope-hint")}
-            </p>
-            {"\n      "}
-            <div
-              id="overview-range"
-              className="scope-range"
-              role="group"
-              aria-label="Visit date range"
-              hidden={hidden(model, "overview-range")}
-              aria-busy={model.summaryBusy || undefined}
-            >
-              {"\n        "}
               <div
-                className="range-presets"
-                role="group"
-                aria-label="Quick ranges"
+                id="scope-project-wrap"
+                className="scope-select-wrap"
+                hidden={hidden(model, "scope-project-wrap")}
               >
-                {"\n          "}
-                <button
-                  type="button"
-                  className="range-chip"
-                  data-range-days="1"
-                  disabled={disabled(model, "", false)}
-                  onClick={() => dataAction(model, "range-days", "1")}
-                  aria-pressed={
-                    !!model.scope &&
-                    model.field("overview-to") === model.scope.currentDate &&
-                    model.field("overview-from") ===
-                      shiftDay(model.scope.currentDate, 1 - 1)
-                  }
-                >
-                  {"Today"}
-                </button>
-                {"\n          "}
-                <button
-                  type="button"
-                  className="range-chip"
-                  data-range-days="7"
-                  disabled={disabled(model, "", false)}
-                  onClick={() => dataAction(model, "range-days", "7")}
-                  aria-pressed={
-                    !!model.scope &&
-                    model.field("overview-to") === model.scope.currentDate &&
-                    model.field("overview-from") ===
-                      shiftDay(model.scope.currentDate, 1 - 7)
-                  }
-                >
-                  {"7 days"}
-                </button>
-                {"\n          "}
-                <button
-                  type="button"
-                  className="range-chip"
-                  data-range-days="30"
-                  disabled={disabled(model, "", false)}
-                  onClick={() => dataAction(model, "range-days", "30")}
-                  aria-pressed={
-                    !!model.scope &&
-                    model.field("overview-to") === model.scope.currentDate &&
-                    model.field("overview-from") ===
-                      shiftDay(model.scope.currentDate, 1 - 30)
-                  }
-                >
-                  {"30 days"}
-                </button>
                 {"\n        "}
-              </div>
-              {"\n        "}
-              <div className="range-inputs">
-                {"\n          "}
-                <label className="sr-only" htmlFor="overview-from">
-                  {"From date"}
+                <label htmlFor="console-project" className="scope-label">
+                  {"\n          "}
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 7h18v14H3zM8 7V3h8v4"></path>
+                  </svg>
+                  {"\n          "}
+                  <span>{"Account scope"}</span>
+                  {"\n        "}
                 </label>
-                {"\n          "}
-                <input
-                  id="overview-from"
-                  type="date"
-                  required={true}
-                  value={value(model, "overview-from")}
-                  onChange={(event) =>
-                    change(model, "overview-from", event.target.value)
-                  }
-                  disabled={disabled(model, "overview-from", false)}
-                />
-                {"\n          "}
-                <span className="range-sep" aria-hidden="true">
-                  {"to"}
-                </span>
-                {"\n          "}
-                <label className="sr-only" htmlFor="overview-to">
-                  {"To date"}
-                </label>
-                {"\n          "}
-                <input
-                  id="overview-to"
-                  type="date"
-                  required={true}
-                  value={value(model, "overview-to")}
-                  onChange={(event) =>
-                    change(model, "overview-to", event.target.value)
-                  }
-                  disabled={disabled(model, "overview-to", false)}
-                />
                 {"\n        "}
+                <select
+                  id="console-project"
+                  value={value(model, "console-project")}
+                  onChange={(event) =>
+                    change(model, "console-project", event.target.value)
+                  }
+                  disabled={disabled(model, "console-project", false)}
+                >
+                  {options(model, "console-project")?.map((option) => (
+                    <option
+                      key={option.value}
+                      value={option.value}
+                      disabled={option.disabled}
+                    >
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {"\n      "}
               </div>
               {"\n      "}
+              <p
+                id="scope-hint"
+                className="hint scope-hint-pill"
+                hidden={hidden(model, "scope-hint")}
+              >
+                {content(model, "scope-hint")}
+              </p>
+              {"\n      "}
+              <div
+                id="overview-range"
+                className="scope-range"
+                role="group"
+                aria-label="Visit date range"
+                hidden={hidden(model, "overview-range")}
+                aria-busy={model.summaryBusy || undefined}
+              >
+                {"\n        "}
+                <div
+                  className="range-presets"
+                  role="group"
+                  aria-label="Quick ranges"
+                >
+                  {"\n          "}
+                  <button
+                    type="button"
+                    className="range-chip"
+                    data-range-days="1"
+                    disabled={disabled(model, "", false)}
+                    onClick={() => dataAction(model, "range-days", "1")}
+                    aria-pressed={
+                      !!model.scope &&
+                      model.field("overview-to") === model.scope.currentDate &&
+                      model.field("overview-from") ===
+                        shiftDay(model.scope.currentDate, 1 - 1)
+                    }
+                  >
+                    {"Today"}
+                  </button>
+                  {"\n          "}
+                  <button
+                    type="button"
+                    className="range-chip"
+                    data-range-days="7"
+                    disabled={disabled(model, "", false)}
+                    onClick={() => dataAction(model, "range-days", "7")}
+                    aria-pressed={
+                      !!model.scope &&
+                      model.field("overview-to") === model.scope.currentDate &&
+                      model.field("overview-from") ===
+                        shiftDay(model.scope.currentDate, 1 - 7)
+                    }
+                  >
+                    {"7 days"}
+                  </button>
+                  {"\n          "}
+                  <button
+                    type="button"
+                    className="range-chip"
+                    data-range-days="30"
+                    disabled={disabled(model, "", false)}
+                    onClick={() => dataAction(model, "range-days", "30")}
+                    aria-pressed={
+                      !!model.scope &&
+                      model.field("overview-to") === model.scope.currentDate &&
+                      model.field("overview-from") ===
+                        shiftDay(model.scope.currentDate, 1 - 30)
+                    }
+                  >
+                    {"30 days"}
+                  </button>
+                  {"\n        "}
+                </div>
+                {"\n        "}
+                <div className="range-inputs">
+                  {"\n          "}
+                  <label className="sr-only" htmlFor="overview-from">
+                    {"From date"}
+                  </label>
+                  {"\n          "}
+                  <input
+                    id="overview-from"
+                    type="date"
+                    required={true}
+                    value={value(model, "overview-from")}
+                    onChange={(event) =>
+                      change(model, "overview-from", event.target.value)
+                    }
+                    disabled={disabled(model, "overview-from", false)}
+                  />
+                  {"\n          "}
+                  <span className="range-sep" aria-hidden="true">
+                    {"to"}
+                  </span>
+                  {"\n          "}
+                  <label className="sr-only" htmlFor="overview-to">
+                    {"To date"}
+                  </label>
+                  {"\n          "}
+                  <input
+                    id="overview-to"
+                    type="date"
+                    required={true}
+                    value={value(model, "overview-to")}
+                    onChange={(event) =>
+                      change(model, "overview-to", event.target.value)
+                    }
+                    disabled={disabled(model, "overview-to", false)}
+                  />
+                  {"\n        "}
+                </div>
+                {"\n      "}
+              </div>
+              {"\n      "}
+              {!model.scope || scoped(model) ? <Refresh model={model} /> : null}
+              {"\n    "}
             </div>
-            {"\n      "}
-            {!model.scope || scoped(model) ? <Refresh model={model} /> : null}
+            {"\n\n    "}
             {"\n    "}
+            <OverviewView model={model} />
+            {"\n\n    "}
+            {"\n    "}
+            <AccountAreasView
+              key={model.office?.locationId}
+              model={model}
+              renderSetup={(section, accountId) =>
+                !planning &&
+                model.view === "projects" && (
+                  <CoordinationPage
+                    config={config}
+                    embedded
+                    officeId={model.office?.locationId}
+                    setupSection={section}
+                    accountId={accountId}
+                  />
+                )
+              }
+            />
+            {"\n\n    "}
+            {"\n    "}
+            <StaffAccessView model={model} />
+            {"\n\n    "}
+            {"\n    "}
+            <GuardAssignmentsView model={model} />
+            {"\n\n    "}
+            {"\n    "}
+            <OfficesView model={model} />
+            {"\n\n    "}
+            {"\n    "}
+            <ReportsView model={model} />
+            {"\n\n    "}
+            {"\n    "}
+            <AuditLogView model={model} />
+            {"\n  "}
           </div>
-          {"\n\n    "}
-          {"\n    "}
-          <OverviewView model={model} />
-          {"\n\n    "}
-          {"\n    "}
-          <AccountAreasView model={model} />
-          {"\n\n    "}
-          {"\n    "}
-          <StaffAccessView model={model} />
-          {"\n\n    "}
-          {"\n    "}
-          <GuardAssignmentsView model={model} />
-          {"\n\n    "}
-          {"\n    "}
-          <OfficesView model={model} />
-          {"\n\n    "}
-          {"\n    "}
-          <ReportsView model={model} />
-          {"\n\n    "}
-          {"\n    "}
-          <AuditLogView model={model} />
-          {"\n  "}
+          {planning && canCoordinate && model.scope && (
+            <div className="admin-embedded-coordination">
+              <CoordinationPage
+                key={planningInstance}
+                config={config}
+                embedded
+                officeId={model.office?.locationId}
+              />
+            </div>
+          )}
+          {planning && !canCoordinate && access && (
+            <p role="status">
+              Visit coordination is outside your current access.
+            </p>
+          )}
         </main>
         {"\n"}
       </div>

@@ -69,6 +69,8 @@ const frontend = await buildFrontend();
 const styles =
   (await readFile(new URL("../src/app/global.css", import.meta.url), "utf8")) +
   "\n" +
+  (await readFile(new URL("../src/app/workspace-shell.css", import.meta.url), "utf8")) +
+  "\n" +
   (await readFile(
     new URL("../src/frontend/coordination.css", import.meta.url),
     "utf8",
@@ -83,7 +85,7 @@ const logo =
 const server = createServer((req, res) => {
   if (
     req.method === "GET" &&
-    (req.url === "/coordination" || req.url === "/")
+    (["/coordination","/"].includes(new URL(req.url??"/","http://localhost:18463").pathname))
   ) {
     const nonce = randomBytes(24).toString("base64");
     res.setHeader("Content-Type", "text/html; charset=utf-8");

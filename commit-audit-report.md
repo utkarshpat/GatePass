@@ -1,3 +1,5 @@
+> Documentation status: historical commit audit. Current status is in the [system handbook](docs/system/README.md); this report is not a new release or deployment attestation.
+
 # External source audit acceptance — 26 October 2026
 
 **Accepted with refinements:** provided report ke three core findings independently reproduced hue aur ZIP fixes merge/verify hui. Input report SHA-256 `e069751087056540362e00da7542303f2aa7be097692b5ead58be0ac7374eda6`; ZIP `03c1fa1289bd288a80580ac389e25724dfcfe1e9410ba938e5472fcc4f901762`. Embedded report exact match; git-apply check pass aur all seven incoming outputs canonical source copies se match hue. Original inputs preserved hain. Base HEAD `4899a7cd7b054674425e539be19d5c57033c1eee`; work local/uncommitted hai.

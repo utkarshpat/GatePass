@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Post-push fixes and regression evidence
 
 22 October 2026. Local follow-up to pushed baseline `e8467118ca75550d83971cd02dcd584c65e97f61`. No additional commit, push, production deployment, real email or physical print is part of this fix batch.

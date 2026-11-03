@@ -1,72 +1,57 @@
 # 05. HTTP and API reference
 
-> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
-Current additions: `POST /api/admin/register` applies authorized date ranges, field filters, sorting and pagination in SQL; the UI exports the complete selected result as an Excel workbook. `POST /api/admin/create-staff` and `/reset-staff-setup` provide scoped local account/setup issuance. `POST /api/staff/setup` inspects/completes the one-time password setup capability. Reception's `POST /api/reception/lookup` searches authorized records across dates, while `/correct-return` requires the current pass/return receipt and a reason. All staff operations retain session/CSRF and current SQL authorization checks; no browser-supplied identity or scope becomes authority.
+## Boundary
 
-## Conventions
-This catalog distinguishes local workspace adapters and production service-map composition. It is not an OpenAPI specification: typed services and SQL RPC parameters are the exact executable schemas. Use synthetic identifiers, never live credentials/capability links, in examples.
+This is a route-family guide, not an OpenAPI schema. The [literal inventory](REFERENCE_Routes_and_Configuration.md), request validators, composition and SQL procedures define exact supported payloads. Some complete workspace routes exist only in the explicit local runner; `start:api` does not yet compose the complete production application.
 
-Browser APIs use POST with exact allowlisted JSON object fields; bounded binary photo upload is an exception. IDs/date/length/unknown-property checks occur across route, service and SQL. Protected browser operations require session/CSRF; external status uses its signed capability. Production responses are non-cacheable.
+Browser operations use allowlisted POST JSON and bounded media exceptions. Protected requests require current session/CSRF and Origin/Host policy; active session preflight protects reserved capacity before reading protected bodies. Each operation still performs current SQL authorization. Public intake/capability endpoints have their own checks. Production responses are non-cacheable; ID shape is not authority.
 
-## Route families
-| Family | Operations | Authority |
-|---|---|---|
-| /api/staff/ | Login/logout and resolved workspace | SQL-selected provider; current staff scope; local adapter |
-| /api/dev/sso/ | Employee login/logout/session helpers | Explicit development-only adapter |
-| /api/registration/ | start, options, photo, submit, reset, locations | Office-bound intake; SSO for employee types |
-| /api/employee/digital-id/ | detail, image | Current authenticated own ID |
-| /api/guard/ | context, duties, visitors, detail, verify, photo, movement; compatibility lookup/accounts/recent | Current staff, selected duty and pass |
-| /api/reception/ | me, list, detail, photo, preview, print/request, print/status, print/render; legacy local login/logout | Granted office and current job state |
-| /api/admin/ | context, accounts, leads, candidates, grant, revoke, common-duties, common-duty | Exact capability/scope |
-| /api/email/host/ | detail, photo, decide | Assigned authenticated host/current snapshot |
-| /api/email/request/ | detail, image | Authenticated holder |
-| /api/email/external/ | detail, image | Signed expiring individual link |
-| /api/outlook/decision | Native Outlook decision | Validated Entra token plus bound action capability |
-| Production service map | OWN/HOST/GUARD/RECEPTION/ADMIN visits/list/detail; admin read/staff mutation contracts | Registered service map, not complete production UI wiring |
-
-REFERENCE_Routes_and_Configuration.md extracts literal declarations with source/line provenance. Prefixes, regex paths, generated aliases and legacy routes must be interpreted through their handler/composition, not concatenated into an assumed public API.
-
-## Representative payloads
-Registration start: `{"requestType":"EXTERNAL"}` under server-bound office context. Options accepts selected account-location/search to return eligible hosts. Submission binds a stable clientKey, request type, reason and people with individual client keys/photoAssetId. External submissions include allowed visitDate, projectLocationId and hostEmployeeId. Employee identity is server-derived.
-
-Duty movement contains locationId, dutyKind=PROJECT, server-issued dutyId, visitRequestId, accessPassId, eventType=ENTRY/EXIT, entryMethod and stable clientKey. SCAN additionally presents the issued credential; privileged RECONCILE requires a reason. Common-area movement is unsupported. All IDs must come from authorized server results.
-
-Print request binds visit and client key. Status/render identifies printJobId. Preview/photo creates no job. Host decision contains visitRequestId, snapshotVersion, snapshotHash, decision and clientKey. Opposite decisions are not a replay of the same payload.
-
-## Error contract
-| Status | Response |
+| Family | Purpose / authority |
 |---|---|
-| 400 | Correct malformed/unsupported input before retry |
-| 401 | Reauthenticate through intended provider |
-| 403 | Current scope/context denied; never broaden scope or guess IDs |
-| 404 | Unknown/unavailable resource; avoid revealing existence |
-| 405 / 415 | Correct method/content type |
-| 409 | Refresh authoritative state/snapshot |
-| 413 | Reduce bounded body/media |
-| 429 | Wait and retry same logical operation appropriately |
-| Network / 5xx | Reconcile uncertain outcome; retain operation key |
+| `/api/staff/` | Provider-resolved staff login/logout/setup/current sections |
+| `/api/dev/sso/` | Explicit local employee adapter only |
+| `/api/registration/` | Office-bound start/options/photo/submit/reset/card; employee requests additionally authenticate |
+| `/api/employee/digital-id/` | Authenticated own ID detail/image |
+| `/api/guard/` | Duties, authorized queues/detail/verify/photo/movement; selected current duty |
+| `/api/reception/` | Granted-office queues/detail/lookup/photo/preview/printing/reminders/return/correction and isolated manual intake |
+| `/api/admin/` | Exact-capability account/staff/grant/duty/office/register/export/audit operations |
+| `/api/email/host/` | Current assigned Host detail/photo/explicit decision |
+| `/api/email/request/` | Authenticated holder status/image |
+| `/api/email/external/` | Expiring individual capability and visit-scoped holder session |
+| `/api/outlook/decision` | Separately validated organizational bearer/action capability |
+| `/api/coordination/` | Authenticated planning, scoped configuration and private discussions |
 
-Only controlled errors are exposed; no raw SQL/provider messages or secrets. Browser mocks prove rendering, not backend authorization.
+## Registration and operational requests
 
-Sources: src/development/*Routes.ts; src/transport/RegistrationHttpRoutes.ts, Composition.ts, ApiHandler.ts, EmailPublicRoutes.ts, OutlookActionHandler.ts.
+EXTERNAL intake has one person and server-bound office. Options expose no account catalogue. Submit uses selected `hostEmployeeId` and inclusive `validUntilDate`; old supplied `visitDate`, office/timestamps and account selection are rejected by the office-bound adapter. Employee account requests keep their authenticated selector and same-day contract.
 
-## Refresh-safe external endpoints (follow-up)
+`/api/registration/card` accepts `visitRequestId` with the active matching intake and CSRF; the private PNG is reauthorized around rendering. Reception manual has its own staff/intake card boundary. After intake expiry, a reference alone cannot retrieve a pass.
 
-POST /api/email/external/session exchanges a signed link for a path-scoped HttpOnly holder cookie after current SQL checks. POST /api/email/external/{visitId}/detail and /image require an empty JSON body and that visit-scoped cookie. Legacy /external/detail and /external/image still require the original explicit signed link. No route grants approval authority. See docs/35_Email_Driven_Request_Workflow.md for expiry/key-retention policy.
+Movement binds current duty, visit, pass, ENTRY/EXIT, method and stable key. SCAN also presents its issued credential; privileged reconciliation requires a reason. Common-area duty cannot perform account movement. Printing/status/rendering uses the current job, not a browser-invented printed state. Host decisions bind visit snapshot/version/hash and decision key.
 
-## Current visitor registration boundary
+External signed-link exchange can issue a path-scoped HttpOnly holder cookie after current checks. Per-visit detail/image still require that visit's cookie. GET never changes a decision.
 
-`POST /api/registration/options` returns no accounts for EXTERNAL intakes; host searches use the bound office and reject supplied account filters. EXTERNAL submit accepts one person, `hostEmployeeId` and `validUntilDate`; old `visitDate`, supplied office/timestamps and account selection are rejected by the office-bound adapter. Employee account requests retain their authenticated account selector and same-day behavior.
+## Coordination actions
 
-`POST /api/registration/card` accepts only `visitRequestId` and requires the signed active intake cookie plus CSRF. `gp.GetPublicRegistrationCard` binds the visit to that exact intake under the render role. The response is PNG/filename/MIME only, with two authorization reads around rendering. Reception manual has the corresponding `/api/reception/manual/card` route with independent staff/intake checks.
+Ten protected POST actions: `options`, `people`, `routing`, `groups`, `list`, `detail`, `thread`, `create`, `change`, `manage`.
 
-## Account host policy update
+| Action | Important inputs / result |
+|---|---|
+| options / people | Authorized catalogue and bounded current internal contact search; no caller-selected actor |
+| routing | Office and at most ten destination project UUIDs; scoped required reviewers/FYI/task owners |
+| groups | Authorized office and optional search; visible group members/revisions |
+| list | MY / ASSIGNED / PARTICIPATING, authorized office/date/search and bounded offset |
+| detail / thread | Authorized plan/version or thread-bound keyset history; reduced role-specific content |
+| create | Stable clientKey and one-person draft; Visit owner derived from authenticated session |
+| change | Plan, current revision, stable key and allowlisted submit/revise/cancel/decision/task/thread command |
+| manage | Stable key and PROJECT / HOST / POLICY / GROUP payload; exact current management scope and reason |
 
-See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+The four API RPCs remain `gp.ReadVisitCoordination`, `gp.ManageVisitPlanning`, `gp.CreatePlannedVisit` and `gp.ChangePlannedVisit`. New fields/actions do not permit arbitrary procedure calls. Up to five selected groups and twenty additional people are bounded separately; mandatory policy review remains additive. Raw group emails are NOTIFY only.
 
-## Visit Coordination
+Legacy planning `hostName` means Visit owner. Preparation `visitOwnerId` is an additional notification contact, not an ownership override. Request validators reject unknown fields; UI role labels do not grant a command capability.
 
-Seven protected POST actions under `/api/coordination/`: `options`, `list`, `detail`, `thread`, `create`, `change`, `manage`. Current session/CSRF and SQL scope are required; no caller-supplied actor/roles/recipient overrides are accepted. Thread history uses a thread-bound keyset cursor; lists filter before pagination. Four reviewed API RPCs: `ReadVisitCoordination`, `ManageVisitPlanning`, `CreatePlannedVisit`, `ChangePlannedVisit`. [Contracts and limitations](../98_Visit_Coordination_Persistence_01_November_2026.md).
+## Error/retry handling
 
-Coordination is an additive host/facilities pre-planning workspace. It contains invitations, project approvals, arrangements, VIP/FYI recipients, discussion and activity. QR card allocation, reception, guard scanning, entry/exit and returned badges use their existing workflows. No manual invitation linking or separate planned gate is exposed. See [coordination-only scope correction](../101_Coordination_Only_Scope_02_November_2026.md).
+400: correct input; 401: intended-provider sign-in; 403: deny/clear protected state; 404: unavailable; 405/415: method/content type; 409: reload current revision/snapshot; 413: bounded payload exceeded; 429: back off; interrupted/5xx: reconcile outcome and retain the same logical operation key. Never broaden scope or expose raw SQL/provider/token material to recover.

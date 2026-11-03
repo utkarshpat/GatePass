@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Loading and live-refresh release validation — 24 October 2026
 
 Feature commit **`9bbe9b9`** was pushed to `origin/main` before the complete browser run, as requested. This release includes the accumulated logo, regional-name, card/SQL-helper performance work documented in phases 1–6 and the pagination/refresh work in [phase 7](Performance_Optimization_Phase_7.md).

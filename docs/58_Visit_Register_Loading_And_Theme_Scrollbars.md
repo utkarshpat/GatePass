@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Visit register loading, sorting and shared scrollbars
 
 The register uses the selected authorized office/project and date range. Presentation visitors are retained in **Noida**, especially **Project 1**. A different office or an empty newly created project can correctly have no visits; the UI now names the active scope and explains how to change an empty selection.

@@ -1,6 +1,6 @@
 # 09. Deployment, operations and recovery
 
-> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
 ## Target and boundary
 Agreed target: private Ubuntu Server 24.04 LTS x86-64 VM for UI/API, worker, SQL Server Express and private media, with protected off-VM backups. This is intended topology, not deployed evidence or a fresh vendor compatibility/licensing assessment. Windows DPAPI-protected files cannot simply be copied to Linux and assumed operational.
@@ -14,7 +14,7 @@ Production configuration lives in a private root `.env` with restrictive filesys
 
 ## Deployment sequence
 
-Release preparation now includes six immutable React assets plus `public/frontend-manifest.json`. Build with locked dependencies before packaging. The manifest supplies the asset for each React document; it does not supply the missing production identity/session/workspace composition. Print/offline documents remain HTML. See [migration and build ownership](../92_React_Frontend_Migration_28_October_2026.md).
+Release preparation now includes seven immutable React page assets plus `public/frontend-manifest.json`. Build with locked dependencies before packaging. The manifest supplies the asset for each React document; it does not supply the missing production identity/session/workspace composition. Print/offline documents remain HTML. See [migration and build ownership](../92_React_Frontend_Migration_28_October_2026.md).
 1. Complete production UI/endpoints and approved identity/directory composition.
 2. Provision staging with private SQL, trusted TLS and independent principals.
 3. Implement Linux media permissions/key protector and controlled rewrap/migration retaining key IDs.
@@ -56,4 +56,4 @@ Sources: docs/database/22_Private_Photos_and_QR_Key_Storage.md; docs/37_Receptio
 
 See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
 
-Planning and registration mail share the configured email service but drain independent queues. Apply migration 132 before using the new worker. Planning failures stop after six attempts; investigate redacted error codes and current directory/recipient scope before an approved repair. SENT establishes Graph acceptance only. Local selected-plan preview sends nothing and does not drain or reset jobs. See [planning mail operations](../102_Coordination_Email_Notifications_02_November_2026.md).
+Planning and registration mail share the configured email service but drain independent queues. Use the compatible migration baseline through 136; 132 introduces planning dispatch and 133–136 extend preparation/group recipients. Planning failures stop after six attempts; investigate redacted error codes and current directory/recipient scope before an approved repair. SENT establishes Graph acceptance only. Local selected-plan preview sends nothing and does not drain or reset jobs. See [planning mail operations](../102_Coordination_Email_Notifications_02_November_2026.md).

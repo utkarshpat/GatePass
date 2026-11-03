@@ -1,6 +1,6 @@
 # 03. Architecture and boundaries
 
-> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
 ## Components
 | Component | Responsibility | Source |
@@ -37,7 +37,7 @@ API/email startup and the local Node launcher load the root `.env`. The tracked 
 ## Local versus production
 The complete running UI is assembled by the explicit local-only runner. It uses real SQL/private storage but development cookies/HTTP and dummy employee authentication. Workspace adapters in `src/development` explicitly require loopback and dummy/mock modes.
 
-`tools/start-api.ts` does not currently host the complete local application. Its `composeApi` call does not inject full registration/media/workspace/UI adapters. Optional email links/Outlook handlers are available, but registration/card dependencies need explicit composition. Production staff identity, SSO, static UI hosting and corresponding workspace endpoints must be completed and accepted. `npm run start:api` alone is not a deployment of all four interfaces.
+`tools/start-api.ts` does not currently host the complete local application. Its `composeApi` call does not inject full registration/media/workspace/UI adapters. Optional email links/Outlook handlers are available, but registration/card dependencies need explicit composition. Production staff identity, SSO, static UI hosting and corresponding workspace endpoints must be completed and accepted. `npm run start:api` alone is not a deployment of all application surfaces.
 
 Production admission requires configured HTTPS origin/Host. Arbitrary forwarded headers are not trusted; a reverse proxy needs a separately reviewed contract. Browser APIs enforce method/content type/body limits/CSRF/Origin. Outlook bearer actions have a separate handler, not weaker browser CSRF.
 

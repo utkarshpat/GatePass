@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Latest commit and Admin console follow-up audit
 
 > Historical 22 October audit. The current implementation, staff onboarding, Excel export, retained 23 October data and release verification are recorded in [the presentation rehearsal](55_Presentation_Rehearsal_23_October_2026.md). Scope and counts below describe that earlier audit.

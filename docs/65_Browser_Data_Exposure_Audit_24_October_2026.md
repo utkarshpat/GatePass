@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Browser and network data exposure audit — 24 October 2026
 
 > This report preserves the initial audit and authorized-fix snapshots. For the later complete regression run, dependency fix, retained demo additions and source push, see [final 24 October verification](67_Final_Browser_Verification_And_Presentation.md).

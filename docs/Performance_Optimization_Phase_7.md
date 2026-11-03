@@ -1,3 +1,5 @@
+> Documentation status: historical performance/design evidence. Review the [current handbook](system/README.md) and its evidence limits before applying earlier counts or tuning conclusions.
+
 # List rendering, lazy media and near-real-time refresh
 
 Implemented on **24 October 2026**, following [phase 6](Performance_Optimization_Phase_6.md).

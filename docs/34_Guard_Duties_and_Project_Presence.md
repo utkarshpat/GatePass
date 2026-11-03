@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Guard duties and project presence
 
 Common areas are assignable, location-scoped verification duties. They are not projects, fake project IDs, campus checkpoints or a second movement layer. An admin with current location-wide `GUARDS_MANAGE` authority can create a named common area, assign an active guard in that office, and revoke the assignment. Project admins cannot use a project-scoped grant to manage an office-wide common area.

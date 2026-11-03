@@ -17,7 +17,7 @@ export class PlanningRoutes implements AdditionalHttpRoutes {
     this.#service = service;
   }
   handles(path: string) {
-    return /^\/api\/coordination\/(options|list|detail|thread|create|change|manage)$/u.test(
+    return /^\/api\/coordination\/(options|people|groups|routing|list|detail|thread|create|change|manage)$/u.test(
       path,
     );
   }

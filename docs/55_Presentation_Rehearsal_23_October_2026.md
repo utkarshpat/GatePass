@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Presentation rehearsal — 23 October 2026
 
 > For the next presentation, follow the [24 October current verification and walkthrough](67_Final_Browser_Verification_And_Presentation.md). This page records the original **23 October** rehearsal. Choose that date explicitly for its populated history; Today follows the server's current India date and does not renew expired historical passes.

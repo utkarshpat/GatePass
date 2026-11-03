@@ -1,3 +1,5 @@
+> Documentation status: historical performance/design evidence. Review the [current handbook](system/README.md) and its evidence limits before applying earlier counts or tuning conclusions.
+
 # Digital-card performance: prevent repeated database shutdown
 
 Implemented locally on 23 October 2026 after [phase 2](Performance_Optimization_Phase_2.md). This batch changes the dedicated local database's `AUTO_CLOSE` option and makes development/CI setup reproduce it. No application code, authorization query, schema migration, index or connection-pooling behavior changes.

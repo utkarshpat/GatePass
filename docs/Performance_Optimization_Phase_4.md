@@ -1,3 +1,5 @@
+> Documentation status: historical performance/design evidence. Review the [current handbook](system/README.md) and its evidence limits before applying earlier counts or tuning conclusions.
+
 # Digital-card performance: reuse a helper across browsing pauses
 
 Implemented locally on 23 October 2026 after [phase 3](Performance_Optimization_Phase_3.md). This batch targets development API helper churn between ordinary user actions. Production SQL/SSO composition, card rendering, authorization and database options are unchanged.

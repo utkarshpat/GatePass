@@ -1,3 +1,8 @@
+import {
+  StaffNavigationToggle,
+  useStaffAccess,
+  useCoordinationFolder,
+} from "../shared/StaffNavigation.tsx";
 import { Icon, initials } from "../coordination/Icons.tsx";
 import { flushSync } from "react-dom";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -33,14 +38,38 @@ const selectedHash = () =>
   /^#visit=([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})$/iu
     .exec(location.hash)?.[1]
     .toLowerCase() ?? null;
-export default function CoordinationPage({ config }: PageProps) {
+export default function CoordinationPage({
+  config,
+  embedded = false,
+  officeId,
+  setupSection,
+  accountId,
+}: PageProps & {
+  embedded?: boolean;
+  officeId?: number;
+  setupSection?: "projects" | "hosts" | "policies" | "groups";
+  accountId?: string;
+}) {
+  const staffAccess = useStaffAccess();
+  useEffect(() => {
+    if (
+      !embedded &&
+      staffAccess?.workspaces.some((workspace) => workspace.code === "ADMIN")
+    ) {
+      const query = new URLSearchParams(location.search);
+      query.set("view", "coordination");
+      location.replace("/admin?" + query.toString() + location.hash);
+    }
+  }, [embedded, staffAccess]);
+  const Content = embedded ? "section" : "main";
+  const [folder, , folderSequence] = useCoordinationFolder();
+
   const [options, setOptions] = useState<Options>(empty),
     [visits, setVisits] = useState<VisitRow[]>([]),
     [detail, setDetail] = useState<Detail | null>(null),
     [selected, setSelected] = useState<string | null>(selectedHash),
-    [folder, setFolder] = useState("MY"),
     [search, setSearch] = useState(""),
-    [office, setOffice] = useState(""),
+    [office, setOffice] = useState(officeId ? String(officeId) : ""),
     [from, setFrom] = useState(
       officeInput(new Date(Date.now() - 30 * 86400000).toISOString()).slice(
         0,
@@ -55,7 +84,12 @@ export default function CoordinationPage({ config }: PageProps) {
     ),
     [offset, setOffset] = useState(0),
     [hasMore, setHasMore] = useState(false),
-    [settings, setSettings] = useState(false),
+    [settings, setSettings] = useState(
+      !!setupSection ||
+        ["groups", "planning"].includes(
+          new URLSearchParams(location.search).get("settings") ?? "",
+        ),
+    ),
     [dialog, setDialog] = useState<"NEW" | "EDIT" | null>(null),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(false),
@@ -63,6 +97,31 @@ export default function CoordinationPage({ config }: PageProps) {
     [authRequired, setAuthRequired] = useState(false),
     [blocked, setBlocked] = useState(false),
     [initial, setInitial] = useState(true);
+  const previousFolder = useRef(folderSequence);
+  useEffect(() => {
+    if (previousFolder.current !== folderSequence) {
+      setOffset(0);
+      setSelected(null);
+      setDetail(null);
+      setSettings(false);
+      previousFolder.current = folderSequence;
+    }
+  }, [folderSequence]);
+  const previousOffice = useRef(officeId);
+  useEffect(() => {
+    if (embedded && officeId) {
+      setOffice(String(officeId));
+      if (previousOffice.current !== officeId) {
+        setSelected(null);
+        setDetail(null);
+        setOffset(0);
+        const target = new URL(location.href);
+        target.hash = "";
+        history.replaceState(null, "", target.pathname + target.search);
+      }
+      previousOffice.current = officeId;
+    }
+  }, [embedded, officeId]);
   const createKey = useRef(crypto.randomUUID()),
     commandKey = useRef({ signature: "", key: "" }),
     manageKey = useRef({ signature: "", key: "" });
@@ -154,6 +213,7 @@ export default function CoordinationPage({ config }: PageProps) {
     [request],
   );
   const loadList = useCallback(async () => {
+    if (setupSection) return;
     const v = (versions.current.list ?? 0) + 1;
     versions.current.list = v;
     const data = await request("list", {
@@ -174,15 +234,18 @@ export default function CoordinationPage({ config }: PageProps) {
       setVisits(data.visits);
       setHasMore(data.hasMore);
     }
-  }, [request, folder, offset, office, search, from, untilDate]);
+  }, [request, folder, offset, office, search, from, untilDate, setupSection]);
   const select = useCallback((id: string | null) => {
     versions.current.detail = (versions.current.detail ?? 0) + 1;
     setSelected(id);
     setDetail(null);
+    const target = new URL(location.href);
+    target.searchParams.delete("settings");
+    target.hash = id ? "visit=" + id : "";
     history.replaceState(
       null,
       "",
-      location.pathname + (id ? "#visit=" + id : ""),
+      target.pathname + target.search + target.hash,
     );
     setSettings(false);
   }, []);
@@ -390,9 +453,9 @@ export default function CoordinationPage({ config }: PageProps) {
         subProjectId?: string;
         locationId?: number;
         revision: number;
+        id?: string;
       },
-      signature =
-        action + ":" + (p.subProjectId ?? p.locationId) + ":" + p.revision;
+      signature = JSON.stringify({ action, payload });
     if (manageKey.current.signature !== signature)
       manageKey.current = { signature, key: crypto.randomUUID() };
     await write(
@@ -405,7 +468,7 @@ export default function CoordinationPage({ config }: PageProps) {
     manageKey.current = { signature: "", key: "" };
     if (live.current)
       setMessage(
-        "Planning settings saved. Existing submitted plans require revision if their policy changed.",
+        "Visit setup saved. Submitted plans need a revision if their policy changed.",
       );
   }
   const canInvite =
@@ -419,126 +482,111 @@ export default function CoordinationPage({ config }: PageProps) {
     (selected ? "&visit=" + encodeURIComponent(selected) : "");
   return (
     <>
-      <a className="skip" href="#coordination-main">
-        Skip to content
-      </a>
-      <header className="cp-header">
-        <a href="/?choose=1" aria-label="GatePass workspaces">
-          <img src={config.companyLogo} width={164} alt="Sopra Steria" />
-        </a>
-        <div className="cp-header-actions">
-          <div className="cp-current-user">
-            <span className="cp-avatar" aria-hidden="true">
-              {initials(options.displayName)}
-            </span>
-            <span>
-              {options.displayName}
-              <small>Staff portal</small>
-            </span>
-          </div>
-          <a
-            className="secondary cp-header-control"
-            href="/?choose=1"
-            aria-label="Workspaces"
-            title="Workspaces"
-          >
-            <Icon name="grid" />
-            <span>Workspaces</span>
+      {!embedded && (
+        <>
+          <a className="skip" href="#coordination-main">
+            Skip to content
           </a>
-          <button
-            type="button"
-            className="secondary cp-header-control"
-            aria-label="Sign out"
-            title="Sign out"
-            disabled={busy}
-            onClick={() => {
-              const controller = new AbortController();
-              controllers.current.add(controller);
-              const token = csrf();
-              void fetch("/api/staff/logout", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                  "Content-Type": "application/json",
-                  "X-CSRF-Token": token ?? "",
-                },
-                body: "{}",
-                signal: controller.signal,
-              })
-                .then((r) => {
-                  if (r.ok) location.replace("/");
-                  else throw new Error();
-                })
-                .catch(() => setMessage("Unable to sign out. Please retry."))
-                .finally(() => controllers.current.delete(controller));
-            }}
+          <header className="cp-header">
+            <StaffNavigationToggle />
+            <a href="/" aria-label="GatePass home">
+              <img src={config.companyLogo} width={164} alt="Sopra Steria" />
+            </a>
+            <div className="cp-header-actions">
+              <div className="cp-current-user">
+                <span className="cp-avatar" aria-hidden="true">
+                  {initials(options.displayName)}
+                </span>
+                <span>
+                  {options.displayName}
+                  <small>Staff portal</small>
+                </span>
+              </div>
+              <button
+                type="button"
+                className="secondary cp-header-control"
+                aria-label="Sign out"
+                title="Sign out"
+                disabled={busy}
+                onClick={() => {
+                  const controller = new AbortController();
+                  controllers.current.add(controller);
+                  const token = csrf();
+                  void fetch("/api/staff/logout", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "X-CSRF-Token": token ?? "",
+                    },
+                    body: "{}",
+                    signal: controller.signal,
+                  })
+                    .then((r) => {
+                      if (r.ok) location.replace("/");
+                      else throw new Error();
+                    })
+                    .catch(() =>
+                      setMessage("Unable to sign out. Please retry."),
+                    )
+                    .finally(() => controllers.current.delete(controller));
+                }}
+              >
+                <Icon name="logout" />
+                <span>Sign out</span>
+              </button>
+            </div>
+          </header>
+        </>
+      )}
+      <Content
+        id={setupSection ? "planning-setup-main" : "coordination-main"}
+        className="cp-main"
+      >
+        {!setupSection && (
+          <div
+            className={
+              "cp-toolbar cp-page-heading" +
+              (selected ? " cp-page-heading-detail" : "")
+            }
           >
-            <Icon name="logout" />
-            <span>Sign out</span>
-          </button>
-        </div>
-      </header>
-      <main id="coordination-main" className="cp-main">
-        <div
-          className={
-            "cp-toolbar cp-page-heading" +
-            (selected ? " cp-page-heading-detail" : "")
-          }
-        >
-          <div>
-            <h1>{selected ? "Visit details" : "Visit Coordination"}</h1>
-            {!selected && !settings && (
-              <p>
-                Plan visits and keep approvals, arrangements and conversations
-                together.
-              </p>
-            )}
-          </div>
-          <div className="cp-actions">
-            <button
-              type="button"
-              className="secondary cp-icon-button"
-              title="Refresh coordination"
-              disabled={loading || busy}
-              onClick={() => void refresh()}
-              aria-label="Refresh coordination"
-            >
-              <Icon name="refresh" className={loading ? "cp-spinning" : ""} />
-            </button>
-            {canManage && (
+            <div>
+              <h1>{selected ? "Visit details" : "Visit Coordination"}</h1>
+              {!selected && !settings && (
+                <p>
+                  Plan visits and keep approvals, arrangements and conversations
+                  together.
+                </p>
+              )}
+            </div>
+            <div className="cp-actions">
               <button
                 type="button"
-                className="secondary"
-                disabled={busy}
-                onClick={() => {
-                  setSettings(!settings);
-                  if (!settings) {
-                    setSelected(null);
-                    setDetail(null);
-                    history.replaceState(null, "", location.pathname);
-                  }
-                }}
+                className="secondary cp-icon-button"
+                title="Refresh coordination"
+                disabled={loading || busy}
+                onClick={() => void refresh()}
+                aria-label="Refresh coordination"
               >
-                <Icon name={settings ? "calendar" : "settings"} size={17} />
-                {settings ? "Visits" : "Planning settings"}
+                <Icon name="refresh" className={loading ? "cp-spinning" : ""} />
               </button>
-            )}
-            {canInvite && (
-              <button
-                className="primary"
-                type="button"
-                disabled={busy}
-                onClick={() => {
-                  createKey.current = crypto.randomUUID();
-                  setDialog("NEW");
-                }}
-              >
-                <Icon name="plus" size={18} />
-                Invite visitor
-              </button>
-            )}
+              {canInvite && (
+                <button
+                  className="primary"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => {
+                    createKey.current = crypto.randomUUID();
+                    setDialog("NEW");
+                  }}
+                >
+                  <Icon name="plus" size={18} />
+                  Invite visitor
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
         {message && (
           <div className="cp-alert" role="status">
             <span>{message}</span>
@@ -580,13 +628,32 @@ export default function CoordinationPage({ config }: PageProps) {
           <section className="cp-card" role="status">
             Loading your coordination workspace…
           </section>
-        ) : settings && canManage ? (
+        ) : (setupSection || settings) && canManage ? (
           <PlanningSettings
-            options={options}
+            options={
+              setupSection && officeId
+                ? {
+                    ...options,
+                    locations: options.locations.filter(
+                      (l) => l.locationId === officeId,
+                    ),
+                    accounts: options.accounts.filter(
+                      (a) => a.locationId === officeId,
+                    ),
+                    projects: options.projects.filter(
+                      (p) => p.locationId === officeId,
+                    ),
+                  }
+                : options
+            }
+            section={setupSection}
+            accountId={accountId}
             busy={busy}
             onSave={manage}
             onSearch={(q) => void loadOptions(q).catch(report)}
           />
+        ) : setupSection ? (
+          <p role="status">You cannot manage visit setup in this scope.</p>
         ) : selected ? (
           detail ? (
             <VisitDetail
@@ -619,36 +686,6 @@ export default function CoordinationPage({ config }: PageProps) {
           )
         ) : (
           <>
-            <nav className="cp-tabs" aria-label="Visit folders">
-              {[
-                ["MY", "My visits"],
-                ["ASSIGNED", "Assigned to me"],
-                ["PARTICIPATING", "Participating"],
-              ].map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={folder === key ? "selected" : ""}
-                  aria-pressed={folder === key}
-                  onClick={() => {
-                    setFolder(key);
-                    setOffset(0);
-                  }}
-                >
-                  <Icon
-                    name={
-                      key === "MY"
-                        ? "calendar"
-                        : key === "ASSIGNED"
-                          ? "shield"
-                          : "people"
-                    }
-                    size={17}
-                  />
-                  {label}
-                </button>
-              ))}
-            </nav>
             <div className="cp-filters">
               <label className="cp-search">
                 Search visitors
@@ -729,7 +766,7 @@ export default function CoordinationPage({ config }: PageProps) {
                     <span>{displayTime(visit.startsAtUtc)}</span>
                   </div>
                   <small className="cp-visit-host">
-                    Hosted by {visit.hostName}
+                    Visit owner: {visit.hostName}
                   </small>
                   <div className="cp-visit-footer">
                     <span>View visit</span>
@@ -774,7 +811,7 @@ export default function CoordinationPage({ config }: PageProps) {
             </div>
           </>
         )}
-      </main>
+      </Content>
       <Dialog
         id="coordination-invitation"
         open={dialog !== null}
@@ -802,6 +839,7 @@ export default function CoordinationPage({ config }: PageProps) {
             <InvitationForm
               key={dialog + ":" + (detail?.id ?? "new")}
               options={options}
+              preferredLocationId={officeId ?? (Number(office) || undefined)}
               initial={dialog === "EDIT" ? (detail ?? undefined) : undefined}
               busy={busy}
               onSave={saveDraft}

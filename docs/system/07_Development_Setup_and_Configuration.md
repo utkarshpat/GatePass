@@ -1,11 +1,13 @@
 # 07. Development setup and configuration
 
-> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
-Apply missing forward migrations in order using `database/setup/Apply-LocalTransactionCore.ps1`; never rewrite/reapply an existing ledger version. Current source migrations end at 127; the local GatePass development database was advanced from 121 to 127 on 1 November 2026. Use `Apply-LocalForwardMigration.ps1 -Version NNN` for later versions beyond the older fixed-list setup helper. Before Node decoder tests, set `GATEPASS_SHARP_PATH` to the installed `node_modules/sharp` package and `GATEPASS_PWSH_PATH` to PowerShell 7. `npm.cmd run dev` serves port 8443. The opt-in retained browser rehearsal is documented separately and uses port 18448 by default. Run SQL fault/locking suites separately from browser rehearsals.
+Source migrations end at **136**. Apply only missing reviewed versions in ascending order using the appropriate baseline helpers and `database/setup/Apply-LocalForwardMigration.ps1 -Version NNN` for later additive versions. The latter is a local development helper, not a production deployment runner; it verifies the source manifest, requires the immediately preceding ledger version and refuses reapplication. Never loop blindly over applied files or drop a retained database to hide a mismatch. Read the [database guide](../../database/README.md).
+
+The configured local runner serves HTTP on 8443. Browser integration uses separate test ports/databases; run SQL-heavy workloads sequentially. These instructions do not inspect or change an existing environment.
 
 ## .env configuration
-Copy `.env.example` to root `.env`; the existing local file retains development/dummy/mock mode. API/email worker and Node dev launcher load it before startup. Populate production SQL identities, HTTPS origin/TLS paths, source key, Graph sender/app credentials and approved adapter/storage paths only on the production VM. Keep `.env` out of Git, public hosting and personal sync; restrict filesystem access.
+Use `.env.example` as the template for a private root `.env`; use development/dummy/mock modes only in the explicit local runner. This documentation refresh does not inspect private values. API/email worker and Node dev launcher load it before startup. Populate production SQL identities, HTTPS origin/TLS paths, source key, Graph sender/app credentials and approved adapter/storage paths only on the production VM. Keep `.env` out of Git, public hosting and personal sync; restrict filesystem access.
 
 Run `npm run check:config -- api` and `npm run check:config -- email`. Errors list setting names only. A successful shape check does not prove provider connectivity or full production composition. Existing environment variables take precedence; restart services after edits. Reserved Entra/Google/directory keys are commented until adapters are implemented. See [report 86](../86_Runtime_Environment_Configuration.md).
 
@@ -28,8 +30,8 @@ The local UI host includes [cost-aware SSE invalidations](../Performance_Optimiz
 For an existing synthetic `GatePass_DesignTest`, run `./database/setup/Optimize-LocalTestDatabase.ps1 -TrustLocalServerCertificate` from the repository root to verify/set `AUTO_CLOSE OFF`. Omit the certificate switch when the local certificate is trusted. This explicit local maintenance command preserves all records; ordinary server startup does not change database options. Fresh development/CI setup also sets this option. See [the measured performance result](../Performance_Optimization_Phase_3.md).
 
 1. Select the dedicated synthetic test database and approved migration identity.
-2. Read database/README.md and helper parameters. Validate-LocalDatabase.ps1 handles the historical baseline, not the complete current 121 installation.
-3. Apply missing reviewed migrations ascending through the baseline setup and Apply-LocalTransactionCore.ps1 path. Check ledger/compatibility; do not reapply recorded files or drop databases to hide failures.
+2. Read database/README.md and helper parameters. Validate-LocalDatabase.ps1 handles the historical baseline, not the complete current 136-migration installation.
+3. Apply missing reviewed migrations ascending through the baseline setup and later reviewed forward-migration path. Check ledger/compatibility; do not reapply recorded files or drop databases to hide failures.
 4. Run approved synthetic directory/staff enrollment only with explicit development/mock flags. Credential seeding and test-password override are deliberate local operations, not boot behavior.
 5. Initialize protected storage, start loopback host and verify staff/public flows.
 

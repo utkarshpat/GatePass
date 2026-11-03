@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Priority bug fixes — 25 October 2026
 
 The three findings from the application-wide review are fixed locally. Forward migration **099** is applied to the dedicated local test database. Applied migrations 001–098 are preserved byte-for-byte. Existing local follow-up fixes remain in place.

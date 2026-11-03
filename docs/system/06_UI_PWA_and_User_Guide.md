@@ -1,64 +1,59 @@
 # 06. UI, PWA and user guide
 
-> Current source documentation: **2 November 2026**, migrations **001–132**. See [current release/configuration evidence](../88_Documentation_And_Release_28_October_2026.md), [individual visitor flow](../85_Individual_Visitor_Registration_27_October_2026.md), [runtime .env configuration](../86_Runtime_Environment_Configuration.md) and [organization requirements](../87_Organization_Production_Requirements.md). Earlier exported PDFs, screenshots and dated reports are historical.
+> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
-Current administration has seven modules, account lead previews, guard/account roster grouping, a separate allocation dialog, date/field-filtered visit register with Excel export and visit timelines, office QR standees and filterable audit events. Local staff can be created and receive a one-use password setup link. Reception offers all-date lookup/QR search, device confirmation on final pass return and a reasoned correction for mistaken returns. Visitor company and devices remain optional and per person. See the dated walkthrough for retained names and the 23 October presentation sequence.
+## Pages and navigation
 
-## Routes and views
-| Route | Purpose |
+Seven main page bundles use native React/TypeScript state, models and event handlers. New UI belongs in `src/frontend`; print/offline documents remain HTML. Existing CSS/tokens are shared. Older screenshot packages are historical state examples, not a current route count or proof that every state uses live data.
+
+| Entry | Current use |
 |---|---|
-| / | Unified staff sign-in and authorized workspace resolution |
-| /office/noida, /office/bengaluru, /office/chennai, /office/pune | Office-bound public intake |
-| /guard | Cards, duty filter/search, scanner and actions |
-| /reception | Scoped list/search/filter, preview and printing |
-| /reception/print | Isolated opener-controlled print window |
-| /admin | Account governance, leads/common duties |
-| /coordination | Authorized invitation planning, assigned work, discussions and scoped configuration |
-| /approval/{visitId} | Minimal host authentication/detail/decision |
-| /request/{visitId} | Owner/capability status and current PNG |
-| /pwa/offline.html | Reconnection shell; no cached authorized workspace |
+| `/` | Staff sign-in and direct authorized landing; no workspace chooser |
+| `/office/noida` and other configured office codes | Office-bound visitor/employee self-service |
+| `/guard` | Cards, duty filters/search, scanner and authorized actions |
+| `/reception` | Operational queues, lookup/history, printing/returns |
+| `/admin` | Original Admin header, office selector, profile and scoped sidebar |
+| `/coordination` | Coordination-only staff; Admin users resolve into embedded `/admin?view=coordination` |
+| `/approval/{id}`, `/request/{id}` | Existing minimal Host review / holder status |
+| `/pwa/offline.html` | Public reconnect fallback, no authorized offline workspace |
 
-The separate 22 October screenshot package contains 43 views at Phone 390x844 and Laptop 1366x768 CSS viewports. Selectors/dialogs/state examples are views, not 43 routes. Populated queues/success/card examples sometimes use intercepted synthetic data, not live approvals/production identities. Screenshots are a separate artifact, not duplicated into the documentation ZIP.
+Coordination-only users see **My visits**, **Assigned to me**, **Participating** directly in the sidebar. Admin users see them nested under Visit coordination, alongside the original modules. Phone navigation uses a drawer; the selected folder survives reload. Visit detail links retain the plan fragment. Ineligible sections are hidden and the server independently authorizes every request.
 
-## Visitor registration
-One visitor per form; optional company/devices, camera photo, office-wide host search and inclusive Valid until. Account selection is absent from visitor UI/public options; employee account access is unchanged. Desktop places Host and Valid until together; mobile stacks them. The success page renders a downloadable card for visitors as well as Digital IDs. Card failure has an explicit retry. A pending card remains pending.
+## Self-service
 
-All calendar-day pass expiry labels, including images/printing, details, emails and register export, show the last included date at 23:59. The original exclusive timestamp continues to control access.
+Visitor registration is individual: optional company/device types, Valid until and office-wide private Host search, purpose, live camera photo, review and downloadable status/card. No public project/account picker or gallery upload. Desktop pairs Host and Valid until; mobile stacks them. All calendar-day labels show final included date 23:59 while stored expiry remains exclusive.
 
-## Shared UI
+Employee Digital ID and account-access requests remain same-day, with explicit primary/eligible offices and memberships. An employee can reopen current status/pass without an employee workspace. Email review is distinct from pre-planning.
 
-The seven main served views now use `src/frontend/pages/*.tsx`; original CSS and workflows remain. All seven pages use native React models/components, including dynamic lists, dialogs and forms. Legacy page controllers are no longer frontend build inputs. Old main HTML templates are reference-only. New UI uses React/TypeScript. Print/offline remain HTML. See [migration detail](../92_React_Frontend_Migration_28_October_2026.md).
-`global.css` owns tokens/reusable controls; feature CSS owns layout. Utilities include accessible custom selects, country-aware phone input, toasts, camera lifecycle and photo adjustment. Password visibility is an accessible icon and the whole control has a consistent focus state. Mobile forms render directly without redundant page cards/marketing copy.
+## Guard
 
-Public landing fits the viewport, with mobile campus background and overlaid choices. Long forms/workspaces may scroll for genuine content. Landing fit is not a prohibition on useful scrolling. Responsive acceptance requires testing, not an inference from a single screenshot.
+Use main-page search, duty filter and Expected/Inside tabs. Scanner is a thumb-accessible FAB. Open/scan a card for current details/movement timeline and explicit Check in/Check out. Verification alone does not enter. Common-area duty has no account movement. Privileged reconciliation is reasoned and audited.
 
-## Guard guide
-Use main-page search/duty filter and Expected/Inside account tabs. Cards have status accents/tints. No separate Find pass/Recent scans/Accounts sidebar. Scanner is a thumb-accessible FAB. Open a card or scan QR to review current details/history. Verification alone does not enter; explicitly Check in/Check out. SQL determines available actions. Reasoned privileged reconciliation cannot erase occupancy arbitrarily.
+Profile/language/sign-out are in the account menu. Language modes are English or English plus Hindi, Kannada, Tamil or Marathi. These are guard helper modes, not a claim that the whole application is fully translated or native-speaker accepted.
 
-Account menu contains profile, language dropdown and sign out. Profile shows assigned offices/duties. Language modes are English only or English plus Hindi, Kannada, Tamil or Marathi. This is guard helper translation, not a claim that all application text is translated or native-speaker accepted.
+## Reception
 
-## Reception guide
-Use granted office, date/status and supported person/employee/pass-reference search. Metrics describe matching filtered results after the full page chain loads. Failed/incomplete reads are not valid zero counts. View pass authorizes current private details/image. Print requests an audited handoff; popup failure/closure is distinct from server dispatch. Reprint creates a separate job. Pending cards remain pending for account entry. Validate real printer, scaling, orientation and media before rollout.
+Use operational queues, supported person/employee/pass search or QR lookup. Scanner FAB is above Manual registration. History opens its own date-range view. Rows/eye open card, details and movement timeline. Host name/email remain distinct from visitor identity. Profile has no language setting.
 
-## Admin guide
-Choose the authorized office in the header pill; the account scope bar applies to Overview, Users & permissions, Visit register and Audit log. Accounts & areas shows labelled account/common-area cards and one scoped Add flow. Account cards manage leads; common-area cards manage their guards. Users & permissions manages existing identities, scoped role/permission grants and revocations, and password setup/reset. Add user creates permitted reception/admin accounts and excludes Guard. Guard assignments provides Add guard and account duty allocation/removal. Visit register shows scoped visits, sorting, full timelines and Excel export. Audit log shows authorized administration history. See [unified accounts/areas](../57_Unified_Projects_And_Common_Areas.md) and [account onboarding](../54_Local_Staff_Onboarding_And_Audit.md).
+Print/reprint uses the browser print coordinator with an audited server job; expired passes are not printable. Browser handoff is not physical printing. Printed/returned controls and pending-return counts are separate from repeated print-job totals. Final return checks that the person is outside relevant accounts and declared devices are accounted for; mistaken return has a reasoned, receipt-bound correction. Reminder actions retain server cooldown/current eligibility.
 
-## PWA
-Manifest uses the GatePass app icon. Service worker caches only a fixed public offline/icon set. Authenticated HTML, APIs, photos, cards, reports and POSTs are excluded. Navigations are network-first with reconnect fallback. All verification/movement requires online SQL authorization. Browser installation and native camera/device behavior remain acceptance checks.
+## Admin setup
 
-Sources: src/app; docs/13_Product_UX_Standards.md; docs/14_Global_Design_System.md; docs/27_PWA.md; docs/37_Reception_Audit.md.
+- **Accounts:** account leads and approved account hosts; each account card opens **Projects & visit hosts** for its projects and visit-host setup.
+- **Areas & groups:** common-area duty cards and a separate **Approval & notification groups** tab. Group placement does not grant physical-area access.
+- **Approvals & responsibilities:** authorized office/project scope; office policies have Approvals, Support & people, Visit limits. Mandatory policy rules remain intact.
+- **Guard account groups:** separate account bundles for guard allocation; they are not email-recipient lists.
+- **Users & permissions / Guard assignments:** scoped onboarding, setup/reset, grants/revocation and guard duty allocation. Password provisioning and role delegation are independently checked.
+- **Offices & QR / Visit register / Audit log:** registration standees, scoped SQL filters/sort/Excel and redacted history.
 
-## Account host policy update
+The old catch-all Planning settings button is removed from normal Coordination navigation. Legacy settings URLs remain readable for compatibility. Setup and selected account survive reload; office changes rebind to the new authorized catalogue.
 
-See [accounts and approved hosts](../89_Accounts_And_Approved_Hosts_28_October_2026.md). Account-office host lists are explicit and administered within scope; membership alone does not enable hosting. Legacy API/schema names remain compatible.
+## Invitation guide
 
-## Visit Coordination guide
+The form has six numbered steps: **Visitor → Visit → Approvals → Details → Support → Review**. Back/Next preserves input, invalid fields prevent skipping, and Review requires explicit Save. Saving a draft sends no mail.
 
-Choose Visit Coordination from the staff workspace picker (Admin header: Switch workspace). Managers configure sub-projects, explicit hosts, office/project policies, arrangement owners and VIP FYI contacts in Planning settings. Hosts see Invite visitor only for approved scopes. My visits, Assigned to me and Participating have office/date/search filters. Open a visit for process decisions, arrangement updates, scoped threads and activity. Draft submission and rescheduling are distinct; rescheduling requires fresh approval. This page issues no entry pass and currently sends no planning email. [Full setup and verification](../98_Visit_Coordination_Persistence_01_November_2026.md).
+The authenticated creator is shown as **Visit owner**. Destination permission reviewers are **Hosts**; their names appear beside required approval routing. Review selected groups' members and APPROVAL/NOTIFY roles. Optional Additional contact (notify) and Alternate receiver are FYI contacts, not replacement Visit owners. Submit separately to start the configured process. Hosts, task owners and authorized participants then use Approvals, Arrangements, Discussion and Activity.
 
+## PWA and devices
 
-## Source-office sponsorship and destination approval
-
-An active internal approved account-office host, or explicitly approved location-planning host, can request all active configured sub-project destinations in that eligible office. The inviter need not be a member or approved host of the destination account. The authenticated invitation catalogue is intentionally office-wide for these approved hosts; public visitor host lookup remains unchanged. Each destination's assigned internal authority and the office baseline still decide independently. Selection and READY planning status do not issue a pass or grant entry. Removing every current source grant blocks new requests/readiness; destination management and private threads retain their scoped checks. See [current rule and evidence](../99_Location_Sponsored_Cross_Account_Invitations_01_November_2026.md).
-
-Coordination is an additive host/facilities pre-planning workspace. It contains invitations, project approvals, arrangements, VIP/FYI recipients, discussion and activity. QR card allocation, reception, guard scanning, entry/exit and returned badges use their existing workflows. No manual invitation linking or separate planned gate is exposed. See [coordination-only scope correction](../101_Coordination_Only_Scope_02_November_2026.md).
+The manifest uses the GatePass icon. Service worker caching is limited to a fixed public offline/icon set; authenticated HTML/APIs/photos/cards/reports/POSTs are excluded. All verification/movement requires online authorization. Test actual installation, camera, printer, media/scaling, language readability and managed-device policies before rollout.

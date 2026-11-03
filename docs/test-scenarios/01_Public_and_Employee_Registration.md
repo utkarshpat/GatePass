@@ -1,99 +1,20 @@
-# 01. Public & Employee Registration Scenarios
+# 01. Public and employee registration
 
-> Updated 27 October 2026: current behavior/evidence is in [report 88](../88_Documentation_And_Release_28_October_2026.md). Visitor registration is single-person; employee account flows remain same-day; all calendar-day pass labels end at 23:59. Google station sign-in remains pending.
+> Maintained manual acceptance catalogue — 3 November 2026. These are test instructions, not newly executed results. [Actual evidence](../system/10_Testing_CI_and_Evidence.md).
 
-> 23 October presentation run: [current evidence and retained demo data](../55_Presentation_Rehearsal_23_October_2026.md). Earlier execution counts/cleanup statements in this catalog describe their dated runs; this presentation dataset is retained.
+Office QR binds location. Employee corporate identity is intended; the local adapter is dummy. Ordinary pass Host means the selected authorized person; it is not the planning Visit owner label.
 
-## Surface
-- **Routes**: `/office/noida`, `/office/bengaluru`, `/office/chennai`, `/office/pune`
-- **APIs**: `/api/dev/sso/*`, `/api/registration/reset`, `/api/registration/start`, `/api/registration/options`, `/api/registration/photo`, `/api/registration/submit`, `/api/employee/digital-id/detail`, `/api/employee/digital-id/image`
-- **SQL Procedures**: `gp.CreateRegistrationIntake`, `gp.GetRegistrationOptions`, `gp.RecordRegistrationPhoto`, `gp.SubmitRegistration`, `gp.GetOwnDigitalIdCard`
+| Case | Exercise | Expected result |
+|---|---|---|
+| REG-01 | Open each configured office QR and attempt to change office fields directly. | Correct server-bound context; forged office is rejected. |
+| REG-02 | Authenticate employee1, inspect primary office and eligible account-office choices. | Directory-derived office/entitlements; no array-order or same-account cross-office access. |
+| REG-03 | Request a temporary ID with reason, live camera image and review. | Eligible same-day auto-approval and current downloadable card; manager notice is informational. |
+| REG-04 | Request again/retry, then revoke entitlement and retry. | Valid same-day reuse/idempotency; revoked or stale entitlement cannot reuse/issue a pass. |
+| REG-05 | Request another authorized account-office with its eligible Host. | Independent exact-scope request/approval; no permanent membership is added. |
+| REG-06 | Register one visitor with optional company/device types and no email. | Card/status available under the active matching intake; pending card is not entry permission. |
+| REG-07 | Search Hosts by name/email at the office; inspect returned public data. | Only eligible office Host results; no account/project catalogue or mappings. |
+| REG-08 | Try Add visitor/grouped API payload, public account filter or gallery file upload. | No grouped UI/gallery control; disallowed payloads are rejected without partial registration. |
+| REG-09 | Select an inclusive multi-day final date, reload queues on a still-valid day, then cross expiry. | Starts today; labels end final date 23:59; exclusive timestamp controls expiry and queues retain valid stays. |
+| REG-10 | Try malformed phone/company/device fields, missing photo, stale intake and another intake card ID. | Validation/privacy rejection; card download cannot cross intake ownership. |
 
----
-
-## Test Cases
-
-### TC-REG-01: Office QR Context Binding
-- **Precondition**: User opens `/office/noida`.
-- **Steps**:
-  1. Verify header displays `Noida` and `<meta name="gp-office" content="NOIDA">`.
-  2. Verify two entry choices are visible: **SSI Employee** and **Visitor Check-in**.
-- **Expected Result**: Server issues `gp-dev-office` signed cookie bound to `NOIDA`; user cannot manually tamper with office selection inside the form.
-
-### TC-REG-02: Employee Sign-In & Directory Hydration
-- **Steps**:
-  1. Click **SSI Employee** on `/office/noida`.
-  2. Sign in with `employee2@example.com` and `Sopra@123`.
-- **Expected Result**:
-  - Employee identity card displays `Employee 2`, `EMP002 · employee2@example.com`, `Primary Office: Noida`, and assigned account chips (`Project 1 · Noida`).
-  - `+ Request access to another project` button is available.
-
-### TC-REG-03: Employee Digital ID Issuance (Eligible Office, Camera-Only Capture)
-- **Steps**:
-  1. Select Reason (`Forgot my card`, `Lost my card`, or `Other` with mandatory details).
-  2. Click **Continue** to proceed to Photo Verification.
-  3. Capture portrait via live camera (`input[type=file]` gallery picker is absent); adjust zoom/pan/flip/reset controls or use **Retake**.
-  4. Click **Review**, verify details and 600×800 cropped portrait, and click **Submit Pass**.
-- **Expected Result**:
-  - `DIGITAL_ID` (`TEMP_ID` in SQL) is auto-approved (`status: APPROVED`, `passStatus: ACTIVE`).
-  - Digital ID card PNG is rendered and displayed with a **Download Digital ID** action.
-  - `TEMP_ID_MANAGER_NOTICE` and `REQUEST_RECEIVED` notifications are queued in `gp.NotificationOutbox`.
-
-### TC-REG-04: Same-Day Digital ID Reuse (Idempotent / Repeat Request)
-- **Steps**:
-  1. While an active, unreturned Digital ID exists for `EMP002` in Noida today, submit another Digital ID request for `EMP002` in Noida.
-- **Expected Result**:
-  - `gp.SubmitRegistration` reuses the existing `VisitRequestId` and `AccessPassId` (`reused: true`) without minting a duplicate credential.
-
-### TC-REG-05: Fresh Digital ID After Final Pass Return (Migration 073 & 074)
-- **Steps**:
-  1. Reception prints and later marks `EMP002`'s Digital ID pass as **Returned** (`gp.ReturnReceptionPass`).
-  2. `EMP002` submits a new Digital ID request in Noida on the same day.
-- **Expected Result**:
-  - Returned pass is treated as closed history (not reusable/overlapping); a fresh `VisitRequestId` and active `AccessPassId` are issued, and `gp.TemporaryIdSlots` updates to the new visit.
-
-### TC-REG-06: Employee Cross-Office Request (Ineligible for Auto Digital ID)
-- **Steps**:
-  1. Open `/office/bengaluru` and sign in as `employee1@example.com` (whose primary/eligible office is Noida, not Bengaluru).
-  2. Select reason `Forgot my card` and click **Continue**.
-- **Expected Result**:
-  - Banner states `Access to this office requires host approval.`
-  - Clicking **Continue** without adding a account/host shows error toast `Add a project and local host for approval.` and focuses `+ Request project access`.
-
-### TC-REG-07: Employee Additional Account Access (`EMPLOYEE_PROJECT`)
-- **Steps**:
-  1. Sign in as `employee2@example.com` on `/office/noida`.
-  2. Click `+ Request access to another project`.
-  3. In the modal, select an unassigned account (`Project 2`), search for an eligible host assigned to `Project 2` at Noida, select Purpose, and click **Add account**.
-  4. Complete Photo and Review steps and submit.
-- **Expected Result**:
-  - Submits both `DIGITAL_ID` (auto-approved) and `EMPLOYEE_PROJECT` (status `PENDING`, awaiting host approval) as separate visits.
-  - Self-hosting (`HostEmployeeId = EmployeeId`) and hosts not eligible at that exact `ProjectLocationId` are rejected.
-
-### TC-REG-08: Single External Visitor Check-in (`EXTERNAL`) with Optional Company & Devices
-- **Steps**:
-  1. Open `/office/noida` and click **Visitor Check-in**.
-  2. Enter Name (`Arjun Mehta`), valid mobile (`9876543210` with `+91` country code), optional Email (`visitor1@example.com`), optional **Company Name** (`Acme Corp`), and optional **Devices Carried** (`Laptop`, `Tablet / iPad`, `Pen Drive`, `Camera`, `Other`).
-  3. Click **Continue** to Visit details.
-  4. Select Valid until (within `[currentDate, maxVisitDate]`), search/select an office host by name/email without a account selector, and select Purpose (`Business meeting`, `Contractor`, `Support staff`, etc.).
-  5. Capture visitor photo via camera, review details (verifying `Company` and `Devices` appear in the review summary), and click **Submit Pass**.
-- **Expected Result**:
-  - Request is created with `status: PENDING`, `passStatus: PENDING`, `CompanyName = 'Acme Corp'`, and canonical sorted `DeviceTypesJson = '["LAPTOP","TABLET"]'`.
-  - Success screen shows `Approval pending` badge, reference `V-...`, and pass number `GP-...`.
-
-### TC-REG-09: Individual Registration and Account Privacy
-- Verify Add visitor, Remove visitor and collapsed-person controls are absent.
-- Send two people or a public account filter/account ID directly; expect rejection without persisted partial visits.
-- Search a host in the QR office; responses contain no account mapping/catalogue. Out-of-office hosts cannot be submitted.
-- Submit one visitor without email; preview/download the real pending card. A different intake cannot export that card.
-- Select tomorrow as Valid until; stored start is today and the final displayed minute is tomorrow 23:59. Verify non-midnight ends are not changed.
-- Verify desktop Host/Valid until alignment, mobile stacking, and current queues on later valid stay days.
-
-### TC-REG-10: Validation Boundaries (Phone, Reason, Camera-Only Photo, Visitor Details)
-- **Steps**:
-  1. Enter an invalid phone number (e.g., `12345`) or select country code via Country Picker dialog.
-  2. Select `Other` in Reason/Purpose without filling Details textarea.
-  3. Attempt to continue from Photo step without capturing a camera photo, or verify that no file-upload (`input[type=file]`) element exists.
-  4. Attempt to submit invalid device codes, duplicate device codes, company names > 200 chars, or disallowed ID-proof/serial-number fields to `/api/registration/submit`.
-- **Expected Result**:
-  - Inline validation and error toast block UI progression; backend `visitorDetails()` and `gp.SubmitRegistration` reject malformed or unknown properties with `400 INVALID_INPUT` (`52702`).
+Use synthetic identities/media and an approved test environment. Record the environment, source revision, actor/scope, actual result and sanitized correlation. Do not send real email or mutate production as part of a manual documentation walkthrough.

@@ -142,7 +142,7 @@ test('common duty hides movement queues and scoped admin can open guard assignme
  await expect(page.locator('#summary-cards')).toContainText('Registered');
  await page.locator('#admin-office-trigger').click();await page.getByRole('option',{name:'Noida',exact:true}).click();await expect(page.locator('#office-name')).toHaveText('Noida');
  await page.locator('[data-admin-view="projects"]').click();
- const area=page.locator('.area-card').filter({has:page.getByRole('heading',{name:'Lobby',exact:true})});await expect(area).toBeVisible();
+ await page.getByRole('button',{name:'Areas & groups',exact:true}).click();const area=page.locator('.area-card').filter({has:page.getByRole('heading',{name:'Lobby',exact:true})});await expect(area).toBeVisible();
  await area.getByRole('button',{name:'Assign guard',exact:false}).click();await expect(page.locator('#common-dialog')).toBeVisible();await expect(page.locator('#common-area')).toHaveText('Lobby');
  await page.locator('#common-guard-search').fill('Guard 1');
  await expect(page.locator('#common-guard-results')).toContainText('Guard 1');

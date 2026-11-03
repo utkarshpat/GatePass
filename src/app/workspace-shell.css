@@ -28,3 +28,28 @@
 
 }
 @media(max-width:760px){@layer layouts{.reception-title{align-items:flex-start;flex-wrap:wrap}.reception-header{gap:12px}.portal-tag{display:none}}}
+/* Role-authorized application navigation. Single-section users retain the focused page. */
+.staff-navigation-toggle { display:none; align-items:center; justify-content:center; flex:0 0 40px; width:40px; height:40px; min-height:40px; padding:8px; border:1px solid var(--gp-border); border-radius:10px; background:var(--gp-surface); color:var(--gp-text); }
+.staff-section-navigation { position:fixed; inset:0 auto 0 0; width:224px; padding:28px 14px; background:var(--gp-surface); border-right:1px solid var(--gp-border); z-index:25; overflow-y:auto; }
+.staff-navigation-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; padding:0 12px; color:var(--gp-text); }
+.staff-navigation-heading > span {font-size:21px; font-weight:750; letter-spacing:-.5px;}
+.staff-navigation-heading small {font-size:11px; color:var(--gp-text-muted);}
+.staff-section-links {display:flex;flex-direction:column;gap:6px;}
+.staff-section-links a {display:flex;align-items:center;gap:12px;min-height:48px;padding:12px;border-radius:12px;color:var(--gp-text-muted);font-size:14px;font-weight:600;text-decoration:none;line-height:1.4;}
+.staff-section-links a svg {flex:0 0 20px;}
+.staff-section-links a:hover {background:var(--gp-surface-subtle);color:var(--gp-text);}
+.staff-section-links a[aria-current="page"] {background:#fff0f4;color:#cc0038;}
+.staff-section-links a:focus-visible,.staff-navigation-toggle:focus-visible,.staff-navigation-close:focus-visible {outline:3px solid var(--gp-brand);outline-offset:3px;}
+.staff-navigation-drawer {position:fixed;inset:0 auto 0 0;margin:0;width:min(288px,86vw);max-width:none;height:100dvh;max-height:100dvh;padding:24px 14px;background:var(--gp-surface);color:var(--gp-text);border:0;border-right:1px solid var(--gp-border);border-radius:0;box-shadow:18px 0 60px #10182826;overflow-y:auto;}
+.staff-navigation-drawer::backdrop {background:#10182873;}
+.staff-navigation-drawer .staff-navigation-heading {padding:0 10px;margin-bottom:24px;}
+.staff-navigation-drawer h2 {font-size:20px;margin:0;}
+.staff-navigation-close {display:grid;place-items:center;width:40px;height:40px;min-height:40px;padding:0;border:1px solid var(--gp-border);border-radius:10px;background:var(--gp-surface-subtle);color:var(--gp-text);font-size:25px;}
+@media(min-width:901px){body.staff-navigation-active:not(:has(.admin-layout)){padding-left:224px;box-sizing:border-box;}}
+@media(max-width:900px){.staff-section-navigation {display:none;}.staff-navigation-toggle {display:inline-flex;}.staff-navigation-drawer .staff-section-links {display:flex;} .cp-header:has(.staff-navigation-toggle) > a {margin-right:auto;} .admin-header:has(.staff-navigation-toggle) .header-brand-group {display:flex;align-items:center;gap:10px;} .reception-header .shell:has(.staff-navigation-toggle) .identity {margin-right:auto;}}
+@media print {.staff-section-navigation,.staff-navigation-toggle,.staff-navigation-drawer {display:none!important;} body.staff-navigation-active {padding-left:0!important;}}
+
+/* Visit folders are navigation, including for a single-workspace host. */
+.staff-visit-folders{display:grid;gap:4px}.staff-visit-folders.nested{margin:4px 0 10px 22px;padding-left:10px;border-left:1px solid var(--gp-border)}.staff-visit-folders a{min-height:40px;font-size:13px;padding:10px 12px}.staff-visit-folders a[aria-current="page"]{background:#fff0f4;color:#cc0038}
+
+@media(max-width:900px){body.staff-navigation-active .admin-layout .admin-nav{display:none!important}}

@@ -1,3 +1,5 @@
+> Documentation status: historical implementation/design/evidence record, indexed 3 November 2026. Read the [current handbook](system/README.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) for current behavior. Counts, setup examples and screenshots below describe their dated stage, not a fresh certification.
+
 # Final browser verification and retained presentation data
 
 Run date: **24 October 2026 (Asia/Calcutta)**. This report follows the requested complete browser rehearsal, preservation of realistic demo data, documentation refresh and final source push. Local development URL: **http://localhost:8443**.

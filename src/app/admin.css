@@ -1854,3 +1854,11 @@
 #project-group-form .dialog-body{display:grid;gap:1rem;min-height:0;overflow-y:auto}
 #project-group-form .dialog-actions{flex-shrink:0}
 #project-group-form fieldset{min-width:0;margin:0;border:1px solid var(--gp-border);border-radius:var(--gp-radius-card);padding:.85rem}
+
+/* Keep account-card actions inside their own grid cell at laptop/tablet widths. */
+.project-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,19rem),1fr))}
+.project-row.project-card,.roster-project{min-width:0;max-width:100%}
+.project-card .project-card-actions,.roster-project .project-card-actions{display:flex;flex-wrap:wrap;justify-content:flex-start;width:100%;min-width:0;gap:var(--gp-space-2)}
+.project-card-actions>button,.project-card-actions>a{flex:1 1 9rem;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+
+#admin-projects .projects-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}#admin-projects .projects-tabs>button{flex:1 1 160px;white-space:normal}#admin-projects [aria-label="Area setup"]{margin-bottom:20px;flex-wrap:wrap}#admin-projects .cp-card{margin-top:16px}
