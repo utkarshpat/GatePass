@@ -2,7 +2,7 @@
 
 Visitor registration, temporary employee IDs, hosted account access, reception printing/returns, guard verification/movement, scoped administration and visit pre-planning.
 
-Current documentation: **3 November 2026 · 136 forward migrations**. Start with the [system handbook](docs/system/README.md). The [documentation index](docs/DOCUMENTATION_INDEX.md) separates maintained guides from historical reports and exports.
+Current documentation: **4 November 2026 · 136 forward migrations**. Start with the [system handbook](docs/system/README.md). The [4 November documentation review](docs/111_Documentation_Verification_And_Publication_04_November_2026.md) records source verification and publication scope. The [documentation index](docs/DOCUMENTATION_INDEX.md) separates maintained guides from historical reports and exports.
 
 ## Current workflows
 

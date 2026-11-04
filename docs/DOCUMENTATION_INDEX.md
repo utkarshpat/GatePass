@@ -1,6 +1,6 @@
 # Documentation index
 
-Reviewed 3 November 2026. Start with the [current handbook](system/README.md), [readiness matrix](system/11_Readiness_Gaps_and_Roadmap.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md).
+Reviewed 4 November 2026. Start with the [current handbook](system/README.md), [readiness matrix](system/11_Readiness_Gaps_and_Roadmap.md) and [Visit owner/Host glossary](109_Visit_Owner_and_Host_Terminology_03_November_2026.md).
 
 “Maintained” describes current documented source behavior, not production certification or fresh execution of every test. “Historical” preserves dated implementation/evidence; its old counts, names and commands are not current deployment instructions. Generated inventories show source provenance, not a live database/provider audit. Diagrams, screenshots and old exports belong to their originating historical baseline.
 
@@ -17,6 +17,7 @@ The repository [entry guide](../README.md) and [database guide](../database/READ
 
 | Document | Description |
 |---|---|
+| [110_Documentation_Refresh_03_November_2026.md](110_Documentation_Refresh_03_November_2026.md) | Documentation refresh — 3 November 2026 |
 | [100_Planned_Pass_Binding_And_Destination_Gates_02_November_2026.md](100_Planned_Pass_Binding_And_Destination_Gates_02_November_2026.md) | Reception-assisted planned passes and exact destination gates |
 | [101_Coordination_Only_Scope_02_November_2026.md](101_Coordination_Only_Scope_02_November_2026.md) | Coordination-only scope correction |
 | [102_Coordination_Email_Notifications_02_November_2026.md](102_Coordination_Email_Notifications_02_November_2026.md) | Coordination email notifications — 2 November 2026 |
@@ -140,9 +141,9 @@ The repository [entry guide](../README.md) and [database guide](../database/READ
 
 | Document | Description |
 |---|---|
+| [111_Documentation_Verification_And_Publication_04_November_2026.md](111_Documentation_Verification_And_Publication_04_November_2026.md) | Documentation verification and publication — 4 November 2026 |
 | [108_Account_Setup_and_Coordination_Navigation_02_November_2026.md](108_Account_Setup_and_Coordination_Navigation_02_November_2026.md) | Account setup and coordination navigation — 2 November 2026 |
 | [109_Visit_Owner_and_Host_Terminology_03_November_2026.md](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) | Visit owner and Host — 3 November 2026 |
-| [110_Documentation_Refresh_03_November_2026.md](110_Documentation_Refresh_03_November_2026.md) | Documentation refresh — 3 November 2026 |
 | [86_Runtime_Environment_Configuration.md](86_Runtime_Environment_Configuration.md) | Runtime configuration through .env |
 | [87_Organization_Production_Requirements.md](87_Organization_Production_Requirements.md) | Organization requirements for production |
 | [system/01_Product_and_Workflows.md](system/01_Product_and_Workflows.md) | 01. Product and workflows |

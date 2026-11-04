@@ -1,6 +1,6 @@
 # 09. Deployment, operations and recovery
 
-> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
+> Maintained source handbook — **4 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
 ## Target and boundary
 Agreed target: private Ubuntu Server 24.04 LTS x86-64 VM for UI/API, worker, SQL Server Express and private media, with protected off-VM backups. This is intended topology, not deployed evidence or a fresh vendor compatibility/licensing assessment. Windows DPAPI-protected files cannot simply be copied to Linux and assumed operational.

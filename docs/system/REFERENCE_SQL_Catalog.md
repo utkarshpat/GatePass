@@ -1,6 +1,6 @@
 # SQL source catalogue
 
-Updated 3 November 2026; 136 forward migration files. Declaration provenance is lexical source evidence, not a live catalogue or permission audit. Dynamic ALTER migrations may preserve/change existing definitions without a new literal declaration.
+Updated 4 November 2026; 136 forward migration files. Declaration provenance is lexical source evidence, not a live catalogue or permission audit. Dynamic ALTER migrations may preserve/change existing definitions without a new literal declaration.
 
 ## Migration hashes
 

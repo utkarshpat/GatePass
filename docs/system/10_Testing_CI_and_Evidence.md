@@ -1,6 +1,6 @@
 # 10. Testing, CI and evidence
 
-> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
+> Maintained source handbook — **4 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
 ## Evidence is scoped and dated
 
@@ -20,6 +20,10 @@ The documentation-only refresh did not rerun application/SQL/provider tests. A s
 The 34 Admin cases are the union of four overflow, five folder/setup, eight staff navigation, four embedded-layout, two area-boundary, four area-workspace and seven guard-group cases. Outdated assertion failures were corrected for new setup URLs/visibility and the affected files passed; failed intermediate runs are not reported as clean full runs.
 
 Historical coverage percentages in numbered reports describe their included backend source and dates. Browser React files are excluded from Node backend coverage; do not present those percentages as full frontend coverage or zero-bug proof. Older full browser counts remain historical.
+
+## 4 November documentation verification
+
+The [documentation publication review](../111_Documentation_Verification_And_Publication_04_November_2026.md) rechecked local links, source fingerprints, generated inventories and migration integrity. Application source matches the previously recorded 664-file snapshot. No new full Node, SQL, browser or load/stress execution is claimed for this documentation-only change; the application results above retain their original dates.
 
 ## Confidence layers
 

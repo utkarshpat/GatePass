@@ -1,3 +1,5 @@
+> Latest documentation review: [4 November verification and publication](docs/111_Documentation_Verification_And_Publication_04_November_2026.md). The older execution results and local/uncommitted statements below describe their historical runs; use the current handbook for present source status.
+
 > Documentation status: historical commit audit. Current status is in the [system handbook](docs/system/README.md); this report is not a new release or deployment attestation.
 
 # External source audit acceptance — 26 October 2026

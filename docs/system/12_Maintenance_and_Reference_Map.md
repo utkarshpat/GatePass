@@ -1,10 +1,10 @@
 # 12. Maintenance and reference map
 
-> Maintained source handbook — **3 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
+> Maintained source handbook — **4 November 2026 · migrations 001–136**. [Current status and evidence](11_Readiness_Gaps_and_Roadmap.md) · [Terminology](../109_Visit_Owner_and_Host_Terminology_03_November_2026.md). Source review is not production acceptance.
 
 ## Documentation authority
 
-This handbook is the maintained narrative source baseline dated 3 November 2026. Approved user requirements and executable source/immutable migrations determine behavior; documentation must be corrected when they differ. Source review, dated local tests and organizational acceptance are separate kinds of evidence.
+This handbook is the maintained narrative source baseline reviewed on 4 November 2026. Approved user requirements and executable source/immutable migrations determine behavior; documentation must be corrected when they differ. Source review, dated local tests and organizational acceptance are separate kinds of evidence.
 
 The [full documentation index](../DOCUMENTATION_INDEX.md) classifies every Markdown guide. Dated numbered reports, database phase notes, previous exports and screenshots remain historical implementation/evidence records. They are not silently rewritten into current test or deployment certificates. Read the current handbook and latest glossary before following older examples.
 
@@ -40,7 +40,7 @@ Update applicable workflow, identity/scope, API/RPC, state/retry, UI/mail and de
 Regenerate non-secret source inventories with:
 
 ```powershell
-python tools/update-documentation-references.py --date 2026-11-03
+python tools/update-documentation-references.py --date 2026-11-04
 ```
 
 Use the actual review date on future runs. This reads reviewed source names/hashes, not SQL, .env, token caches or mail. Source-Snapshot records the base commit plus working-tree hashes; it is not a signed release or live catalogue.

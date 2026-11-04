@@ -1,8 +1,8 @@
 # GatePass system handbook
 
-Maintained source documentation — **3 November 2026 · migrations 001–136**.
+Maintained source documentation — **4 November 2026 · migrations 001–136**.
 
-Start here for current behavior. [Full documentation index](../DOCUMENTATION_INDEX.md) classifies historical reports and reference material; [latest documentation review](../110_Documentation_Refresh_03_November_2026.md) records this refresh and its limits.
+Start here for current behavior. [Full documentation index](../DOCUMENTATION_INDEX.md) classifies historical reports and reference material; [latest documentation review](../111_Documentation_Verification_And_Publication_04_November_2026.md) records this refresh and its limits.
 
 ## Current model
 

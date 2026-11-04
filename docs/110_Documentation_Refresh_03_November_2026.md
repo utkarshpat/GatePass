@@ -1,3 +1,5 @@
+> Historical documentation review. The 3 November implementation/documentation was subsequently committed as `d41b79e`. See the [4 November verification and publication review](111_Documentation_Verification_And_Publication_04_November_2026.md) for the latest documentation status. The original scope and results below remain dated evidence.
+
 # Documentation refresh — 3 November 2026
 
 This is a documentation/source review. It changes no application behavior, grants, migration SQL, private configuration, retained database, media, credentials or delivery queue. Existing uncommitted implementation work remains in place. No commit, push, deployment or real email is part of this refresh.

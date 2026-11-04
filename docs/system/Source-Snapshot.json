@@ -1,7 +1,7 @@
 {
-  "documentDate": "2026-11-03",
+  "documentDate": "2026-11-04",
   "timezone": "Asia/Calcutta",
-  "gitBaseCommit": "c0ff201a839f96ba096bf2a802c63ee74dc28493",
+  "gitBaseCommit": "d41b79e420eaf1ecd8774cd396c32f472b5d1fa9",
   "snapshot": "Reviewed working-tree source before release commit; excludes actual .env, runtime data and private artifacts",
   "migrationCount": 136,
   "sqlDeclarationCounts": {
