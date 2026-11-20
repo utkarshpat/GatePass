@@ -64,6 +64,7 @@ stages:
               testResultsFiles: output/test-results/unit.xml
               failTaskOnFailedTests: true
               failTaskOnMissingResultsFile: true
+              failTaskOnFailureToPublishResults: true
               publishRunAttachments: false
               testRunTitle: Unit and contract tests (Linux)
           - task: PublishCodeCoverageResults@2
@@ -139,6 +140,7 @@ stages:
                   output/test-results/coordination-browser.xml
                 failTaskOnFailedTests: true
                 failTaskOnMissingResultsFile: true
+                failTaskOnFailureToPublishResults: true
                 publishRunAttachments: false
                 testRunTitle: Isolated SQL and browser acceptance
 

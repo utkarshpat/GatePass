@@ -1,5 +1,6 @@
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { normalizeNodeJUnit } from './node-junit.mjs';
 
 mkdirSync('output/test-results', { recursive: true });
 mkdirSync('output/coverage', { recursive: true });
@@ -13,4 +14,6 @@ const result = spawnSync(process.execPath, [
   'tests/*.test.ts'
 ], { stdio: 'inherit', env: process.env });
 if (result.error) throw result.error;
+const reportPath = 'output/test-results/unit.xml';
+writeFileSync(reportPath, normalizeNodeJUnit(readFileSync(reportPath, 'utf8')));
 process.exitCode = result.status ?? 1;

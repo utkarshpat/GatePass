@@ -50,6 +50,12 @@ The checked-in Azure YAML uses main push/PR quality triggers with `docs/**` and 
 
 Integration and already-deployed staging smoke are separate opt-in parameters for hosted-minute control. Integration initializes isolated Windows SQL, runs SQL/browser checks sequentially, then the coordination harness. Staging smoke does not deploy or prove authenticated acceptance. Branch protection/review/bypass policy is configured separately. No current Azure run or billing status was queried during this documentation refresh.
 
+## Azure Repos setup, 20 November
+
+Local verification for the Azure setup passed 729 Node cases with 728 pass, one platform skip and zero failures, with backend coverage 97.77% lines / 91.15% branches / 94.78% functions. Typecheck, lint, architecture and migration integrity passed. The initial remote Quality run passed but published no cases because Node JUnit omitted the testsuite container. The CI runner now normalizes that container and rejects empty reports. Both test publication tasks fail on publication errors.
+
+The Azure Repos-backed GatePass pipeline uses definition 1333 and the existing YAML. The `main` branch has automatic Optional build validation with the same documentation exclusions. Existing GitHub pipeline 1322 remains available. The local `origin` push configuration sends identical commits to GitHub and Azure Repos. See [repository and pipeline operation](../29_GitHub_and_Azure_DevOps.md).
+
 ## Outstanding acceptance
 
 Run organization SSO/directory/mail, actual Outlook tokens/clients, representative guard/reception camera/PWA/printer/language and managed-device cases in staging. Confirm historical print SQL 547 diagnostics and concurrency findings with sanitized correlations; prior final runs did not establish a universal fix. Measure restore/load/soak and agree operational targets.

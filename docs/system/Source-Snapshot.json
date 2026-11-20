@@ -1,7 +1,7 @@
 {
-  "documentDate": "2026-11-04",
+  "documentDate": "2026-11-20",
   "timezone": "Asia/Calcutta",
-  "gitBaseCommit": "d41b79e420eaf1ecd8774cd396c32f472b5d1fa9",
+  "gitBaseCommit": "67b2be93bcc13a4fa5755bcf5fb3b737bdb2a4f1",
   "snapshot": "Reviewed working-tree source before release commit; excludes actual .env, runtime data and private artifacts",
   "migrationCount": 136,
   "sqlDeclarationCounts": {
@@ -54,7 +54,7 @@
     },
     {
       "path": "azure-pipelines.yml",
-      "sha256": "e0177145e04796a1a52fd25badde9a0bec91a91b7a1c2051be7eac44ef285239"
+      "sha256": "74861162be0811743f02f22a341b91dac7cacded969dad6564ba3ac347b5e217"
     },
     {
       "path": "database/migrations.sha256.json",
@@ -1961,6 +1961,10 @@
       "sha256": "7e848fbcbeda9f0a723b62874aa6017716e8e01d4abe66a84111023b5ac24256"
     },
     {
+      "path": "tests/ci-junit.test.ts",
+      "sha256": "f59c44f3c1c12bcff841af3f44d3f3a25b57f15f4022b9c4b67e0a57fa4cefd1"
+    },
+    {
       "path": "tests/ci-safety.test.ts",
       "sha256": "5d679b10f09532a887683ce5ee657358f40a1b8f68d4cec4adc99eca52cd12fb"
     },
@@ -2477,12 +2481,16 @@
       "sha256": "79fa9aa99053fb5579ed8f36edcc8494e4181b60bbacba6810b1171e266b342a"
     },
     {
+      "path": "tools/ci/node-junit.mjs",
+      "sha256": "dd80189604f0e65e50d2eeaccacc40e3e21d1b143edc597735feae0fc82e59db"
+    },
+    {
       "path": "tools/ci/release.mjs",
       "sha256": "6d8cff4d4eb3fe5f444bb36f8249b6b96a1f3f6beceaba2921a02cd4725bfaa3"
     },
     {
       "path": "tools/ci/run-tests.mjs",
-      "sha256": "7f65203321c1780183c178fcefef6ec75b6c5a4d5d31128fe9520ec1935cc6c7"
+      "sha256": "6f0c85ae2a666f7612bf1105fb17b910a2936ce13aafec09eabd9f007b44fd10"
     },
     {
       "path": "tools/ci/scan-secrets.mjs",

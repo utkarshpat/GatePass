@@ -1,6 +1,6 @@
 # Routes and runtime configuration
 
-Updated 4 November 2026. Literal source inventory; dynamic/regex routes require checking their handlers. Not an OpenAPI schema. Names only: no live environment file or secret value is read.
+Updated 20 November 2026. Literal source inventory; dynamic/regex routes require checking their handlers. Not an OpenAPI schema. Names only: no live environment file or secret value is read.
 
 ## Runtime setup
 

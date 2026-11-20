@@ -36,6 +36,10 @@ Production needs complete application composition, approved VM/HTTPS origin, org
 
 Planning mail dispatch is implemented and mock-provider tested; corporate delivery acceptance remains pending. Existing registration, QR allocation, reception and guard workflows continue separately. Automatic invitation-to-registration data transfer is a future convenience, not a new required gate or implemented cutover.
 
+## Repositories and CI
+
+GitHub and Azure Repos share the same commits. This checkout pushes `origin` to both repositories. Azure Repos uses [GatePass CI](https://dev.azure.com/soprasteria/GatePass/_build?definitionId=1333) and automatic PR build validation. See [dual-repository push and pipeline setup](docs/29_GitHub_and_Azure_DevOps.md).
+
 ## Checks and references
 
 ```powershell

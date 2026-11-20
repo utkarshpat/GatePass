@@ -30,7 +30,6 @@ The repository [entry guide](../README.md) and [database guide](../database/READ
 | [12_Implementation_Phases_and_UX_Baseline.md](12_Implementation_Phases_and_UX_Baseline.md) | 12 - GatePass implementation phases and UX baseline |
 | [27_PWA.md](27_PWA.md) | GatePass PWA |
 | [28_Development_Login_Identities.md](28_Development_Login_Identities.md) | Development login identities |
-| [29_GitHub_and_Azure_DevOps.md](29_GitHub_and_Azure_DevOps.md) | GitHub and Azure DevOps |
 | [30_2026-10-21_Audit.md](30_2026-10-21_Audit.md) | Local audit — 21 October 2026 |
 | [31_CI_Checks_and_Limits.md](31_CI_Checks_and_Limits.md) | CI checks and limits |
 | [32_Local_Guard_Review.md](32_Local_Guard_Review.md) | Local guard review — 21 October 2026 |
@@ -141,6 +140,7 @@ The repository [entry guide](../README.md) and [database guide](../database/READ
 
 | Document | Description |
 |---|---|
+| [29_GitHub_and_Azure_DevOps.md](29_GitHub_and_Azure_DevOps.md) | Dual-repository pushes and Azure Repos CI, updated 20 November 2026 |
 | [111_Documentation_Verification_And_Publication_04_November_2026.md](111_Documentation_Verification_And_Publication_04_November_2026.md) | Documentation verification and publication — 4 November 2026 |
 | [108_Account_Setup_and_Coordination_Navigation_02_November_2026.md](108_Account_Setup_and_Coordination_Navigation_02_November_2026.md) | Account setup and coordination navigation — 2 November 2026 |
 | [109_Visit_Owner_and_Host_Terminology_03_November_2026.md](109_Visit_Owner_and_Host_Terminology_03_November_2026.md) | Visit owner and Host — 3 November 2026 |
